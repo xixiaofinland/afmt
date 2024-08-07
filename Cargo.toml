@@ -1,0 +1,8 @@
+[package]
+name = "afmt"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tree-sitter = "0.22.6"
+tree-sitter-apex = "1.0.0"
