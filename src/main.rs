@@ -1,4 +1,5 @@
 use afmt;
+use std::fs;
 use tree_sitter::{Node, Parser, Tree};
 
 fn main() {
@@ -7,20 +8,16 @@ fn main() {
         .set_language(&afmt::language())
         .expect("Error loading Apex grammar");
 
-    let code = "public class MyClass {
-        public void hello() {
-        true;
-        }
-    }";
+    let code = fs::read_to_string("test/1.cls").unwrap();
 
-    let tree = parser.parse(code, None).unwrap();
+    let tree = parser.parse(&code, None).unwrap();
 
     if tree.root_node().has_error() {
         println!("root node found error!");
         return;
     }
 
-    let formatted_code = format_code(&tree, code);
+    let formatted_code = format_code(&tree, &code);
     println!("\n\nFormatted code:\n{}", formatted_code);
 }
 

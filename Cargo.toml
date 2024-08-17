@@ -8,3 +8,9 @@ tree-sitter = "0.22.6"
 
 [build-dependencies]
 cc = "1.1.10"
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+opt-level = 3
