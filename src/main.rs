@@ -9,44 +9,33 @@ fn main() {
         .expect("Error loading Apex grammar");
     let code = fs::read_to_string("test/1.cls").unwrap();
     let tree = parser.parse(&code, None).unwrap();
-    if tree.root_node().has_error() {
-        println!("root node found error!");
-        return;
-    }
     format_code(&tree, &code);
     //let formatted_code = format_code(&tree, &code);
     //println!("\n\nResult:\n{}", formatted_code);
 }
 
 fn format_code(tree: &Tree, source_code: &str) -> String {
+    if tree.root_node().has_error() {
+        println!("root node found error!");
+        return String::new();
+    }
+
     let mut formatted = String::new();
     let mut indent_level = 0;
-    let mut cursor = tree.walk();
 
-    cursor.goto_first_child();
-    let node = cursor.node();
-    format_node(node, source_code, &mut formatted, &mut indent_level);
-    //loop {
-    //    let node = cursor.node();
-    //    format_node(node, source_code, &mut formatted, &mut indent_level);
-    //
-    //    if cursor.goto_first_child() {
-    //        continue;
-    //    }
-    //
-    //    if cursor.goto_next_sibling() {
-    //        continue;
-    //    }
-    //
-    //    let mut reached_root = false;
-    //    while !reached_root && !cursor.goto_next_sibling() {
-    //        reached_root = !cursor.goto_parent();
-    //    }
-    //
-    //    if reached_root {
-    //        break;
-    //    }
-    //}
+    let mut cursor = tree.walk();
+    if cursor.goto_first_child() {
+        loop {
+            let node = cursor.node();
+            println!("Node kind: {}", node.kind());
+
+            format_node(node, source_code, &mut formatted, &mut indent_level);
+
+            if !cursor.goto_next_sibling() {
+                break;
+            }
+        }
+    }
 
     formatted
 }
@@ -111,4 +100,12 @@ fn add_indent(formatted: &mut String, indent_level: usize) {
     for _ in 0..indent_level {
         formatted.push_str("    "); // 4 spaces per indent level
     }
+}
+
+fn call(node: Node, child_name: &str) -> String {
+    if let Some(child) = node.child_by_field_name(child_name) {
+        return "parsed!".into();
+    }
+
+    String::new()
 }
