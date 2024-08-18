@@ -25,6 +25,7 @@ fn main() {
 fn format_code(tree: &Tree, source_code: &str) -> String {
     let mut formatted = String::new();
     let mut cursor = tree.walk();
+
     if cursor.goto_first_child() {
         loop {
             let node = cursor.node();
