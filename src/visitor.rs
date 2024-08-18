@@ -1,3 +1,4 @@
+use crate::node::NodeKind;
 use tree_sitter::{Node, Tree};
 
 pub struct Visitor {
@@ -16,21 +17,29 @@ impl Visitor {
         }
     }
 
+    //https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
     pub fn walk(&mut self, tree: &Tree) {
         let mut cursor = tree.walk();
         if cursor.goto_first_child() {
             loop {
                 let node = &cursor.node();
 
-                match node.kind() {
-                    "class_declaration" => {
-                        self.visit_class_node(node);
-                        self.push_str("class_declaration formatting visited");
-                    }
+                let kind = NodeKind::from_kind(node.kind());
 
-                    _ => {
-                        unimplemented!()
+                match kind {
+                    NodeKind::ClassDeclaration => {
+                        self.visit_class_node(node);
                     }
+                    NodeKind::MethodDeclaration => {
+                        //self.visit_method_node(node);
+                    }
+                    NodeKind::IfStatement => {
+                        //self.visit_if_node(node);
+                    }
+                    NodeKind::ForLoop => {
+                        //self.visit_for_node(node);
+                    }
+                    NodeKind::Unknown => !unimplemented!(),
                 }
 
                 if !cursor.goto_next_sibling() {
@@ -40,18 +49,13 @@ impl Visitor {
         }
     }
 
+    pub fn visit_class_node(&mut self, node: &Node) {
+        // process sub nodes with their rewrite traits;
+    }
+
     pub fn get_formatted(&mut self) -> String {
         self.formatted.clone()
     }
-
-    pub fn visit_class_node(&mut self, node: &Node) {
-        self.push_str("visit_class_node called");
-        println!("visit_class_node: node kind: {}", node.kind());
-    }
-
-    //pub fn get_formatted(&self) -> String {
-    //    self.buffer.clone()
-    //}
 
     fn push_str(&mut self, s: &str) {
         self.formatted.push_str(s);
