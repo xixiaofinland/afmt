@@ -1,6 +1,10 @@
 use afmt;
 use std::fs;
 use tree_sitter::{Node, Parser, Tree};
+use visitor::Visitor;
+
+//mod shape;
+mod visitor;
 
 fn main() {
     let mut parser = Parser::new();
@@ -9,20 +13,17 @@ fn main() {
         .expect("Error loading Apex grammar");
     let code = fs::read_to_string("test/1.cls").unwrap();
     let tree = parser.parse(&code, None).unwrap();
-    format_code(&tree, &code);
-    //let formatted_code = format_code(&tree, &code);
-    //println!("\n\nResult:\n{}", formatted_code);
+    if tree.root_node().has_error() {
+        println!("root node found error!");
+        return;
+    }
+
+    let formatted_code = format_code(&tree, &code);
+    println!("\n\nResult:\n{}", formatted_code);
 }
 
 fn format_code(tree: &Tree, source_code: &str) -> String {
-    if tree.root_node().has_error() {
-        println!("root node found error!");
-        return String::new();
-    }
-
     let mut formatted = String::new();
-    let mut indent_level = 0;
-
     let mut cursor = tree.walk();
     if cursor.goto_first_child() {
         loop {
@@ -30,7 +31,10 @@ fn format_code(tree: &Tree, source_code: &str) -> String {
 
             match node.kind() {
                 "class_declaration" => {
-                    format_class_node(node, source_code, &mut indent_level);
+                    //format_class_node(node, source_code, &mut indent_level);
+                    let mut visitor = Visitor::init(&node);
+                    visitor.visit_node();
+                    formatted.push_str(&visitor.get_formatted());
                 }
 
                 _ => {
@@ -47,9 +51,19 @@ fn format_code(tree: &Tree, source_code: &str) -> String {
     formatted
 }
 
+//https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
 fn format_class_node(node: Node, source_code: &str, indent_level: &mut usize) {
     println!("node kind: {}", node.kind());
     let mut formatted = String::new();
+
+    // format class names;
+    // format class body;
+
+    // format field_declaration;
+
+    // format method_declaration;
+    // format method names+parameters;
+    // format body;
 
     //match node.kind() {
     //    "class_declaration" | "method_declaration" => {
@@ -118,13 +132,13 @@ fn call(node: Node, child_name: &str) -> String {
     String::new()
 }
 
-fn map(node: Node, child_name: &str) -> Vec<&str> {
-    let mut result = Vec::new();
-    for i in 0..node.named_child_count() {
-        let child = node.named_child(i).unwrap();
-        if child.kind() == child_name {
-            result.push(child_name);
-        }
-    }
-    result
-}
+//fn map(node: Node, child_name: &str) -> Vec<&str> {
+//    let mut result = Vec::new();
+//    for i in 0..node.named_child_count() {
+//        let child = node.named_child(i).unwrap();
+//        if child.kind() == child_name {
+//            result.push(child_name);
+//        }
+//    }
+//    result
+//}
