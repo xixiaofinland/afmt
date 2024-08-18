@@ -18,38 +18,14 @@ fn main() {
         return;
     }
 
-    let formatted_code = format_code(&tree, &code);
-    println!("\n\nResult:\n{}", formatted_code);
+    let result = format_code(&tree, &code);
+    println!("\n\nResult:\n{}", result);
 }
 
 fn format_code(tree: &Tree, source_code: &str) -> String {
-    let mut formatted = String::new();
-    let mut cursor = tree.walk();
-
-    if cursor.goto_first_child() {
-        loop {
-            let node = cursor.node();
-
-            match node.kind() {
-                "class_declaration" => {
-                    //format_class_node(node, source_code, &mut indent_level);
-                    let mut visitor = Visitor::init(&node);
-                    visitor.visit_node();
-                    formatted.push_str(&visitor.get_formatted());
-                }
-
-                _ => {
-                    unimplemented!()
-                }
-            }
-
-            if !cursor.goto_next_sibling() {
-                break;
-            }
-        }
-    }
-
-    formatted
+    let mut visitor = Visitor::init();
+    visitor.walk(tree);
+    visitor.get_formatted()
 }
 
 //https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
