@@ -1,3 +1,5 @@
+use tree_sitter::Node;
+
 #[derive(Debug)]
 pub enum NodeKind {
     ClassDeclaration,
@@ -26,3 +28,39 @@ pub trait Rewrite {
     //    self.rewrite(context, shape).unknown_error()
     //}
 }
+
+pub struct Class<'a> {
+    inner: &'a Node<'a>,
+}
+
+impl<'a> Class<'a> {
+    pub fn new(node: &'a Node) -> Self {
+        Class { inner: node }
+    }
+
+    pub fn as_ast_node(&self) -> &'a Node {
+        self.inner
+    }
+}
+
+impl<'a> Rewrite for Class<'a> {
+    fn rewrite(&self) -> Option<String> {
+        Some(String::from("public class abc {}"))
+    }
+}
+
+//pub struct Method<'a> {
+//    inner: &'a Node<'a>,
+//}
+//
+//impl<'a> Method<'a> {
+//    pub fn new(node: &'a Node) -> Self {
+//        Method { inner: node }
+//    }
+//}
+//
+//impl<'a> Rewrite for Method<'a> {
+//    fn rewrite(&self) -> Option<String> {
+//        Some(String::new())
+//    }
+//}

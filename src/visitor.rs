@@ -1,4 +1,4 @@
-use crate::node::NodeKind;
+use crate::node::{Class, NodeKind, Rewrite};
 use tree_sitter::{Node, Tree};
 
 pub struct Visitor {
@@ -28,7 +28,8 @@ impl Visitor {
 
                 match kind {
                     NodeKind::ClassDeclaration => {
-                        self.visit_class_node(node);
+                        let c = Class::new(&node);
+                        self.visit_class(&c);
                     }
                     NodeKind::MethodDeclaration => {
                         //self.visit_method_node(node);
@@ -49,8 +50,9 @@ impl Visitor {
         }
     }
 
-    pub fn visit_class_node(&mut self, node: &Node) {
-        // process sub nodes with their rewrite traits;
+    pub fn visit_class(&mut self, c: &Class) {
+        let a = c.rewrite().unwrap();
+        self.push_str(&a);
     }
 
     pub fn get_formatted(&mut self) -> String {
