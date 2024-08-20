@@ -6,15 +6,31 @@ pub struct Visitor {
     pub formatted: String,
     pub block_indent: String,
     pub indent_level: usize,
+    pub context: Context,
     //pub node: &'a Node<'a>,
 }
 
+pub struct Context {
+    config: String,
+    parent_indent: String,
+}
+
+impl Context {
+    pub fn new() -> Self {
+        Context {
+            config: String::new(),
+            parent_indent: String::new(),
+        }
+    }
+}
+
 impl Visitor {
-    pub fn init() -> Self {
+    pub fn new() -> Self {
         Visitor {
             formatted: String::new(),
             block_indent: String::from(' '),
             indent_level: 0,
+            context: Context::new(),
         }
     }
 

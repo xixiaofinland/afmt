@@ -33,7 +33,7 @@ fn main() -> Result<()> {
 }
 
 fn format_code(tree: &Tree, source_code: &str) -> Result<String> {
-    let mut visitor = Visitor::init();
+    let mut visitor = Visitor::new();
     visitor.walk(tree);
     Ok(visitor.get_formatted())
 }
