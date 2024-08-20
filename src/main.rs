@@ -1,4 +1,5 @@
 use afmt;
+use anyhow::{Context, Result};
 use std::fs;
 use tree_sitter::{Node, Parser, Tree};
 use visitor::Visitor;
@@ -6,7 +7,7 @@ use visitor::Visitor;
 mod node;
 mod visitor;
 
-fn main() {
+fn main() -> Result<()> {
     let mut parser = Parser::new();
     parser
         .set_language(&afmt::language())
@@ -18,14 +19,15 @@ fn main() {
         return;
     }
 
-    let result = format_code(&tree, &code);
+    let result = format_code(&tree, &code)?;
     println!("\n\nResult:\n{}", result);
+    Ok(())
 }
 
-fn format_code(tree: &Tree, source_code: &str) -> String {
+fn format_code(tree: &Tree, source_code: &str) -> Result<String> {
     let mut visitor = Visitor::init();
     visitor.walk(tree);
-    visitor.get_formatted()
+    Ok(visitor.get_formatted())
 }
 
 fn add_node_text(node: Node, source_code: &str, formatted: &mut String) {

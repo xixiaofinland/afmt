@@ -1,4 +1,5 @@
 use crate::node::{Class, NodeKind, Rewrite};
+use anyhow::{anyhow, Result};
 use tree_sitter::{Node, Tree};
 
 pub struct Visitor {
@@ -50,9 +51,12 @@ impl Visitor {
         }
     }
 
-    pub fn visit_class(&mut self, c: &Class) {
-        let a = c.rewrite().unwrap();
+    pub fn visit_class(&mut self, c: &Class) -> Result<()> {
+        let a = c
+            .rewrite()
+            .ok_or_else(|| anyhow!("Format Class node failed!"))?;
         self.push_str(&a);
+        Ok(())
     }
 
     pub fn get_formatted(&mut self) -> String {
