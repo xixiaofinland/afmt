@@ -1,10 +1,12 @@
 use afmt;
-use anyhow::{Context, Result};
+use anyhow::{bail, Result};
+use parser::*;
 use std::fs;
 use tree_sitter::{Node, Parser, Tree};
 use visitor::Visitor;
 
 mod node;
+mod parser;
 mod visitor;
 
 fn main() -> Result<()> {
@@ -15,12 +17,18 @@ fn main() -> Result<()> {
     let code = fs::read_to_string("test/1.cls").unwrap();
     let tree = parser.parse(&code, None).unwrap();
     if tree.root_node().has_error() {
-        println!("root node found error!");
-        return;
+        bail!("root node found error!")
     }
 
-    let result = format_code(&tree, &code)?;
-    println!("\n\nResult:\n{}", result);
+    //let result = format_code(&tree, &code)?;
+
+    let mut cursor = tree.walk();
+    if cursor.goto_first_child() {
+        let node = &cursor.node();
+        run_it(node)?;
+    }
+    println!("world");
+
     Ok(())
 }
 

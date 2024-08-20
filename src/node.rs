@@ -41,6 +41,8 @@ impl<'a> Class<'a> {
     pub fn as_ast_node(&self) -> &'a Node {
         self.inner
     }
+
+    fn get_modifiers(&self) {}
 }
 
 impl<'a> Rewrite for Class<'a> {
