@@ -17,24 +17,18 @@ fn main() -> Result<()> {
     let code = fs::read_to_string("test/1.cls").unwrap();
     let tree = parser.parse(&code, None).unwrap();
     if tree.root_node().has_error() {
-        bail!("root node found error!")
+        bail!("parsing with error, bail out quickly.")
     }
 
-    //let result = format_code(&tree, &code)?;
-
-    let mut cursor = tree.walk();
-    if cursor.goto_first_child() {
-        let node = &cursor.node();
-        run_it(node)?;
-    }
-    println!("world");
-
+    let result = format_code(&tree, &code)?;
+    println!("format result: {}", result);
     Ok(())
 }
 
 fn format_code(tree: &Tree, source_code: &str) -> Result<String> {
-    let mut visitor = Visitor::new();
-    visitor.walk(tree);
+    let root_node = tree.root_node();
+    let mut visitor = Visitor::new(&root_node);
+    visitor.walk_from_root();
     Ok(visitor.get_formatted())
 }
 

@@ -1,3 +1,4 @@
+use crate::parser::*;
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -47,7 +48,11 @@ impl<'a> Class<'a> {
 
 impl<'a> Rewrite for Class<'a> {
     fn rewrite(&self) -> Option<String> {
-        Some(String::from("public class abc {}"))
+        let node = self.inner;
+        let t = get_child_by_kind("modifiers", node);
+        println!("test: {:?}", t);
+
+        Some(String::new())
     }
 }
 
