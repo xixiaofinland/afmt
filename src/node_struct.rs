@@ -1,4 +1,5 @@
-use crate::parser::*;
+use crate::utility::*;
+use anyhow::{anyhow, Context, Result};
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -43,7 +44,13 @@ impl<'a> Class<'a> {
         self.inner
     }
 
-    fn get_modifiers(&self) {}
+    fn get_modifiers(&self) -> Result<()> {
+        let modifiers_node = get_child_by_kind("modifiers", self.inner)
+            .ok_or(anyhow!("no modifiers node found."))?;
+        let modifiers = get_children_by_kind("modifier", &modifiers_node);
+        println!("modifiers: {:?}", modifiers);
+        Ok(())
+    }
 }
 
 impl<'a> Rewrite for Class<'a> {

@@ -1,4 +1,5 @@
 use crate::node_struct::{Class, NodeKind, Rewrite};
+use crate::utility::NodeUtilities;
 use anyhow::{anyhow, Result};
 use tree_sitter::{Node, Tree, TreeCursor};
 

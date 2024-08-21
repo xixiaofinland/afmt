@@ -6,7 +6,7 @@ use visitor::Visitor;
 
 mod node;
 mod node_struct;
-mod parser;
+mod utility;
 mod visitor;
 
 fn main() -> Result<()> {
