@@ -1,4 +1,4 @@
-use crate::node::{Class, NodeKind, Rewrite};
+use crate::node_struct::{Class, NodeKind, Rewrite};
 use anyhow::{anyhow, Result};
 use tree_sitter::{Node, Tree, TreeCursor};
 
@@ -7,7 +7,6 @@ pub struct Visitor<'a> {
     pub block_indent: String,
     pub indent_level: usize,
     pub context: Context,
-    pub cursor: TreeCursor<'a>,
     pub root_node: &'a Node<'a>,
 }
 
@@ -27,25 +26,22 @@ impl Context {
 
 impl<'a> Visitor<'a> {
     pub fn new(root_node: &'a Node) -> Self {
-        let mut cursor = root_node.walk();
-
         Visitor {
             formatted: String::new(),
             block_indent: String::from(' '),
             indent_level: 0,
             context: Context::new(),
             root_node,
-            cursor,
         }
     }
 
     //https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
     pub fn walk_from_root(&mut self) -> Result<()> {
-        self.cursor = self.root_node.walk();
+        let mut cursor = self.root_node.walk();
 
-        if self.cursor.goto_first_child() {
+        if cursor.goto_first_child() {
             loop {
-                let child = self.cursor.node();
+                let child = cursor.node();
 
                 let kind = NodeKind::from_kind(child.kind());
 

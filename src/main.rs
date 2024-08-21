@@ -1,11 +1,11 @@
 use afmt;
 use anyhow::{bail, Result};
-use parser::*;
 use std::fs;
 use tree_sitter::{Node, Parser, Tree};
 use visitor::Visitor;
 
 mod node;
+mod node_struct;
 mod parser;
 mod visitor;
 
@@ -20,12 +20,12 @@ fn main() -> Result<()> {
         bail!("parsing with error, bail out quickly.")
     }
 
-    let result = format_code(&tree, &code)?;
+    let result = format_code(&tree)?;
     println!("format result: {}", result);
     Ok(())
 }
 
-fn format_code(tree: &Tree, source_code: &str) -> Result<String> {
+fn format_code(tree: &Tree) -> Result<String> {
     let root_node = tree.root_node();
     let mut visitor = Visitor::new(&root_node);
     visitor.walk_from_root();
