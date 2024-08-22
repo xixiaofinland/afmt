@@ -1,3 +1,4 @@
+use crate::utility::NodeUtilities;
 use crate::utility::*;
 use anyhow::{anyhow, Context, Result};
 use tree_sitter::Node;
@@ -45,9 +46,12 @@ impl<'a> Class<'a> {
     }
 
     fn get_modifiers(&self) -> Result<()> {
-        let modifiers_node = get_child_by_kind("modifiers", self.inner)
+        let modifiers_node = self
+            .inner
+            .get_child_by_kind("modifiers")
             .ok_or(anyhow!("no modifiers node found."))?;
-        let modifiers = get_children_by_kind("modifier", &modifiers_node);
+
+        let modifiers = self.inner.get_children_by_kind("modifier");
         println!("modifiers: {:?}", modifiers);
         Ok(())
     }
@@ -56,7 +60,7 @@ impl<'a> Class<'a> {
 impl<'a> Rewrite for Class<'a> {
     fn rewrite(&self) -> Option<String> {
         let node = self.inner;
-        let t = get_child_by_kind("modifiers", node);
+        let t = self.inner.get_child_by_kind("modifiers");
         println!("test: {:?}", t);
 
         Some(String::new())

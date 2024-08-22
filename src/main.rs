@@ -4,7 +4,6 @@ use std::fs;
 use tree_sitter::{Node, Parser, Tree};
 use visitor::Visitor;
 
-mod node;
 mod node_struct;
 mod utility;
 mod visitor;
