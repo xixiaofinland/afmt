@@ -1,13 +1,13 @@
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
-pub trait NodeUtilities {
-    fn get_child_by_kind(&self, kind: &str) -> Option<Node>;
-    fn get_children_by_kind(&self, kind: &str) -> Vec<Node>;
+pub trait NodeUtilities<'tree> {
+    fn get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
+    fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 }
 
-impl NodeUtilities for Node<'_> {
-    fn get_child_by_kind(&self, kind: &str) -> Option<Node> {
+impl<'tree> NodeUtilities<'tree> for Node<'tree> {
+    fn get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>> {
         let mut cursor = self.walk();
         for child in self.children(&mut cursor) {
             if child.kind() == kind {
@@ -17,7 +17,7 @@ impl NodeUtilities for Node<'_> {
         None
     }
 
-    fn get_children_by_kind(&self, kind: &str) -> Vec<Node> {
+    fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>> {
         let mut cursor = self.walk();
         let mut modifiers = Vec::new();
         for child in self.children(&mut cursor) {

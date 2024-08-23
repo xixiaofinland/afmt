@@ -32,35 +32,32 @@ pub trait Rewrite {
     //}
 }
 
-pub struct Class<'a> {
-    inner: &'a Node<'a>,
+pub struct Class<'a, 'tree> {
+    inner: &'a Node<'tree>,
 }
 
-impl<'a> Class<'a> {
-    pub fn new(node: &'a Node) -> Self {
+impl<'a, 'tree> Class<'a, 'tree> {
+    pub fn new(node: &'a Node<'tree>) -> Self {
         Class { inner: node }
     }
 
-    pub fn as_ast_node(&self) -> &'a Node {
+    pub fn as_ast_node(&self) -> &'a Node<'tree> {
         self.inner
     }
 
-    fn get_modifiers(&self) -> Result<()> {
-        let modifiers_node = self
-            .inner
-            .get_child_by_kind("modifiers")
-            .ok_or(anyhow!("no modifiers node found."))?;
-
-        let modifiers = self.inner.get_children_by_kind("modifier");
-        println!("modifiers: {:?}", modifiers);
-        Ok(())
+    pub fn get_modifiers(&self) -> Vec<Node<'tree>> {
+        if let Some(n) = self.as_ast_node().get_child_by_kind("modifiers") {
+            n.get_children_by_kind("modifier")
+        } else {
+            Vec::new()
+        }
     }
 }
 
-impl<'a> Rewrite for Class<'a> {
+impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
     fn rewrite(&self) -> Option<String> {
-        let node = self.inner;
-        let t = self.inner.get_child_by_kind("modifiers");
+        let t = self.get_modifiers();
+
         println!("test: {:?}", t);
 
         Some(String::new())
