@@ -1,22 +1,3 @@
-//! This crate provides Apex language support for the [tree-sitter][] parsing library.
-//!
-//! Typically, you will use the [language][language func] function to add this language to a
-//! tree-sitter [Parser][], and then use the parser to parse some code:
-//!
-//! ```
-//! let code = r#"
-//! "#;
-//! let mut parser = tree_sitter::Parser::new();
-//! parser.set_language(&tree_sitter_apex::language()).expect("Error loading Apex grammar");
-//! let tree = parser.parse(code, None).unwrap();
-//! assert!(!tree.root_node().has_error());
-//! ```
-//!
-//! [Language]: https://docs.rs/tree-sitter/*/tree_sitter/struct.Language.html
-//! [language func]: fn.language.html
-//! [Parser]: https://docs.rs/tree-sitter/*/tree_sitter/struct.Parser.html
-//! [tree-sitter]: https://tree-sitter.github.io/
-
 use tree_sitter::Language;
 
 extern "C" {
