@@ -17,7 +17,7 @@ fn main() -> Result<()> {
     parser
         .set_language(&afmt::language())
         .expect("Error loading Apex grammar");
-    let code = fs::read_to_string("test/1.cls").unwrap();
+    let code = fs::read_to_string("samples/1.cls").unwrap();
     let tree = parser.parse(&code, None).unwrap();
     let root_node = tree.root_node();
 
