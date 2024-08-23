@@ -53,10 +53,11 @@ impl<'a, 'tree> Class<'a, 'tree> {
     }
 }
 
+//https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
 impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
     fn rewrite(&self, shape: &Shape) -> Option<String> {
         let modifier_nodes = self.get_modifiers();
-        println!("t: {}", modifier_nodes.len());
+        println!("t: {}", modifier_nodes[0].to_sexp());
         let result = modifier_nodes
             .iter()
             .map(|n| n.to_sexp())

@@ -3,7 +3,7 @@ use anyhow::{bail, Result};
 use shape::Shape;
 use std::fs;
 use tree_sitter::{Node, Parser, Tree};
-use visitor::Visitor;
+use visitor::{Context, Visitor};
 
 mod node_struct;
 mod shape;
@@ -23,13 +23,14 @@ fn main() -> Result<()> {
         bail!("parsing with error, bail out quickly.")
     }
 
-    let result = format_code(&root_node)?;
+    let result = format_code(&root_node, &code)?;
     println!("format result: \n---\n{}\n---", result);
     Ok(())
 }
 
-fn format_code(root_node: &Node) -> Result<String> {
-    let mut visitor = Visitor::default();
+fn format_code(root_node: &Node, source_code: &str) -> Result<String> {
+    let context = Context::new(source_code);
+    let mut visitor = Visitor::new(context);
     let shape = Shape::default();
     visitor.walk(&root_node, shape)
 }

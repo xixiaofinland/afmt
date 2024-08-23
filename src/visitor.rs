@@ -3,11 +3,25 @@ use crate::shape::Shape;
 use anyhow::{anyhow, Result};
 use tree_sitter::Node;
 
-#[derive(Default)]
-pub struct Visitor {}
+pub struct Context<'a> {
+    source_code: &'a str,
+}
 
-impl Visitor {
-    //https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
+impl<'a> Context<'a> {
+    pub fn new(source_code: &'a str) -> Self {
+        Self { source_code }
+    }
+}
+
+pub struct Visitor<'a> {
+    pub context: Context<'a>,
+}
+
+impl<'a> Visitor<'a> {
+    pub fn new(context: Context<'a>) -> Self {
+        Self { context }
+    }
+
     pub fn walk(&mut self, node: &Node, shape: Shape) -> Result<String> {
         let mut results = Vec::new();
 
