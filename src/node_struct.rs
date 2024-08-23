@@ -1,3 +1,4 @@
+use crate::shape::Shape;
 use crate::utility::NodeUtilities;
 use tree_sitter::Node;
 
@@ -23,7 +24,7 @@ impl NodeKind {
 }
 
 pub trait Rewrite {
-    fn rewrite(&self) -> Option<String>;
+    fn rewrite(&self, shape: &Shape) -> Option<String>;
 
     //fn rewrite_result(&self) -> RewriteResult {
     //    self.rewrite(context, shape).unknown_error()
@@ -53,11 +54,14 @@ impl<'a, 'tree> Class<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
-    fn rewrite(&self) -> Option<String> {
-        let t = self.get_modifiers();
-
-        println!("test: {:?}", t);
-
-        Some(String::new())
+    fn rewrite(&self, shape: &Shape) -> Option<String> {
+        let modifier_nodes = self.get_modifiers();
+        println!("t: {}", modifier_nodes.len());
+        let result = modifier_nodes
+            .iter()
+            .map(|n| n.to_sexp())
+            .collect::<Vec<String>>()
+            .join("\n");
+        Some(result)
     }
 }

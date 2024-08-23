@@ -1,10 +1,12 @@
 use afmt;
 use anyhow::{bail, Result};
+use shape::Shape;
 use std::fs;
 use tree_sitter::{Node, Parser, Tree};
 use visitor::Visitor;
 
 mod node_struct;
+mod shape;
 mod utility;
 mod visitor;
 
@@ -22,13 +24,14 @@ fn main() -> Result<()> {
     }
 
     let result = format_code(&root_node)?;
-    println!("format result: {}", result);
+    println!("format result: \n---\n{}\n---", result);
     Ok(())
 }
 
 fn format_code(root_node: &Node) -> Result<String> {
     let mut visitor = Visitor::default();
-    visitor.walk(&root_node)
+    let shape = Shape::default();
+    visitor.walk(&root_node, shape)
 }
 
 fn add_node_text(node: Node, source_code: &str, formatted: &mut String) {

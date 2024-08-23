@@ -1,4 +1,4 @@
-pub struct Indent {
+#[derive(Default)]
+pub struct Shape {
     pub block_indent: usize,
-    pub alignment: usize,
 }
