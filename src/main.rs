@@ -1,10 +1,12 @@
 use afmt;
 use anyhow::{bail, Result};
+use context::Context;
 use shape::Shape;
 use std::fs;
 use tree_sitter::{Node, Parser, Tree};
-use visitor::{Context, Visitor};
+use visitor::Visitor;
 
+mod context;
 mod node_struct;
 mod shape;
 mod utility;

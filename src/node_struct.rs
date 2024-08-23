@@ -1,3 +1,4 @@
+use crate::context::Context;
 use crate::shape::Shape;
 use crate::utility::NodeUtilities;
 use tree_sitter::Node;
@@ -24,7 +25,7 @@ impl NodeKind {
 }
 
 pub trait Rewrite {
-    fn rewrite(&self, shape: &Shape) -> Option<String>;
+    fn rewrite(&self, shape: &Shape, context: &Context) -> Option<String>;
 
     //fn rewrite_result(&self) -> RewriteResult {
     //    self.rewrite(context, shape).unknown_error()
@@ -55,9 +56,14 @@ impl<'a, 'tree> Class<'a, 'tree> {
 
 //https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
 impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
-    fn rewrite(&self, shape: &Shape) -> Option<String> {
+    fn rewrite(&self, shape: &Shape, context: &Context) -> Option<String> {
         let modifier_nodes = self.get_modifiers();
-        println!("t: {}", modifier_nodes[0].to_sexp());
+        let value = modifier_nodes[0]
+            .utf8_text(context.source_code.as_bytes())
+            .ok()?;
+
+        println!("value: {}", value);
+
         let result = modifier_nodes
             .iter()
             .map(|n| n.to_sexp())

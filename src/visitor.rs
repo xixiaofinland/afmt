@@ -1,24 +1,15 @@
+use crate::context::Context;
 use crate::node_struct::{Class, NodeKind, Rewrite};
 use crate::shape::Shape;
 use anyhow::{anyhow, Result};
 use tree_sitter::Node;
 
-pub struct Context<'a> {
-    source_code: &'a str,
+pub struct Visitor<'code> {
+    pub context: Context<'code>,
 }
 
-impl<'a> Context<'a> {
-    pub fn new(source_code: &'a str) -> Self {
-        Self { source_code }
-    }
-}
-
-pub struct Visitor<'a> {
-    pub context: Context<'a>,
-}
-
-impl<'a> Visitor<'a> {
-    pub fn new(context: Context<'a>) -> Self {
+impl<'code> Visitor<'code> {
+    pub fn new(context: Context<'code>) -> Self {
         Self { context }
     }
 
@@ -52,7 +43,7 @@ impl<'a> Visitor<'a> {
 
     pub fn visit_class(&mut self, c: &Class, shape: &Shape) -> Result<String> {
         let a = c
-            .rewrite(shape)
+            .rewrite(shape, &self.context)
             .ok_or_else(|| anyhow!("Format Class node failed!"))?;
         Ok(a)
     }
