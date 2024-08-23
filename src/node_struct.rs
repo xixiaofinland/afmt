@@ -1,6 +1,4 @@
 use crate::utility::NodeUtilities;
-use crate::utility::*;
-use anyhow::{anyhow, Context, Result};
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -63,19 +61,3 @@ impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
         Some(String::new())
     }
 }
-
-//pub struct Method<'a> {
-//    inner: &'a Node<'a>,
-//}
-//
-//impl<'a> Method<'a> {
-//    pub fn new(node: &'a Node) -> Self {
-//        Method { inner: node }
-//    }
-//}
-//
-//impl<'a> Rewrite for Method<'a> {
-//    fn rewrite(&self) -> Option<String> {
-//        Some(String::new())
-//    }
-//}
