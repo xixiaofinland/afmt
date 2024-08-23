@@ -54,7 +54,6 @@ impl<'a, 'tree> Class<'a, 'tree> {
     }
 }
 
-//https://github.com/dangmai/prettier-plugin-apex/blob/60db6549a441911a0ef25b0ecc5e61727dc92fbb/packages/prettier-plugin-apex/src/printer.ts#L612
 impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
     fn rewrite(&self, shape: &Shape, context: &Context) -> Option<String> {
         let mut result = String::new();
