@@ -1,7 +1,7 @@
 use crate::context::Context;
 use crate::extension::NodeUtilities;
 use crate::shape::Shape;
-use crate::utility::get_indent;
+use crate::utility::{get_indent, indent_lines};
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -26,20 +26,21 @@ impl NodeKind {
 }
 
 pub trait Rewrite {
-    fn rewrite(&self, shape: &Shape, context: &Context) -> Option<String>;
+    fn rewrite(&self, context: &Context) -> Option<String>;
 
     //fn rewrite_result(&self) -> RewriteResult {
     //    self.rewrite(context, shape).unknown_error()
     //}
 }
 
-pub struct Class<'a, 'tree> {
+pub struct Class<'a, 'b, 'tree> {
     inner: &'a Node<'tree>,
+    shape: &'b Shape,
 }
 
-impl<'a, 'tree> Class<'a, 'tree> {
-    pub fn new(node: &'a Node<'tree>) -> Self {
-        Class { inner: node }
+impl<'a, 'b, 'tree> Class<'a, 'b, 'tree> {
+    pub fn new(node: &'a Node<'tree>, shape: &'b Shape) -> Self {
+        Class { inner: node, shape }
     }
 
     pub fn as_ast_node(&self) -> &'a Node<'tree> {
@@ -59,8 +60,8 @@ impl<'a, 'tree> Class<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
-    fn rewrite(&self, shape: &Shape, context: &Context) -> Option<String> {
+impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
+    fn rewrite(&self, context: &Context) -> Option<String> {
         let modifier_nodes = self.get_modifiers();
         let modifiers_doc = modifier_nodes
             .iter()
@@ -79,17 +80,18 @@ impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
         let name_node = self.as_ast_node().child_by_field_name("name")?;
         let name_node_value = name_node.utf8_text(context.source_code.as_bytes()).ok()?;
 
-        let indent = get_indent(shape);
         result.push_str(name_node_value);
         result.push_str(" {\n");
 
-        let mut body_shape = shape.clone();
-        body_shape.block_indent += 1;
-        self.format_body(&body_shape);
-
+        let mut child_shape = self.shape.clone();
+        child_shape.block_indent += 1;
+        self.format_body(&child_shape);
         result.push('}');
 
-        println!("class result: {}", result);
+        let indent = get_indent(self.shape);
+        let result = indent_lines(&result, self.shape);
+
+        println!("class result:\n{}", result);
         Some(result)
     }
 }

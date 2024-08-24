@@ -13,17 +13,18 @@ impl<'code> Visitor<'code> {
         Self { context }
     }
 
-    pub fn walk(&mut self, node: &Node, shape: &Shape) -> Result<String> {
+    pub fn walk_root(&mut self, node: &Node, shape: &Shape) -> Result<String> {
         let mut results = Vec::new();
 
         let mut cursor = node.walk();
+        let shape = Shape::default();
         for child in node.children(&mut cursor) {
             let kind = NodeKind::from_kind(child.kind());
 
             match kind {
                 NodeKind::ClassDeclaration => {
-                    let c = Class::new(&child);
-                    results.push(self.visit_class(&c, shape)?);
+                    let c = Class::new(&child, &shape);
+                    results.push(self.visit_class(&c)?);
                 }
                 NodeKind::MethodDeclaration => {
                     //self.visit_method_node(node);
@@ -41,9 +42,9 @@ impl<'code> Visitor<'code> {
         Ok(results.join(""))
     }
 
-    pub fn visit_class(&mut self, c: &Class, shape: &Shape) -> Result<String> {
+    pub fn visit_class(&mut self, c: &Class) -> Result<String> {
         let a = c
-            .rewrite(shape, &self.context)
+            .rewrite(&self.context)
             .ok_or_else(|| anyhow!("Format Class node failed!"))?;
         Ok(a)
     }

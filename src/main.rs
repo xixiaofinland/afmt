@@ -54,7 +54,7 @@ fn format_code(root_node: &Node, source_code: &str) -> Result<String> {
     let context = Context::new(source_code);
     let mut visitor = Visitor::new(context);
     let shape = Shape::default();
-    visitor.walk(root_node, &shape)
+    visitor.walk_root(root_node, &shape)
 }
 
 fn add_node_text(node: Node, source_code: &str, formatted: &mut String) {
