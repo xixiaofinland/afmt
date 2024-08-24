@@ -61,28 +61,3 @@ fn format_code(root_node: &Node) -> Option<String> {
     let shape = Shape::default();
     walk(root_node, &shape)
 }
-
-//fn add_node_text(node: Node, source_code: &str, formatted: &mut String) {
-//    formatted.push_str(node_text(node, source_code));
-//}
-//
-//fn node_text<'a>(node: Node, source_code: &'a str) -> &'a str {
-//    let start_byte = node.start_byte();
-//    let end_byte = node.end_byte();
-//    println!("node text: {}", &source_code[start_byte..end_byte]);
-//    &source_code[start_byte..end_byte]
-//}
-//
-//fn add_indent(formatted: &mut String, indent_level: usize) {
-//    for _ in 0..indent_level {
-//        formatted.push_str("    "); // 4 spaces per indent level
-//    }
-//}
-//
-//fn call(node: Node, child_name: &str) -> String {
-//    if let Some(child) = node.child_by_field_name(child_name) {
-//        return "parsed!".into();
-//    }
-//
-//    String::new()
-//}
