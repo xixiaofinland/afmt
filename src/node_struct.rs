@@ -85,7 +85,9 @@ impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
 
         let mut child_shape = self.shape.clone();
         child_shape.block_indent += 1;
+
         self.format_body(&child_shape);
+
         result.push('}');
 
         let indent = get_indent(self.shape);
