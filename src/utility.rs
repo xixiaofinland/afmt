@@ -1,3 +1,4 @@
+use crate::context::CONTEXT;
 use crate::shape::Shape;
 
 pub fn get_indent(shape: &Shape) -> String {
@@ -16,4 +17,8 @@ pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
         .map(|line| format!("{}{}", indent, line))
         .collect();
     indented_lines.join("\n")
+}
+
+pub fn get_source_code() -> &'static str {
+    CONTEXT.get().unwrap().source_code
 }

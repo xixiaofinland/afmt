@@ -1,10 +1,11 @@
 use anyhow::{bail, Result};
 use clap::{Arg, Command};
-use context::Context;
+use context::{Context, CONTEXT};
 use shape::Shape;
 use std::{fs, path::Path};
 use tree_sitter::{Node, Parser};
-use visitor::Visitor;
+use utility::get_source_code;
+use visitor::walk;
 
 mod context;
 mod extension;
@@ -37,24 +38,28 @@ fn main() -> Result<()> {
         .expect("File path is required");
     let path = Path::new(file_path);
 
-    let code = fs::read_to_string(path).expect("Failed to read file");
-    let tree = parser.parse(&code, None).unwrap();
+    let source_code = fs::read_to_string(path).expect("Failed to read file");
+    let source_code = Box::leak(source_code.into_boxed_str());
+    let context = Context::new(source_code);
+    CONTEXT.set(context).expect("Failed to set CONTEXT");
+
+    let code_in_context = get_source_code();
+
+    let tree = parser.parse(code_in_context, None).unwrap();
     let root_node = tree.root_node();
 
     if root_node.has_error() {
         bail!("parsing with error, bail out quickly.")
     }
 
-    let result = format_code(&root_node, &code)?;
+    let result = format_code(&root_node)?;
     println!("\n####\n\n---\n{}\n---", result);
     Ok(())
 }
 
-fn format_code(root_node: &Node, source_code: &str) -> Result<String> {
-    let context = Context::new(source_code);
-    let mut visitor = Visitor::new(context);
+fn format_code(root_node: &Node) -> Result<String> {
     let shape = Shape::default();
-    visitor.walk_root(root_node, &shape)
+    walk(root_node, &shape)
 }
 
 fn add_node_text(node: Node, source_code: &str, formatted: &mut String) {

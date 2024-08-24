@@ -1,3 +1,6 @@
+use std::sync::OnceLock;
+
+#[derive(Debug, Clone)]
 pub struct Context<'code> {
     pub source_code: &'code str,
 }
@@ -7,3 +10,5 @@ impl<'code> Context<'code> {
         Self { source_code }
     }
 }
+
+pub static CONTEXT: OnceLock<Context> = OnceLock::new();
