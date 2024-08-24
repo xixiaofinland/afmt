@@ -52,7 +52,7 @@ fn main() -> Result<()> {
         bail!("parsing with error, bail out quickly.")
     }
 
-    let result = format_code(&root_node).context("format_code() failed.")?;
+    let result = format_code(&root_node).context("format_code() has `None` return.")?;
     println!("\n####\n\n---\n{}\n---", result);
     Ok(())
 }
