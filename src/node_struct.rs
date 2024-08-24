@@ -1,6 +1,6 @@
 use crate::context::Context;
+use crate::extension::NodeUtilities;
 use crate::shape::Shape;
-use crate::utility::NodeUtilities;
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -52,6 +52,10 @@ impl<'a, 'tree> Class<'a, 'tree> {
             Vec::new()
         }
     }
+
+    pub fn format_body(&self, shape: &Shape) -> Option<String> {
+        Some(String::new())
+    }
 }
 
 impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
@@ -80,11 +84,13 @@ impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
         result.push_str(name_node_value);
         result.push_str(" {\n");
 
-        result.push_str(&indent);
+        let mut body_shape = shape.clone();
+        body_shape.block_indent += 1;
+        self.format_body(&body_shape);
 
         result.push('}');
 
-        println!("result: {}", result);
+        println!("class result: {}", result);
         Some(result)
     }
 }

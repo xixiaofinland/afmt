@@ -13,7 +13,7 @@ impl<'code> Visitor<'code> {
         Self { context }
     }
 
-    pub fn walk(&mut self, node: &Node, shape: Shape) -> Result<String> {
+    pub fn walk(&mut self, node: &Node, shape: &Shape) -> Result<String> {
         let mut results = Vec::new();
 
         let mut cursor = node.walk();
@@ -23,7 +23,7 @@ impl<'code> Visitor<'code> {
             match kind {
                 NodeKind::ClassDeclaration => {
                     let c = Class::new(&child);
-                    results.push(self.visit_class(&c, &shape)?);
+                    results.push(self.visit_class(&c, shape)?);
                 }
                 NodeKind::MethodDeclaration => {
                     //self.visit_method_node(node);
