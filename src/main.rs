@@ -10,6 +10,7 @@ mod context;
 mod extension;
 mod node_struct;
 mod shape;
+mod utility;
 mod visitor;
 
 fn main() -> Result<()> {

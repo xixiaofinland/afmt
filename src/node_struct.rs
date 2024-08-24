@@ -1,6 +1,7 @@
 use crate::context::Context;
 use crate::extension::NodeUtilities;
 use crate::shape::Shape;
+use crate::utility::get_indent;
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -60,9 +61,6 @@ impl<'a, 'tree> Class<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
     fn rewrite(&self, shape: &Shape, context: &Context) -> Option<String> {
-        let mut result = String::new();
-        let indent = "  ".repeat(shape.block_indent);
-
         let modifier_nodes = self.get_modifiers();
         let modifiers_doc = modifier_nodes
             .iter()
@@ -74,13 +72,14 @@ impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
             .collect::<Vec<&str>>()
             .join(" ");
 
+        let mut result = String::new();
         result.push_str(&modifiers_doc);
-
         result.push(' ');
 
         let name_node = self.as_ast_node().child_by_field_name("name")?;
         let name_node_value = name_node.utf8_text(context.source_code.as_bytes()).ok()?;
 
+        let indent = get_indent(shape);
         result.push_str(name_node_value);
         result.push_str(" {\n");
 
