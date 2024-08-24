@@ -65,23 +65,24 @@ impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
 
         let modifiers_doc = modifier_nodes
             .iter()
-            .map(|n| match n.utf8_text(context.source_code.as_bytes()).ok() {
-                None => "",
-                Some(v) => v,
+            .map(|n| {
+                n.utf8_text(context.source_code.as_bytes())
+                    .ok()
+                    .unwrap_or_default()
             })
             .collect::<Vec<&str>>()
             .join(" ");
 
         result.push_str(&modifiers_doc);
 
-        result.push_str(" ");
+        result.push(' ');
 
         let name_node = self.as_ast_node().child_by_field_name("name")?;
         let name_node_value = name_node.utf8_text(context.source_code.as_bytes()).ok()?;
 
         result.push_str(name_node_value);
         result.push_str(" {\n");
-        result.push_str("}");
+        result.push('}');
 
         println!("result: {}", result);
         Some(result)

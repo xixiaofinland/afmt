@@ -1,4 +1,3 @@
-use afmt;
 use anyhow::{bail, Result};
 use clap::{Arg, Command};
 use context::Context;
@@ -46,7 +45,7 @@ fn main() -> Result<()> {
     }
 
     let result = format_code(&root_node, &code)?;
-    println!("format result: \n---\n{}\n---", result);
+    println!("\n####\n\n---\n{}\n---", result);
     Ok(())
 }
 
@@ -54,7 +53,7 @@ fn format_code(root_node: &Node, source_code: &str) -> Result<String> {
     let context = Context::new(source_code);
     let mut visitor = Visitor::new(context);
     let shape = Shape::default();
-    visitor.walk(&root_node, shape)
+    visitor.walk(root_node, shape)
 }
 
 fn add_node_text(node: Node, source_code: &str, formatted: &mut String) {
