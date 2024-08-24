@@ -3,11 +3,19 @@ use crate::shape::Shape;
 use anyhow::{anyhow, Result};
 use tree_sitter::Node;
 
-pub fn walk(node: &Node, shape: &Shape) -> Option<String> {
+pub fn walk(node: &Node, parent_shape: &Shape) -> Option<String> {
     let mut results = Vec::new();
 
+    let is_root_node = node.kind() == "parser_output";
+
+    let shape = if is_root_node {
+        Shape::new(0)
+    } else {
+        Shape::new(parent_shape.block_indent + 1)
+    };
+
     let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
+    for child in node.named_children(&mut cursor) {
         let kind = NodeKind::from_kind(child.kind());
 
         match kind {
