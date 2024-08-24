@@ -1,9 +1,10 @@
 use afmt;
 use anyhow::{bail, Result};
+use clap::{Arg, Command};
 use context::Context;
 use shape::Shape;
-use std::fs;
-use tree_sitter::{Node, Parser, Tree};
+use std::{fs, path::Path};
+use tree_sitter::{Node, Parser};
 use visitor::Visitor;
 
 mod context;
@@ -17,7 +18,26 @@ fn main() -> Result<()> {
     parser
         .set_language(&afmt::language())
         .expect("Error loading Apex grammar");
-    let code = fs::read_to_string("samples/1.cls").unwrap();
+
+    let matches = Command::new("afmt")
+        .version("1.0")
+        .about("A CLI tool for formatting Apex code")
+        .arg(
+            Arg::new("file")
+                .short('f')
+                .long("file")
+                .value_name("FILE")
+                .help("The relative path to the file to parse")
+                .default_value("samples/1.cls"),
+        )
+        .get_matches();
+
+    let file_path = matches
+        .get_one::<String>("file")
+        .expect("File path is required");
+    let path = Path::new(file_path);
+
+    let code = fs::read_to_string(path).expect("Failed to read file");
     let tree = parser.parse(&code, None).unwrap();
     let root_node = tree.root_node();
 

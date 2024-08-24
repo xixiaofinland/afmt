@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
+clap = "4.5.16"
 tree-sitter = "0.22.6"
 
 [build-dependencies]
