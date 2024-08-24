@@ -1,6 +1,7 @@
 use crate::extension::NodeUtilities;
 use crate::shape::Shape;
 use crate::utility::{get_indent, get_source_code, indent_lines};
+use crate::visitor::walk;
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -55,9 +56,11 @@ impl<'a, 'b, 'tree> Class<'a, 'b, 'tree> {
     }
 
     pub fn format_body(&self) -> Option<String> {
+        let mut result = String::new();
         let body_shape = Shape::new(self.shape.block_indent + 1);
-
-        Some(String::new())
+        let body_node = self.as_ast_node().child_by_field_name("body")?;
+        walk(&body_node, &body_shape);
+        Some(result)
     }
 }
 
@@ -88,7 +91,6 @@ impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
 
         result.push('}');
 
-        let indent = get_indent(self.shape);
         let result = indent_lines(&result, self.shape);
 
         println!("class result:\n{}", result);

@@ -3,7 +3,7 @@ use crate::shape::Shape;
 use anyhow::{anyhow, Result};
 use tree_sitter::Node;
 
-pub fn walk(node: &Node, shape: &Shape) -> Result<String> {
+pub fn walk(node: &Node, shape: &Shape) -> Option<String> {
     let mut results = Vec::new();
 
     let mut cursor = node.walk();
@@ -28,12 +28,9 @@ pub fn walk(node: &Node, shape: &Shape) -> Result<String> {
         }
     }
 
-    Ok(results.join(""))
+    Some(results.join(""))
 }
 
-pub fn visit_class(c: &Class) -> Result<String> {
-    let a = c
-        .rewrite()
-        .ok_or_else(|| anyhow!("Format Class node failed!"))?;
-    Ok(a)
+pub fn visit_class(c: &Class) -> Option<String> {
+    c.rewrite()
 }
