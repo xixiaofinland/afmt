@@ -57,12 +57,9 @@ impl<'a, 'tree> Class<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
     fn rewrite(&self, shape: &Shape, context: &Context) -> Option<String> {
         let mut result = String::new();
+        let indent = "  ".repeat(shape.block_indent);
 
         let modifier_nodes = self.get_modifiers();
-        let value = modifier_nodes[1]
-            .utf8_text(context.source_code.as_bytes())
-            .ok()?;
-
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| {
@@ -82,6 +79,9 @@ impl<'a, 'tree> Rewrite for Class<'a, 'tree> {
 
         result.push_str(name_node_value);
         result.push_str(" {\n");
+
+        result.push_str(&indent);
+
         result.push('}');
 
         println!("result: {}", result);
