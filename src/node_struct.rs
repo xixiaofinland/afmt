@@ -62,9 +62,8 @@ impl<'a, 'b, 'tree> Class<'a, 'b, 'tree> {
 
     pub fn format_body(&self) -> Option<String> {
         let mut result = String::new();
-        let body_shape = Shape::new(self.shape.block_indent + 1);
         let body_node = self.as_ast_node().child_by_field_name("body")?;
-        result.push_str(&walk(&body_node, &body_shape)?);
+        result.push_str(&walk(&body_node, &self.shape)?);
         Some(result)
     }
 }
@@ -92,7 +91,7 @@ impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
         result.push_str(name_node_value);
         result.push_str(" {\n");
 
-        self.format_body();
+        result.push_str(&self.format_body()?);
 
         result.push('}');
 
@@ -141,16 +140,26 @@ impl<'a, 'b, 'tree> Rewrite for FieldDeclaration<'a, 'b, 'tree> {
 
         let mut result = String::new();
         result.push_str(&modifiers_doc);
+
         result.push(' ');
-        println!("FD:\n{}", result);
 
-        let name_node = self.as_ast_node().child_by_field_name("type")?;
+        let type_node = self.as_ast_node().child_by_field_name("type")?;
+        let type_node_value = type_node.utf8_text(get_source_code().as_bytes()).ok()?;
+        result.push_str(type_node_value);
+
+        result.push(' ');
+
+        let name_node = self
+            .as_ast_node()
+            .child_by_field_name("declarator")?
+            .child_by_field_name("name")?;
         let name_node_value = name_node.utf8_text(get_source_code().as_bytes()).ok()?;
-
         result.push_str(name_node_value);
-        println!("FD2:\n{}", result);
 
-        let result = indent_lines(&result, self.shape);
+        result.push('\n');
+
+        let mut result = indent_lines(&result, self.shape);
+        result.push('\n');
 
         Some(result)
     }

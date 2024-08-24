@@ -11,7 +11,11 @@ pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
     //println!("shape:{}|", shape.block_indent);
     //println!("indent:{}|", indent);
 
-    let lines: Vec<&str> = prepared_code.split('\n').collect();
+    let lines: Vec<&str> = prepared_code
+        .split('\n')
+        .filter(|l| !l.is_empty())
+        .collect();
+
     let indented_lines: Vec<String> = lines
         .iter()
         .map(|line| format!("{}{}", indent, line))
