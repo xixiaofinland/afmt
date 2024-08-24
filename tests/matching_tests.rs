@@ -23,11 +23,11 @@ mod tests {
     }
 
     fn run_afmt(file_path: &std::path::Path) -> String {
-        let output = std::process::Command::new("rustfmt")
+        let output = std::process::Command::new("cargo")
+            .args(["run", "--", "-f"])
             .arg(file_path)
             .output()
-            .expect("failed to execute rustfmt");
-
+            .expect("failed to execute cargo run");
         String::from_utf8(output.stdout).unwrap()
     }
 }

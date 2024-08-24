@@ -40,7 +40,5 @@ pub fn walk(node: &Node, parent_shape: &Shape) -> Option<String> {
         }
     }
 
-    println!("r: {:?}", results);
-
     Some(results.join(""))
 }

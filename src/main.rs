@@ -53,7 +53,7 @@ fn main() -> Result<()> {
     }
 
     let result = format_code(&root_node).context("format_code() has `None` return.")?;
-    println!("\n####\n\n---\n{}\n---", result);
+    println!("{}", result);
     Ok(())
 }
 

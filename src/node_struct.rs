@@ -23,7 +23,7 @@ impl NodeKind {
             "if_statement" => NodeKind::IfStatement,
             "for_statement" => NodeKind::ForLoop,
             _ => {
-                println!("Unknown node kind: {}", kind);
+                //println!("Unknown node kind: {}", kind);
                 NodeKind::Unknown
             }
         }
@@ -97,7 +97,7 @@ impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
 
         let result = indent_lines(&result, self.shape);
 
-        println!("class result:\n{}", result);
+        //println!("class result:\n{}", result);
         Some(result)
     }
 }
