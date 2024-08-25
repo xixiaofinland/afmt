@@ -80,6 +80,8 @@ impl<'a, 'b, 'tree> Rewrite for ClassDeclaration<'a, 'b, 'tree> {
         // FIXME: .output file has a newline ending, but indent_lines doesn't handle the output correctly
         // Test fails here;
         result.push('\n');
+        let escaped_code = result.replace("\n", "\\n");
+        println!("## {}", escaped_code);
 
         let result = indent_lines(&result, self.shape);
 
