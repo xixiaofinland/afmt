@@ -2,6 +2,7 @@ use crate::extension::NodeUtilities;
 use crate::shape::Shape;
 use crate::utility::{get_indent, get_source_code, indent_lines};
 use crate::visitor::walk;
+use crate::{define_node, define_nodes};
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -38,20 +39,9 @@ pub trait Rewrite {
     //}
 }
 
-pub struct Class<'a, 'b, 'tree> {
-    inner: &'a Node<'tree>,
-    shape: &'b Shape,
-}
+define_nodes!(Class, FieldDeclaration);
 
 impl<'a, 'b, 'tree> Class<'a, 'b, 'tree> {
-    pub fn new(node: &'a Node<'tree>, shape: &'b Shape) -> Self {
-        Self { inner: node, shape }
-    }
-
-    pub fn as_ast_node(&self) -> &'a Node<'tree> {
-        self.inner
-    }
-
     pub fn get_modifiers(&self) -> Vec<Node<'tree>> {
         if let Some(n) = self.as_ast_node().get_child_by_kind("modifiers") {
             n.get_children_by_kind("modifier")
@@ -102,20 +92,7 @@ impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
     }
 }
 
-pub struct FieldDeclaration<'a, 'b, 'tree> {
-    inner: &'a Node<'tree>,
-    shape: &'b Shape,
-}
-
 impl<'a, 'b, 'tree> FieldDeclaration<'a, 'b, 'tree> {
-    pub fn new(node: &'a Node<'tree>, shape: &'b Shape) -> Self {
-        Self { inner: node, shape }
-    }
-
-    pub fn as_ast_node(&self) -> &'a Node<'tree> {
-        self.inner
-    }
-
     pub fn get_modifiers(&self) -> Vec<Node<'tree>> {
         if let Some(n) = self.as_ast_node().get_child_by_kind("modifiers") {
             n.get_children_by_kind("modifier")

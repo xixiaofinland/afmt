@@ -1,3 +1,11 @@
+mod context;
+mod extension;
+mod macros;
+mod node_struct;
+mod shape;
+mod utility;
+mod visitor;
+
 use anyhow::{bail, Context as AnyhowContext, Result};
 use clap::{Arg, Command};
 use context::{Context, CONTEXT};
@@ -6,13 +14,6 @@ use std::{fs, path::Path};
 use tree_sitter::{Node, Parser};
 use utility::get_source_code;
 use visitor::walk;
-
-mod context;
-mod extension;
-mod node_struct;
-mod shape;
-mod utility;
-mod visitor;
 
 fn main() -> Result<()> {
     let mut parser = Parser::new();
