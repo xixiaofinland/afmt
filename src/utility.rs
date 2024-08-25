@@ -1,3 +1,5 @@
+use tree_sitter::Node;
+
 use crate::context::CONTEXT;
 use crate::shape::Shape;
 
@@ -25,4 +27,25 @@ pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
 
 pub fn get_source_code() -> &'static str {
     CONTEXT.get().unwrap().source_code
+}
+
+pub fn get_child_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Option<Node<'tree>> {
+    let mut cursor = n.walk();
+    let node = n.children(&mut cursor).find(|c| c.kind() == kind);
+    node
+}
+
+pub fn get_children_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Vec<Node<'tree>> {
+    let mut cursor = n.walk();
+    n.children(&mut cursor)
+        .filter(|c| c.kind() == kind)
+        .collect()
+}
+
+pub fn get_modifiers<'tree>(n: &Node<'tree>) -> Vec<Node<'tree>> {
+    if let Some(node) = get_child_by_kind("modifiers", n) {
+        get_children_by_kind("modifier", &node)
+    } else {
+        Vec::new()
+    }
 }
