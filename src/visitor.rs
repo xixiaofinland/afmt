@@ -38,6 +38,7 @@ pub fn walk(node: &Node, parent_shape: &Shape) -> Option<String> {
             //}
             NodeKind::Unknown => {
                 println!("### Unknow node: {}", child.kind());
+                println!("{}", results.join(""));
                 !unimplemented!();
             }
         }
