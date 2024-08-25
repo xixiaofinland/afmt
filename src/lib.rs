@@ -20,9 +20,13 @@ pub fn language() -> Language {
     unsafe { tree_sitter_apex() }
 }
 
-pub fn format_code() -> Option<String> {
-    set_global_context();
-    let source_code = get_source_code_from_context();
+pub fn set_context_and_format_code() -> Option<String> {
+    let source_code = get_source_code_from_arg();
+    format_code(&source_code)
+}
+
+pub fn format_code(source_code: &str) -> Option<String> {
+    set_global_context(source_code.to_string());
 
     let mut parser = Parser::new();
     parser

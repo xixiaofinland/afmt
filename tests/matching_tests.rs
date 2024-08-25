@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use afmt::format_code;
     use std::path::PathBuf;
 
     #[test]
@@ -9,7 +10,8 @@ mod tests {
             let source_path = entry.path();
 
             if source_path.extension().and_then(|ext| ext.to_str()) == Some("cls") {
-                let output = run_afmt(&source_path);
+                let source_code = std::fs::read_to_string(&source_path).unwrap();
+                let output = format_code(&source_code).unwrap();
 
                 let target_path = PathBuf::from("tests/target")
                     .join(source_path.file_stem().unwrap())

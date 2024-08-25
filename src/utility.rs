@@ -28,8 +28,7 @@ pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
     indented_lines.join("\n")
 }
 
-pub fn set_global_context() {
-    let source_code = get_source_code_from_arg();
+pub fn set_global_context(source_code: String) {
     let source_code = Box::leak(source_code.into_boxed_str());
     let context = Context::new(source_code);
     CONTEXT.set(context).expect("Failed to set CONTEXT");
