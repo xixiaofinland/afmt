@@ -1,35 +1,34 @@
-use crate::extension::NodeUtilities;
 use crate::shape::Shape;
 use crate::utility::*;
 use crate::visitor::walk;
 use crate::{define_node, define_nodes};
 use tree_sitter::Node;
 
-#[derive(Debug)]
-pub enum NodeKind {
-    ClassDeclaration,
-    FieldDeclaration,
-    MethodDeclaration,
-    IfStatement,
-    ForLoop,
-    Unknown,
-}
-
-impl NodeKind {
-    pub fn from_kind(kind: &str) -> NodeKind {
-        match kind {
-            "class_declaration" => NodeKind::ClassDeclaration,
-            "field_declaration" => NodeKind::FieldDeclaration,
-            "method_declaration" => NodeKind::MethodDeclaration,
-            "if_statement" => NodeKind::IfStatement,
-            "for_statement" => NodeKind::ForLoop,
-            _ => {
-                //println!("Unknown node kind: {}", kind);
-                NodeKind::Unknown
-            }
-        }
-    }
-}
+//#[derive(Debug)]
+//pub enum NodeKind {
+//    ClassDeclaration,
+//    FieldDeclaration,
+//    MethodDeclaration,
+//    IfStatement,
+//    ForLoop,
+//    Unknown,
+//}
+//
+//impl NodeKind {
+//    pub fn from_kind(kind: &str) -> NodeKind {
+//        match kind {
+//            "class_declaration" => NodeKind::ClassDeclaration,
+//            "field_declaration" => NodeKind::FieldDeclaration,
+//            "method_declaration" => NodeKind::MethodDeclaration,
+//            "if_statement" => NodeKind::IfStatement,
+//            "for_statement" => NodeKind::ForLoop,
+//            _ => {
+//                //println!("Unknown node kind: {}", kind);
+//                NodeKind::Unknown
+//            }
+//        }
+//    }
+//}
 
 pub trait Rewrite {
     fn rewrite(&self) -> Option<String>;
@@ -39,9 +38,9 @@ pub trait Rewrite {
     //}
 }
 
-define_nodes!(Class, FieldDeclaration);
+define_nodes!( ClassDeclaration => "class_declaration", FieldDeclaration => "field_declaration");
 
-impl<'a, 'b, 'tree> Class<'a, 'b, 'tree> {
+impl<'a, 'b, 'tree> ClassDeclaration<'a, 'b, 'tree> {
     pub fn format_body(&self) -> Option<String> {
         let mut result = String::new();
         let body_node = self.as_ast_node().child_by_field_name("body")?;
@@ -50,13 +49,13 @@ impl<'a, 'b, 'tree> Class<'a, 'b, 'tree> {
     }
 }
 
-impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
+impl<'a, 'b, 'tree> Rewrite for ClassDeclaration<'a, 'b, 'tree> {
     fn rewrite(&self) -> Option<String> {
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| {
-                n.utf8_text(get_source_code().as_bytes())
+                n.utf8_text(get_source_code_from_context().as_bytes())
                     .ok()
                     .unwrap_or_default()
             })
@@ -68,7 +67,9 @@ impl<'a, 'b, 'tree> Rewrite for Class<'a, 'b, 'tree> {
         result.push(' ');
 
         let name_node = self.as_ast_node().child_by_field_name("name")?;
-        let name_node_value = name_node.utf8_text(get_source_code().as_bytes()).ok()?;
+        let name_node_value = name_node
+            .utf8_text(get_source_code_from_context().as_bytes())
+            .ok()?;
 
         result.push_str(name_node_value);
         result.push_str(" {\n");
@@ -90,7 +91,7 @@ impl<'a, 'b, 'tree> Rewrite for FieldDeclaration<'a, 'b, 'tree> {
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| {
-                n.utf8_text(get_source_code().as_bytes())
+                n.utf8_text(get_source_code_from_context().as_bytes())
                     .ok()
                     .unwrap_or_default()
             })
@@ -103,7 +104,9 @@ impl<'a, 'b, 'tree> Rewrite for FieldDeclaration<'a, 'b, 'tree> {
         result.push(' ');
 
         let type_node = self.as_ast_node().child_by_field_name("type")?;
-        let type_node_value = type_node.utf8_text(get_source_code().as_bytes()).ok()?;
+        let type_node_value = type_node
+            .utf8_text(get_source_code_from_context().as_bytes())
+            .ok()?;
         result.push_str(type_node_value);
 
         result.push(' ');
@@ -112,7 +115,9 @@ impl<'a, 'b, 'tree> Rewrite for FieldDeclaration<'a, 'b, 'tree> {
             .as_ast_node()
             .child_by_field_name("declarator")?
             .child_by_field_name("name")?;
-        let name_node_value = name_node.utf8_text(get_source_code().as_bytes()).ok()?;
+        let name_node_value = name_node
+            .utf8_text(get_source_code_from_context().as_bytes())
+            .ok()?;
         result.push_str(name_node_value);
 
         result.push('\n');

@@ -1,4 +1,16 @@
+mod context;
+mod extension;
+mod macros;
+mod node_struct;
+mod shape;
+mod utility;
+mod visitor;
+
+use shape::Shape;
 use tree_sitter::Language;
+use tree_sitter::{Node, Parser};
+use utility::*;
+use visitor::walk;
 
 extern "C" {
     fn tree_sitter_apex() -> Language;
@@ -6,6 +18,25 @@ extern "C" {
 
 pub fn language() -> Language {
     unsafe { tree_sitter_apex() }
+}
+
+pub fn format_code() -> Option<String> {
+    set_global_context();
+    let source_code = get_source_code_from_context();
+
+    let mut parser = Parser::new();
+    parser
+        .set_language(&language())
+        .expect("Error loading Apex grammar");
+
+    let tree = parser.parse(source_code, None).unwrap();
+    let root_node = tree.root_node();
+    if root_node.has_error() {
+        panic!("Parsing with errors in the tree.")
+    }
+
+    let shape = Shape::default();
+    walk(&root_node, &shape)
 }
 
 /// The content of the [`node-types.json`][] file for this grammar.

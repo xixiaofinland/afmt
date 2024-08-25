@@ -1,4 +1,4 @@
-use crate::node_struct::{Class, FieldDeclaration, NodeKind, Rewrite};
+use crate::node_struct::*;
 use crate::shape::Shape;
 use anyhow::{anyhow, Result};
 use tree_sitter::Node;
@@ -20,23 +20,26 @@ pub fn walk(node: &Node, parent_shape: &Shape) -> Option<String> {
 
         match kind {
             NodeKind::ClassDeclaration => {
-                let c = Class::new(&child, &shape);
+                let c = ClassDeclaration::new(&child, &shape);
                 results.push(c.rewrite()?);
             }
             NodeKind::FieldDeclaration => {
                 let f = FieldDeclaration::new(&child, &shape);
                 results.push(f.rewrite()?);
             }
-            NodeKind::MethodDeclaration => {
-                //self.visit_method_node(node);
+            //NodeKind::MethodDeclaration => {
+            //    //self.visit_method_node(node);
+            //}
+            //NodeKind::IfStatement => {
+            //    //self.visit_if_node(node);
+            //}
+            //NodeKind::ForLoop => {
+            //    //self.visit_for_node(node);
+            //}
+            NodeKind::Unknown => {
+                println!("### Unknow node: {}", child.kind());
+                !unimplemented!();
             }
-            NodeKind::IfStatement => {
-                //self.visit_if_node(node);
-            }
-            NodeKind::ForLoop => {
-                //self.visit_for_node(node);
-            }
-            NodeKind::Unknown => !unimplemented!(),
         }
     }
 

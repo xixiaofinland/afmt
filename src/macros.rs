@@ -20,7 +20,26 @@ macro_rules! define_node {
 
 #[macro_export]
 macro_rules! define_nodes {
-    ($($name:ident),*) => {
-        $(define_node!($name);)*
+    ($($name:ident => $str_repr:expr),*) => {
+        $(
+            define_node!($name);
+        )*
+
+        #[derive(Debug)]
+        pub enum NodeKind {
+            $($name,)*
+            Unknown,
+        }
+
+        impl NodeKind {
+            pub fn from_kind(kind: &str) -> NodeKind {
+                match kind {
+                    $(
+                        $str_repr => NodeKind::$name,
+                    )*
+                    _ => NodeKind::Unknown,
+                }
+            }
+        }
     };
 }

@@ -1,7 +1,10 @@
-use tree_sitter::Node;
+use std::fs;
+use std::path::Path;
 
-use crate::context::CONTEXT;
+use crate::context::{Context, CONTEXT};
 use crate::shape::Shape;
+use clap::{Arg, Command};
+use tree_sitter::Node;
 
 pub fn get_indent(shape: &Shape) -> String {
     let indent = "  ".repeat(shape.block_indent);
@@ -25,7 +28,34 @@ pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
     indented_lines.join("\n")
 }
 
-pub fn get_source_code() -> &'static str {
+pub fn set_global_context() {
+    let source_code = get_source_code_from_arg();
+    let source_code = Box::leak(source_code.into_boxed_str());
+    let context = Context::new(source_code);
+    CONTEXT.set(context).expect("Failed to set CONTEXT");
+}
+
+pub fn get_source_code_from_arg() -> String {
+    let matches = Command::new("afmt")
+        .version("1.0")
+        .about("A CLI tool for formatting Apex code")
+        .arg(
+            Arg::new("file")
+                .short('f')
+                .long("file")
+                .value_name("FILE")
+                .help("The relative path to the file to parse")
+                .default_value("samples/1.cls"),
+        )
+        .get_matches();
+    let file_path = matches
+        .get_one::<String>("file")
+        .expect("File path is required");
+    let path = Path::new(file_path);
+    fs::read_to_string(path).expect("Failed to read file")
+}
+
+pub fn get_source_code_from_context() -> &'static str {
     CONTEXT.get().unwrap().source_code
 }
 
