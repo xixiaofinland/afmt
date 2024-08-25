@@ -77,6 +77,9 @@ impl<'a, 'b, 'tree> Rewrite for ClassDeclaration<'a, 'b, 'tree> {
         result.push_str(&self.format_body()?);
 
         result.push('}');
+        // FIXME: .output file has a newline ending, but indent_lines doesn't handle the output correctly
+        // Test fails here;
+        result.push('\n');
 
         let result = indent_lines(&result, self.shape);
 
@@ -120,6 +123,7 @@ impl<'a, 'b, 'tree> Rewrite for FieldDeclaration<'a, 'b, 'tree> {
             .ok()?;
         result.push_str(name_node_value);
 
+        result.push(';');
         result.push('\n');
 
         let mut result = indent_lines(&result, self.shape);

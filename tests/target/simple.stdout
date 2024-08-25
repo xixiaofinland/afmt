@@ -1,4 +1,4 @@
 public with sharing MyClass {
-  Private String s
-  Private String k
+  Private String s;
+  Private String k;
 }
