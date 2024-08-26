@@ -41,7 +41,10 @@ pub fn format_code(source_code: &str) -> Option<String> {
 
     let shape = Shape::default();
     let mut result = walk(&root_node, &shape)?;
+
+    // add file ending new line;
     result.push('\n');
+
     Some(result)
 }
 
