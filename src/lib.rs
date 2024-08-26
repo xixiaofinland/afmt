@@ -40,7 +40,9 @@ pub fn format_code(source_code: &str) -> Option<String> {
     }
 
     let shape = Shape::default();
-    walk(&root_node, &shape)
+    let mut result = walk(&root_node, &shape)?;
+    result.push('\n');
+    Some(result)
 }
 
 /// The content of the [`node-types.json`][] file for this grammar.
