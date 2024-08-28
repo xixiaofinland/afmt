@@ -1,7 +1,7 @@
 public with sharing class MyClass {
     Private String s;
         Private String             k;
-    public void hello() {
+    public void hello1(String s , Intgeter ii) {
     true;
     }
 }
