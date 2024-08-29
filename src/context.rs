@@ -1,0 +1,51 @@
+use crate::{
+    config::{Config, Indent, Shape},
+    visitor::Visitor,
+};
+use anyhow::Result;
+use tree_sitter::{Language, Parser};
+
+#[derive(Clone)]
+pub struct Context<'a> {
+    pub config: &'a Config,
+    pub source_code: &'a str,
+}
+
+impl<'a> Context<'a> {
+    pub fn new(config: &'a Config, source_code: &'a str) -> Self {
+        Self {
+            config,
+            source_code,
+        }
+    }
+
+    pub fn format_one_file(&self) -> Result<String> {
+        let mut parser = Parser::new();
+        parser
+            .set_language(&language())
+            .expect("Error loading Apex grammar");
+
+        let tree = parser.parse(self.source_code, None).unwrap();
+        let root_node = tree.root_node();
+        if root_node.has_error() {
+            panic!("Parsing with errors in the tree.")
+        }
+
+        let shape = Shape::default();
+        let mut visitor = Visitor::new(None, Indent::new(0, 0));
+        let mut result = visitor.traverse(&root_node, self, &shape)?;
+
+        // add file ending new line;
+        result.push('\n');
+
+        Ok(result)
+    }
+}
+
+extern "C" {
+    fn tree_sitter_apex() -> Language;
+}
+
+pub fn language() -> Language {
+    unsafe { tree_sitter_apex() }
+}
