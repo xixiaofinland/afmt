@@ -26,13 +26,14 @@ impl Config {
     }
 }
 
+#[derive(Clone)]
 pub struct Context<'a> {
-    pub config: Config,
+    pub config: &'a Config,
     pub source_code: &'a str,
 }
 
 impl<'a> Context<'a> {
-    pub fn new(config: Config, source_code: &'a str) -> Self {
+    pub fn new(config: &'a Config, source_code: &'a str) -> Self {
         Self {
             config,
             source_code,
@@ -81,9 +82,9 @@ impl Session {
         self.source_files
             .iter()
             .map(|f| {
-                let config = self.config.clone();
+                //let config = self.config.clone();
                 let source_code = fs::read_to_string(Path::new(f)).expect("Failed to read file");
-                let context = Context::new(config, &source_code);
+                let context = Context::new(&self.config, &source_code);
                 context.format()
             })
             .collect()
