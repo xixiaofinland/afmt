@@ -1,4 +1,4 @@
-use crate::config::{Context, Shape};
+use crate::config::{Context, Indent, Shape};
 use crate::utility::{get_modifiers, get_parameters, indent_lines};
 use crate::visitor::Visitor;
 use crate::{define_node, define_nodes};
@@ -27,7 +27,7 @@ impl<'a, 'b, 'tree> ClassDeclaration<'a, 'b, 'tree> {
             .child_by_field_name("body")
             .context("mandatory body field missing")?;
 
-        let visitor = Visitor::new();
+        let visitor = Visitor::new(None, Indent::new(0, 0));
         result.push_str(
             &visitor
                 .traverse(&body_node, context, &self.shape)
