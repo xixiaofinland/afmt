@@ -27,10 +27,10 @@ impl<'a, 'b, 'tree> ClassDeclaration<'a, 'b, 'tree> {
             .child_by_field_name("body")
             .context("mandatory body field missing")?;
 
-        let visitor = Visitor::default();
+        let visitor = Visitor::new();
         result.push_str(
             &visitor
-                .walk(&body_node, context, &self.shape)
+                .traverse(&body_node, context, &self.shape)
                 .context("walk() failed")?,
         );
         Ok(result)

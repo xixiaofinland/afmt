@@ -1,6 +1,6 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use std::{fs, path::Path};
-use tree_sitter::{Language, Parser};
+use tree_sitter::{Language, Node, Parser};
 
 use crate::visitor::Visitor;
 
@@ -26,6 +26,21 @@ impl Config {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct Indent {
+    pub block_indent: usize,
+    pub alignment: usize,
+}
+
+impl Indent {
+    pub fn new(block_indent: usize, alignment: usize) -> Indent {
+        Indent {
+            block_indent,
+            alignment,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Context<'a> {
     pub config: &'a Config,
@@ -40,7 +55,7 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub fn format(&self) -> Result<String> {
+    pub fn format_one_file(&self) -> Result<String> {
         let mut parser = Parser::new();
         parser
             .set_language(&language())
@@ -53,8 +68,8 @@ impl<'a> Context<'a> {
         }
 
         let shape = Shape::default();
-        let visitor = Visitor::default();
-        let mut result = visitor.walk(&root_node, self, &shape)?;
+        let mut visitor = Visitor::new(None, Indent::new(0, 0));
+        let mut result = visitor.traverse(&root_node, self, &shape)?;
 
         // add file ending new line;
         result.push('\n');
@@ -85,7 +100,7 @@ impl Session {
                 //let config = self.config.clone();
                 let source_code = fs::read_to_string(Path::new(f)).expect("Failed to read file");
                 let context = Context::new(&self.config, &source_code);
-                context.format()
+                context.format_one_file()
             })
             .collect()
     }

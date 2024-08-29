@@ -1,16 +1,24 @@
+use crate::{
+    config::{Context, Indent, Shape},
+    node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
+};
 use anyhow::Result;
 use tree_sitter::Node;
 
-use crate::{
-    config::{Context, Shape},
-    node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
-};
+pub struct Visitor<'a> {
+    parent_context: Option<&'a Context<'a>>,
+    pub block_indent: Indent,
+}
 
-#[derive(Default)]
-pub struct Visitor {}
+impl<'a> Visitor<'a> {
+    pub fn new(parent_context: Option<&'a Context<'a>>, block_indent: Indent) -> Self {
+        Self {
+            parent_context,
+            block_indent,
+        }
+    }
 
-impl Visitor {
-    pub fn walk(&self, node: &Node, context: &Context, parent_shape: &Shape) -> Result<String> {
+    pub fn traverse(&self, node: &Node, context: &Context, parent_shape: &Shape) -> Result<String> {
         let mut results = Vec::new();
 
         let is_root_node = node.kind() == "parser_output";
