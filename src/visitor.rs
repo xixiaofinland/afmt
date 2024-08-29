@@ -19,6 +19,10 @@ impl<'a> Visitor<'a> {
         }
     }
 
+    pub fn visit_root(&self, context: &Context, parent_shape: &Shape) -> Result<String> {
+        self.visit(&context.ast_tree.root_node(), context, parent_shape)
+    }
+
     pub fn visit(&self, node: &Node, context: &Context, parent_shape: &Shape) -> Result<String> {
         let mut results = Vec::new();
 
