@@ -31,7 +31,7 @@ impl<'a, 'b, 'tree> ClassDeclaration<'a, 'b, 'tree> {
         let visitor = Visitor::new(None, Indent::new(0, 0));
         result.push_str(
             &visitor
-                .traverse(&body_node, context, &self.shape)
+                .visit(&body_node, context, &self.shape)
                 .context("walk() failed")?,
         );
         Ok(result)

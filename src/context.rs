@@ -35,7 +35,7 @@ impl<'a> Context<'a> {
     pub fn format_one_file(&self) -> Result<String> {
         let shape = Shape::default();
         let mut visitor = Visitor::new(None, Indent::new(0, 0));
-        let mut result = visitor.traverse(&self.ast_tree.root_node(), self, &shape)?;
+        let mut result = visitor.visit(&self.ast_tree.root_node(), self, &shape)?;
 
         // add file ending new line;
         result.push('\n');

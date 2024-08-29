@@ -19,7 +19,7 @@ impl<'a> Visitor<'a> {
         }
     }
 
-    pub fn traverse(&self, node: &Node, context: &Context, parent_shape: &Shape) -> Result<String> {
+    pub fn visit(&self, node: &Node, context: &Context, parent_shape: &Shape) -> Result<String> {
         let mut results = Vec::new();
 
         let is_root_node = node.kind() == "parser_output";
