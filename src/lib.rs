@@ -1,4 +1,5 @@
-pub mod config;
+pub mod args;
+mod config;
 mod extension;
 mod macros;
 mod node_struct;
@@ -6,7 +7,8 @@ mod utility;
 mod visitor;
 
 use anyhow::Result;
-use config::{Args, Config, Session};
+use args::Args;
+use config::{Config, Session};
 
 pub fn format(args: Args) -> Vec<Result<String>> {
     let config = Config::new(120);
@@ -14,10 +16,6 @@ pub fn format(args: Args) -> Vec<Result<String>> {
     let session = Session::new(config, source_files);
     session.format()
 }
-
-//pub fn format_code(source_code: &str) -> Result<String> {
-//
-//}
 
 /// The content of the [`node-types.json`][] file for this grammar.
 //pub const NODE_TYPES: &str = include_str!("node-types.json");

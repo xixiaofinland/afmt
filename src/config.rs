@@ -15,11 +15,6 @@ impl Shape {
     }
 }
 
-#[derive(Debug)]
-pub struct Args {
-    pub path: String,
-}
-
 #[derive(Clone)]
 pub struct Config {
     pub max_line_len: usize,
