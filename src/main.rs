@@ -33,6 +33,12 @@ fn get_args() -> Args {
 }
 
 fn run(args: Args) -> Result<()> {
-    format(args);
+    let results = format(args);
+    for (index, result) in results.iter().enumerate() {
+        match result {
+            Ok(value) => println!("Result {}: Ok\n{}", index, value),
+            Err(e) => println!("Result {}: Err\n{}", index, e),
+        }
+    }
     Ok(())
 }

@@ -5,13 +5,14 @@ mod node_struct;
 mod utility;
 mod visitor;
 
+use anyhow::Result;
 use config::{Args, Config, Session};
 
-pub fn format(args: Args) {
+pub fn format(args: Args) -> Vec<Result<String>> {
     let config = Config::new(120);
     let source_files = vec![args.path];
     let session = Session::new(config, source_files);
-    session.format();
+    session.format()
 }
 
 //pub fn format_code(source_code: &str) -> Result<String> {
