@@ -28,7 +28,7 @@ impl<'a, 'tree> ClassDeclaration<'a, 'tree> {
             .child_by_field_name("body")
             .context("mandatory body field missing")?;
 
-        let visitor = Visitor::new(None, Indent::new(0, 0));
+        //let visitor = Visitor::new(None, Indent::new(0, 0));
         //result.push_str(
         //    &visitor
         //        .visit(&body_node, context, &self.shape)
