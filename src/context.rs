@@ -6,13 +6,13 @@ use anyhow::Result;
 use tree_sitter::{Language, Parser, Tree};
 
 #[derive(Clone)]
-pub struct Context<'a> {
+pub struct FmtContext<'a> {
     pub config: &'a Config,
     pub source_code: &'a str,
     pub ast_tree: Tree,
 }
 
-impl<'a> Context<'a> {
+impl<'a> FmtContext<'a> {
     pub fn new(config: &'a Config, source_code: &'a str) -> Self {
         let mut parser = Parser::new();
         parser
@@ -35,7 +35,8 @@ impl<'a> Context<'a> {
     pub fn format_one_file(&self) -> Result<String> {
         let shape = Shape::empty();
         let mut visitor = Visitor::new(None, Indent::new(0, 0));
-        let mut result = visitor.visit_root(self, &shape)?;
+        visitor.visit_root(self, &shape);
+        let mut result = visitor.buffer;
 
         // add file ending new line;
         result.push('\n');

@@ -1,4 +1,4 @@
-use crate::context::Context;
+use crate::context::FmtContext;
 use anyhow::Result;
 use std::{fs, path::Path};
 
@@ -72,7 +72,7 @@ impl Session {
             .map(|f| {
                 //let config = self.config.clone();
                 let source_code = fs::read_to_string(Path::new(f)).expect("Failed to read file");
-                let context = Context::new(&self.config, &source_code);
+                let context = FmtContext::new(&self.config, &source_code);
                 context.format_one_file()
             })
             .collect()

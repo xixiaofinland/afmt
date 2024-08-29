@@ -1,21 +1,23 @@
 use crate::{
-    config::{Config, Indent, Shape},
-    context::Context,
+    config::{Indent, Shape},
+    context::FmtContext,
     node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
 };
 use anyhow::Result;
 use tree_sitter::Node;
 
 pub struct Visitor<'a> {
-    parent_context: Option<&'a Context<'a>>,
+    parent_context: Option<&'a FmtContext<'a>>,
     pub block_indent: Indent,
+    pub buffer: String,
 }
 
 impl<'a> Visitor<'a> {
-    pub fn new(parent_context: Option<&'a Context<'a>>, block_indent: Indent) -> Self {
+    pub fn new(parent_context: Option<&'a FmtContext<'a>>, block_indent: Indent) -> Self {
         Self {
             parent_context,
             block_indent,
+            buffer: String::new(),
         }
     }
 
@@ -23,13 +25,22 @@ impl<'a> Visitor<'a> {
         Shape::indented(self.block_indent)
     }
 
-    pub fn visit_root(&self, context: &Context, parent_shape: &Shape) -> Result<String> {
+    pub fn push_rewritten(&mut self, rewritten: Option<String>, node: &Node) {
+        if let Some(r) = rewritten {
+            self.push_str(&r);
+        } else {
+        }
+    }
+
+    pub fn push_str(&mut self, s: &str) {
+        self.buffer.push_str(s);
+    }
+
+    pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
         self.visit(&context.ast_tree.root_node(), context, parent_shape)
     }
 
-    pub fn visit(&self, node: &Node, context: &Context, parent_shape: &Shape) -> Result<String> {
-        let mut results = Vec::new();
-
+    pub fn visit(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {
         let is_root_node = node.kind() == "parser_output";
 
         let shape = if is_root_node {
@@ -44,16 +55,16 @@ impl<'a> Visitor<'a> {
 
             match kind {
                 NodeKind::ClassDeclaration => {
-                    let n = ClassDeclaration::new(&child, &shape);
-                    results.push(n.rewrite_result(context)?);
+                    let n = ClassDeclaration::new(&child);
+                    self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
                 NodeKind::FieldDeclaration => {
                     let n = FieldDeclaration::new(&child, &shape);
-                    results.push(n.rewrite_result(context)?);
+                    self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
                 NodeKind::MethodDeclaration => {
                     let n = MethodDeclaration::new(&child, &shape);
-                    results.push(n.rewrite_result(context)?);
+                    self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
                 //NodeKind::IfStatement => {
                 //    //self.visit_if_node(node);
@@ -63,12 +74,13 @@ impl<'a> Visitor<'a> {
                 //}
                 NodeKind::Unknown => {
                     println!("### Unknow node: {}", child.kind());
-                    println!("{}", results.join(""));
+                }
+                _ => {
                     !unimplemented!();
                 }
             }
         }
-
-        Ok(results.join(""))
     }
+
+    pub fn visit_block(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {}
 }

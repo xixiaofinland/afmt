@@ -1,17 +1,17 @@
 use crate::config::{Indent, Shape};
-use crate::context::Context;
-use crate::utility::{get_modifiers, get_parameters, indent_lines};
+use crate::context::FmtContext;
+use crate::utility::{get_modifiers, get_parameters, get_source_code, indent_lines};
 use crate::visitor::Visitor;
 use crate::{define_node, define_nodes};
-use anyhow::{Context as AnyhowContext, Result};
+use anyhow::{Context, Result};
 use tree_sitter::Node;
 
 pub trait Rewrite {
-    fn rewrite(&self, context: &Context) -> Option<String> {
-        self.rewrite_result(context).ok()
+    fn rewrite(&self, context: &FmtContext, shape: &Shape) -> Option<String> {
+        self.rewrite_result(context, shape).ok()
     }
 
-    fn rewrite_result(&self, context: &Context) -> Result<String>;
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String>;
 }
 
 define_nodes!(
@@ -20,8 +20,8 @@ define_nodes!(
     MethodDeclaration => "method_declaration"
 );
 
-impl<'a, 'b, 'tree> ClassDeclaration<'a, 'b, 'tree> {
-    pub fn format_body(&self, context: &Context) -> Result<String> {
+impl<'a, 'tree> ClassDeclaration<'a, 'tree> {
+    pub fn format_body(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
         let body_node = self
             .as_ast_node()
@@ -29,25 +29,21 @@ impl<'a, 'b, 'tree> ClassDeclaration<'a, 'b, 'tree> {
             .context("mandatory body field missing")?;
 
         let visitor = Visitor::new(None, Indent::new(0, 0));
-        result.push_str(
-            &visitor
-                .visit(&body_node, context, &self.shape)
-                .context("walk() failed")?,
-        );
+        //result.push_str(
+        //    &visitor
+        //        .visit(&body_node, context, &self.shape)
+        //        .context("walk() failed")?,
+        //);
         Ok(result)
     }
 }
 
-impl<'a, 'b, 'tree> Rewrite for ClassDeclaration<'a, 'b, 'tree> {
-    fn rewrite_result(&self, context: &Context) -> Result<String> {
+impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
             .iter()
-            .map(|n| {
-                n.utf8_text(context.source_code.as_bytes())
-                    .ok()
-                    .unwrap_or_default()
-            })
+            .map(|n| get_source_code(n, context.source_code))
             .collect::<Vec<&str>>()
             .join(" ");
 
@@ -67,13 +63,13 @@ impl<'a, 'b, 'tree> Rewrite for ClassDeclaration<'a, 'b, 'tree> {
         result.push_str(&self.format_body(context)?);
 
         result.push('}');
-        let result = indent_lines(&result, self.shape);
+        let result = indent_lines(&result, shape);
         Ok(result)
     }
 }
 
-impl<'a, 'b, 'tree> Rewrite for FieldDeclaration<'a, 'b, 'tree> {
-    fn rewrite_result(&self, context: &Context) -> Result<String> {
+impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
             .iter()
@@ -111,15 +107,15 @@ impl<'a, 'b, 'tree> Rewrite for FieldDeclaration<'a, 'b, 'tree> {
         result.push(';');
         result.push('\n');
 
-        let mut result = indent_lines(&result, self.shape);
+        let mut result = indent_lines(&result, shape);
         result.push('\n');
 
         Ok(result)
     }
 }
 
-impl<'a, 'b, 'tree> Rewrite for MethodDeclaration<'a, 'b, 'tree> {
-    fn rewrite_result(&self, context: &Context) -> Result<String> {
+impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
             .iter()
@@ -180,7 +176,7 @@ impl<'a, 'b, 'tree> Rewrite for MethodDeclaration<'a, 'b, 'tree> {
         result.push(';');
         result.push('\n');
 
-        let mut result = indent_lines(&result, self.shape);
+        let mut result = indent_lines(&result, shape);
         result.push('\n');
 
         Ok(result)

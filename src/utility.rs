@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use tree_sitter::Node;
 
 use crate::config::Shape;
@@ -9,8 +10,6 @@ pub fn get_indent(shape: &Shape) -> String {
 
 pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
     let indent = get_indent(shape);
-    //println!("shape:{}|", shape.block_indent);
-    //println!("indent:{}|", indent);
 
     let lines: Vec<&str> = prepared_code
         .split('\n')
@@ -24,16 +23,10 @@ pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
     indented_lines.join("\n")
 }
 
-//pub fn set_global_context(source_code: String) {
-//    let source_code = Box::leak(source_code.into_boxed_str());
-//    let context = Context::new(source_code);
-//    CONTEXT.set(context).expect("Failed to set CONTEXT");
-//}
-
-//TODO: v.s. std::sync::Once v.s. thread_local!
-//pub fn get_source_code_from_context() -> &'static str {
-//    CONTEXT.get().unwrap().source_code
-//}
+pub fn get_source_code<'a>(node: &Node, source_code: &'a str) -> Result<&'a str> {
+    node.utf8_text(source_code.as_bytes())
+        .context("get node source code failed.")
+}
 
 pub fn get_child_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Option<Node<'tree>> {
     let mut cursor = n.walk();
