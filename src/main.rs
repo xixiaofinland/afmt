@@ -1,5 +1,3 @@
-mod config;
-
 use afmt::config::Args;
 use afmt::format;
 use anyhow::Result;

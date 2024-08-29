@@ -1,11 +1,11 @@
-use config::{Args, Config, Session};
-
 pub mod config;
 mod extension;
 mod macros;
 mod node_struct;
 mod utility;
 mod visitor;
+
+use config::{Args, Config, Session};
 
 pub fn format(args: Args) {
     let config = Config::new(120);
