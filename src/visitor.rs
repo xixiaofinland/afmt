@@ -1,5 +1,5 @@
 use crate::{
-    config::{Indent, Shape},
+    config::{Config, Indent, Shape},
     context::Context,
     node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
 };
@@ -17,6 +17,10 @@ impl<'a> Visitor<'a> {
             parent_context,
             block_indent,
         }
+    }
+
+    pub fn shape(&self) -> Shape {
+        Shape::indented(self.block_indent)
     }
 
     pub fn visit_root(&self, context: &Context, parent_shape: &Shape) -> Result<String> {

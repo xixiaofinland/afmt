@@ -5,28 +5,34 @@ use std::{fs, path::Path};
 #[derive(Clone)]
 pub struct Shape {
     pub indent: Indent,
+    pub width: usize, //TODO
 }
 
 impl Shape {
     pub fn new(indent: Indent) -> Self {
-        Self { indent }
+        Self { indent, width: 1 }
     }
 
     pub fn empty() -> Self {
         Self {
             indent: Indent::new(0, 0),
+            width: 1,
         }
+    }
+
+    pub fn indented(indent: Indent) -> Self {
+        Self { width: 1, indent }
     }
 }
 
 #[derive(Clone)]
 pub struct Config {
-    pub max_line_len: usize,
+    pub max_width: usize,
 }
 
 impl Config {
-    pub fn new(max_line_len: usize) -> Self {
-        Self { max_line_len }
+    pub fn new(max_width: usize) -> Self {
+        Self { max_width }
     }
 }
 
