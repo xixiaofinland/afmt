@@ -2,14 +2,20 @@ use crate::context::Context;
 use anyhow::Result;
 use std::{fs, path::Path};
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct Shape {
-    pub block_indent: usize,
+    pub indent: Indent,
 }
 
 impl Shape {
-    pub fn new(block_indent: usize) -> Self {
-        Self { block_indent }
+    pub fn new(indent: Indent) -> Self {
+        Self { indent }
+    }
+
+    pub fn empty() -> Self {
+        Self {
+            indent: Indent::new(0, 0),
+        }
     }
 }
 

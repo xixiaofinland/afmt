@@ -3,7 +3,7 @@ use tree_sitter::Node;
 use crate::config::Shape;
 
 pub fn get_indent(shape: &Shape) -> String {
-    let indent = "  ".repeat(shape.block_indent);
+    let indent = "  ".repeat(shape.indent.block_indent);
     indent
 }
 

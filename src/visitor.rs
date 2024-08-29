@@ -29,9 +29,9 @@ impl<'a> Visitor<'a> {
         let is_root_node = node.kind() == "parser_output";
 
         let shape = if is_root_node {
-            Shape::new(0)
+            Shape::empty()
         } else {
-            Shape::new(parent_shape.block_indent + 1)
+            Shape::new(Indent::new(parent_shape.indent.block_indent + 1, 0))
         };
 
         let mut cursor = node.walk();
