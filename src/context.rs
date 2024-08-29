@@ -3,37 +3,39 @@ use crate::{
     visitor::Visitor,
 };
 use anyhow::Result;
-use tree_sitter::{Language, Parser};
+use tree_sitter::{Language, Parser, Tree};
 
 #[derive(Clone)]
 pub struct Context<'a> {
     pub config: &'a Config,
     pub source_code: &'a str,
+    pub ast_tree: Tree,
 }
 
 impl<'a> Context<'a> {
     pub fn new(config: &'a Config, source_code: &'a str) -> Self {
-        Self {
-            config,
-            source_code,
-        }
-    }
-
-    pub fn format_one_file(&self) -> Result<String> {
         let mut parser = Parser::new();
         parser
             .set_language(&language())
             .expect("Error loading Apex grammar");
 
-        let tree = parser.parse(self.source_code, None).unwrap();
-        let root_node = tree.root_node();
+        let ast_tree = parser.parse(source_code, None).unwrap();
+        let root_node = &ast_tree.root_node();
         if root_node.has_error() {
             panic!("Parsing with errors in the tree.")
         }
 
+        Self {
+            config,
+            source_code,
+            ast_tree,
+        }
+    }
+
+    pub fn format_one_file(&self) -> Result<String> {
         let shape = Shape::default();
         let mut visitor = Visitor::new(None, Indent::new(0, 0));
-        let mut result = visitor.traverse(&root_node, self, &shape)?;
+        let mut result = visitor.traverse(&self.ast_tree.root_node(), self, &shape)?;
 
         // add file ending new line;
         result.push('\n');
