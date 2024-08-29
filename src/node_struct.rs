@@ -1,4 +1,5 @@
-use crate::config::{Context, Indent, Shape};
+use crate::config::{Indent, Shape};
+use crate::context::Context;
 use crate::utility::{get_modifiers, get_parameters, indent_lines};
 use crate::visitor::Visitor;
 use crate::{define_node, define_nodes};

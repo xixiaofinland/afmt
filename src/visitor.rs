@@ -1,5 +1,6 @@
 use crate::{
-    config::{Context, Indent, Shape},
+    config::{Indent, Shape},
+    context::Context,
     node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
 };
 use anyhow::Result;
