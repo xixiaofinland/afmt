@@ -1,7 +1,10 @@
 use crate::{
     config::{Indent, Shape},
     context::FmtContext,
-    node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
+    node_struct::{
+        ClassDeclaration, ExpressionStatement, FieldDeclaration, MethodDeclaration, NodeKind,
+        Rewrite,
+    },
     utility::get_indent_string,
 };
 use tree_sitter::Node;
@@ -72,6 +75,10 @@ impl Visitor {
                     let n = FieldDeclaration::new(&child);
                     self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
+                NodeKind::ExpressionStatement => {
+                    let n = ExpressionStatement::new(&child);
+                    self.push_rewritten(n.rewrite(context, &shape), &child);
+                }
                 //NodeKind::Modifiers => {
                 //    self.visit_if_node(node);
                 //}
@@ -101,7 +108,7 @@ impl Visitor {
         body_visitor.visit_direct_children(&body_node, context, &shape);
         self.push_str(&body_visitor.buffer);
 
-        self.push_block_close_line();
+        self.push_block_close_line(shape);
     }
 
     pub fn visit_method(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
@@ -115,17 +122,18 @@ impl Visitor {
             .child_by_field_name("body")
             .expect("mandatory body node missing");
         v.visit_direct_children(&body_node, context, &shape);
-        self.buffer.push_str(&v.buffer);
+        self.push_str(&v.buffer);
 
-        self.push_block_close_line();
+        self.push_block_close_line(shape);
     }
 
     fn push_block_open_line(&mut self) {
-        self.buffer.push_str(" {\n");
+        self.push_str(" {\n");
     }
 
-    fn push_block_close_line(&mut self) {
-        self.buffer
-            .push_str(&format!("{}}}", get_indent_string(&self.block_indent)));
+    fn push_block_close_line(&mut self, shape: &Shape) {
+        println!("|{:?}|", &self.block_indent);
+
+        self.push_str(&format!("{}}}\n", get_indent_string(&shape.indent)));
     }
 }

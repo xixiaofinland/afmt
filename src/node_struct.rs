@@ -18,20 +18,11 @@ pub trait Rewrite {
 define_nodes!(
     ClassDeclaration => "class_declaration",
     FieldDeclaration => "field_declaration",
-    MethodDeclaration => "method_declaration"
+    MethodDeclaration => "method_declaration",
+    ExpressionStatement => "expression_statement"
 );
 
-impl<'a, 'tree> ClassDeclaration<'a, 'tree> {
-    //pub fn format_body(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
-    //    let mut result = String::new();
-    //    let body_node = self
-    //        .as_ast_node()
-    //        .child_by_field_name("body")
-    //        .context("mandatory body field missing")?;
-    //
-    //    Ok(result)
-    //}
-}
+impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
@@ -152,7 +143,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             .context("mandatory declarator field missing")?
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = name_node.utf8_text(context.source_code.as_bytes())?;
+        let name_node_value = get_source_code(&name_node, context.source_code)?;
         result.push_str(name_node_value);
 
         result.push(';');
@@ -160,6 +151,24 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         //let mut result = indent_lines(&result, shape);
 
         //println!("fieldD: result |{}|", result);
+        Ok(result)
+    }
+}
+
+impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+        let mut result = String::new();
+        result.push_str(&get_indent_string(&shape.indent));
+
+        let node = self
+            .as_ast_node()
+            .named_child(0)
+            .context("ExpressionStatement has no named child.")?;
+        let name_node_value = get_source_code(&node, context.source_code)?;
+        result.push_str(name_node_value);
+
+        result.push(';');
+        result.push('\n');
         Ok(result)
     }
 }
