@@ -25,10 +25,6 @@ impl Visitor {
         Visitor::new(block_indent)
     }
 
-    pub fn shape(&self) -> Shape {
-        Shape::indented(self.block_indent)
-    }
-
     pub fn push_rewritten(&mut self, rewritten: Option<String>, node: &Node) {
         if let Some(r) = rewritten {
             self.push_str(&r);
@@ -55,7 +51,7 @@ impl Visitor {
         let shape = if is_root_node {
             Shape::empty()
         } else {
-            Shape::new(Indent::new(parent_shape.indent.block_indent + 1, 0))
+            Shape::increase_indent(parent_shape)
         };
 
         let mut cursor = node.walk();
@@ -74,8 +70,8 @@ impl Visitor {
                     let n = MethodDeclaration::new(&child);
                     self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
-                //NodeKind::IfStatement => {
-                //    //self.visit_if_node(node);
+                //NodeKind::Modifiers => {
+                //    self.visit_if_node(node);
                 //}
                 //NodeKind::ForLoop => {
                 //    //self.visit_for_node(node);
@@ -93,16 +89,27 @@ impl Visitor {
     pub fn visit_class(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let n = ClassDeclaration::new(&node);
         self.push_rewritten(n.rewrite(context, &shape), &node);
+
+        self.push_block_open_line();
+
+        let mut v = Visitor::from_current(&shape);
+        let body_node = node
+            .child_by_field_name("body")
+            .expect("mandatory body node missing");
+        v.visit_direct_children(&body_node, context, &shape);
+        self.buffer.push_str(&v.buffer);
+
+        self.push_block_close_line();
     }
 
-    pub fn visit_block(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {
-        let mut visitor = Visitor::from_current(parent_shape);
-        visitor.visit_direct_children(node, context, parent_shape);
-        visitor.buffer;
-    }
+    //pub fn visit_block(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {
+    //    let mut visitor = Visitor::from_current(parent_shape);
+    //    visitor.visit_direct_children(node, context, parent_shape);
+    //    visitor.buffer;
+    //}
 
     fn push_block_open_line(&mut self) {
-        self.buffer.push_str("{\n");
+        self.buffer.push_str(" {\n");
     }
 
     fn push_block_close_line(&mut self) {

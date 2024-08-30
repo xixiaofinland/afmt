@@ -20,8 +20,8 @@ impl Shape {
         }
     }
 
-    pub fn indented(indent: Indent) -> Self {
-        Self { width: 1, indent }
+    pub fn increase_indent(s: &Shape) -> Self {
+        Shape::new(Indent::new(s.indent.block_indent + 1, 0))
     }
 }
 
