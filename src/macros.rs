@@ -5,7 +5,7 @@ macro_rules! define_node {
             inner: &'a Node<'tree>,
         }
 
-        impl<'a, 'b, 'tree> $name<'a, 'tree> {
+        impl<'a, 'tree> $name<'a, 'tree> {
             pub fn new(node: &'a Node<'tree>) -> Self {
                 Self { inner: node }
             }
