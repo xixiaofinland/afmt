@@ -86,5 +86,19 @@ impl Visitor {
         }
     }
 
-    pub fn visit_block(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {}
+    pub fn visit_block(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {
+        let mut visitor = Visitor::from_current(parent_shape);
+        visitor.push_block_open_line();
+        visitor.visit(node, context, parent_shape);
+        visitor.push_block_close_line();
+        visitor.buffer;
+    }
+
+    fn push_block_open_line(&mut self) {
+        self.buffer.push_str("{\n");
+    }
+
+    fn push_block_close_line(&mut self) {
+        self.buffer.push_str("}\n");
+    }
 }
