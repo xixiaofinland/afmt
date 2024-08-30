@@ -41,10 +41,15 @@ impl Visitor {
     }
 
     pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
-        self.visit(&context.ast_tree.root_node(), context, parent_shape)
+        self.visit_direct_children(&context.ast_tree.root_node(), context, parent_shape)
     }
 
-    pub fn visit(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {
+    pub fn visit_direct_children(
+        &mut self,
+        node: &Node,
+        context: &FmtContext,
+        parent_shape: &Shape,
+    ) {
         let is_root_node = node.kind() == "parser_output";
 
         let shape = if is_root_node {
@@ -59,8 +64,7 @@ impl Visitor {
 
             match kind {
                 NodeKind::ClassDeclaration => {
-                    let n = ClassDeclaration::new(&child);
-                    self.push_rewritten(n.rewrite(context, &shape), &child);
+                    self.visit_class(&child, context, &shape);
                 }
                 NodeKind::FieldDeclaration => {
                     let n = FieldDeclaration::new(&child);
@@ -86,11 +90,14 @@ impl Visitor {
         }
     }
 
+    pub fn visit_class(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+        let n = ClassDeclaration::new(&node);
+        self.push_rewritten(n.rewrite(context, &shape), &node);
+    }
+
     pub fn visit_block(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {
         let mut visitor = Visitor::from_current(parent_shape);
-        visitor.push_block_open_line();
-        visitor.visit(node, context, parent_shape);
-        visitor.push_block_close_line();
+        visitor.visit_direct_children(node, context, parent_shape);
         visitor.buffer;
     }
 

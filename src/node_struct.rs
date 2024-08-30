@@ -1,7 +1,6 @@
 use crate::config::{Indent, Shape};
 use crate::context::FmtContext;
 use crate::utility::{get_modifiers, get_parameters, get_source_code, indent_lines};
-use crate::visitor::Visitor;
 use crate::{define_node, define_nodes};
 use anyhow::{Context, Result};
 use tree_sitter::Node;
@@ -21,15 +20,15 @@ define_nodes!(
 );
 
 impl<'a, 'tree> ClassDeclaration<'a, 'tree> {
-    pub fn format_body(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
-        let mut result = String::new();
-        let body_node = self
-            .as_ast_node()
-            .child_by_field_name("body")
-            .context("mandatory body field missing")?;
-
-        Ok(result)
-    }
+    //pub fn format_body(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+    //    let mut result = String::new();
+    //    let body_node = self
+    //        .as_ast_node()
+    //        .child_by_field_name("body")
+    //        .context("mandatory body field missing")?;
+    //
+    //    Ok(result)
+    //}
 }
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -38,7 +37,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| get_source_code(n, context.source_code))
-            .collect::<Vec<&str>>()
+            .collect::<Result<Vec<&str>>>()?
             .join(" ");
 
         let mut result = String::new();
@@ -49,15 +48,9 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = name_node.utf8_text(context.source_code.as_bytes())?;
+        let name_node_value = get_source_code(&name_node, context.source_code)?;
 
         result.push_str(name_node_value);
-        result.push_str(" {\n");
-
-        result.push_str(&self.format_body(context, shape)?);
-
-        result.push('}');
-        let result = indent_lines(&result, shape);
         Ok(result)
     }
 }
