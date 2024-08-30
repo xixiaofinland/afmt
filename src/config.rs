@@ -31,6 +31,10 @@ pub struct Config {
 }
 
 impl Config {
+    pub fn default() -> Self {
+        Self { max_width: 80 }
+    }
+
     pub fn new(max_width: usize) -> Self {
         Self { max_width }
     }

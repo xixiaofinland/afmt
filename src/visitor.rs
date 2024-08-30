@@ -132,7 +132,7 @@ impl Visitor {
     }
 
     fn push_block_close_line(&mut self, shape: &Shape) {
-        println!("|{:?}|", &self.block_indent);
+        //println!("|{:?}|", &self.block_indent);
 
         self.push_str(&format!("{}}}\n", get_indent_string(&shape.indent)));
     }
