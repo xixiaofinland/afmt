@@ -54,6 +54,8 @@ impl Visitor {
             Shape::increase_indent(parent_shape)
         };
 
+        //println!("shape: {}, {}", node.kind(), shape.indent.block_indent);
+
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
             let kind = NodeKind::from_kind(child.kind());
@@ -62,12 +64,11 @@ impl Visitor {
                 NodeKind::ClassDeclaration => {
                     self.visit_class(&child, context, &shape);
                 }
+                NodeKind::MethodDeclaration => {
+                    self.visit_method(&child, context, &shape);
+                }
                 NodeKind::FieldDeclaration => {
                     let n = FieldDeclaration::new(&child);
-                    self.push_rewritten(n.rewrite(context, &shape), &child);
-                }
-                NodeKind::MethodDeclaration => {
-                    let n = MethodDeclaration::new(&child);
                     self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
                 //NodeKind::Modifiers => {
@@ -102,17 +103,27 @@ impl Visitor {
         self.push_block_close_line();
     }
 
-    //pub fn visit_block(&mut self, node: &Node, context: &FmtContext, parent_shape: &Shape) {
-    //    let mut visitor = Visitor::from_current(parent_shape);
-    //    visitor.visit_direct_children(node, context, parent_shape);
-    //    visitor.buffer;
-    //}
+    pub fn visit_method(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+        let n = MethodDeclaration::new(&node);
+        self.push_rewritten(n.rewrite(context, &shape), &node);
+
+        self.push_block_open_line();
+
+        let mut v = Visitor::from_current(&shape);
+        let body_node = node
+            .child_by_field_name("body")
+            .expect("mandatory body node missing");
+        v.visit_direct_children(&body_node, context, &shape);
+        self.buffer.push_str(&v.buffer);
+
+        self.push_block_close_line();
+    }
 
     fn push_block_open_line(&mut self) {
         self.buffer.push_str(" {\n");
     }
 
     fn push_block_close_line(&mut self) {
-        self.buffer.push_str("}\n");
+        self.buffer.push_str("\n}");
     }
 }
