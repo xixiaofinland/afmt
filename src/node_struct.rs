@@ -1,6 +1,8 @@
 use crate::config::{Indent, Shape};
 use crate::context::FmtContext;
-use crate::utility::{get_indent, get_modifiers, get_parameters, get_source_code, indent_lines};
+use crate::utility::{
+    get_indent_string, get_modifiers, get_parameters, get_source_code, indent_lines,
+};
 use crate::{define_node, define_nodes};
 use anyhow::{Context, Result};
 use tree_sitter::Node;
@@ -34,7 +36,7 @@ impl<'a, 'tree> ClassDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent(shape));
+        result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
@@ -60,7 +62,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent(shape));
+        result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
@@ -118,7 +120,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent(shape));
+        result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes

@@ -2,6 +2,7 @@ use crate::{
     config::{Indent, Shape},
     context::FmtContext,
     node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
+    utility::get_indent_string,
 };
 use tree_sitter::Node;
 
@@ -124,6 +125,7 @@ impl Visitor {
     }
 
     fn push_block_close_line(&mut self) {
-        self.buffer.push_str("\n}");
+        self.buffer
+            .push_str(&format!("{}}}", get_indent_string(&self.block_indent)));
     }
 }

@@ -1,15 +1,15 @@
 use anyhow::{Context, Result};
 use tree_sitter::Node;
 
-use crate::config::Shape;
+use crate::config::{Indent, Shape};
 
-pub fn get_indent(shape: &Shape) -> String {
-    let indent = "  ".repeat(shape.indent.block_indent);
+pub fn get_indent_string(indent: &Indent) -> String {
+    let indent = "  ".repeat(indent.block_indent);
     indent
 }
 
 pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
-    let indent = get_indent(shape);
+    let indent = get_indent_string(&shape.indent);
 
     let lines: Vec<&str> = prepared_code
         .split('\n')
