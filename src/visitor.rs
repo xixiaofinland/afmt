@@ -3,22 +3,26 @@ use crate::{
     context::FmtContext,
     node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
 };
-use anyhow::Result;
 use tree_sitter::Node;
 
-pub struct Visitor<'a> {
-    parent_context: Option<&'a FmtContext<'a>>,
+pub struct Visitor {
+    //parent_context: Option<&'a FmtContext<'_>>,
     pub block_indent: Indent,
     pub buffer: String,
 }
 
-impl<'a> Visitor<'a> {
-    pub fn new(parent_context: Option<&'a FmtContext<'a>>, block_indent: Indent) -> Self {
+impl Visitor {
+    //pub fn new(parent_context: Option<&'a FmtContext<'_>>, block_indent: Indent) -> Self {
+    pub fn new(block_indent: Indent) -> Self {
         Self {
-            parent_context,
             block_indent,
             buffer: String::new(),
         }
+    }
+
+    pub fn from_current(shape: &Shape) -> Visitor {
+        let block_indent = Indent::new(shape.indent.block_indent, 0);
+        Visitor::new(block_indent)
     }
 
     pub fn shape(&self) -> Shape {
@@ -59,11 +63,11 @@ impl<'a> Visitor<'a> {
                     self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
                 NodeKind::FieldDeclaration => {
-                    let n = FieldDeclaration::new(&child, &shape);
+                    let n = FieldDeclaration::new(&child);
                     self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
                 NodeKind::MethodDeclaration => {
-                    let n = MethodDeclaration::new(&child, &shape);
+                    let n = MethodDeclaration::new(&child);
                     self.push_rewritten(n.rewrite(context, &shape), &child);
                 }
                 //NodeKind::IfStatement => {

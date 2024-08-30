@@ -28,12 +28,6 @@ impl<'a, 'tree> ClassDeclaration<'a, 'tree> {
             .child_by_field_name("body")
             .context("mandatory body field missing")?;
 
-        //let visitor = Visitor::new(None, Indent::new(0, 0));
-        //result.push_str(
-        //    &visitor
-        //        .visit(&body_node, context, &self.shape)
-        //        .context("walk() failed")?,
-        //);
         Ok(result)
     }
 }
@@ -60,7 +54,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         result.push_str(name_node_value);
         result.push_str(" {\n");
 
-        result.push_str(&self.format_body(context)?);
+        result.push_str(&self.format_body(context, shape)?);
 
         result.push('}');
         let result = indent_lines(&result, shape);
