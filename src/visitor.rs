@@ -1,7 +1,9 @@
 use crate::{
     config::{Indent, Shape},
     context::FmtContext,
-    node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
+    node_struct::{
+        ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite, SimpleStatement,
+    },
     utility::get_indent_string,
 };
 use anyhow::{bail, Context, Result};
@@ -83,6 +85,10 @@ impl Visitor {
             }
             NodeKind::ExpressionStatement => {
                 self.visit_expression(&node, context, &shape);
+            }
+            NodeKind::SimpleStatement => {
+                let n = SimpleStatement::new(&node);
+                self.push_rewritten(n.rewrite(context, &shape), &node);
             }
             //NodeKind::Modifiers => {
             //    self.visit_if_node(node);
