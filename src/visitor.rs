@@ -7,6 +7,7 @@ use crate::{
     },
     utility::get_indent_string,
 };
+use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
 pub struct Visitor {
@@ -65,35 +66,38 @@ impl Visitor {
 
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
-            let kind = NodeKind::from_kind(child.kind());
+            self.visit_item(&child, context, &shape);
+        }
+    }
 
-            match kind {
-                NodeKind::ClassDeclaration => {
-                    self.visit_class(&child, context, &shape);
-                }
-                NodeKind::MethodDeclaration => {
-                    self.visit_method(&child, context, &shape);
-                }
-                NodeKind::FieldDeclaration => {
-                    let n = FieldDeclaration::new(&child);
-                    self.push_rewritten(n.rewrite(context, &shape), &child);
-                }
-                NodeKind::ExpressionStatement => {
-                    let n = ExpressionStatement::new(&child);
-                    self.push_rewritten(n.rewrite(context, &shape), &child);
-                }
-                //NodeKind::Modifiers => {
-                //    self.visit_if_node(node);
-                //}
-                //NodeKind::ForLoop => {
-                //    //self.visit_for_node(node);
-                //}
-                NodeKind::Unknown => {
-                    println!("### Unknow node: {}", child.kind());
-                }
-                _ => {
-                    !unimplemented!();
-                }
+    pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+        let kind = NodeKind::from_kind(node.kind());
+
+        match kind {
+            NodeKind::ClassDeclaration => {
+                self.visit_class(&node, context, &shape);
+            }
+            NodeKind::MethodDeclaration => {
+                self.visit_method(&node, context, &shape);
+            }
+            NodeKind::FieldDeclaration => {
+                let n = FieldDeclaration::new(&node);
+                self.push_rewritten(n.rewrite(context, &shape), &node);
+            }
+            NodeKind::ExpressionStatement => {
+                self.visit_expression(&node, context, &shape);
+            }
+            //NodeKind::Modifiers => {
+            //    self.visit_if_node(node);
+            //}
+            //NodeKind::ForLoop => {
+            //    //self.visit_for_node(node);
+            //}
+            NodeKind::Unknown => {
+                println!("### Unknow node: {}", node.kind());
+            }
+            _ => {
+                !unimplemented!();
             }
         }
     }
@@ -124,6 +128,13 @@ impl Visitor {
         self.visit_direct_children(&body_node, context, &shape);
 
         self.push_block_close_line(shape);
+    }
+
+    pub fn visit_expression(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+        let child = node
+            .named_child(0)
+            .expect("ExpressionStatement mandatory child missing.");
+        self.visit_direct_children(&child, context, &shape);
     }
 
     fn push_block_open_line(&mut self) {
