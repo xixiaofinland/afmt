@@ -1,10 +1,7 @@
 use crate::{
     config::{Indent, Shape},
     context::FmtContext,
-    node_struct::{
-        ClassDeclaration, ExpressionStatement, FieldDeclaration, MethodDeclaration, NodeKind,
-        Rewrite,
-    },
+    node_struct::{ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite},
     utility::get_indent_string,
 };
 use anyhow::{bail, Context, Result};
@@ -93,10 +90,8 @@ impl Visitor {
             //NodeKind::ForLoop => {
             //    //self.visit_for_node(node);
             //}
-            NodeKind::Unknown => {
-                println!("### Unknow node: {}", node.kind());
-            }
             _ => {
+                println!("### Unknow node: {}", node.kind());
                 !unimplemented!();
             }
         }

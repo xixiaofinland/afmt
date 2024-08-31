@@ -1,7 +1,7 @@
 use crate::config::{Indent, Shape};
 use crate::context::FmtContext;
 use crate::utility::{get_indent_string, get_modifiers, get_parameters, get_value};
-use crate::{define_node, define_nodes};
+use crate::{define_struct, define_struct_and_enum};
 use anyhow::{Context, Result};
 use tree_sitter::Node;
 
@@ -13,11 +13,12 @@ pub trait Rewrite {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String>;
 }
 
-define_nodes!(
-    ClassDeclaration => "class_declaration",
-    FieldDeclaration => "field_declaration",
-    MethodDeclaration => "method_declaration",
-    ExpressionStatement => "expression_statement"
+define_struct_and_enum!(
+    true; ClassDeclaration => "class_declaration",
+    true; FieldDeclaration => "field_declaration",
+    true; MethodDeclaration => "method_declaration",
+    false; ExpressionStatement => "expression_statement",
+    false; SimpleStatement => "boolean" | "int"
 );
 
 impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}

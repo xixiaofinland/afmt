@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! define_node {
+macro_rules! define_struct {
     ($name:ident) => {
         pub struct $name<'a, 'tree> {
             inner: &'a Node<'tree>,
@@ -18,10 +18,10 @@ macro_rules! define_node {
 }
 
 #[macro_export]
-macro_rules! define_nodes {
-    ($($name:ident => $str_repr:expr),*) => {
+macro_rules! define_struct_and_enum {
+    ($( $create_struct:ident; $name:ident => $($str_repr:tt)|+ ),* ) => {
         $(
-            define_node!($name);
+            $crate::conditional_struct_creation!($create_struct, $name);
         )*
 
         #[derive(Debug)]
@@ -34,11 +34,23 @@ macro_rules! define_nodes {
             pub fn from_kind(kind: &str) -> NodeKind {
                 match kind {
                     $(
-                        $str_repr => NodeKind::$name,
+                        $(
+                            $str_repr => NodeKind::$name,
+                        )+
                     )*
                     _ => NodeKind::Unknown,
                 }
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! conditional_struct_creation {
+    (true, $name:ident) => {
+        define_struct!($name);
+    };
+    (false, $name:ident) => {
+        // No struct is created when the flag is false
     };
 }
