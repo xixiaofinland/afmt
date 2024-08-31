@@ -18,7 +18,7 @@ define_struct_and_enum!(
     true; FieldDeclaration => "field_declaration",
     true; MethodDeclaration => "method_declaration",
     false; ExpressionStatement => "expression_statement",
-    true; SimpleStatement => "boolean" | "int",
+    true; SimpleStatement => "boolean" | "int" | "identifier" | "||",
     true; BinaryExpression => "binary_expression"
 );
 
@@ -146,7 +146,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let name_node_value = get_value(&name_node, context.source_code);
         result.push_str(name_node_value);
 
-        result.push(';');
+        //result.push(';');
         //let mut result = indent_lines(&result, shape);
 
         //println!("fieldD: result |{}|", result);
@@ -162,20 +162,7 @@ impl<'a, 'tree> Rewrite for SimpleStatement<'a, 'tree> {
         let name_node_value = get_value(self.as_ast_node(), context.source_code);
         result.push_str(name_node_value);
 
-        result.push(';');
-        Ok(result)
-    }
-}
-
-impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
-        let mut result = String::new();
-        //result.push_str(&get_indent_string(&shape.indent));
-
-        let name_node_value = get_value(self.as_ast_node(), context.source_code);
-        result.push_str(name_node_value);
-
-        result.push(';');
+        //result.push(';');
         Ok(result)
     }
 }

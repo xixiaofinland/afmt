@@ -40,6 +40,10 @@ impl Visitor {
         }
     }
 
+    pub fn push(&mut self, s: char) {
+        self.buffer.push(s);
+    }
+
     pub fn push_str(&mut self, s: &str) {
         self.buffer.push_str(s);
     }
@@ -107,6 +111,10 @@ impl Visitor {
             NodeKind::SimpleStatement => {
                 let n = SimpleStatement::new(&node);
                 self.push_rewritten(n.rewrite(context, &shape), &node);
+                println!("simple: {}:{}", node.kind(), should_indent);
+                if should_indent {
+                    self.push_str(";");
+                }
             }
             //NodeKind::Modifiers => {
             //    self.visit_if_node(node);
@@ -135,7 +143,7 @@ impl Visitor {
             .expect("mandatory body node missing");
         self.visit_named_children(&body_node, context, &shape);
 
-        self.push_block_close_line(shape);
+        self.push_block_close(shape);
     }
 
     pub fn visit_method(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
@@ -149,7 +157,7 @@ impl Visitor {
             .expect("mandatory body node missing");
         self.visit_named_children(&body_node, context, &shape);
 
-        self.push_block_close_line(shape);
+        self.push_block_close(shape);
     }
 
     pub fn visit_expression_statement(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
@@ -164,15 +172,16 @@ impl Visitor {
         for child in node.children(&mut cursor) {
             self.visit_item(&child, context, &shape);
         }
+        self.push(';');
     }
 
     fn push_block_open_line(&mut self) {
         self.push_str(" {\n");
     }
 
-    fn push_block_close_line(&mut self, shape: &Shape) {
+    fn push_block_close(&mut self, shape: &Shape) {
         //println!("|{:?}|", &self.block_indent);
 
-        self.push_str(&format!("{}}}\n", get_indent_string(&shape.indent)));
+        self.push_str(&format!("{}}}", get_indent_string(&shape.indent)));
     }
 }
