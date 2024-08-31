@@ -5,18 +5,24 @@ use std::{fs, path::Path};
 #[derive(Clone)]
 pub struct Shape {
     pub indent: Indent,
-    pub width: usize, //TODO
+    pub width: usize,  //TODO
+    pub offset: usize, //TODO
 }
 
 impl Shape {
     pub fn new(indent: Indent) -> Self {
-        Self { indent, width: 1 }
+        Self {
+            indent,
+            width: 1,
+            offset: 1,
+        }
     }
 
     pub fn empty() -> Self {
         Self {
             indent: Indent::new(0, 0),
             width: 1,
+            offset: 1,
         }
     }
 

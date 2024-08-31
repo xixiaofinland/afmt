@@ -105,7 +105,7 @@ impl Visitor {
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        body_visitor.visit_direct_children(&body_node, context, &shape);
+        self.visit_direct_children(&body_node, context, &shape);
         self.push_str(&body_visitor.buffer);
 
         self.push_block_close_line(shape);
@@ -117,12 +117,10 @@ impl Visitor {
 
         self.push_block_open_line();
 
-        let mut v = Visitor::from_current(&shape);
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        v.visit_direct_children(&body_node, context, &shape);
-        self.push_str(&v.buffer);
+        self.visit_direct_children(&body_node, context, &shape);
 
         self.push_block_close_line(shape);
     }
