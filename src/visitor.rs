@@ -92,7 +92,6 @@ impl Visitor {
             //}
             _ => {
                 println!("### Unknow node: {}", node.kind());
-                !unimplemented!();
             }
         }
     }
