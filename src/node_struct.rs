@@ -153,21 +153,21 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
-        let mut result = String::new();
-        result.push_str(&get_indent_string(&shape.indent));
-
-        let child = self
-            .as_ast_node()
-            .named_child(0)
-            .context("ExpressionStatement mandatory child missing.")?;
-
-        let name_node_value = get_value(&child, context.source_code)?;
-        result.push_str(name_node_value);
-
-        result.push(';');
-        result.push('\n');
-        Ok(result)
-    }
-}
+//impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
+//    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+//        let mut result = String::new();
+//        result.push_str(&get_indent_string(&shape.indent));
+//
+//        let child = self
+//            .as_ast_node()
+//            .named_child(0)
+//            .context("ExpressionStatement mandatory child missing.")?;
+//
+//        let name_node_value = get_value(&child, context.source_code)?;
+//        result.push_str(name_node_value);
+//
+//        result.push(';');
+//        result.push('\n');
+//        Ok(result)
+//    }
+//}

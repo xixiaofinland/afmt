@@ -134,7 +134,7 @@ impl Visitor {
         let child = node
             .named_child(0)
             .expect("ExpressionStatement mandatory child missing.");
-        self.visit_direct_children(&child, context, &shape);
+        self.visit_item(&child, context, &shape);
     }
 
     fn push_block_open_line(&mut self) {
