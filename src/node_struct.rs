@@ -18,7 +18,8 @@ define_struct_and_enum!(
     true; FieldDeclaration => "field_declaration",
     true; MethodDeclaration => "method_declaration",
     false; ExpressionStatement => "expression_statement",
-    true; SimpleStatement => "boolean" | "int"
+    true; SimpleStatement => "boolean" | "int",
+    true; BinaryExpression => "binary_expression"
 );
 
 impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
@@ -32,7 +33,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| get_value(n, context.source_code))
-            .collect::<Result<Vec<&str>>>()?
+            .collect::<Vec<&str>>()
             .join(" ");
 
         result.push_str(&modifiers_doc);
@@ -42,7 +43,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_value(&name_node, context.source_code)?;
+        let name_node_value = get_value(&name_node, context.source_code);
 
         result.push_str(name_node_value);
         Ok(result)
@@ -58,7 +59,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| get_value(n, context.source_code))
-            .collect::<Result<Vec<&str>>>()?
+            .collect::<Vec<&str>>()
             .join(" ");
 
         result.push_str(&modifiers_doc);
@@ -68,7 +69,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("type")
             .context("mandatory type field missing")?;
-        let type_node_value = get_value(&type_node, context.source_code)?;
+        let type_node_value = get_value(&type_node, context.source_code);
         result.push_str(type_node_value);
         result.push(' ');
 
@@ -76,7 +77,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_value(&name_node, context.source_code)?;
+        let name_node_value = get_value(&name_node, context.source_code);
         result.push_str(name_node_value);
 
         result.push('(');
@@ -131,7 +132,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("type")
             .context("mandatory type field missing")?;
-        let type_node_value = type_node.utf8_text(context.source_code.as_bytes())?;
+        let type_node_value = get_value(&type_node, context.source_code);
         result.push_str(type_node_value);
 
         result.push(' ');
@@ -142,7 +143,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             .context("mandatory declarator field missing")?
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_value(&name_node, context.source_code)?;
+        let name_node_value = get_value(&name_node, context.source_code);
         result.push_str(name_node_value);
 
         result.push(';');
@@ -159,7 +160,21 @@ impl<'a, 'tree> Rewrite for SimpleStatement<'a, 'tree> {
         let mut result = String::new();
         result.push_str(&get_indent_string(&shape.indent));
 
-        let name_node_value = get_value(self.as_ast_node(), context.source_code)?;
+        let name_node_value = get_value(self.as_ast_node(), context.source_code);
+        result.push_str(name_node_value);
+
+        result.push(';');
+        result.push('\n');
+        Ok(result)
+    }
+}
+
+impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+        let mut result = String::new();
+        result.push_str(&get_indent_string(&shape.indent));
+
+        let name_node_value = get_value(self.as_ast_node(), context.source_code);
         result.push_str(name_node_value);
 
         result.push(';');

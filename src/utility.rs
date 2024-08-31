@@ -8,9 +8,9 @@ pub fn get_indent_string(indent: &Indent) -> String {
     indent
 }
 
-pub fn get_value<'a>(node: &Node, source_code: &'a str) -> Result<&'a str> {
+pub fn get_value<'a>(node: &Node, source_code: &'a str) -> &'a str {
     node.utf8_text(source_code.as_bytes())
-        .context(format!("{}: get_value failed.", node.kind()))
+        .expect(&format!("{}: get_value failed.", node.kind()))
 }
 
 pub fn get_mandatory_child_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Result<Node<'tree>> {

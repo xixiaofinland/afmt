@@ -4,7 +4,7 @@ use crate::{
     node_struct::{
         ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite, SimpleStatement,
     },
-    utility::get_indent_string,
+    utility::*,
 };
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
@@ -45,10 +45,10 @@ impl Visitor {
     }
 
     pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
-        self.visit_direct_children(&context.ast_tree.root_node(), context, parent_shape)
+        self.visit_named_children(&context.ast_tree.root_node(), context, parent_shape)
     }
 
-    pub fn visit_direct_children(
+    pub fn visit_named_children(
         &mut self,
         node: &Node,
         context: &FmtContext,
@@ -70,8 +70,17 @@ impl Visitor {
     }
 
     pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
-        let kind = NodeKind::from_kind(node.kind());
+        if node.is_named() {
+            match node.grammar_name() {
+                "operator" => {
+                    self.push_str(&format!(" {} ", get_value(node, context.source_code)));
+                    return;
+                }
+                _ => {}
+            }
+        }
 
+        let kind = NodeKind::from_kind(node.kind());
         match kind {
             NodeKind::ClassDeclaration => {
                 self.visit_class(&node, context, &shape);
@@ -84,7 +93,10 @@ impl Visitor {
                 self.push_rewritten(n.rewrite(context, &shape), &node);
             }
             NodeKind::ExpressionStatement => {
-                self.visit_expression(&node, context, &shape);
+                self.visit_expression_statement(&node, context, &shape);
+            }
+            NodeKind::BinaryExpression => {
+                self.visit_binary_expression(&node, context, &shape);
             }
             NodeKind::SimpleStatement => {
                 let n = SimpleStatement::new(&node);
@@ -111,7 +123,7 @@ impl Visitor {
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        self.visit_direct_children(&body_node, context, &shape);
+        self.visit_named_children(&body_node, context, &shape);
 
         self.push_block_close_line(shape);
     }
@@ -125,16 +137,23 @@ impl Visitor {
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        self.visit_direct_children(&body_node, context, &shape);
+        self.visit_named_children(&body_node, context, &shape);
 
         self.push_block_close_line(shape);
     }
 
-    pub fn visit_expression(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn visit_expression_statement(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let child = node
             .named_child(0)
             .expect("ExpressionStatement mandatory child missing.");
         self.visit_item(&child, context, &shape);
+    }
+
+    pub fn visit_binary_expression(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.visit_item(&child, context, &shape);
+        }
     }
 
     fn push_block_open_line(&mut self) {
