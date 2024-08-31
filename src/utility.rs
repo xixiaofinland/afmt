@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
 use crate::config::{Indent, Shape};
@@ -10,13 +10,29 @@ pub fn get_indent_string(indent: &Indent) -> String {
 
 pub fn get_value<'a>(node: &Node, source_code: &'a str) -> Result<&'a str> {
     node.utf8_text(source_code.as_bytes())
-        .context("get node source code failed.")
+        .context(format!("{}: get_value failed.", node.kind()))
+}
+
+pub fn get_mandatory_child_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Result<Node<'tree>> {
+    get_child_by_kind(kind, n).ok_or(bail!(format!("{}: mandatory child not found.", kind)))
 }
 
 pub fn get_child_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Option<Node<'tree>> {
     let mut cursor = n.walk();
     let node = n.children(&mut cursor).find(|c| c.kind() == kind);
     node
+}
+
+pub fn get_mandatory_children_by_kind<'tree>(
+    kind: &str,
+    n: &Node<'tree>,
+) -> Result<Vec<Node<'tree>>> {
+    let children = get_children_by_kind(kind, n);
+    if children.is_empty() {
+        bail!("No children found with the kind: {}", kind);
+    }
+
+    Ok(children)
 }
 
 pub fn get_children_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Vec<Node<'tree>> {
