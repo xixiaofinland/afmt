@@ -74,9 +74,10 @@ impl Visitor {
     }
 
     pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
-        let should_indent = should_start_new_line(node);
+        let is_standalone = is_standalone(node);
+        //println!("standalone? {}, {}", node.kind(), is_standalone);
 
-        if should_indent {
+        if is_standalone {
             self.push_str(&get_indent_string(&shape.indent));
         }
 
@@ -93,26 +94,26 @@ impl Visitor {
         let kind = NodeKind::from_kind(node.kind());
         match kind {
             NodeKind::ClassDeclaration => {
-                self.visit_class(&node, context, &shape);
+                self.format_class(&node, context, &shape);
             }
             NodeKind::MethodDeclaration => {
-                self.visit_method(&node, context, &shape);
+                self.format_method(&node, context, &shape);
             }
             NodeKind::FieldDeclaration => {
                 let n = FieldDeclaration::new(&node);
                 self.push_rewritten(n.rewrite(context, &shape), &node);
             }
             NodeKind::ExpressionStatement => {
-                self.visit_expression_statement(&node, context, &shape);
+                self.format_expression_statement(&node, context, &shape);
             }
             NodeKind::BinaryExpression => {
-                self.visit_binary_expression(&node, context, &shape);
+                self.format_binary_expression(&node, context, &shape);
             }
             NodeKind::SimpleStatement => {
                 let n = SimpleStatement::new(&node);
                 self.push_rewritten(n.rewrite(context, &shape), &node);
-                println!("simple: {}:{}", node.kind(), should_indent);
-                if should_indent {
+                println!("simple: {}:{}", node.kind(), is_standalone);
+                if is_standalone {
                     self.push_str(";");
                 }
             }
@@ -127,12 +128,16 @@ impl Visitor {
             }
         }
 
-        if should_indent {
-            self.push_str("\n");
+        if is_standalone {
+            if has_body_node(node) {
+                self.push_str("\n");
+            } else {
+                self.push_str(";\n");
+            }
         }
     }
 
-    pub fn visit_class(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_class(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let n = ClassDeclaration::new(&node);
         self.push_rewritten(n.rewrite(context, &shape), &node);
 
@@ -146,7 +151,7 @@ impl Visitor {
         self.push_block_close(shape);
     }
 
-    pub fn visit_method(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_method(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let n = MethodDeclaration::new(&node);
         self.push_rewritten(n.rewrite(context, &shape), &node);
 
@@ -160,19 +165,23 @@ impl Visitor {
         self.push_block_close(shape);
     }
 
-    pub fn visit_expression_statement(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_expression_statement(
+        &mut self,
+        node: &Node,
+        context: &FmtContext,
+        shape: &Shape,
+    ) {
         let child = node
             .named_child(0)
             .expect("ExpressionStatement mandatory child missing.");
         self.visit_item(&child, context, &shape);
     }
 
-    pub fn visit_binary_expression(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_binary_expression(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
             self.visit_item(&child, context, &shape);
         }
-        self.push(';');
     }
 
     fn push_block_open_line(&mut self) {
