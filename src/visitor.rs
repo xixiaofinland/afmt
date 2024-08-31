@@ -70,6 +70,12 @@ impl Visitor {
     }
 
     pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+        let should_indent = should_start_new_line(node);
+
+        if should_indent {
+            self.push_str(&get_indent_string(&shape.indent));
+        }
+
         if node.is_named() {
             match node.grammar_name() {
                 "operator" => {
@@ -111,6 +117,10 @@ impl Visitor {
             _ => {
                 println!("### Unknow node: {}", node.kind());
             }
+        }
+
+        if should_indent {
+            self.push_str("\n");
         }
     }
 

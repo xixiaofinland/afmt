@@ -27,7 +27,7 @@ impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent_string(&shape.indent));
+        //result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
@@ -53,7 +53,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent_string(&shape.indent));
+        //result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
@@ -111,7 +111,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent_string(&shape.indent));
+        //result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
@@ -147,7 +147,6 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         result.push_str(name_node_value);
 
         result.push(';');
-        result.push('\n');
         //let mut result = indent_lines(&result, shape);
 
         //println!("fieldD: result |{}|", result);
@@ -158,13 +157,12 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SimpleStatement<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent_string(&shape.indent));
+        //result.push_str(&get_indent_string(&shape.indent));
 
         let name_node_value = get_value(self.as_ast_node(), context.source_code);
         result.push_str(name_node_value);
 
         result.push(';');
-        result.push('\n');
         Ok(result)
     }
 }
@@ -172,13 +170,12 @@ impl<'a, 'tree> Rewrite for SimpleStatement<'a, 'tree> {
 impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&get_indent_string(&shape.indent));
+        //result.push_str(&get_indent_string(&shape.indent));
 
         let name_node_value = get_value(self.as_ast_node(), context.source_code);
         result.push_str(name_node_value);
 
         result.push(';');
-        result.push('\n');
         Ok(result)
     }
 }
