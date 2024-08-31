@@ -26,6 +26,14 @@ impl Shape {
         }
     }
 
+    pub fn indented(indent: Indent, config: &Config) -> Shape {
+        Shape {
+            width: config.max_width,
+            indent,
+            offset: indent.alignment,
+        }
+    }
+
     pub fn increase_indent(s: &Shape) -> Self {
         Shape::new(Indent::new(s.indent.block_indent + 1, 0))
     }
@@ -53,6 +61,10 @@ pub struct Indent {
 }
 
 impl Indent {
+    pub fn default() -> Indent {
+        Indent::new(0, 0)
+    }
+
     pub fn new(block_indent: usize, alignment: usize) -> Indent {
         Indent {
             block_indent,

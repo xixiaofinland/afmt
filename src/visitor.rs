@@ -16,6 +16,10 @@ pub struct Visitor {
 }
 
 impl Visitor {
+    pub fn default() -> Self {
+        Visitor::new(Indent::default())
+    }
+
     //pub fn new(parent_context: Option<&'a FmtContext<'_>>, block_indent: Indent) -> Self {
     pub fn new(block_indent: Indent) -> Self {
         Self {
@@ -24,10 +28,10 @@ impl Visitor {
         }
     }
 
-    pub fn from_current(shape: &Shape) -> Visitor {
-        let block_indent = Indent::new(shape.indent.block_indent, 0);
-        Visitor::new(block_indent)
-    }
+    //pub fn from_current(shape: &Shape) -> Visitor {
+    //    let block_indent = Indent::new(shape.indent.block_indent, 0);
+    //    Visitor::new(block_indent)
+    //}
 
     pub fn push_rewritten(&mut self, rewritten: Option<String>, node: &Node) {
         if let Some(r) = rewritten {

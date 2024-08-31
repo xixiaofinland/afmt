@@ -4,6 +4,6 @@ public with sharing class MyClass {
     public void hello1(String s , Intgeter ii) {
     true;
         56;
-            a || b;
+            a ||  b;
     }
 }
