@@ -112,7 +112,7 @@ impl Visitor {
             NodeKind::SimpleStatement => {
                 let n = SimpleStatement::new(&node);
                 self.push_rewritten(n.rewrite(context, &shape), &node);
-                println!("simple: {}:{}", node.kind(), is_standalone);
+                //println!("kind check: {}:{}", node.kind(), is_standalone);
                 if is_standalone {
                     self.push_str(";");
                 }
