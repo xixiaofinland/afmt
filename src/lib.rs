@@ -1,5 +1,5 @@
 pub mod args;
-mod config;
+pub mod config;
 mod context;
 mod macros;
 mod node_struct;
