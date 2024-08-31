@@ -55,7 +55,6 @@ impl Visitor {
         parent_shape: &Shape,
     ) {
         let is_root_node = node.kind() == "parser_output";
-
         let shape = if is_root_node {
             Shape::empty()
         } else {

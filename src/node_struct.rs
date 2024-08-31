@@ -1,8 +1,6 @@
 use crate::config::{Indent, Shape};
 use crate::context::FmtContext;
-use crate::utility::{
-    get_indent_string, get_modifiers, get_parameters, get_source_code, indent_lines,
-};
+use crate::utility::{get_indent_string, get_modifiers, get_parameters, get_value};
 use crate::{define_node, define_nodes};
 use anyhow::{Context, Result};
 use tree_sitter::Node;
@@ -32,7 +30,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
             .iter()
-            .map(|n| get_source_code(n, context.source_code))
+            .map(|n| get_value(n, context.source_code))
             .collect::<Result<Vec<&str>>>()?
             .join(" ");
 
@@ -43,7 +41,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_source_code(&name_node, context.source_code)?;
+        let name_node_value = get_value(&name_node, context.source_code)?;
 
         result.push_str(name_node_value);
         Ok(result)
@@ -58,7 +56,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
             .iter()
-            .map(|n| get_source_code(n, context.source_code))
+            .map(|n| get_value(n, context.source_code))
             .collect::<Result<Vec<&str>>>()?
             .join(" ");
 
@@ -69,7 +67,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("type")
             .context("mandatory type field missing")?;
-        let type_node_value = get_source_code(&type_node, context.source_code)?;
+        let type_node_value = get_value(&type_node, context.source_code)?;
         result.push_str(type_node_value);
         result.push(' ');
 
@@ -77,7 +75,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_source_code(&name_node, context.source_code)?;
+        let name_node_value = get_value(&name_node, context.source_code)?;
         result.push_str(name_node_value);
 
         result.push('(');
@@ -143,7 +141,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             .context("mandatory declarator field missing")?
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_source_code(&name_node, context.source_code)?;
+        let name_node_value = get_value(&name_node, context.source_code)?;
         result.push_str(name_node_value);
 
         result.push(';');
@@ -163,8 +161,8 @@ impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
         let node = self
             .as_ast_node()
             .named_child(0)
-            .context("ExpressionStatement has no named child.")?;
-        let name_node_value = get_source_code(&node, context.source_code)?;
+            .context("ExpressionStatement mandatory child missing.")?;
+        let name_node_value = get_value(&node, context.source_code)?;
         result.push_str(name_node_value);
 
         result.push(';');

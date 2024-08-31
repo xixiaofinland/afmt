@@ -8,22 +8,7 @@ pub fn get_indent_string(indent: &Indent) -> String {
     indent
 }
 
-pub fn indent_lines(prepared_code: &str, shape: &Shape) -> String {
-    let indent = get_indent_string(&shape.indent);
-
-    let lines: Vec<&str> = prepared_code
-        .split('\n')
-        .filter(|l| !l.is_empty())
-        .collect();
-
-    let indented_lines: Vec<String> = lines
-        .iter()
-        .map(|line| format!("{}{}", indent, line))
-        .collect();
-    indented_lines.join("\n")
-}
-
-pub fn get_source_code<'a>(node: &Node, source_code: &'a str) -> Result<&'a str> {
+pub fn get_value<'a>(node: &Node, source_code: &'a str) -> Result<&'a str> {
     node.utf8_text(source_code.as_bytes())
         .context("get node source code failed.")
 }
