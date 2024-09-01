@@ -7,7 +7,7 @@ mod tests {
         for entry in std::fs::read_dir("tests/files").unwrap() {
             let entry = entry.unwrap();
             let source_path = entry.path();
-            if source_path.extension().and_then(|ext| ext.to_str()) == Some("cls") {
+            if source_path.extension().and_then(|ext| ext.to_str()) == Some("in") {
                 let file_path = source_path
                     .to_str()
                     .expect("PathBuf to String failed.")
@@ -20,7 +20,7 @@ mod tests {
                     .and_then(|result| result.ok())
                     .expect("format result failed.");
 
-                let output_path = source_path.with_extension("out");
+                let output_path = source_path.with_extension("cls");
 
                 let expected = std::fs::read_to_string(&output_path)
                     .expect(&format!("Failed to read output file: {:?}", output_path));
