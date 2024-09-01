@@ -50,6 +50,10 @@ impl Visitor {
 
     pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
         self.visit_named_children(&context.ast_tree.root_node(), context, parent_shape);
+
+        // remove the extra "\n" introduced by the top-level class declaration
+        self.buffer
+            .truncate(self.buffer.trim_end_matches('\n').len());
     }
 
     pub fn visit_named_children(
@@ -130,7 +134,8 @@ impl Visitor {
 
         if is_standalone {
             if has_body_node(node) {
-                self.push_str("\n");
+                println!("add: {:?}", node.kind());
+                //self.push_str("\n");
             } else {
                 self.push_str(";\n");
             }
