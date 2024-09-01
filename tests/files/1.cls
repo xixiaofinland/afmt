@@ -1,9 +1,9 @@
 public with sharing class MyClass {
-    Private String s;
-        Private String             k;
-    public void hello1(String s , Intgeter ii) {
+  private String s;
+  private String k;
+  public void hello1(String s, Intgeter ii) {
     true;
-        56;
-            a ||  b;
-    }
+    56;
+    a || b;
+  }
 }

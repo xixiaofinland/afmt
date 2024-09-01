@@ -134,8 +134,8 @@ impl Visitor {
 
         if is_standalone {
             if has_body_node(node) {
-                println!("add: {:?}", node.kind());
-                //self.push_str("\n");
+                self.push_str("\n");
+                //println!("add: {:?}", node.kind());
             } else {
                 self.push_str(";\n");
             }
