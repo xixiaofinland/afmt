@@ -13,7 +13,10 @@ fn run(args: Args) -> Result<()> {
     let results = format(args);
     for (index, result) in results.iter().enumerate() {
         match result {
-            Ok(value) => println!("Result {}: Ok\n{}", index, value),
+            Ok(value) => {
+                println!("Result {}: Ok\n{}", index, value);
+                println!("{}", value.replace('\n', "\\n"));
+            }
             Err(e) => println!("Result {}: Err\n{}", index, e),
         }
     }
