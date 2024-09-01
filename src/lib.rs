@@ -1,6 +1,7 @@
 pub mod args;
 pub mod config;
 mod context;
+mod format;
 mod macros;
 mod node_struct;
 mod utility;
