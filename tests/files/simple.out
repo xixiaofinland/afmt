@@ -1,5 +1,3 @@
-public with sharing MyClass {
-  Private String s;
-  Private String k;
+public with sharing class MyClass {
 }
 
