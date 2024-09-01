@@ -15,7 +15,7 @@ pub fn get_args() -> Args {
                 .long("file")
                 .value_name("FILE")
                 .help("The relative path to the file to parse")
-                .default_value("samples/1.cls"),
+                .default_value("tests/files/1.cls"),
         )
         .get_matches();
 

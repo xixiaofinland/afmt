@@ -37,7 +37,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
             .join(" ");
 
         result.push_str(&modifiers_doc);
-        result.push(' ');
+        result.push_str(" class ");
 
         let name_node = self
             .as_ast_node()
