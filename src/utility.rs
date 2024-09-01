@@ -42,6 +42,15 @@ pub fn get_children_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Vec<Node<'tre
         .collect()
 }
 
+pub fn get_modifiers_value<'tree>(n: &Node<'tree>, source_code: &str) -> String {
+    let modifier_nodes = get_modifiers(n);
+    modifier_nodes
+        .iter()
+        .map(|n| get_value(n, source_code))
+        .collect::<Vec<&str>>()
+        .join(" ")
+}
+
 pub fn get_modifiers<'tree>(n: &Node<'tree>) -> Vec<Node<'tree>> {
     if let Some(node) = get_child_by_kind("modifiers", n) {
         get_children_by_kind("modifier", &node)
@@ -91,7 +100,7 @@ const FULL_LINE_STATEMENTS: &[&str] = &[
     "for_statement",
     "while_statement",
     "return_statement",
-    "variable_declaration",
+    "local_variable_declaration",
 ];
 
 pub fn has_body_node<'tree>(node: &Node<'tree>) -> bool {

@@ -1,9 +1,7 @@
 use crate::{
     config::{Indent, Shape},
     context::FmtContext,
-    node_struct::{
-        ClassDeclaration, FieldDeclaration, MethodDeclaration, NodeKind, Rewrite, SimpleStatement,
-    },
+    node_struct::*,
     utility::*,
 };
 use anyhow::{bail, Context, Result};
@@ -113,20 +111,28 @@ impl Visitor {
             NodeKind::BinaryExpression => {
                 self.format_binary_expression(&node, context, &shape);
             }
-            NodeKind::SimpleStatement => {
-                let n = SimpleStatement::new(&node);
+            NodeKind::Value => {
+                let n = Value::new(&node);
                 self.push_rewritten(n.rewrite(context, &shape), &node);
                 //println!("kind check: {}:{}", node.kind(), is_standalone);
                 if is_standalone {
                     self.push_str(";");
                 }
             }
-            //NodeKind::Modifiers => {
-            //    self.visit_if_node(node);
-            //}
-            //NodeKind::ForLoop => {
-            //    //self.visit_for_node(node);
-            //}
+            NodeKind::ValueSpace => {
+                let n = ValueSpace::new(&node);
+                self.push_rewritten(n.rewrite(context, &shape), &node);
+            }
+            NodeKind::SpaceValueSpace => {
+                let n = SpaceValueSpace::new(&node);
+                self.push_rewritten(n.rewrite(context, &shape), &node);
+            }
+            NodeKind::LocalVariableDeclaration => {
+                self.format_local_variable_declaration(&node, context, &shape);
+            }
+            NodeKind::VariableDeclarator => {
+                self.format_variable_declaration(&node, context, &shape)
+            }
             _ => {
                 println!("### Unknow node: {}", node.kind());
             }
@@ -182,10 +188,38 @@ impl Visitor {
         self.visit_item(&child, context, &shape);
     }
 
+    pub fn format_local_variable_declaration(
+        &mut self,
+        node: &Node,
+        context: &FmtContext,
+        shape: &Shape,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            self.visit_item(&child, context, &shape);
+        }
+    }
     pub fn format_binary_expression(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let mut cursor = node.walk();
-        for child in node.children(&mut cursor) {
+        for child in node.named_children(&mut cursor) {
             self.visit_item(&child, context, &shape);
+        }
+    }
+
+    pub fn format_variable_declaration(
+        &mut self,
+        node: &Node,
+        context: &FmtContext,
+        shape: &Shape,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            self.visit_item(&child, context, &shape);
+        }
+
+        match node.next_named_sibling() {
+            Some(sibling) if sibling.kind() == "variable_declarator" => self.push_str(", "),
+            _ => {}
         }
     }
 

@@ -1,6 +1,6 @@
 use crate::config::{Indent, Shape};
 use crate::context::FmtContext;
-use crate::utility::{get_indent_string, get_modifiers, get_parameters, get_value};
+use crate::utility::*;
 use crate::{define_struct, define_struct_and_enum};
 use anyhow::{Context, Result};
 use tree_sitter::Node;
@@ -18,8 +18,12 @@ define_struct_and_enum!(
     true; FieldDeclaration => "field_declaration",
     true; MethodDeclaration => "method_declaration",
     false; ExpressionStatement => "expression_statement",
-    true; SimpleStatement => "boolean" | "int" | "identifier" | "||",
-    true; BinaryExpression => "binary_expression"
+    true; Value => "boolean" | "int" | "identifier"  |  "string_literal" | "," | ";",
+    true; ValueSpace => "type_identifier",
+    true; SpaceValueSpace => "assignment_operator",
+    false; BinaryExpression => "binary_expression",
+    false; LocalVariableDeclaration => "local_variable_declaration",
+    true; VariableDeclarator => "variable_declarator"
 );
 
 impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
@@ -27,16 +31,9 @@ impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
-        //result.push_str(&get_indent_string(&shape.indent));
 
-        let modifier_nodes = get_modifiers(self.as_ast_node());
-        let modifiers_doc = modifier_nodes
-            .iter()
-            .map(|n| get_value(n, context.source_code))
-            .collect::<Vec<&str>>()
-            .join(" ");
-
-        result.push_str(&modifiers_doc);
+        let modifiers_value = get_modifiers_value(self.as_ast_node(), context.source_code);
+        result.push_str(&modifiers_value);
         result.push_str(" class ");
 
         let name_node = self
@@ -145,24 +142,49 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             .context("mandatory name field missing")?;
         let name_node_value = get_value(&name_node, context.source_code);
         result.push_str(name_node_value);
-
-        //result.push(';');
         //let mut result = indent_lines(&result, shape);
-
         //println!("fieldD: result |{}|", result);
         Ok(result)
     }
 }
 
-impl<'a, 'tree> Rewrite for SimpleStatement<'a, 'tree> {
+impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
         let name_node_value = get_value(self.as_ast_node(), context.source_code);
         result.push_str(name_node_value);
-
-        //result.push(';');
         Ok(result)
     }
 }
+
+impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+        let mut result = String::from(' ');
+        let name_node_value = get_value(self.as_ast_node(), context.source_code);
+        result.push_str(name_node_value);
+        result.push(' ');
+        Ok(result)
+    }
+}
+
+impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+        let mut result = String::new();
+
+        let name_node_value = get_value(self.as_ast_node(), context.source_code);
+        result.push_str(name_node_value);
+        result.push(' ');
+        Ok(result)
+    }
+}
+
+//impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
+//    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+//        let mut result = String::new();
+//        let name_node_value = get_value(self.as_ast_node(), context.source_code);
+//        result.push_str(name_node_value);
+//        Ok(result)
+//    }
+//}
