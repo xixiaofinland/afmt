@@ -50,6 +50,7 @@ impl Visitor {
 
     pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
         self.visit_named_children(&context.ast_tree.root_node(), context, parent_shape)
+            self.buffer.trim_end_matches('\n').to_string();
     }
 
     pub fn visit_named_children(
