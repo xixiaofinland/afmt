@@ -187,6 +187,7 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 //    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
 //        let mut result = String::new();
 //        result.push_str("if");
+//        let condition_node = get_mandatory_child_by_name("condition", self.as_ast_node());
 //
 //        Ok(result)
 //    }

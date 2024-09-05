@@ -5,6 +5,8 @@ public with sharing class MyClass {
       Boolean c = true;
       if(c){
       	System.debug('hello world');
+      }else{
+        String c= 'a';
       }
   }
 }

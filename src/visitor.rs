@@ -94,6 +94,7 @@ impl Visitor {
         }
 
         let kind = NodeKind::from_kind(node.kind());
+        //println!("node:{}", node.kind());
         match kind {
             NodeKind::ClassDeclaration => {
                 self.format_class(&node, context, &shape);
@@ -138,6 +139,8 @@ impl Visitor {
             }
             NodeKind::IfStatement => {
                 self.format_if_statement(&node, context, &shape);
+                //let n = FieldDeclaration::new(&node);
+                //self.push_rewritten(n.rewrite(context, &shape), &node);
             }
             NodeKind::ParenthesizedExpression => {
                 self.push('(');
@@ -152,7 +155,6 @@ impl Visitor {
         if is_standalone {
             if has_body_node(node) {
                 self.push_str("\n");
-                //println!("add: {:?}", node.kind());
             } else {
                 self.push_str(";\n");
             }

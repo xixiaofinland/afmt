@@ -94,9 +94,26 @@ impl Visitor {
         self.push_str(&format!("{}}}", get_indent_string(&shape.indent)));
     }
 
-    pub fn format_if_statement(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_if_statement(
+        &mut self,
+        node: &Node,
+        context: &FmtContext,
+        shape: &Shape,
+    ) -> Result<()> {
         self.push_str("if");
-        self.visit_named_children(node, context, &shape);
+        let condition = get_mandatory_child_by_name("condition", node)?;
+        self.visit_item(&condition, context, shape);
+
+        self.push_block_open_line();
+
+        let consequence = get_mandatory_child_by_name("consequence", node)?;
+        self.visit_item(&consequence, context, shape);
+
         self.push_block_close(shape);
+
+        //let condition_node = get_mandatory_child_by_name("condition", node)?;
+        //self.visit_item(&condition_node, context, shape);
+
+        Ok(())
     }
 }
