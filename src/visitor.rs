@@ -133,6 +133,10 @@ impl Visitor {
             NodeKind::VariableDeclarator => {
                 self.format_variable_declaration(&node, context, &shape)
             }
+            NodeKind::IfStatement => {
+                let n = IfStatement::new(&node);
+                self.push_rewritten(n.rewrite(context, &shape), &node);
+            }
             _ => {
                 println!("### Unknow node: {}", node.kind());
             }

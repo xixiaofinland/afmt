@@ -13,6 +13,22 @@ pub fn get_value<'a>(node: &Node, source_code: &'a str) -> &'a str {
         .expect(&format!("{}: get_value failed.", node.kind()))
 }
 
+pub fn get_mandatory_named_child_value<'a, 'tree>(
+    name: &str,
+    n: &Node<'tree>,
+    source_code: &'a str,
+) -> Result<&'a str> {
+    let node = n
+        .child_by_field_name(name)
+        .context(format!("mandatory named field: {} missing.", name))?;
+    Ok(get_value(&node, source_code))
+}
+
+pub fn get_mandatory_child_by_name<'tree>(name: &str, n: &Node<'tree>) -> Result<Node<'tree>> {
+    n.child_by_field_name(name)
+        .context(format!("mandatory named field: {} missing.", name))
+}
+
 pub fn get_mandatory_child_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Result<Node<'tree>> {
     get_child_by_kind(kind, n).ok_or(bail!(format!("{}: mandatory child not found.", kind)))
 }

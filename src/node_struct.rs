@@ -23,7 +23,8 @@ define_struct_and_enum!(
     true; SpaceValueSpace => "assignment_operator",
     false; BinaryExpression => "binary_expression",
     false; LocalVariableDeclaration => "local_variable_declaration",
-    true; VariableDeclarator => "variable_declarator"
+    true; VariableDeclarator => "variable_declarator",
+    true; IfStatement => "if_statement"
 );
 
 impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
@@ -180,11 +181,11 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     }
 }
 
-//impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
-//    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
-//        let mut result = String::new();
-//        let name_node_value = get_value(self.as_ast_node(), context.source_code);
-//        result.push_str(name_node_value);
-//        Ok(result)
-//    }
-//}
+impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+        let mut result = String::new();
+        result.push_str("if");
+
+        Ok(result)
+    }
+}
