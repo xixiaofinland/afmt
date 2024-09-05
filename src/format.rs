@@ -18,7 +18,7 @@ impl Visitor {
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        self.visit_named_children(&body_node, context, &shape);
+        self.visit_item(&body_node, context, &shape);
 
         self.push_block_close(shape);
     }
@@ -92,5 +92,11 @@ impl Visitor {
         //println!("|{:?}|", &self.block_indent);
 
         self.push_str(&format!("{}}}", get_indent_string(&shape.indent)));
+    }
+
+    pub fn format_if_statement(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+        self.push_str("if");
+        self.visit_named_children(node, context, &shape);
+        self.push_block_close(shape);
     }
 }

@@ -108,6 +108,9 @@ impl Visitor {
             NodeKind::ExpressionStatement => {
                 self.format_expression_statement(&node, context, &shape);
             }
+            NodeKind::EmptyNode => {
+                self.visit_named_children(node, context, &shape);
+            }
             NodeKind::BinaryExpression => {
                 self.format_binary_expression(&node, context, &shape);
             }
@@ -134,8 +137,12 @@ impl Visitor {
                 self.format_variable_declaration(&node, context, &shape)
             }
             NodeKind::IfStatement => {
-                let n = IfStatement::new(&node);
-                self.push_rewritten(n.rewrite(context, &shape), &node);
+                self.format_if_statement(&node, context, &shape);
+            }
+            NodeKind::ParenthesizedExpression => {
+                self.push('(');
+                self.visit_named_children(node, context, &shape);
+                self.push(')');
             }
             _ => {
                 println!("### Unknow node: {}", node.kind());

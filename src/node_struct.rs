@@ -17,6 +17,7 @@ define_struct_and_enum!(
     true; ClassDeclaration => "class_declaration",
     true; FieldDeclaration => "field_declaration",
     true; MethodDeclaration => "method_declaration",
+    false; EmptyNode => "block" | "class_body",
     false; ExpressionStatement => "expression_statement",
     true; Value => "boolean" | "int" | "identifier"  |  "string_literal" | "," | ";",
     true; ValueSpace => "type_identifier",
@@ -24,7 +25,8 @@ define_struct_and_enum!(
     false; BinaryExpression => "binary_expression",
     false; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
-    true; IfStatement => "if_statement"
+    false; IfStatement => "if_statement",
+    false; ParenthesizedExpression => "parenthesized_expression"
 );
 
 impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
@@ -181,11 +183,11 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
-        let mut result = String::new();
-        result.push_str("if");
-
-        Ok(result)
-    }
-}
+//impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
+//    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+//        let mut result = String::new();
+//        result.push_str("if");
+//
+//        Ok(result)
+//    }
+//}
