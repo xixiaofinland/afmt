@@ -4,21 +4,36 @@ use std::{fs, path::Path};
 
 #[derive(Clone)]
 pub struct Config {
-    pub max_width: usize,
+    max_width: usize,
+    indent_size: usize,
 }
 
 impl Config {
     pub fn default() -> Self {
-        Self { max_width: 80 }
+        Self {
+            max_width: 80,
+            indent_size: 2,
+        }
     }
 
     pub fn new(max_width: usize) -> Self {
-        Self { max_width }
+        Self {
+            max_width,
+            indent_size: 2,
+        }
+    }
+
+    pub fn max_width(&self) -> usize {
+        self.max_width
+    }
+
+    pub fn indent_size(&self) -> usize {
+        self.indent_size
     }
 }
 
 pub struct Session {
-    pub config: Config,
+    config: Config,
     source_files: Vec<String>,
     //pub errors: ReportedErrors,
 }
@@ -30,6 +45,10 @@ impl Session {
             source_files,
             //errors: ReportedErrors::default(),
         }
+    }
+
+    pub fn config(&self) -> &Config {
+        &self.config
     }
 
     pub fn format(&self) -> Vec<Result<String>> {

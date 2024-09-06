@@ -86,7 +86,7 @@ impl Visitor {
         //);
 
         if is_standalone {
-            self.push_str(&get_indent_string(&shape.indent));
+            self.push_str(&shape.indent.to_string());
         }
 
         if node.is_named() {

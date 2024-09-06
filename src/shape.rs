@@ -4,31 +4,27 @@ use crate::config::Config;
 pub struct Shape {
     pub indent: Indent,
     pub width: usize, // width = max_width - indent_width;
-    pub offset: usize,
+                      //pub offset: usize,
 }
 
 impl Shape {
     pub fn new(indent: Indent, width: usize, offset: usize) -> Self {
-        Self {
-            indent,
-            width,
-            offset,
-        }
+        Self { indent, width }
     }
 
     pub fn empty() -> Self {
         Self {
             indent: Indent::new(0, 0),
             width: 1,
-            offset: 1,
         }
     }
 
-    pub fn indented(indent: Indent, config: &Config) -> Shape {
+    pub fn indented(&self, indent: Indent, config: &Config) -> Shape {
         Shape {
-            width: config.max_width,
+            width: config
+                .max_width()
+                .saturating_sub(&self.indent.block_indent * config.indent_size()),
             indent,
-            offset: indent.alignment,
         }
     }
 
@@ -53,5 +49,9 @@ impl Indent {
             block_indent,
             alignment,
         }
+    }
+
+    pub fn to_string(&self) -> String {
+        "  ".repeat(self.block_indent)
     }
 }
