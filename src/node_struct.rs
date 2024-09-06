@@ -177,7 +177,6 @@ impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
-
         let name_node_value = get_value(self.as_ast_node(), context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
@@ -189,7 +188,7 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 //    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
 //        let mut result = String::new();
 //        result.push_str("if");
-//        let condition_node = get_mandatory_child_by_name("condition", self.as_ast_node());
+//        let condition = get_mandatory_child_by_name("condition", self.as_ast_node());
 //
 //        Ok(result)
 //    }

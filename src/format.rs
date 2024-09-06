@@ -19,14 +19,12 @@ impl Visitor {
 
     pub fn format_method(&mut self, node: &Node, context: &FmtContext, shape: &mut Shape) {
         let n = MethodDeclaration::new(&node);
-        println!("offset: {}", shape.offset);
         self.push_rewritten(n.rewrite(context, shape), &node);
-        println!("offset-2: {}", shape.offset);
 
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        self.visit_item(&body_node, context, shape);
+        self.visit_named_children(&body_node, context, shape);
 
         self.push_block_close(shape);
     }
@@ -49,21 +47,16 @@ impl Visitor {
         context: &FmtContext,
         shape: &mut Shape,
     ) {
-        let mut cursor = node.walk();
-        for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, shape);
-        }
+        self.visit_children_in_same_line(node, context, shape);
     }
+
     pub fn format_binary_expression(
         &mut self,
         node: &Node,
         context: &FmtContext,
         shape: &mut Shape,
     ) {
-        let mut cursor = node.walk();
-        for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, shape);
-        }
+        self.visit_children_in_same_line(node, context, shape);
     }
 
     pub fn format_variable_declaration(
@@ -72,10 +65,7 @@ impl Visitor {
         context: &FmtContext,
         shape: &mut Shape,
     ) {
-        let mut cursor = node.walk();
-        for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, shape);
-        }
+        self.visit_children_in_same_line(node, context, shape);
 
         match node.next_named_sibling() {
             Some(sibling) if sibling.kind() == "variable_declarator" => self.push_str(", "),
@@ -88,8 +78,6 @@ impl Visitor {
     }
 
     fn push_block_close(&mut self, shape: &mut Shape) {
-        //println!("|{:?}|", &self.block_indent);
-
         self.push_str(&format!("{}}}", get_indent_string(&shape.indent)));
     }
 
