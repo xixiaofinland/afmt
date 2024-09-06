@@ -1,5 +1,6 @@
 use crate::{
-    config::{Config, Indent, Shape},
+    config::{Config, Indent},
+    shape::Shape,
     visitor::Visitor,
 };
 use anyhow::Result;

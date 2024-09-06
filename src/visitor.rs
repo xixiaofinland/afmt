@@ -1,9 +1,4 @@
-use crate::{
-    config::{Indent, Shape},
-    context::FmtContext,
-    node_struct::*,
-    utility::*,
-};
+use crate::{config::Indent, context::FmtContext, node_struct::*, shape::Shape, utility::*};
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
@@ -47,14 +42,15 @@ impl Visitor {
     }
 
     pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
-        self.visit_named_children(&context.ast_tree.root_node(), context, parent_shape);
+        self.visit_indented_children(&context.ast_tree.root_node(), context, parent_shape);
 
         // remove the extra "\n" introduced by the top-level class declaration
         self.buffer
             .truncate(self.buffer.trim_end_matches('\n').len());
     }
 
-    pub fn visit_named_children(
+    // traverse real childrean only rather than AST child nodes which might not be real children
+    pub fn visit_indented_children(
         &mut self,
         node: &Node,
         context: &FmtContext,
@@ -77,7 +73,12 @@ impl Visitor {
 
     pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let is_standalone = is_standalone(node);
-        //println!("standalone? {}, {}", node.kind(), is_standalone);
+        //println!(
+        //    "standalone? {}, {}, {}",
+        //    node.kind(),
+        //    is_standalone,
+        //    &shape.indent.block_indent
+        //);
 
         if is_standalone {
             self.push_str(&get_indent_string(&shape.indent));
@@ -110,7 +111,7 @@ impl Visitor {
                 self.format_expression_statement(&node, context, &shape);
             }
             NodeKind::EmptyNode => {
-                self.visit_named_children(node, context, &shape);
+                self.visit_indented_children(node, context, &shape);
             }
             NodeKind::BinaryExpression => {
                 self.format_binary_expression(&node, context, &shape);
@@ -144,7 +145,7 @@ impl Visitor {
             }
             NodeKind::ParenthesizedExpression => {
                 self.push('(');
-                self.visit_named_children(node, context, &shape);
+                self.visit_indented_children(node, context, &shape);
                 self.push(')');
             }
             _ => {

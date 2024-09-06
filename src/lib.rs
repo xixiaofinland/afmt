@@ -4,6 +4,7 @@ mod context;
 mod format;
 mod macros;
 mod node_struct;
+mod shape;
 mod utility;
 mod visitor;
 

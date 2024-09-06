@@ -1,5 +1,6 @@
-use crate::config::{Indent, Shape};
+use crate::config::Indent;
 use crate::context::FmtContext;
+use crate::shape::Shape;
 use crate::utility::*;
 use crate::{define_struct, define_struct_and_enum};
 use anyhow::{Context, Result};
