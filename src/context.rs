@@ -1,8 +1,4 @@
-use crate::{
-    config::{Config, Indent},
-    shape::Shape,
-    visitor::Visitor,
-};
+use crate::{config::Config, shape::Shape, visitor::Visitor};
 use anyhow::Result;
 use tree_sitter::{Language, Parser, Tree};
 

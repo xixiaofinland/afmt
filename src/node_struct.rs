@@ -1,4 +1,3 @@
-use crate::config::Indent;
 use crate::context::FmtContext;
 use crate::shape::Shape;
 use crate::utility::*;

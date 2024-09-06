@@ -1,6 +1,6 @@
 use crate::shape::Shape;
 use crate::visitor::*;
-use crate::{config::Indent, context::FmtContext, node_struct::*, utility::*};
+use crate::{context::FmtContext, node_struct::*, utility::*};
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 

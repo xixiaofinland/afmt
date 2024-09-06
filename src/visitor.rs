@@ -1,4 +1,9 @@
-use crate::{config::Indent, context::FmtContext, node_struct::*, shape::Shape, utility::*};
+use crate::{
+    context::FmtContext,
+    node_struct::*,
+    shape::{Indent, Shape},
+    utility::*,
+};
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 

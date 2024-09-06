@@ -17,25 +17,6 @@ impl Config {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-pub struct Indent {
-    pub block_indent: usize,
-    pub alignment: usize,
-}
-
-impl Indent {
-    pub fn default() -> Indent {
-        Indent::new(0, 0)
-    }
-
-    pub fn new(block_indent: usize, alignment: usize) -> Indent {
-        Indent {
-            block_indent,
-            alignment,
-        }
-    }
-}
-
 pub struct Session {
     pub config: Config,
     source_files: Vec<String>,

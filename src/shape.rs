@@ -1,9 +1,9 @@
-use crate::config::{Config, Indent};
+use crate::config::Config;
 
 #[derive(Clone)]
 pub struct Shape {
     pub indent: Indent,
-    pub width: usize,
+    pub width: usize, // width = max_width - indent_width;
     pub offset: usize,
 }
 
@@ -34,5 +34,24 @@ impl Shape {
 
     pub fn increase_indent(s: &Shape) -> Self {
         Shape::new(Indent::new(s.indent.block_indent + 1, 0), 1, 1)
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct Indent {
+    pub block_indent: usize,
+    pub alignment: usize,
+}
+
+impl Indent {
+    pub fn default() -> Indent {
+        Indent::new(0, 0)
+    }
+
+    pub fn new(block_indent: usize, alignment: usize) -> Indent {
+        Indent {
+            block_indent,
+            alignment,
+        }
     }
 }

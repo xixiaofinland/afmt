@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
-use crate::config::Indent;
+use crate::shape::Indent;
 
 pub fn get_indent_string(indent: &Indent) -> String {
     let indent = "  ".repeat(indent.block_indent);
