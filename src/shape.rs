@@ -27,12 +27,14 @@ impl Shape {
     }
 
     pub fn copy_with_indent_block_plus(&self, config: &Config) -> Self {
+        let indent = self.indent.copy_with_increased_block_indent();
+        let offset = indent.block_indent * config.indent_size();
+        let width = config.max_width().saturating_sub(offset);
+
         Self {
-            indent: self.indent.copy_with_increased_block_indent(),
-            width: config
-                .max_width()
-                .saturating_sub(&self.indent.block_indent * config.indent_size()),
-            offset: self.offset,
+            indent,
+            width,
+            offset,
         }
     }
 }

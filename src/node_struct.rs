@@ -44,7 +44,8 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let name_node_value = get_value(&name_node, context.source_code);
 
         result.push_str(name_node_value);
-        shape.offset = result.len();
+        result.push_str(" {\n");
+        shape.offset += result.len();
         Ok(result)
     }
 }
@@ -102,6 +103,8 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push_str(&parameters_doc);
         result.push(')');
+        result.push_str(" {\n");
+        shape.offset += result.len();
 
         Ok(result)
     }

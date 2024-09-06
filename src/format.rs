@@ -7,25 +7,21 @@ use tree_sitter::Node;
 impl Visitor {
     pub fn format_class(&mut self, node: &Node, context: &FmtContext, shape: &mut Shape) {
         let n = ClassDeclaration::new(&node);
-        println!("offset: {}", shape.offset);
         self.push_rewritten(n.rewrite(context, shape), &node);
-        println!("offset-2: {}", shape.offset);
-
-        self.push_block_open_line();
 
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        self.visit_item(&body_node, context, shape);
+        self.visit_named_children(&body_node, context, shape);
 
         self.push_block_close(shape);
     }
 
     pub fn format_method(&mut self, node: &Node, context: &FmtContext, shape: &mut Shape) {
         let n = MethodDeclaration::new(&node);
+        println!("offset: {}", shape.offset);
         self.push_rewritten(n.rewrite(context, shape), &node);
-
-        self.push_block_open_line();
+        println!("offset-2: {}", shape.offset);
 
         let body_node = node
             .child_by_field_name("body")

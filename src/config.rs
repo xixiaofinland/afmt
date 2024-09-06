@@ -12,14 +12,14 @@ impl Config {
     pub fn default() -> Self {
         Self {
             max_width: 80,
-            indent_size: 2,
+            indent_size: 4,
         }
     }
 
     pub fn new(max_width: usize) -> Self {
         Self {
             max_width,
-            indent_size: 2,
+            indent_size: 4,
         }
     }
 

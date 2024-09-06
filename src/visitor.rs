@@ -54,6 +54,7 @@ impl Visitor {
             .truncate(self.buffer.trim_end_matches('\n').len());
     }
 
+    // call this when named childrens are all inlined nodes;
     pub fn visit_children_in_same_line(
         &mut self,
         node: &Node,
@@ -66,17 +67,12 @@ impl Visitor {
         }
     }
 
-    pub fn visit_named_children(
-        &mut self,
-        node: &Node,
-        context: &FmtContext,
-        parent_shape: &Shape,
-    ) {
+    pub fn visit_named_children(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
         let is_root_node = node.kind() == "parser_output";
         let mut child_shape = if is_root_node {
             Shape::empty(context.config)
         } else {
-            parent_shape.copy_with_indent_block_plus(context.config)
+            shape.copy_with_indent_block_plus(context.config)
         };
 
         //println!("shape: {}, {}", node.kind(), shape.indent.block_indent);
