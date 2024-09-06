@@ -47,14 +47,14 @@ impl Visitor {
     }
 
     pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
-        self.visit_indented_children(&context.ast_tree.root_node(), context, parent_shape);
+        self.visit_named_children(&context.ast_tree.root_node(), context, parent_shape);
 
         // remove the extra "\n" introduced by the top-level class declaration
         self.buffer
             .truncate(self.buffer.trim_end_matches('\n').len());
     }
 
-    pub fn visit_indented_children(
+    pub fn visit_named_children(
         &mut self,
         node: &Node,
         context: &FmtContext,
@@ -71,7 +71,21 @@ impl Visitor {
 
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
+            let is_standalone = is_standalone(&child);
+            if is_standalone {
+                let child_shape = child_shape.clone(); // standalone node should use its own shape;
+                self.push_str(&child_shape.indent.to_string());
+            }
+
             self.visit_item(&child, context, &child_shape);
+
+            if is_standalone {
+                if has_body_node(&child) {
+                    self.push_str("\n");
+                } else {
+                    self.push_str(";\n");
+                }
+            }
         }
     }
 
@@ -82,11 +96,6 @@ impl Visitor {
         //    is_standalone,
         //    &shape.indent.block_indent
         //);
-        let is_standalone = is_standalone(node);
-        if is_standalone {
-            let shape = shape.clone(); // standalone node should use its own shape;
-            self.push_str(&shape.indent.to_string());
-        }
 
         if node.is_named() {
             match node.grammar_name() {
@@ -115,7 +124,7 @@ impl Visitor {
                 self.format_expression_statement(&node, context, &shape);
             }
             NodeKind::EmptyNode => {
-                self.visit_indented_children(node, context, &shape);
+                self.visit_named_children(node, context, &shape);
             }
             NodeKind::BinaryExpression => {
                 self.format_binary_expression(&node, context, &shape);
@@ -124,9 +133,9 @@ impl Visitor {
                 let n = Value::new(&node);
                 self.push_rewritten(n.rewrite(context, &shape), &node);
                 //println!("kind check: {}:{}", node.kind(), is_standalone);
-                if is_standalone {
-                    self.push_str(";");
-                }
+                //if is_standalone {
+                //    self.push_str(";");
+                //}
             }
             NodeKind::ValueSpace => {
                 let n = ValueSpace::new(&node);
@@ -149,19 +158,11 @@ impl Visitor {
             }
             NodeKind::ParenthesizedExpression => {
                 self.push('(');
-                self.visit_indented_children(node, context, &shape);
+                self.visit_named_children(node, context, &shape);
                 self.push(')');
             }
             _ => {
                 println!("### Unknow node: {}", node.kind());
-            }
-        }
-
-        if is_standalone {
-            if has_body_node(node) {
-                self.push_str("\n");
-            } else {
-                self.push_str(";\n");
             }
         }
     }
