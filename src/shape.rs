@@ -3,16 +3,16 @@ use crate::config::{Config, Indent};
 #[derive(Clone)]
 pub struct Shape {
     pub indent: Indent,
-    pub width: usize,  //TODO
-    pub offset: usize, //TODO
+    pub width: usize,
+    pub offset: usize,
 }
 
 impl Shape {
-    pub fn new(indent: Indent) -> Self {
+    pub fn new(indent: Indent, width: usize, offset: usize) -> Self {
         Self {
             indent,
-            width: 1,
-            offset: 1,
+            width,
+            offset,
         }
     }
 
@@ -33,6 +33,6 @@ impl Shape {
     }
 
     pub fn increase_indent(s: &Shape) -> Self {
-        Shape::new(Indent::new(s.indent.block_indent + 1, 0))
+        Shape::new(Indent::new(s.indent.block_indent + 1, 0), 1, 1)
     }
 }
