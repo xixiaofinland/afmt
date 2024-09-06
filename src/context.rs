@@ -30,7 +30,7 @@ impl<'a> FmtContext<'a> {
     }
 
     pub fn format_one_file(&self) -> Result<String> {
-        let shape = Shape::empty();
+        let shape = Shape::empty(self.config);
         let mut visitor = Visitor::default();
         visitor.visit_root(self, &shape);
         let mut result = visitor.buffer;

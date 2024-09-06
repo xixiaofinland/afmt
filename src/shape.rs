@@ -4,50 +4,57 @@ use crate::config::Config;
 pub struct Shape {
     pub indent: Indent,
     pub width: usize, // width = max_width - indent_width;
-                      //pub offset: usize,
+    pub offset: usize,
 }
 
 impl Shape {
-    pub fn new(indent: Indent, width: usize, offset: usize) -> Self {
-        Self { indent, width }
-    }
-
-    pub fn empty() -> Self {
+    pub fn new(indent: Indent, config: &Config) -> Self {
         Self {
-            indent: Indent::new(0, 0),
-            width: 1,
+            indent,
+            width: config
+                .max_width()
+                .saturating_sub(indent.block_indent * config.indent_size()),
+            offset: 0,
         }
     }
 
-    pub fn indented(&self, indent: Indent, config: &Config) -> Shape {
-        Shape {
+    pub fn empty(config: &Config) -> Self {
+        Self {
+            indent: Indent::default(),
+            width: config.max_width(),
+            offset: 0,
+        }
+    }
+
+    pub fn copy_with_indent_block_plus(&self, config: &Config) -> Self {
+        Self {
+            indent: self.indent.copy_with_increased_block_indent(),
             width: config
                 .max_width()
                 .saturating_sub(&self.indent.block_indent * config.indent_size()),
-            indent,
+            offset: self.offset,
         }
-    }
-
-    pub fn increase_indent(s: &Shape) -> Self {
-        Shape::new(Indent::new(s.indent.block_indent + 1, 0), 1, 1)
     }
 }
 
 #[derive(Copy, Clone, Debug)]
 pub struct Indent {
     pub block_indent: usize,
-    pub alignment: usize,
+    //pub alignment: usize,
 }
 
 impl Indent {
     pub fn default() -> Indent {
-        Indent::new(0, 0)
+        Indent::new(0)
     }
 
-    pub fn new(block_indent: usize, alignment: usize) -> Indent {
-        Indent {
-            block_indent,
-            alignment,
+    pub fn new(block_indent: usize) -> Indent {
+        Indent { block_indent }
+    }
+
+    pub fn copy_with_increased_block_indent(&self) -> Self {
+        Self {
+            block_indent: self.block_indent + 1,
         }
     }
 

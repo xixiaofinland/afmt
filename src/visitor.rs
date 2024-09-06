@@ -54,7 +54,6 @@ impl Visitor {
             .truncate(self.buffer.trim_end_matches('\n').len());
     }
 
-    // traverse real childrean only rather than AST child nodes which might not be real children
     pub fn visit_indented_children(
         &mut self,
         node: &Node,
@@ -62,30 +61,30 @@ impl Visitor {
         parent_shape: &Shape,
     ) {
         let is_root_node = node.kind() == "parser_output";
-        let shape = if is_root_node {
-            Shape::empty()
+        let child_shape = if is_root_node {
+            Shape::empty(context.config)
         } else {
-            Shape::increase_indent(parent_shape)
+            parent_shape.copy_with_indent_block_plus(context.config)
         };
 
         //println!("shape: {}, {}", node.kind(), shape.indent.block_indent);
 
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, &shape);
+            self.visit_item(&child, context, &child_shape);
         }
     }
 
     pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
-        let is_standalone = is_standalone(node);
         //println!(
         //    "standalone? {}, {}, {}",
         //    node.kind(),
         //    is_standalone,
         //    &shape.indent.block_indent
         //);
-
+        let is_standalone = is_standalone(node);
         if is_standalone {
+            let shape = shape.clone(); // standalone node should use its own shape;
             self.push_str(&shape.indent.to_string());
         }
 
