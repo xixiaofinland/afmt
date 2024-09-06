@@ -54,6 +54,18 @@ impl Visitor {
             .truncate(self.buffer.trim_end_matches('\n').len());
     }
 
+    pub fn visit_children_in_same_line(
+        &mut self,
+        node: &Node,
+        context: &FmtContext,
+        shape: &Shape,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            self.visit_item(&child, context, &shape);
+        }
+    }
+
     pub fn visit_named_children(
         &mut self,
         node: &Node,
@@ -90,13 +102,6 @@ impl Visitor {
     }
 
     pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
-        //println!(
-        //    "standalone? {}, {}, {}",
-        //    node.kind(),
-        //    is_standalone,
-        //    &shape.indent.block_indent
-        //);
-
         if node.is_named() {
             match node.grammar_name() {
                 "operator" => {
@@ -158,7 +163,7 @@ impl Visitor {
             }
             NodeKind::ParenthesizedExpression => {
                 self.push('(');
-                self.visit_named_children(node, context, &shape);
+                self.visit_children_in_same_line(node, context, &shape);
                 self.push(')');
             }
             _ => {
