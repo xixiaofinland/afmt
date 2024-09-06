@@ -58,11 +58,11 @@ impl Visitor {
         &mut self,
         node: &Node,
         context: &FmtContext,
-        shape: &Shape,
+        shape: &mut Shape,
     ) {
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, &shape);
+            self.visit_item(&child, context, shape);
         }
     }
 
@@ -73,7 +73,7 @@ impl Visitor {
         parent_shape: &Shape,
     ) {
         let is_root_node = node.kind() == "parser_output";
-        let child_shape = if is_root_node {
+        let mut child_shape = if is_root_node {
             Shape::empty(context.config)
         } else {
             parent_shape.copy_with_indent_block_plus(context.config)
@@ -85,11 +85,11 @@ impl Visitor {
         for child in node.named_children(&mut cursor) {
             let is_standalone = is_standalone(&child);
             if is_standalone {
-                let child_shape = child_shape.clone(); // standalone node should use its own shape;
+                let mut child_shape = child_shape.clone(); // standalone node should use its own shape;
                 self.push_str(&child_shape.indent.to_string());
             }
 
-            self.visit_item(&child, context, &child_shape);
+            self.visit_item(&child, context, &mut child_shape);
 
             if is_standalone {
                 if has_body_node(&child) {
@@ -101,7 +101,7 @@ impl Visitor {
         }
     }
 
-    pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &mut Shape) {
         if node.is_named() {
             match node.grammar_name() {
                 "operator" => {
@@ -116,27 +116,27 @@ impl Visitor {
         //println!("node:{}", node.kind());
         match kind {
             NodeKind::ClassDeclaration => {
-                self.format_class(&node, context, &shape);
+                self.format_class(&node, context, shape);
             }
             NodeKind::MethodDeclaration => {
-                self.format_method(&node, context, &shape);
+                self.format_method(&node, context, shape);
             }
             NodeKind::FieldDeclaration => {
                 let n = FieldDeclaration::new(&node);
-                self.push_rewritten(n.rewrite(context, &shape), &node);
+                self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::ExpressionStatement => {
-                self.format_expression_statement(&node, context, &shape);
+                self.format_expression_statement(&node, context, shape);
             }
             NodeKind::EmptyNode => {
-                self.visit_named_children(node, context, &shape);
+                self.visit_named_children(node, context, shape);
             }
             NodeKind::BinaryExpression => {
-                self.format_binary_expression(&node, context, &shape);
+                self.format_binary_expression(&node, context, shape);
             }
             NodeKind::Value => {
                 let n = Value::new(&node);
-                self.push_rewritten(n.rewrite(context, &shape), &node);
+                self.push_rewritten(n.rewrite(context, shape), &node);
                 //println!("kind check: {}:{}", node.kind(), is_standalone);
                 //if is_standalone {
                 //    self.push_str(";");
@@ -144,26 +144,24 @@ impl Visitor {
             }
             NodeKind::ValueSpace => {
                 let n = ValueSpace::new(&node);
-                self.push_rewritten(n.rewrite(context, &shape), &node);
+                self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::SpaceValueSpace => {
                 let n = SpaceValueSpace::new(&node);
-                self.push_rewritten(n.rewrite(context, &shape), &node);
+                self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::LocalVariableDeclaration => {
-                self.format_local_variable_declaration(&node, context, &shape);
+                self.format_local_variable_declaration(&node, context, shape);
             }
-            NodeKind::VariableDeclarator => {
-                self.format_variable_declaration(&node, context, &shape)
-            }
+            NodeKind::VariableDeclarator => self.format_variable_declaration(&node, context, shape),
             NodeKind::IfStatement => {
-                self.format_if_statement(&node, context, &shape);
+                self.format_if_statement(&node, context, shape);
                 //let n = FieldDeclaration::new(&node);
                 //self.push_rewritten(n.rewrite(context, &shape), &node);
             }
             NodeKind::ParenthesizedExpression => {
                 self.push('(');
-                self.visit_children_in_same_line(node, context, &shape);
+                self.visit_children_in_same_line(node, context, shape);
                 self.push(')');
             }
             _ => {

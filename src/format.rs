@@ -5,30 +5,32 @@ use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
 impl Visitor {
-    pub fn format_class(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_class(&mut self, node: &Node, context: &FmtContext, shape: &mut Shape) {
         let n = ClassDeclaration::new(&node);
-        self.push_rewritten(n.rewrite(context, &shape), &node);
+        println!("offset: {}", shape.offset);
+        self.push_rewritten(n.rewrite(context, shape), &node);
+        println!("offset-2: {}", shape.offset);
 
         self.push_block_open_line();
 
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        self.visit_item(&body_node, context, &shape);
+        self.visit_item(&body_node, context, shape);
 
         self.push_block_close(shape);
     }
 
-    pub fn format_method(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_method(&mut self, node: &Node, context: &FmtContext, shape: &mut Shape) {
         let n = MethodDeclaration::new(&node);
-        self.push_rewritten(n.rewrite(context, &shape), &node);
+        self.push_rewritten(n.rewrite(context, shape), &node);
 
         self.push_block_open_line();
 
         let body_node = node
             .child_by_field_name("body")
             .expect("mandatory body node missing");
-        self.visit_item(&body_node, context, &shape);
+        self.visit_item(&body_node, context, shape);
 
         self.push_block_close(shape);
     }
@@ -37,29 +39,34 @@ impl Visitor {
         &mut self,
         node: &Node,
         context: &FmtContext,
-        shape: &Shape,
+        shape: &mut Shape,
     ) {
         let child = node
             .named_child(0)
             .expect("ExpressionStatement mandatory child missing.");
-        self.visit_item(&child, context, &shape);
+        self.visit_item(&child, context, shape);
     }
 
     pub fn format_local_variable_declaration(
         &mut self,
         node: &Node,
         context: &FmtContext,
-        shape: &Shape,
+        shape: &mut Shape,
     ) {
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, &shape);
+            self.visit_item(&child, context, shape);
         }
     }
-    pub fn format_binary_expression(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
+    pub fn format_binary_expression(
+        &mut self,
+        node: &Node,
+        context: &FmtContext,
+        shape: &mut Shape,
+    ) {
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, &shape);
+            self.visit_item(&child, context, shape);
         }
     }
 
@@ -67,11 +74,11 @@ impl Visitor {
         &mut self,
         node: &Node,
         context: &FmtContext,
-        shape: &Shape,
+        shape: &mut Shape,
     ) {
         let mut cursor = node.walk();
         for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, &shape);
+            self.visit_item(&child, context, shape);
         }
 
         match node.next_named_sibling() {
@@ -84,7 +91,7 @@ impl Visitor {
         self.push_str(" {\n");
     }
 
-    fn push_block_close(&mut self, shape: &Shape) {
+    fn push_block_close(&mut self, shape: &mut Shape) {
         //println!("|{:?}|", &self.block_indent);
 
         self.push_str(&format!("{}}}", get_indent_string(&shape.indent)));
@@ -94,7 +101,7 @@ impl Visitor {
         &mut self,
         node: &Node,
         context: &FmtContext,
-        shape: &Shape,
+        shape: &mut Shape,
     ) -> Result<()> {
         self.push_str("if");
         let condition = get_mandatory_child_by_name("condition", node)?;

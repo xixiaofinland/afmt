@@ -6,11 +6,11 @@ use anyhow::{Context, Result};
 use tree_sitter::Node;
 
 pub trait Rewrite {
-    fn rewrite(&self, context: &FmtContext, shape: &Shape) -> Option<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> Option<String> {
         self.rewrite_result(context, shape).ok()
     }
 
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String>;
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String>;
 }
 
 define_struct_and_enum!(
@@ -29,10 +29,8 @@ define_struct_and_enum!(
     false; ParenthesizedExpression => "parenthesized_expression"
 );
 
-impl<'a, 'tree> ClassDeclaration<'a, 'tree> {}
-
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
 
         let modifiers_value = get_modifiers_value(self.as_ast_node(), context.source_code);
@@ -46,12 +44,13 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let name_node_value = get_value(&name_node, context.source_code);
 
         result.push_str(name_node_value);
+        shape.offset = result.len();
         Ok(result)
     }
 }
 
 impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
@@ -109,7 +108,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
@@ -152,7 +151,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
@@ -163,7 +162,7 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::from(' ');
         let name_node_value = get_value(self.as_ast_node(), context.source_code);
         result.push_str(name_node_value);
@@ -173,7 +172,7 @@ impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
 
         let name_node_value = get_value(self.as_ast_node(), context.source_code);
