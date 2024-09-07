@@ -143,11 +143,13 @@ impl Visitor {
                 self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::LocalVariableDeclaration => {
-                self.format_local_variable_declaration(&node, context, shape);
+                let n = LocalVariableDeclaration::new(&node);
+                self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::VariableDeclarator => self.format_variable_declaration(&node, context, shape),
             NodeKind::IfStatement => {
                 self.format_if_statement(&node, context, shape);
+                //self.push_rewritten(n.rewrite(context, &shape), &node);
             }
             NodeKind::ParenthesizedExpression => {
                 self.push('(');

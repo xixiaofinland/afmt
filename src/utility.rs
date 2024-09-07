@@ -29,6 +29,28 @@ pub fn get_mandatory_child_by_name<'tree>(name: &str, n: &Node<'tree>) -> Result
         .context(format!("mandatory named field: {} missing.", name))
 }
 
+pub fn get_mandatory_kind_child_value<'a, 'tree>(
+    name: &str,
+    n: &Node<'tree>,
+    source_code: &'a str,
+) -> Result<&'a str> {
+    let child_node = get_mandatory_child_by_kind(name, n)?;
+    Ok(get_value(&child_node, source_code))
+}
+
+pub fn get_mandatory_children_by_name<'tree>(
+    name: &str,
+    n: &Node<'tree>,
+) -> Result<Vec<Node<'tree>>> {
+    let mut cursor = n.walk();
+    let children: Vec<Node<'tree>> = n.children_by_field_name(name, &mut cursor).collect();
+    if children.is_empty() {
+        bail!("No children found with the name: {}", name);
+    }
+
+    Ok(children)
+}
+
 pub fn get_mandatory_child_by_kind<'tree>(kind: &str, n: &Node<'tree>) -> Result<Node<'tree>> {
     get_child_by_kind(kind, n).ok_or(bail!(format!("{}: mandatory child not found.", kind)))
 }

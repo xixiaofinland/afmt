@@ -3,6 +3,7 @@ use crate::shape::Shape;
 use crate::utility::*;
 use crate::{define_struct, define_struct_and_enum};
 use anyhow::{Context, Result};
+use log::debug;
 use tree_sitter::Node;
 
 pub trait Rewrite {
@@ -23,7 +24,7 @@ define_struct_and_enum!(
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
     false; BinaryExpression => "binary_expression",
-    false; LocalVariableDeclaration => "local_variable_declaration",
+    true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     false; IfStatement => "if_statement",
     false; ParenthesizedExpression => "parenthesized_expression"
@@ -184,12 +185,32 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     }
 }
 
-//impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
-//    fn rewrite_result(&self, context: &FmtContext, shape: &Shape) -> Result<String> {
-//        let mut result = String::new();
-//        result.push_str("if");
-//        let condition = get_mandatory_child_by_name("condition", self.as_ast_node());
-//
-//        Ok(result)
-//    }
-//}
+// TODO: multi
+impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+        let type_value =
+            get_mandatory_named_child_value("type", self.as_ast_node(), context.source_code)?;
+
+        let declarator_nodes = get_mandatory_children_by_name("declarator", self.as_ast_node())?;
+
+        let declarator_values: Vec<String> = declarator_nodes
+            .iter()
+            .map(|d| {
+                let name = get_mandatory_named_child_value("name", d, context.source_code)
+                    .expect("mandatory 'name' child missing.");
+                let value = d
+                    .child_by_field_name("value")
+                    .map(|n| format!(" = {}", get_value(&n, context.source_code)))
+                    .unwrap_or_default();
+
+                format!("{}{}", name, value)
+            })
+            .collect();
+
+        let result = format!("{} {}", type_value, declarator_values.join(", "));
+
+        debug!("LocalVariable: {}", result);
+
+        Ok(result)
+    }
+}
