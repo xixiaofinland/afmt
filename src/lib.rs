@@ -3,6 +3,7 @@ pub mod config;
 mod context;
 mod format;
 mod macros;
+mod node_ext;
 mod node_struct;
 mod shape;
 mod utility;
