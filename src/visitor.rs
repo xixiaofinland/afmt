@@ -133,10 +133,6 @@ impl Visitor {
             NodeKind::Value => {
                 let n = Value::new(&node);
                 self.push_rewritten(n.rewrite(context, shape), &node);
-                //println!("kind check: {}:{}", node.kind(), is_standalone);
-                //if is_standalone {
-                //    self.push_str(";");
-                //}
             }
             NodeKind::ValueSpace => {
                 let n = ValueSpace::new(&node);
@@ -152,8 +148,6 @@ impl Visitor {
             NodeKind::VariableDeclarator => self.format_variable_declaration(&node, context, shape),
             NodeKind::IfStatement => {
                 self.format_if_statement(&node, context, shape);
-                //let n = FieldDeclaration::new(&node);
-                //self.push_rewritten(n.rewrite(context, &shape), &node);
             }
             NodeKind::ParenthesizedExpression => {
                 self.push('(');

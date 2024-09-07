@@ -19,7 +19,7 @@ define_struct_and_enum!(
     true; MethodDeclaration => "method_declaration",
     false; EmptyNode => "block" | "class_body",
     false; ExpressionStatement => "expression_statement",
-    true; Value => "boolean" | "int" | "identifier"  |  "string_literal" | "," | ";",
+    true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
     false; BinaryExpression => "binary_expression",
