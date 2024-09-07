@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.86"
 clap = "4.5.16"
+env_logger = "0.11.5"
+log = "0.4.22"
 tree-sitter = "0.22.6"
 
 [build-dependencies]

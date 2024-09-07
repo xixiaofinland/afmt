@@ -1,8 +1,12 @@
 use afmt::args::{get_args, Args};
 use afmt::format;
 use anyhow::Result;
+use log::info;
 
 fn main() {
+    env_logger::init();
+    info!("starting up");
+
     if let Err(e) = run(get_args()) {
         eprintln!("{e}");
         std::process::exit(1);
