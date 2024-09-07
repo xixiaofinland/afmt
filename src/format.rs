@@ -1,3 +1,4 @@
+use crate::node_ext::*;
 use crate::shape::Shape;
 use crate::visitor::*;
 use crate::{context::FmtContext, node_struct::*, utility::*};
@@ -79,12 +80,12 @@ impl Visitor {
         shape: &mut Shape,
     ) -> Result<()> {
         self.push_str("if");
-        let condition = get_mandatory_child_by_name("condition", node)?;
+        let condition = node.get_mandatory_child_by_name("condition");
         self.visit_item(&condition, context, shape);
 
         self.push_block_open_line();
 
-        let consequence = get_mandatory_child_by_name("consequence", node)?;
+        let consequence = node.get_mandatory_child_by_name("consequence");
         self.visit_item(&consequence, context, shape);
 
         self.push_block_close(shape);

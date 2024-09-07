@@ -1,4 +1,5 @@
 use crate::context::FmtContext;
+use crate::node_ext::*;
 use crate::shape::Shape;
 use crate::utility::*;
 use crate::{define_struct, define_struct_and_enum};
@@ -42,7 +43,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_value(&name_node, context.source_code);
+        let name_node_value = name_node.get_value(context.source_code);
 
         result.push_str(name_node_value);
         result.push_str(" {\n");
@@ -59,7 +60,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let modifier_nodes = get_modifiers(self.as_ast_node());
         let modifiers_doc = modifier_nodes
             .iter()
-            .map(|n| get_value(n, context.source_code))
+            .map(|n| n.get_value(context.source_code))
             .collect::<Vec<&str>>()
             .join(" ");
 
@@ -70,7 +71,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("type")
             .context("mandatory type field missing")?;
-        let type_node_value = get_value(&type_node, context.source_code);
+        let type_node_value = type_node.get_value(context.source_code);
         result.push_str(type_node_value);
         result.push(' ');
 
@@ -78,7 +79,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_value(&name_node, context.source_code);
+        let name_node_value = name_node.get_value(context.source_code);
         result.push_str(name_node_value);
 
         result.push('(');
@@ -135,7 +136,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             .as_ast_node()
             .child_by_field_name("type")
             .context("mandatory type field missing")?;
-        let type_node_value = get_value(&type_node, context.source_code);
+        let type_node_value = type_node.get_value(context.source_code);
         result.push_str(type_node_value);
 
         result.push(' ');
@@ -146,7 +147,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             .context("mandatory declarator field missing")?
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
-        let name_node_value = get_value(&name_node, context.source_code);
+        let name_node_value = name_node.get_value(context.source_code);
         result.push_str(name_node_value);
         //let mut result = indent_lines(&result, shape);
         //println!("fieldD: result |{}|", result);
@@ -159,7 +160,7 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
-        let name_node_value = get_value(self.as_ast_node(), context.source_code);
+        let name_node_value = self.as_ast_node().get_value(context.source_code);
         result.push_str(name_node_value);
         Ok(result)
     }
@@ -168,7 +169,7 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::from(' ');
-        let name_node_value = get_value(self.as_ast_node(), context.source_code);
+        let name_node_value = self.as_ast_node().get_value(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
         Ok(result)
@@ -178,7 +179,7 @@ impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
-        let name_node_value = get_value(self.as_ast_node(), context.source_code);
+        let name_node_value = self.as_ast_node().get_value(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
         Ok(result)
@@ -188,19 +189,21 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 // TODO: multi
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
-        let type_value =
-            get_mandatory_named_child_value("type", self.as_ast_node(), context.source_code)?;
+        let type_value = self
+            .as_ast_node()
+            .get_mandatory_child_value_by_name("type", context.source_code);
 
-        let declarator_nodes = get_mandatory_children_by_name("declarator", self.as_ast_node())?;
+        let declarator_nodes = self
+            .as_ast_node()
+            .get_mandatory_children_by_name("declarator");
 
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
             .map(|d| {
-                let name = get_mandatory_named_child_value("name", d, context.source_code)
-                    .expect("mandatory 'name' child missing.");
+                let name = d.get_mandatory_child_value_by_name("name", context.source_code);
                 let value = d
                     .child_by_field_name("value")
-                    .map(|n| format!(" = {}", get_value(&n, context.source_code)))
+                    .map(|n| format!(" = {}", n.get_value(context.source_code)))
                     .unwrap_or_default();
 
                 format!("{}{}", name, value)

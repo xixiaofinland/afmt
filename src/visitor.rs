@@ -1,5 +1,6 @@
 use crate::{
     context::FmtContext,
+    node_ext::*,
     node_struct::*,
     shape::{Indent, Shape},
     utility::*,
@@ -101,7 +102,7 @@ impl Visitor {
         if node.is_named() {
             match node.grammar_name() {
                 "operator" => {
-                    self.push_str(&format!(" {} ", get_value(node, context.source_code)));
+                    self.push_str(&format!(" {} ", node.get_value(context.source_code)));
                     return;
                 }
                 _ => {}
