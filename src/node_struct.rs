@@ -20,11 +20,11 @@ define_struct_and_enum!(
     true; FieldDeclaration => "field_declaration",
     true; MethodDeclaration => "method_declaration",
     false; EmptyNode => "block" | "class_body",
-    false; ExpressionStatement => "expression_statement",
+    true; Statement => "expression_statement",
     true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
-    true; BinaryExpression => "binary_expression",
+    true; Expression => "binary_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     false; IfStatement => "if_statement",
@@ -186,7 +186,7 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     }
 }
 
-// TODO: multi
+// TODO:
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let type_value = self
@@ -215,5 +215,21 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         debug!("LocalVariable: {}", result);
 
         Ok(result)
+    }
+}
+
+impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
+    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+        match self.as_ast_node().kind() {
+            "expression_statement" => {
+                let child = self
+                    .as_ast_node()
+                    .named_child(0)
+                    .unwrap_or_else(|| panic!("mandatory child expression node missing."));
+                let exp = Expression::new(&child);
+                return exp.rewrite_result(context, shape);
+            }
+            _ => unreachable!(),
+        }
     }
 }

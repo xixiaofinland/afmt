@@ -30,18 +30,6 @@ impl Visitor {
         self.push_block_close(shape);
     }
 
-    pub fn format_expression_statement(
-        &mut self,
-        node: &Node,
-        context: &FmtContext,
-        shape: &mut Shape,
-    ) {
-        let child = node
-            .named_child(0)
-            .expect("ExpressionStatement mandatory child missing.");
-        self.visit_item(&child, context, shape);
-    }
-
     pub fn format_variable_declaration(
         &mut self,
         node: &Node,

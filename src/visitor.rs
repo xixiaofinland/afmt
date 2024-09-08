@@ -122,14 +122,15 @@ impl Visitor {
                 let n = FieldDeclaration::new(&node);
                 self.push_rewritten(n.rewrite(context, shape), &node);
             }
-            NodeKind::ExpressionStatement => {
-                self.format_expression_statement(&node, context, shape);
+            NodeKind::Statement => {
+                let n = Statement::new(&node);
+                self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::EmptyNode => {
                 self.visit_named_children(node, context, shape);
             }
-            NodeKind::BinaryExpression => {
-                let n = BinaryExpression::new(&node);
+            NodeKind::Expression => {
+                let n = Expression::new(&node);
                 self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::Value => {
@@ -159,7 +160,7 @@ impl Visitor {
                 self.push(')');
             }
             _ => {
-                println!("### Unknow node: {}", node.kind());
+                eprintln!("### Unknow node: {}", node.kind());
             }
         }
     }
