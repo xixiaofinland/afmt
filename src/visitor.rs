@@ -129,7 +129,8 @@ impl Visitor {
                 self.visit_named_children(node, context, shape);
             }
             NodeKind::BinaryExpression => {
-                self.format_binary_expression(&node, context, shape);
+                let n = BinaryExpression::new(&node);
+                self.push_rewritten(n.rewrite(context, shape), &node);
             }
             NodeKind::Value => {
                 let n = Value::new(&node);

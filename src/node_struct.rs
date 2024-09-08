@@ -24,7 +24,7 @@ define_struct_and_enum!(
     true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
-    false; BinaryExpression => "binary_expression",
+    true; BinaryExpression => "binary_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     false; IfStatement => "if_statement",

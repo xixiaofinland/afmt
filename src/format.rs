@@ -42,15 +42,6 @@ impl Visitor {
         self.visit_item(&child, context, shape);
     }
 
-    pub fn format_binary_expression(
-        &mut self,
-        node: &Node,
-        context: &FmtContext,
-        shape: &mut Shape,
-    ) {
-        self.visit_children_in_same_line(node, context, shape);
-    }
-
     pub fn format_variable_declaration(
         &mut self,
         node: &Node,
