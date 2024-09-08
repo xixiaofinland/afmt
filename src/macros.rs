@@ -10,7 +10,7 @@ macro_rules! define_struct {
                 Self { inner: node }
             }
 
-            pub fn as_ast_node(&self) -> &'a Node<'tree> {
+            pub fn node(&self) -> &'a Node<'tree> {
                 self.inner
             }
         }

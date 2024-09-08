@@ -9,19 +9,19 @@ use log::debug;
 // TODO
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
-        let n = self.as_ast_node();
+        let n = self.node();
         match n.kind() {
             "binary_expression" => {
                 let left = self
-                    .as_ast_node()
+                    .node()
                     .get_mandatory_child_value_by_name("left", context.source_code);
 
                 let op = self
-                    .as_ast_node()
+                    .node()
                     .get_mandatory_child_value_by_name("operator", context.source_code);
 
                 let right = self
-                    .as_ast_node()
+                    .node()
                     .get_mandatory_child_value_by_name("right", context.source_code);
 
                 let result = format!("{} {} {}", left, op, right);

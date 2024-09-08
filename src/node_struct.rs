@@ -35,12 +35,12 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
 
-        let modifiers_value = get_modifiers_value(self.as_ast_node(), context.source_code);
+        let modifiers_value = get_modifiers_value(self.node(), context.source_code);
         result.push_str(&modifiers_value);
         result.push_str(" class ");
 
         let name_node = self
-            .as_ast_node()
+            .node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
         let name_node_value = name_node.get_value(context.source_code);
@@ -57,7 +57,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
-        let modifier_nodes = get_modifiers(self.as_ast_node());
+        let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| n.get_value(context.source_code))
@@ -68,7 +68,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push(' ');
 
         let type_node = self
-            .as_ast_node()
+            .node()
             .child_by_field_name("type")
             .context("mandatory type field missing")?;
         let type_node_value = type_node.get_value(context.source_code);
@@ -76,14 +76,14 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push(' ');
 
         let name_node = self
-            .as_ast_node()
+            .node()
             .child_by_field_name("name")
             .context("mandatory name field missing")?;
         let name_node_value = name_node.get_value(context.source_code);
         result.push_str(name_node_value);
 
         result.push('(');
-        let parameters_node = get_parameters(self.as_ast_node());
+        let parameters_node = get_parameters(self.node());
         let parameters_doc = parameters_node
             .iter()
             .map(|n| {
@@ -117,7 +117,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
-        let modifier_nodes = get_modifiers(self.as_ast_node());
+        let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
             .iter()
             .map(|n| {
@@ -133,7 +133,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         result.push(' ');
 
         let type_node = self
-            .as_ast_node()
+            .node()
             .child_by_field_name("type")
             .context("mandatory type field missing")?;
         let type_node_value = type_node.get_value(context.source_code);
@@ -142,7 +142,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         result.push(' ');
 
         let name_node = self
-            .as_ast_node()
+            .node()
             .child_by_field_name("declarator")
             .context("mandatory declarator field missing")?
             .child_by_field_name("name")
@@ -160,7 +160,7 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
-        let name_node_value = self.as_ast_node().get_value(context.source_code);
+        let name_node_value = self.node().get_value(context.source_code);
         result.push_str(name_node_value);
         Ok(result)
     }
@@ -169,7 +169,7 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::from(' ');
-        let name_node_value = self.as_ast_node().get_value(context.source_code);
+        let name_node_value = self.node().get_value(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
         Ok(result)
@@ -179,7 +179,7 @@ impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let mut result = String::new();
-        let name_node_value = self.as_ast_node().get_value(context.source_code);
+        let name_node_value = self.node().get_value(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
         Ok(result)
@@ -190,12 +190,10 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
         let type_value = self
-            .as_ast_node()
+            .node()
             .get_mandatory_child_value_by_name("type", context.source_code);
 
-        let declarator_nodes = self
-            .as_ast_node()
-            .get_mandatory_children_by_name("declarator");
+        let declarator_nodes = self.node().get_mandatory_children_by_name("declarator");
 
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
@@ -220,10 +218,10 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
-        match self.as_ast_node().kind() {
+        match self.node().kind() {
             "expression_statement" => {
                 let child = self
-                    .as_ast_node()
+                    .node()
                     .named_child(0)
                     .unwrap_or_else(|| panic!("mandatory child expression node missing."));
                 let exp = Expression::new(&child);
