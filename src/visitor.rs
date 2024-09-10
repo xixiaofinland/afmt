@@ -126,7 +126,7 @@ pub fn visit_named_children(node: &Node, context: &FmtContext, shape: &Shape) ->
 
         if is_standalone {
             if has_body_node(&child) {
-                result.push_str("\n");
+                //result.push_str("\n");
             } else {
                 result.push_str(";\n");
             }

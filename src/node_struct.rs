@@ -46,6 +46,8 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let body_node = self.node().get_mandatory_child_by_name("body");
         result.push_str(&visit_named_children(&body_node, context, shape));
 
+        result.push_str(&format!("{}}}\n", shape.indent.to_string()));
+
         result
     }
 }
@@ -94,6 +96,8 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let body_node = self.node().get_mandatory_child_by_name("body");
         result.push_str(&visit_named_children(&body_node, context, shape));
+
+        result.push_str(&format!("{}}}\n", shape.indent.to_string()));
 
         result
     }
