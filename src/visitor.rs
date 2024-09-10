@@ -107,7 +107,13 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
 pub fn visit_named_children(node: &Node, context: &FmtContext, shape: &Shape) -> String {
     let mut result = String::new();
 
-    let mut shape = shape.copy_with_indent_block_plus(context.config);
+    let is_root_node = node.kind() == "parser_output";
+    let mut shape = if is_root_node {
+        Shape::empty(context.config)
+    } else {
+        shape.copy_with_indent_block_plus(context.config)
+    };
+
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
         let is_standalone = is_standalone(&child);
