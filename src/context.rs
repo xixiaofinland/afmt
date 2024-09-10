@@ -30,11 +30,10 @@ impl<'a> FmtContext<'a> {
     }
 
     pub fn format_one_file(&self) -> Result<String> {
-        let shape = Shape::empty(self.config);
-        let mut visitor = Visitor::default();
-        visitor.visit_root(self, &shape);
-        let mut result = visitor.buffer;
+        let mut result = String::new();
 
+        let mut visitor = Visitor::default();
+        result.push_str(&visitor.visit_root(self));
         // add file ending new line;
         result.push('\n');
 

@@ -6,9 +6,8 @@ use crate::utility::*;
 use anyhow::{Context, Result};
 use log::debug;
 
-// TODO
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let n = self.node();
         match n.kind() {
             "binary_expression" => {
@@ -25,9 +24,9 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     .get_mandatory_child_value_by_name("right", context.source_code);
 
                 let result = format!("{} {} {}", left, op, right);
-                Ok(result)
+                result
             }
-            "int" => Ok(n.get_value(context.source_code).to_string()),
+            "int" => n.get_value(context.source_code).to_string(),
 
             v => {
                 eprintln!("### Unknow Expression node: {}", v);

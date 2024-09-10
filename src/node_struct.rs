@@ -2,17 +2,14 @@ use crate::context::FmtContext;
 use crate::node_ext::*;
 use crate::shape::Shape;
 use crate::utility::*;
+use crate::visitor::{visit_named_children, visit_named_children_in_same_line, visit_node};
 use crate::{define_struct, define_struct_and_enum};
 use anyhow::{Context, Result};
 use log::debug;
 use tree_sitter::Node;
 
 pub trait Rewrite {
-    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> Option<String> {
-        self.rewrite_result(context, shape).ok()
-    }
-
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String>;
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String;
 }
 
 define_struct_and_enum!(
@@ -27,35 +24,35 @@ define_struct_and_enum!(
     true; Expression => "binary_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
-    false; IfStatement => "if_statement",
-    false; ParenthesizedExpression => "parenthesized_expression"
+    true; IfStatement => "if_statement",
+    true; ParenthesizedExpression => "parenthesized_expression"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
 
         let modifiers_value = get_modifiers_value(self.node(), context.source_code);
         result.push_str(&modifiers_value);
         result.push_str(" class ");
 
-        let name_node = self
+        let name_node_value = self
             .node()
-            .child_by_field_name("name")
-            .context("mandatory name field missing")?;
-        let name_node_value = name_node.get_value(context.source_code);
-
+            .get_mandatory_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
         result.push_str(" {\n");
         shape.offset += result.len();
-        Ok(result)
+
+        let body_node = self.node().get_mandatory_child_by_name("body");
+        result.push_str(&visit_named_children(&body_node, context, shape));
+
+        result
     }
 }
 
 impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        //result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
@@ -67,19 +64,15 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push_str(&modifiers_doc);
         result.push(' ');
 
-        let type_node = self
+        let type_node_value = self
             .node()
-            .child_by_field_name("type")
-            .context("mandatory type field missing")?;
-        let type_node_value = type_node.get_value(context.source_code);
+            .get_mandatory_child_value_by_name("type", context.source_code);
         result.push_str(type_node_value);
         result.push(' ');
 
-        let name_node = self
+        let name_node_value = self
             .node()
-            .child_by_field_name("name")
-            .context("mandatory name field missing")?;
-        let name_node_value = name_node.get_value(context.source_code);
+            .get_mandatory_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
 
         result.push('(');
@@ -87,18 +80,9 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let parameters_doc = parameters_node
             .iter()
             .map(|n| {
-                let type_node = n.child_by_field_name("type").unwrap();
-                let name_node = n.child_by_field_name("name").unwrap();
-                let type_str = type_node
-                    .utf8_text(context.source_code.as_bytes())
-                    .ok()
-                    .unwrap();
-                let name_str = name_node
-                    .utf8_text(context.source_code.as_bytes())
-                    .ok()
-                    .unwrap();
-                let r = format!("{} {}", type_str, name_str);
-                r
+                let type_str = n.get_mandatory_child_value_by_name("type", context.source_code);
+                let name_str = n.get_mandatory_child_value_by_name("name", context.source_code);
+                format!("{} {}", type_str, name_str)
             })
             .collect::<Vec<String>>()
             .join(", ");
@@ -108,23 +92,21 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push_str(" {\n");
         shape.offset += result.len();
 
-        Ok(result)
+        let body_node = self.node().get_mandatory_child_by_name("body");
+        result.push_str(&visit_named_children(&body_node, context, shape));
+
+        result
     }
 }
 
 impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        //result.push_str(&get_indent_string(&shape.indent));
 
         let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
             .iter()
-            .map(|n| {
-                n.utf8_text(context.source_code.as_bytes())
-                    .ok()
-                    .unwrap_or_default()
-            })
+            .map(|n| n.get_value(context.source_code))
             .collect::<Vec<&str>>()
             .join(" ");
 
@@ -132,63 +114,56 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         result.push(' ');
 
-        let type_node = self
+        let type_node_value = self
             .node()
-            .child_by_field_name("type")
-            .context("mandatory type field missing")?;
-        let type_node_value = type_node.get_value(context.source_code);
+            .get_mandatory_child_value_by_name("type", context.source_code);
         result.push_str(type_node_value);
 
         result.push(' ');
 
-        let name_node = self
+        let name_node_value = self
             .node()
-            .child_by_field_name("declarator")
-            .context("mandatory declarator field missing")?
-            .child_by_field_name("name")
-            .context("mandatory name field missing")?;
-        let name_node_value = name_node.get_value(context.source_code);
+            .get_mandatory_child_by_name("declarator")
+            .get_mandatory_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
-        //let mut result = indent_lines(&result, shape);
-        //println!("fieldD: result |{}|", result);
-        Ok(result)
+        result
     }
 }
 
 impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
         //result.push_str(&get_indent_string(&shape.indent));
 
         let name_node_value = self.node().get_value(context.source_code);
         result.push_str(name_node_value);
-        Ok(result)
+        result
     }
 }
 
 impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::from(' ');
         let name_node_value = self.node().get_value(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
-        Ok(result)
+        result
     }
 }
 
 impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
         let name_node_value = self.node().get_value(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
-        Ok(result)
+        result
     }
 }
 
 // TODO:
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let type_value = self
             .node()
             .get_mandatory_child_value_by_name("type", context.source_code);
@@ -212,12 +187,12 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         debug!("LocalVariable: {}", result);
 
-        Ok(result)
+        result
     }
 }
 
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
-    fn rewrite_result(&self, context: &FmtContext, shape: &mut Shape) -> Result<String> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         match self.node().kind() {
             "expression_statement" => {
                 let child = self
@@ -225,9 +200,52 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
                     .named_child(0)
                     .unwrap_or_else(|| panic!("mandatory child expression node missing."));
                 let exp = Expression::new(&child);
-                return exp.rewrite_result(context, shape);
+                exp.rewrite(context, shape)
             }
             _ => unreachable!(),
         }
+    }
+}
+
+impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+        match self.node().next_named_sibling() {
+            Some(sibling) if sibling.kind() == "variable_declarator" => result.push_str(", "),
+            _ => {}
+        }
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+        result.push_str("if");
+        let condition = self.node().get_mandatory_child_by_name("condition");
+        result.push_str(&visit_node(&condition, context, shape));
+
+        result.push_str(" {\n");
+
+        let consequence = self.node().get_mandatory_child_by_name("consequence");
+        result.push_str(&visit_node(&consequence, context, shape));
+        result.push_str(&format!("{}}}", get_indent_string(&shape.indent)));
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+        result.push('(');
+        result.push_str(&visit_named_children_in_same_line(
+            self.node(),
+            context,
+            shape,
+        ));
+        result.push(')');
+
+        result
     }
 }

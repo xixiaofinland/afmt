@@ -27,141 +27,117 @@ impl Visitor {
         }
     }
 
-    //pub fn from_current(shape: &Shape) -> Visitor {
-    //    let block_indent = Indent::new(shape.indent.block_indent, 0);
-    //    Visitor::new(block_indent)
-    //}
-
-    pub fn push_rewritten(&mut self, rewritten: Option<String>, node: &Node) {
-        if let Some(r) = rewritten {
-            self.push_str(&r);
-        } else {
-        }
-    }
-
-    pub fn push(&mut self, s: char) {
-        self.buffer.push(s);
-    }
-
-    pub fn push_str(&mut self, s: &str) {
-        self.buffer.push_str(s);
-    }
-
-    pub fn visit_root(&mut self, context: &FmtContext, parent_shape: &Shape) {
-        self.visit_named_children(&context.ast_tree.root_node(), context, parent_shape);
+    pub fn visit_root(&mut self, context: &FmtContext) -> String {
+        let shape = Shape::empty(context.config);
+        let mut result = visit_named_children(&context.ast_tree.root_node(), context, &shape);
 
         // remove the extra "\n" introduced by the top-level class declaration
-        self.buffer
-            .truncate(self.buffer.trim_end_matches('\n').len());
+        result.truncate(result.trim_end_matches('\n').len());
+        result
     }
+}
 
-    // call this when named childrens are all inlined nodes;
-    pub fn visit_children_in_same_line(
-        &mut self,
-        node: &Node,
-        context: &FmtContext,
-        shape: &mut Shape,
-    ) {
-        let mut cursor = node.walk();
-        for child in node.named_children(&mut cursor) {
-            self.visit_item(&child, context, shape);
+pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> String {
+    if node.is_named() {
+        match node.grammar_name() {
+            "operator" => {
+                return node.get_value(context.source_code).to_string();
+            }
+            _ => {}
         }
     }
 
-    pub fn visit_named_children(&mut self, node: &Node, context: &FmtContext, shape: &Shape) {
-        let is_root_node = node.kind() == "parser_output";
-        let mut child_shape = if is_root_node {
-            Shape::empty(context.config)
-        } else {
-            shape.copy_with_indent_block_plus(context.config)
-        };
+    let kind = NodeKind::from_kind(node.kind());
+    match kind {
+        NodeKind::ClassDeclaration => {
+            let n = ClassDeclaration::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::MethodDeclaration => {
+            let n = MethodDeclaration::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::FieldDeclaration => {
+            let n = FieldDeclaration::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::Statement => {
+            let n = Statement::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::EmptyNode => visit_named_children(node, context, shape),
+        NodeKind::Expression => {
+            let n = Expression::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::Value => {
+            let n = Value::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::ValueSpace => {
+            let n = ValueSpace::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::SpaceValueSpace => {
+            let n = SpaceValueSpace::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::LocalVariableDeclaration => {
+            let n = LocalVariableDeclaration::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::VariableDeclarator => {
+            let n = VariableDeclarator::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::IfStatement => {
+            let n = IfStatement::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::ParenthesizedExpression => {
+            let n = ParenthesizedExpression::new(&node);
+            n.rewrite(context, shape)
+        }
+        _ => {
+            panic!("### Unknow node: {}", node.kind());
+        }
+    }
+}
 
-        //println!("shape: {}, {}", node.kind(), shape.indent.block_indent);
+pub fn visit_named_children(node: &Node, context: &FmtContext, shape: &Shape) -> String {
+    let mut result = String::new();
 
-        let mut cursor = node.walk();
-        for child in node.named_children(&mut cursor) {
-            let is_standalone = is_standalone(&child);
-            if is_standalone {
-                let mut child_shape = child_shape.clone(); // standalone node should use its own shape;
-                self.push_str(&child_shape.indent.to_string());
-            }
+    let mut shape = shape.copy_with_indent_block_plus(context.config);
+    let mut cursor = node.walk();
+    for child in node.named_children(&mut cursor) {
+        let is_standalone = is_standalone(&child);
+        if is_standalone {
+            let child_shape = shape.clone(); // standalone node should use its own shape;
+            result.push_str(&child_shape.indent.to_string());
+        }
 
-            self.visit_item(&child, context, &mut child_shape);
+        result.push_str(&visit_node(&child, context, &mut shape));
 
-            if is_standalone {
-                if has_body_node(&child) {
-                    self.push_str("\n");
-                } else {
-                    self.push_str(";\n");
-                }
+        if is_standalone {
+            if has_body_node(&child) {
+                result.push_str("\n");
+            } else {
+                result.push_str(";\n");
             }
         }
     }
+    result
+}
 
-    pub fn visit_item(&mut self, node: &Node, context: &FmtContext, shape: &mut Shape) {
-        if node.is_named() {
-            match node.grammar_name() {
-                "operator" => {
-                    self.push_str(&format!(" {} ", node.get_value(context.source_code)));
-                    return;
-                }
-                _ => {}
-            }
-        }
-
-        let kind = NodeKind::from_kind(node.kind());
-        //println!("node:{}", node.kind());
-        match kind {
-            NodeKind::ClassDeclaration => {
-                self.format_class(&node, context, shape);
-            }
-            NodeKind::MethodDeclaration => {
-                self.format_method(&node, context, shape);
-            }
-            NodeKind::FieldDeclaration => {
-                let n = FieldDeclaration::new(&node);
-                self.push_rewritten(n.rewrite(context, shape), &node);
-            }
-            NodeKind::Statement => {
-                let n = Statement::new(&node);
-                self.push_rewritten(n.rewrite(context, shape), &node);
-            }
-            NodeKind::EmptyNode => {
-                self.visit_named_children(node, context, shape);
-            }
-            NodeKind::Expression => {
-                let n = Expression::new(&node);
-                self.push_rewritten(n.rewrite(context, shape), &node);
-            }
-            NodeKind::Value => {
-                let n = Value::new(&node);
-                self.push_rewritten(n.rewrite(context, shape), &node);
-            }
-            NodeKind::ValueSpace => {
-                let n = ValueSpace::new(&node);
-                self.push_rewritten(n.rewrite(context, shape), &node);
-            }
-            NodeKind::SpaceValueSpace => {
-                let n = SpaceValueSpace::new(&node);
-                self.push_rewritten(n.rewrite(context, shape), &node);
-            }
-            NodeKind::LocalVariableDeclaration => {
-                let n = LocalVariableDeclaration::new(&node);
-                self.push_rewritten(n.rewrite(context, shape), &node);
-            }
-            NodeKind::VariableDeclarator => self.format_variable_declaration(&node, context, shape),
-            NodeKind::IfStatement => {
-                self.format_if_statement(&node, context, shape);
-                //self.push_rewritten(n.rewrite(context, &shape), &node);
-            }
-            NodeKind::ParenthesizedExpression => {
-                self.push('(');
-                self.visit_children_in_same_line(node, context, shape);
-                self.push(')');
-            }
-            _ => {
-                eprintln!("### Unknow node: {}", node.kind());
-            }
-        }
+pub fn visit_named_children_in_same_line(
+    node: &Node,
+    context: &FmtContext,
+    shape: &mut Shape,
+) -> String {
+    let mut result = String::new();
+    let mut cursor = node.walk();
+    for child in node.named_children(&mut cursor) {
+        result.push_str(&visit_node(&child, context, shape));
     }
+    result
 }
