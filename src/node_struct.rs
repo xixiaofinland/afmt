@@ -86,24 +86,34 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
                 let name_str = n.get_mandatory_child_value_by_name("name", context.source_code);
                 format!("{} {}", type_str, name_str)
             })
-            .collect::<Vec<String>>()
-            .join(", ");
+            .collect::<Vec<String>>();
 
-        println!("{}", result.len());
-        println!("{}", parameters_doc.len());
-        println!("{}", shape.width);
+        let params_single_line = parameters_doc.join(", ");
 
-        if result.len() + parameters_doc.len() + 2 <= shape.width {
-            println!("&& fit one line");
-            //result.push_str(&params_single_line);
+        shape.offset = result.len() + 3; // add trailing `) {` size
+
+        //println!("shape.offset: {}", shape.offset);
+        //println!("shape.width: {}", shape.width);
+        //println!("r: {}", shape.offset + params_single_line.len());
+
+        if shape.offset + params_single_line.len() <= shape.width {
+            result.push_str(&params_single_line);
         } else {
-            println!("&& multiple line!!");
+            let param_shape = shape.copy_with_indent_block_plus(context.config);
+            result.push('\n');
+            for (i, param) in parameters_doc.iter().enumerate() {
+                result.push_str(&param_shape.indent.to_string(context.config));
+                result.push_str(param);
+
+                if i < parameters_doc.len() - 1 {
+                    result.push(',');
+                }
+                result.push('\n');
+            }
+            result.push_str(&shape.indent.to_string(context.config));
         }
 
-        result.push_str(&parameters_doc);
-        result.push(')');
-        result.push_str(" {\n");
-        shape.offset += result.len();
+        result.push_str(") {\n");
 
         let body_node = self.node().get_mandatory_child_by_name("body");
         result.push_str(&visit_named_children(&body_node, context, shape));
