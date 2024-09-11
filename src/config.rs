@@ -1,5 +1,8 @@
 use crate::context::FmtContext;
 use anyhow::Result;
+use std::cell::RefCell;
+use std::sync::{mpsc, Arc};
+use std::thread;
 use std::{fs, path::Path};
 
 #[derive(Clone)]
@@ -52,14 +55,26 @@ impl Session {
     }
 
     pub fn format(&self) -> Vec<Result<String>> {
-        self.source_files
-            .iter()
-            .map(|f| {
-                //let config = self.config.clone();
-                let source_code = fs::read_to_string(Path::new(f)).expect("Failed to read file");
-                let context = FmtContext::new(&self.config, &source_code);
-                context.format_one_file()
-            })
-            .collect()
+        let (tx, rx) = mpsc::channel();
+        let config = Arc::new(self.config.clone());
+
+        for file in &self.source_files {
+            let tx = tx.clone();
+            let config = Arc::clone(&config);
+            let file = file.clone();
+
+            thread::spawn(move || {
+                let source_code =
+                    fs::read_to_string(Path::new(&file)).expect("Failed to read file");
+
+                let context = FmtContext::new(&config, &source_code);
+                let result = context.format_one_file();
+                tx.send(result).expect("failed to send result in tx");
+            });
+        }
+
+        drop(tx);
+
+        rx.into_iter().collect()
     }
 }
