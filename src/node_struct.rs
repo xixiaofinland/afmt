@@ -89,6 +89,17 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .collect::<Vec<String>>()
             .join(", ");
 
+        println!("{}", result.len());
+        println!("{}", parameters_doc.len());
+        println!("{}", shape.width);
+
+        if result.len() + parameters_doc.len() + 2 <= shape.width {
+            println!("&& fit one line");
+            //result.push_str(&params_single_line);
+        } else {
+            println!("&& multiple line!!");
+        }
+
         result.push_str(&parameters_doc);
         result.push(')');
         result.push_str(" {\n");
