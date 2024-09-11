@@ -7,8 +7,8 @@ use std::{fs, path::Path};
 
 #[derive(Clone)]
 pub struct Config {
-    max_width: usize,
-    indent_size: usize,
+    pub max_width: usize,
+    pub indent_size: usize,
 }
 
 impl Config {

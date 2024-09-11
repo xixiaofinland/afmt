@@ -119,7 +119,7 @@ pub fn visit_named_children(node: &Node, context: &FmtContext, shape: &Shape) ->
         let is_standalone = is_standalone(&child);
         if is_standalone {
             let child_shape = shape.clone(); // standalone node should use its own shape;
-            result.push_str(&child_shape.indent.to_string());
+            result.push_str(&child_shape.indent.to_string(context.config));
         }
 
         result.push_str(&visit_node(&child, context, &mut shape));

@@ -60,7 +60,7 @@ impl Indent {
         }
     }
 
-    pub fn to_string(&self) -> String {
-        "  ".repeat(self.block_indent)
+    pub fn to_string(&self, config: &Config) -> String {
+        " ".repeat(config.indent_size).repeat(self.block_indent)
     }
 }
