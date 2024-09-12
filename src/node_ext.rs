@@ -4,16 +4,23 @@ use tree_sitter::Node;
 pub trait NodeExt<'tree> {
     fn get_value<'a>(&self, source_code: &'a str) -> &'a str;
 
+    fn get_child_by_name(&self, kind: &str) -> Option<Node<'tree>>;
+    fn get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
+
     fn get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
+    fn get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
+
     fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 
     fn get_mandatory_child_by_kind(&self, kind: &str) -> Node<'tree>;
     fn get_mandatory_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+
     fn get_mandatory_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 
     fn get_mandatory_child_by_name(&self, name: &str) -> Node<'tree>;
-    fn get_mandatory_children_by_name(&self, name: &str) -> Vec<Node<'tree>>;
     fn get_mandatory_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+
+    fn get_mandatory_children_by_name(&self, name: &str) -> Vec<Node<'tree>>;
 
     fn get_modifiers_value(&self, source_code: &str) -> String;
 }
@@ -35,6 +42,15 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         self.children(&mut cursor)
             .filter(|c| c.kind() == kind)
             .collect()
+    }
+
+    fn get_child_by_name(&self, name: &str) -> Option<Node<'tree>> {
+        self.child_by_field_name(name)
+    }
+
+    fn get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str> {
+        self.child_by_field_name(name)
+            .map(|n| n.get_value(source_code))
     }
 
     fn get_mandatory_child_by_kind(&self, kind: &str) -> Node<'tree> {
@@ -83,5 +99,10 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .map(|n| n.get_value(source_code))
             .collect::<Vec<&str>>()
             .join(" ")
+    }
+
+    fn get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
+        self.get_child_by_kind(kind)
+            .map(|child| child.get_value(source_code))
     }
 }

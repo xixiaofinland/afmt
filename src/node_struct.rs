@@ -21,7 +21,7 @@ define_struct_and_enum!(
     true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
-    true; Expression => "binary_expression",
+    true; Expression => "binary_expression" | "int" | "method_invocation",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
@@ -272,5 +272,53 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
         result.push(')');
 
         result
+    }
+}
+
+impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let n = self.node();
+        let source_code = context.source_code;
+        match n.kind() {
+            "binary_expression" => {
+                let left = n.get_mandatory_child_value_by_name("left", source_code);
+                let op = n.get_mandatory_child_value_by_name("operator", source_code);
+                let right = n.get_mandatory_child_value_by_name("right", source_code);
+                let result = format!("{} {} {}", left, op, right);
+                result
+            }
+            "int" => n.get_value(source_code).to_string(),
+            "method_invocation" => {
+                let mut result = String::new();
+
+                let object = &n
+                    .get_child_value_by_name("object", source_code)
+                    .map(|v| format!("{}.", v))
+                    .unwrap_or("".to_string());
+                result.push_str(object);
+
+                let name = n.get_mandatory_child_value_by_name("name", source_code);
+                result.push_str(name);
+                result.push('(');
+
+                let arguments = n.get_mandatory_child_by_name("arguments");
+                let mut cursor = arguments.walk();
+                let arguments_doc = arguments
+                    .named_children(&mut cursor)
+                    .map(|n| visit_node(&n, context, shape))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+
+                result.push_str(&arguments_doc);
+                result.push(')');
+
+                result
+            }
+
+            v => {
+                eprintln!("### Unknow Expression node: {}", v);
+                unreachable!();
+            }
+        }
     }
 }
