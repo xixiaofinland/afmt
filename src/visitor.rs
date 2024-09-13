@@ -29,7 +29,7 @@ impl Visitor {
 
     pub fn visit_root(&mut self, context: &FmtContext) -> String {
         let shape = Shape::empty(context.config);
-        let mut result = visit_named_children(&context.ast_tree.root_node(), context, &shape);
+        let mut result = visit_root_children(&context.ast_tree.root_node(), context);
 
         // remove the extra "\n" introduced by the top-level class declaration
         result.truncate(result.trim_end_matches('\n').len());
@@ -65,7 +65,7 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = Statement::new(&node);
             n.rewrite(context, shape)
         }
-        NodeKind::EmptyNode => visit_named_children(node, context, shape),
+        NodeKind::EmptyNode => visit_standalone_named_children(node, context, shape),
         NodeKind::Expression => {
             let n = Expression::new(&node);
             n.rewrite(context, shape)
@@ -104,34 +104,43 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
     }
 }
 
-pub fn visit_named_children(node: &Node, context: &FmtContext, shape: &Shape) -> String {
+pub fn visit_root_children(root: &Node, context: &FmtContext) -> String {
     let mut result = String::new();
+    let shape = Shape::empty(context.config);
 
-    let is_root_node = node.kind() == "parser_output";
-    let mut shape = if is_root_node {
-        Shape::empty(context.config)
-    } else {
-        shape.copy_with_indent_block_plus(context.config)
-    };
+    let mut cursor = root.walk();
+    let children = root
+        .named_children(&mut cursor)
+        .map(|child| {
+            let mut child_shape = shape.clone_with_stand_alone(true);
+            visit_node(&child, context, &mut child_shape)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    result.push_str(&children);
+    result
+}
+
+pub fn visit_standalone_named_children(node: &Node, context: &FmtContext, shape: &Shape) -> String {
+    let mut result = String::new();
+    let shape = shape.copy_with_indent_block_plus(context.config);
 
     let mut cursor = node.walk();
-    for child in node.named_children(&mut cursor) {
-        let is_standalone = is_standalone(&child);
-        if is_standalone {
-            let child_shape = shape.clone(); // standalone node should use its own shape;
-            result.push_str(&child_shape.indent.to_string(context.config));
-        }
+    let children = node
+        .named_children(&mut cursor)
+        .map(|child| {
+            let mut child_shape = shape.clone_with_stand_alone(true);
+            visit_node(&child, context, &mut child_shape)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
-        result.push_str(&visit_node(&child, context, &mut shape));
-
-        if is_standalone {
-            if has_body_node(&child) {
-                //result.push_str("\n");
-            } else {
-                result.push_str(";\n");
-            }
-        }
+    if !children.is_empty() {
+        result.push_str(&children);
+        result.push('\n');
     }
+
     result
 }
 

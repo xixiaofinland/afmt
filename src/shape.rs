@@ -1,10 +1,11 @@
 use crate::config::Config;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Shape {
     pub indent: Indent,
     pub width: usize, // width = max_width - indent_width;
     pub offset: usize,
+    pub standalone: bool,
 }
 
 impl Shape {
@@ -15,6 +16,16 @@ impl Shape {
                 .max_width()
                 .saturating_sub(indent.block_indent * config.indent_size()),
             offset: 0,
+            standalone: false,
+        }
+    }
+
+    pub fn clone_with_stand_alone(&self, stand_alone: bool) -> Self {
+        Self {
+            indent: self.indent,
+            width: self.width,
+            offset: self.offset,
+            standalone: stand_alone,
         }
     }
 
@@ -23,18 +34,25 @@ impl Shape {
             indent: Indent::default(),
             width: config.max_width(),
             offset: 0,
+            standalone: true,
         }
     }
+
+    //pub fn stand_alone(&mut self, flag: bool) {
+    //    self.standalone = flag;
+    //}
 
     pub fn copy_with_indent_block_plus(&self, config: &Config) -> Self {
         let indent = self.indent.copy_with_increased_block_indent();
         let offset = indent.block_indent * config.indent_size();
         let width = config.max_width().saturating_sub(offset);
+        let standalone = self.standalone;
 
         Self {
             indent,
             width,
             offset,
+            standalone,
         }
     }
 }

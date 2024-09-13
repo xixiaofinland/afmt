@@ -1,4 +1,4 @@
-use crate::node_ext::*;
+use crate::{context::FmtContext, node_ext::*, shape::Shape};
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
@@ -31,6 +31,18 @@ pub fn get_parameters<'tree>(n: &Node<'tree>) -> Vec<Node<'tree>> {
         c.get_children_by_kind("formal_parameter")
     } else {
         Vec::new()
+    }
+}
+
+pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
+    if shape.standalone {
+        result.push_str(&shape.indent.to_string(context.config));
+    }
+}
+
+pub fn add_standalone_suffix(result: &mut String, shape: &Shape) {
+    if shape.standalone {
+        result.push_str(";");
     }
 }
 
