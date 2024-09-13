@@ -185,12 +185,14 @@ impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
         let mut result = String::new();
         result.push_str(" implements ");
 
-        let type_lists = self
-            .node()
-            .get_children_value_by_kind("type_list", context.source_code);
+        let type_list = node.get_mandatory_child_by_kind("type_list");
+
+        let type_lists =
+            type_list.get_children_value_by_kind("type_identifier", context.source_code);
         result.push_str(&type_lists.join(", "));
 
         result
