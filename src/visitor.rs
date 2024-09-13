@@ -66,6 +66,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             n.rewrite(context, shape)
         }
         NodeKind::EmptyNode => visit_standalone_named_children(node, context, shape),
+        NodeKind::Block => {
+            let n = Block::new(&node);
+            n.rewrite(context, shape)
+        }
         NodeKind::Expression => {
             let n = Expression::new(&node);
             n.rewrite(context, shape)

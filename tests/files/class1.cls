@@ -1,0 +1,5 @@
+public class Me {
+  {
+    Integer i = 1;
+  }
+}

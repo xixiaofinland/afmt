@@ -18,7 +18,8 @@ define_struct_and_enum!(
     true; ClassDeclaration => "class_declaration",
     true; FieldDeclaration => "field_declaration",
     true; MethodDeclaration => "method_declaration",
-    false; EmptyNode => "block" | "class_body",
+    false; EmptyNode => "class_body",
+    true; Block => "block",
     true; Statement => "expression_statement",
     true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
     true; ValueSpace => "type_identifier",
@@ -56,7 +57,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        add_standalone_preffix(&mut result, shape, context);
 
         let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
@@ -124,7 +125,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        add_standalone_preffix(&mut result, shape, context);
 
         let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
@@ -189,7 +190,7 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        add_standalone_preffix(&mut result, shape, context);
 
         let type_value = self
             .node()
@@ -211,6 +212,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
             .collect();
 
         result.push_str(&format!("{} {}", type_value, declarator_values.join(", ")));
+
         add_standalone_suffix(&mut result, shape);
         result
     }
@@ -219,7 +221,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        add_standalone_preffix(&mut result, shape, context);
 
         match self.node().kind() {
             "expression_statement" => {
@@ -252,17 +254,20 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        add_standalone_preffix(&mut result, shape, context);
 
         result.push_str("if ");
-        let condition = self.node().get_mandatory_child_by_name("condition");
+        let condition = self
+            .node()
+            .get_mandatory_child_by_kind("parenthesized_expression");
         result.push_str(&visit_node(&condition, context, shape));
 
-        result.push_str(" {\n");
-
-        let consequence = self.node().get_mandatory_child_by_name("consequence");
-        result.push_str(&visit_node(&consequence, context, shape));
-        result.push_str(&format!("{}}}", get_indent_string(&shape.indent)));
+        let consequence = self.node().get_mandatory_child_by_kind("block");
+        result.push_str(&visit_node(
+            &consequence,
+            context,
+            &mut shape.clone_with_stand_alone(false),
+        ));
 
         result
     }
@@ -278,6 +283,31 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
             shape,
         ));
         result.push(')');
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+
+        if shape.standalone {
+            add_indent(&mut result, shape, context);
+        } else {
+            result.push(' ');
+        }
+
+        result.push_str("{\n");
+
+        result.push_str(&visit_standalone_named_children(
+            self.node(),
+            context,
+            shape,
+        ));
+
+        add_indent(&mut result, shape, context);
+        result.push('}');
 
         result
     }
