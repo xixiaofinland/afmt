@@ -22,6 +22,7 @@ define_struct_and_enum!(
     true; Block => "block",
     true; Statement => "expression_statement",
     true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
+    true; SuperClass => "superclass",
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
     true; Expression => "binary_expression" | "int" | "method_invocation",
@@ -33,20 +34,28 @@ define_struct_and_enum!(
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
         let mut result = String::new();
+        add_standalone_prefix(&mut result, shape, context);
 
-        let modifiers_value = get_modifiers_value(self.node(), context.source_code);
+        let modifiers_value = get_modifiers_value(node, context.source_code);
         result.push_str(&modifiers_value);
         result.push_str(" class ");
 
-        let name_node_value = self
-            .node()
-            .get_mandatory_child_value_by_name("name", context.source_code);
+        let name_node_value = node.get_mandatory_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
-        result.push_str(" {\n");
-        shape.offset += result.len();
 
-        let body_node = self.node().get_mandatory_child_by_name("body");
+        if let Some(n) = node.get_child_by_name("superclass") {
+            result.push_str(&visit_node(
+                &n,
+                context,
+                &mut shape.clone_with_stand_alone(false),
+            ));
+        }
+
+        result.push_str(" {\n");
+
+        let body_node = node.get_mandatory_child_by_name("body");
         result.push_str(&visit_standalone_named_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.to_string(context.config)));
 
@@ -57,7 +66,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_preffix(&mut result, shape, context);
+        add_standalone_prefix(&mut result, shape, context);
 
         let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
@@ -125,7 +134,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_preffix(&mut result, shape, context);
+        add_standalone_prefix(&mut result, shape, context);
 
         let modifier_nodes = get_modifiers(self.node());
         let modifiers_doc = modifier_nodes
@@ -152,6 +161,20 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         result.push_str(name_node_value);
 
         add_standalone_suffix(&mut result, shape);
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+        result.push_str(" extends ");
+
+        let value = self
+            .node()
+            .get_mandatory_child_value_by_kind("type_identifier", context.source_code);
+        result.push_str(&value);
 
         result
     }
@@ -190,7 +213,7 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_preffix(&mut result, shape, context);
+        add_standalone_prefix(&mut result, shape, context);
 
         let type_value = self
             .node()
@@ -221,7 +244,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_preffix(&mut result, shape, context);
+        add_standalone_prefix(&mut result, shape, context);
 
         match self.node().kind() {
             "expression_statement" => {
@@ -254,7 +277,7 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_preffix(&mut result, shape, context);
+        add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("if ");
         let condition = self

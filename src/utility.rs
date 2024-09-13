@@ -34,7 +34,7 @@ pub fn get_parameters<'tree>(n: &Node<'tree>) -> Vec<Node<'tree>> {
     }
 }
 
-pub fn add_standalone_preffix(result: &mut String, shape: &Shape, context: &FmtContext) {
+pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
     if shape.standalone {
         add_indent(result, shape, context);
     }
