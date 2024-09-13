@@ -1,4 +1,5 @@
 public class OuterClass {
+
   // Static final variable (constant) – outer class level only
   private static final Integer MY_INT;
 
@@ -7,9 +8,7 @@ public class OuterClass {
   public static String sharedState;
 
   // Static method - outer class level only
-  public static Integer getInt() {
-    return MY_INT;
-  }
+  public static Integer getInt() { return MY_INT; }
 
   // Static initialization (can be included where the variable is defined)
   static {
@@ -19,9 +18,9 @@ public class OuterClass {
   // Member variable for outer class
   private final String m;
 
+  // Instance initialization block - can be done where the variable is declared,
+  // or in a constructor
   {
-    // Instance initialization block - can be done where the variable is declared,
-    // or in a constructor
     m = 'a';
   }
 
@@ -30,6 +29,7 @@ public class OuterClass {
 
   // Inner interface
   public virtual interface MyInterface {
+
     // No access modifier is necessary for interface methods - these are always
     // public or global depending on the interface visibility
     void myMethod();
@@ -44,13 +44,14 @@ public class OuterClass {
   // This class implements an interface that, in turn, extends another interface.
   // Consequently the class must implement all methods.
   public virtual class InnerClass implements MySecondInterface {
+
     // Inner member variables
     private final String s;
     private final String s2;
 
+    // Inner instance initialization block (this code could be located above)
     {
-      // Inner instance initialization block (this code could be located above)
-      this.s = 'x';
+       this.s = 'x';
     }
 
     // Inline initialization (happens after the block above executes)
@@ -58,8 +59,8 @@ public class OuterClass {
 
     // Explicit no argument constructor
     InnerClass() {
-      // This invokes another constructor that is defined later
-      this('none');
+       // This invokes another constructor that is defined later
+       this('none');
     }
 
     // Constructor that assigns a final variable value
@@ -69,31 +70,25 @@ public class OuterClass {
 
     // Instance method that implements a method from MyInterface.
     // Because it is declared virtual it can be overridden by a subclass.
-    public virtual void myMethod() {
-      /* does nothing */
-    }
+    public virtual void myMethod() { /* does nothing */ }
 
     // Implementation of the second interface method above.
     // This method references member variables (with and without the "this" prefix)
-    public Integer method2(Integer i) {
-      return this.i + s.length();
-    }
+    public Integer method2(Integer i) { return this.i + s.length(); }
   }
 
   // Abstract class (that subclasses the class above). No constructor is needed since
   // parent class has a no-argument constructor
   public abstract class AbstractChildClass extends InnerClass {
+
     // Override the parent class method with this signature.
     // Must use the override keyword
-    public override void myMethod() {
-      /* do something else */
-    }
+    public override void myMethod() { /* do something else */ }
 
     // Same name as parent class method, but different signature.
     // This is a different method (displaying polymorphism) so it does not need
     // to use the override keyword
-    protected void method2() {
-    }
+    protected void method2() {}
 
     // Abstract method - subclasses of this class must implement this method
     abstract Integer abstractMethod();
@@ -103,9 +98,7 @@ public class OuterClass {
   public class ConcreteChildClass extends AbstractChildClass {
     // Here we expand the visibility of the parent method - note that visibility
     // cannot be restricted by a sub-class
-    public override Integer abstractMethod() {
-      return 5;
-    }
+    public override Integer abstractMethod() { return 5; }
   }
 
   // A second sub-class of the original InnerClass
@@ -127,8 +120,7 @@ public class OuterClass {
     }
 
     // Exception class method, marked as protected
-    protected void doIt() {
-    }
+    protected void doIt() {}
   }
 
   // Exception classes can be abstract and implement interfaces
