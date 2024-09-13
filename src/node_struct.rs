@@ -29,7 +29,8 @@ define_struct_and_enum!(
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
-    true; ParenthesizedExpression => "parenthesized_expression"
+    true; ParenthesizedExpression => "parenthesized_expression",
+    true; Interfaces => "interfaces"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -45,12 +46,14 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let name_node_value = node.get_mandatory_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
 
-        if let Some(n) = node.get_child_by_name("superclass") {
-            result.push_str(&visit_node(
-                &n,
-                context,
-                &mut shape.clone_with_stand_alone(false),
-            ));
+        if let Some(c) = node.get_child_by_name("superclass") {
+            let n = SuperClass::new(&c);
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        }
+
+        if let Some(c) = node.get_child_by_name("interfaces") {
+            let n = Interfaces::new(&c);
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         }
 
         result.push_str(" {\n");
@@ -174,6 +177,20 @@ impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
         let value = self
             .node()
             .get_mandatory_child_value_by_kind("type_identifier", context.source_code);
+        result.push_str(&value);
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+        result.push_str(" implements ");
+
+        let value = self
+            .node()
+            .get_mandatory_child_value_by_kind("type_list", context.source_code);
         result.push_str(&value);
 
         result

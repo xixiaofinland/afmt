@@ -70,6 +70,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = Block::new(&node);
             n.rewrite(context, shape)
         }
+        NodeKind::Interfaces => {
+            let n = Interfaces::new(&node);
+            n.rewrite(context, shape)
+        }
         NodeKind::SuperClass => {
             let n = SuperClass::new(&node);
             n.rewrite(context, shape)
