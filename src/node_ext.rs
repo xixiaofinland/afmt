@@ -20,6 +20,8 @@ pub trait NodeExt<'tree> {
     fn get_mandatory_child_by_name(&self, name: &str) -> Node<'tree>;
     fn get_mandatory_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
 
+    fn get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
+
     fn get_mandatory_children_by_name(&self, name: &str) -> Vec<Node<'tree>>;
 
     fn get_modifiers_value(&self, source_code: &str) -> String;
@@ -90,6 +92,13 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             panic!("Mandatory kind children: {} missing", kind);
         }
         children
+    }
+
+    fn get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
+        self.get_children_by_kind(kind)
+            .iter()
+            .map(|n| n.get_value(source_code))
+            .collect::<Vec<&str>>()
     }
 
     fn get_modifiers_value(&self, source_code: &str) -> String {

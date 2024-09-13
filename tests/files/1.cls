@@ -1,2 +1,2 @@
-public class Me extends Abc {
+public class Me implements Interface1, Interface2 {
 }

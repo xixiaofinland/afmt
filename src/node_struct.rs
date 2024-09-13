@@ -188,10 +188,10 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
         let mut result = String::new();
         result.push_str(" implements ");
 
-        let value = self
+        let type_lists = self
             .node()
-            .get_mandatory_child_value_by_kind("type_list", context.source_code);
-        result.push_str(&value);
+            .get_children_value_by_kind("type_list", context.source_code);
+        result.push_str(&type_lists.join(", "));
 
         result
     }
