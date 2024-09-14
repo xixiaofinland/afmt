@@ -30,7 +30,8 @@ define_struct_and_enum!(
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
     true; ParenthesizedExpression => "parenthesized_expression",
-    true; Interfaces => "interfaces"
+    true; Interfaces => "interfaces",
+    true; LineComment => "line_comment"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -400,5 +401,16 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 unreachable!();
             }
         }
+    }
+}
+
+impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+        add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str(self.node().get_value(context.source_code));
+
+        result
     }
 }

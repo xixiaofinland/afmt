@@ -6,6 +6,7 @@ use crate::{
     utility::*,
 };
 use anyhow::{bail, Context, Result};
+use log::debug;
 use tree_sitter::Node;
 
 pub struct Visitor {
@@ -110,6 +111,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = ParenthesizedExpression::new(&node);
             n.rewrite(context, shape)
         }
+        NodeKind::LineComment => {
+            let n = LineComment::new(&node);
+            n.rewrite(context, shape)
+        }
         _ => {
             panic!("### Unknow node: {}", node.kind());
         }
@@ -152,7 +157,6 @@ pub fn visit_standalone_named_children(node: &Node, context: &FmtContext, shape:
         result.push_str(&children);
         result.push('\n');
     }
-
     result
 }
 
