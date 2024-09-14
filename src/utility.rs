@@ -4,11 +4,6 @@ use tree_sitter::Node;
 
 use crate::shape::Indent;
 
-//pub fn get_indent_string(indent: &Indent) -> String {
-//    let indent = "  ".repeat(indent.block_indent);
-//    indent
-//}
-
 pub fn get_parameters<'tree>(n: &Node<'tree>) -> Vec<Node<'tree>> {
     if let Some(c) = n.child_by_field_name("parameters") {
         c.get_children_by_kind("formal_parameter")
@@ -32,6 +27,11 @@ pub fn add_standalone_suffix(result: &mut String, shape: &Shape) {
 pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
     result.push_str(&shape.indent.to_string(context.config));
 }
+
+//pub fn get_indent_string(indent: &Indent) -> String {
+//    let indent = "  ".repeat(indent.block_indent);
+//    indent
+//}
 
 //pub fn is_standalone<'tree>(node: &Node<'tree>) -> bool {
 //    if !node.is_named() {

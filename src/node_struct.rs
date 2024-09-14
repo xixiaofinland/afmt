@@ -103,23 +103,13 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push_str(name_node_value);
 
         result.push('(');
-        //let parameters_node = get_parameters(node);
-        //let parameters_doc = parameters_node
-        //    .iter()
-        //    .map(|n| {
-        //        let type_str = n.get_mandatory_child_value_by_name("type", source_code);
-        //        let name_str = n.get_mandatory_child_value_by_name("name", source_code);
-        //        format!("{} {}", type_str, name_str)
-        //    })
-        //    .collect::<Vec<String>>();
 
         let parameters_node = node
             .child_by_field_name("parameters")
             .and_then(|n| Some(n.get_children_by_kind("formal_parameter")))
             .unwrap_or_else(Vec::new);
 
-        //let parameters_node = get_parameters(node);
-        let parameters_doc = parameters_node
+        let parameters_value = parameters_node
             .iter()
             .map(|n| {
                 let type_str = n.get_mandatory_child_value_by_name("type", source_code);
@@ -128,7 +118,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             })
             .collect::<Vec<String>>();
 
-        let params_single_line = parameters_doc.join(", ");
+        let params_single_line = parameters_value.join(", ");
 
         shape.offset = result.len() + 3; // add trailing `) {` size
 
@@ -137,11 +127,11 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         } else {
             let param_shape = shape.copy_with_indent_block_plus(config);
             result.push('\n');
-            for (i, param) in parameters_doc.iter().enumerate() {
+            for (i, param) in parameters_value.iter().enumerate() {
                 result.push_str(&param_shape.indent.to_string(config));
                 result.push_str(param);
 
-                if i < parameters_doc.len() - 1 {
+                if i < parameters_value.len() - 1 {
                     result.push(',');
                 }
                 result.push('\n');
