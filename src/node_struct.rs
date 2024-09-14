@@ -21,11 +21,11 @@ define_struct_and_enum!(
     false; EmptyNode => "class_body",
     true; Block => "block",
     true; Statement => "expression_statement",
-    true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
+    true; Value => "boolean" | "int" | "identifier" | "string_literal" | "operator",
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
-    true; Expression => "binary_expression" | "int" | "method_invocation",
+    true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
@@ -230,7 +230,6 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     }
 }
 
-// TODO:
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
@@ -241,14 +240,13 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
             .get_mandatory_child_value_by_name("type", context.source_code);
 
         let declarator_nodes = self.node().get_mandatory_children_by_name("declarator");
-
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
             .map(|d| {
                 let name = d.get_mandatory_child_value_by_name("name", context.source_code);
                 let value = d
                     .child_by_field_name("value")
-                    .map(|n| format!(" = {}", n.get_value(context.source_code)))
+                    .map(|n| format!(" = {}", visit_node(&n, context, shape)))
                     .unwrap_or_default();
 
                 format!("{}{}", name, value)
@@ -361,18 +359,30 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let n = self.node();
         let source_code = context.source_code;
+        let mut result = String::new();
+
         match n.kind() {
+            "unary_expression" => {
+                let operator_value = n.get_mandatory_child_value_by_name("operator", source_code);
+                result.push_str(operator_value);
+
+                let operand = n.get_mandatory_child_by_name("operand");
+                result.push_str(&visit_node(
+                    &operand,
+                    context,
+                    &mut shape.clone_with_stand_alone(false),
+                ));
+                result
+            }
             "binary_expression" => {
                 let left = n.get_mandatory_child_value_by_name("left", source_code);
                 let op = n.get_mandatory_child_value_by_name("operator", source_code);
                 let right = n.get_mandatory_child_value_by_name("right", source_code);
-                let result = format!("{} {} {}", left, op, right);
+                result = format!("{} {} {}", left, op, right);
                 result
             }
             "int" => n.get_value(source_code).to_string(),
             "method_invocation" => {
-                let mut result = String::new();
-
                 let object = &n
                     .get_child_value_by_name("object", source_code)
                     .map(|v| format!("{}.", v))
