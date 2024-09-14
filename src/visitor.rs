@@ -135,6 +135,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = GenericType::new(&node);
             n.rewrite(context, shape)
         }
+        NodeKind::DimensionsExpr => {
+            let n = DimensionsExpr::new(&node);
+            n.rewrite(context, shape)
+        }
         _ => {
             panic!("### Unknow node: {}", node.kind());
         }

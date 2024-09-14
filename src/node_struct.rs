@@ -37,8 +37,8 @@ define_struct_and_enum!(
     true; ArgumentList => "argument_list",
     true; TypeArguments => "type_arguments",
     true; GenericType => "generic_type",
-    true; ArrayInitializer => "array_initializer"
-
+    true; ArrayInitializer => "array_initializer",
+    true; DimensionsExpr => "dimensions_expr"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -456,6 +456,14 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                         &mut shape.clone_with_stand_alone(false),
                     ));
                 }
+
+                if let Some(v) = n.get_child_by_name("dimensions") {
+                    result.push_str(&visit_node(
+                        &v,
+                        context,
+                        &mut shape.clone_with_stand_alone(false),
+                    ));
+                }
                 result
             }
             v => {
@@ -568,6 +576,21 @@ impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
             result.push_str(" }");
         }
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for DimensionsExpr<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+        let child = self
+            .node()
+            .named_child(0)
+            .unwrap_or_else(|| panic!("mandatory child expression node missing."));
+        let exp = Expression::new(&child);
+        result.push('[');
+        result.push_str(&exp.rewrite(context, shape));
+        result.push(']');
         result
     }
 }
