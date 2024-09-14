@@ -31,7 +31,8 @@ define_struct_and_enum!(
     true; IfStatement => "if_statement",
     true; ParenthesizedExpression => "parenthesized_expression",
     true; Interfaces => "interfaces",
-    true; LineComment => "line_comment"
+    true; LineComment => "line_comment",
+    true; ReturnStatement => "return_statement"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -263,13 +264,13 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        match self.node().kind() {
+        match node.kind() {
             "expression_statement" => {
-                let child = self
-                    .node()
+                let child = node
                     .named_child(0)
                     .unwrap_or_else(|| panic!("mandatory child expression node missing."));
                 let exp = Expression::new(&child);
@@ -410,6 +411,24 @@ impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         result.push_str(self.node().get_value(context.source_code));
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("return");
+        if node.named_child_count() != 0 {
+            let child = node.named_child(0).unwrap();
+            result.push_str(&visit_node(&child, context, shape));
+        }
+
+        add_standalone_suffix(&mut result, shape);
 
         result
     }
