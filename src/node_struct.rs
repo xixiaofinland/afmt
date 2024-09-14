@@ -103,7 +103,22 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push_str(name_node_value);
 
         result.push('(');
-        let parameters_node = get_parameters(node);
+        //let parameters_node = get_parameters(node);
+        //let parameters_doc = parameters_node
+        //    .iter()
+        //    .map(|n| {
+        //        let type_str = n.get_mandatory_child_value_by_name("type", source_code);
+        //        let name_str = n.get_mandatory_child_value_by_name("name", source_code);
+        //        format!("{} {}", type_str, name_str)
+        //    })
+        //    .collect::<Vec<String>>();
+
+        let parameters_node = node
+            .child_by_field_name("parameters")
+            .and_then(|n| Some(n.get_children_by_kind("formal_parameter")))
+            .unwrap_or_else(Vec::new);
+
+        //let parameters_node = get_parameters(node);
         let parameters_doc = parameters_node
             .iter()
             .map(|n| {
@@ -146,31 +161,29 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        let modifier_nodes = get_modifiers(self.node());
-        let modifiers_doc = modifier_nodes
-            .iter()
-            .map(|n| n.get_value(context.source_code))
-            .collect::<Vec<&str>>()
+        let modifiers_value = node
+            .get_child_by_kind("modifiers")
+            .and_then(|n| Some(n.get_children_value_by_kind("modifier", source_code)))
+            .unwrap_or_else(Vec::new)
             .join(" ");
 
-        result.push_str(&modifiers_doc);
+        result.push_str(&modifiers_value);
 
         result.push(' ');
 
-        let type_node_value = self
-            .node()
-            .get_mandatory_child_value_by_name("type", context.source_code);
+        let type_node_value = node.get_mandatory_child_value_by_name("type", source_code);
         result.push_str(type_node_value);
 
         result.push(' ');
 
-        let name_node_value = self
-            .node()
+        let name_node_value = node
             .get_mandatory_child_by_name("declarator")
-            .get_mandatory_child_value_by_name("name", context.source_code);
+            .get_mandatory_child_value_by_name("name", source_code);
         result.push_str(name_node_value);
 
         add_standalone_suffix(&mut result, shape);
