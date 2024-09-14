@@ -4,14 +4,6 @@ use tree_sitter::Node;
 
 use crate::shape::Indent;
 
-pub fn get_parameters<'tree>(n: &Node<'tree>) -> Vec<Node<'tree>> {
-    if let Some(c) = n.child_by_field_name("parameters") {
-        c.get_children_by_kind("formal_parameter")
-    } else {
-        Vec::new()
-    }
-}
-
 pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
     if shape.standalone {
         add_indent(result, shape, context);
