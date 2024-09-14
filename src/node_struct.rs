@@ -22,9 +22,9 @@ define_struct_and_enum!(
     true; Block => "block",
     true; Statement => "expression_statement",
     true; Value => "boolean" | "int" | "identifier"  |  "string_literal",
-    true; SuperClass => "superclass",
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
+    true; SuperClass => "superclass",
     true; Expression => "binary_expression" | "int" | "method_invocation",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
@@ -425,6 +425,7 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
         result.push_str("return");
         if node.named_child_count() != 0 {
             let child = node.named_child(0).unwrap();
+            result.push(' ');
             result.push_str(&visit_node(&child, context, shape));
         }
 
