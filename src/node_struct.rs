@@ -38,7 +38,8 @@ define_struct_and_enum!(
     true; TypeArguments => "type_arguments",
     true; GenericType => "generic_type",
     true; ArrayInitializer => "array_initializer",
-    true; DimensionsExpr => "dimensions_expr"
+    true; DimensionsExpr => "dimensions_expr",
+    true; ArrayType => "array_type"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -596,6 +597,22 @@ impl<'a, 'tree> Rewrite for DimensionsExpr<'a, 'tree> {
         result.push('[');
         result.push_str(&exp.rewrite(context, shape));
         result.push(']');
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ArrayType<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let mut result = String::new();
+
+        let element_value = self
+            .node()
+            .get_mandatory_child_value_by_name("element", context.source_code);
+        result.push_str(element_value);
+        let element_value = self
+            .node()
+            .get_mandatory_child_value_by_name("dimensions", context.source_code);
+        result.push_str(element_value);
         result
     }
 }
