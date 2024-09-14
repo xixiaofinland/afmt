@@ -9,15 +9,6 @@ pub fn get_indent_string(indent: &Indent) -> String {
     indent
 }
 
-pub fn get_modifiers_value<'tree>(n: &Node<'tree>, source_code: &str) -> String {
-    let modifier_nodes = get_modifiers(n);
-    modifier_nodes
-        .iter()
-        .map(|n| n.get_value(source_code))
-        .collect::<Vec<&str>>()
-        .join(" ")
-}
-
 pub fn get_modifiers<'tree>(n: &Node<'tree>) -> Vec<Node<'tree>> {
     if let Some(c) = n.get_child_by_kind("modifiers") {
         c.get_children_by_kind("modifier")

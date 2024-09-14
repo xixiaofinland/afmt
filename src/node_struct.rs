@@ -47,7 +47,11 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        let modifiers_value = get_modifiers_value(node, context.source_code);
+        let modifiers_value = node
+            .get_child_by_kind("modifiers")
+            .and_then(|n| Some(n.get_children_value_by_kind("modifier", context.source_code)))
+            .unwrap_or_else(Vec::new)
+            .join(" ");
         result.push_str(&modifiers_value);
         result.push_str(" class ");
 
@@ -76,37 +80,35 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
+        let config = context.config;
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        let modifier_nodes = get_modifiers(self.node());
-        let modifiers_doc = modifier_nodes
-            .iter()
-            .map(|n| n.get_value(context.source_code))
-            .collect::<Vec<&str>>()
+        let modifiers_value = node
+            .get_child_by_kind("modifiers")
+            .and_then(|n| Some(n.get_children_value_by_kind("modifier", source_code)))
+            .unwrap_or_else(Vec::new)
             .join(" ");
 
-        result.push_str(&modifiers_doc);
+        result.push_str(&modifiers_value);
         result.push(' ');
 
-        let type_node_value = self
-            .node()
-            .get_mandatory_child_value_by_name("type", context.source_code);
+        let type_node_value = node.get_mandatory_child_value_by_name("type", source_code);
         result.push_str(type_node_value);
         result.push(' ');
 
-        let name_node_value = self
-            .node()
-            .get_mandatory_child_value_by_name("name", context.source_code);
+        let name_node_value = node.get_mandatory_child_value_by_name("name", source_code);
         result.push_str(name_node_value);
 
         result.push('(');
-        let parameters_node = get_parameters(self.node());
+        let parameters_node = get_parameters(node);
         let parameters_doc = parameters_node
             .iter()
             .map(|n| {
-                let type_str = n.get_mandatory_child_value_by_name("type", context.source_code);
-                let name_str = n.get_mandatory_child_value_by_name("name", context.source_code);
+                let type_str = n.get_mandatory_child_value_by_name("type", source_code);
+                let name_str = n.get_mandatory_child_value_by_name("name", source_code);
                 format!("{} {}", type_str, name_str)
             })
             .collect::<Vec<String>>();
@@ -118,10 +120,10 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         if shape.offset + params_single_line.len() <= shape.width {
             result.push_str(&params_single_line);
         } else {
-            let param_shape = shape.copy_with_indent_block_plus(context.config);
+            let param_shape = shape.copy_with_indent_block_plus(config);
             result.push('\n');
             for (i, param) in parameters_doc.iter().enumerate() {
-                result.push_str(&param_shape.indent.to_string(context.config));
+                result.push_str(&param_shape.indent.to_string(config));
                 result.push_str(param);
 
                 if i < parameters_doc.len() - 1 {
@@ -129,14 +131,14 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
                 }
                 result.push('\n');
             }
-            result.push_str(&shape.indent.to_string(context.config));
+            result.push_str(&shape.indent.to_string(config));
         }
 
         result.push_str(") {\n");
 
         let body_node = self.node().get_mandatory_child_by_name("body");
         result.push_str(&visit_standalone_named_children(&body_node, context, shape));
-        result.push_str(&format!("{}}}", shape.indent.to_string(context.config)));
+        result.push_str(&format!("{}}}", shape.indent.to_string(config)));
 
         result
     }
