@@ -25,7 +25,8 @@ define_struct_and_enum!(
     true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
-    true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" | "object_creation_expression",
+    true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
+        "object_creation_expression" | "array_creation_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
@@ -35,7 +36,8 @@ define_struct_and_enum!(
     true; ReturnStatement => "return_statement",
     true; ArgumentList => "argument_list",
     true; TypeArguments => "type_arguments",
-    true; GenericType => "generic_type"
+    true; GenericType => "generic_type",
+    true; ArrayInitializer => "array_initializer"
 
 );
 
@@ -438,7 +440,24 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 ));
                 result
             }
+            "array_creation_expression" => {
+                result.push_str("new ");
+                let t = self.node().get_mandatory_child_by_name("type");
+                result.push_str(&visit_node(
+                    &t,
+                    context,
+                    &mut shape.clone_with_stand_alone(false),
+                ));
 
+                if let Some(v) = n.get_child_by_name("value") {
+                    result.push_str(&visit_node(
+                        &v,
+                        context,
+                        &mut shape.clone_with_stand_alone(false),
+                    ));
+                }
+                result
+            }
             v => {
                 eprintln!("### Unknow Expression node: {}", v);
                 unreachable!();
@@ -526,6 +545,29 @@ impl<'a, 'tree> Rewrite for TypeArguments<'a, 'tree> {
 
         result.push_str(&arguments_doc);
         result.push('>');
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        result.push_str("{ ");
+        let mut cursor = node.walk();
+        let mut arguments_doc = node
+            .named_children(&mut cursor)
+            .map(|n| visit_node(&n, context, shape))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        if arguments_doc.is_empty() {
+            result.push_str("}");
+        } else {
+            result.push_str(&arguments_doc);
+            result.push_str(" }");
+        }
+
         result
     }
 }
