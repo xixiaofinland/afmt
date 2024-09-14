@@ -21,8 +21,8 @@ define_struct_and_enum!(
     false; EmptyNode => "class_body",
     true; Block => "block",
     true; Statement => "expression_statement",
-    true; Value => "boolean" | "int" | "identifier" | "string_literal" | "operator",
-    true; ValueSpace => "type_identifier",
+    true; Value => "boolean" | "int" | "identifier" | "string_literal" | "operator" | "type_identifier",
+    true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
     true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" | "object_creation_expression",
@@ -246,18 +246,14 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
             &mut shape.clone_with_stand_alone(false),
         ));
 
+        result.push(' ');
+
         let declarator_nodes = self.node().get_mandatory_children_by_name("declarator");
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
             .map(|d| {
-                let name = d.get_mandatory_child_value_by_name("name", context.source_code);
-                result.push_str(" = ");
-                let value = d
-                    .child_by_field_name("value")
-                    .map(|n| visit_node(&n, context, shape))
-                    .unwrap_or_default();
-
-                format!("{}{}", name, value)
+                let n = VariableDeclarator::new(&d);
+                n.rewrite(context, shape)
             })
             .collect();
 
@@ -292,11 +288,22 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
         let mut result = String::new();
-        match self.node().next_named_sibling() {
-            Some(sibling) if sibling.kind() == "variable_declarator" => result.push_str(", "),
-            _ => {}
+
+        let name = node.get_mandatory_child_value_by_name("name", source_code);
+        result.push_str(name);
+
+        if let Some(v) = node.get_child_by_name("value") {
+            result.push_str(" = ");
+            result.push_str(&visit_node(
+                &v,
+                context,
+                &mut shape.clone_with_stand_alone(false),
+            ));
         }
+
         result
     }
 }
@@ -415,6 +422,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "object_creation_expression" => {
+                result.push_str("new ");
                 let t = n.get_mandatory_child_by_name("type");
                 result.push_str(&visit_node(
                     &t,
@@ -479,7 +487,8 @@ impl<'a, 'tree> Rewrite for GenericType<'a, 'tree> {
         result.push_str(name.get_value(source_code));
 
         let arguments = node.get_mandatory_child_by_kind("type_arguments");
-        result.push_str(arguments.get_value(source_code));
+        let n = TypeArguments::new(&arguments);
+        result.push_str(&n.rewrite(context, shape));
 
         result
     }
