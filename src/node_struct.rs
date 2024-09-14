@@ -25,14 +25,18 @@ define_struct_and_enum!(
     true; ValueSpace => "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
-    true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression",
+    true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" | "object_creation_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
     true; ParenthesizedExpression => "parenthesized_expression",
     true; Interfaces => "interfaces",
     true; LineComment => "line_comment",
-    true; ReturnStatement => "return_statement"
+    true; ReturnStatement => "return_statement",
+    true; ArgumentList => "argument_list",
+    true; TypeArguments => "type_arguments",
+    true; GenericType => "generic_type"
+
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -235,25 +239,29 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        let type_value = self
-            .node()
-            .get_mandatory_child_value_by_name("type", context.source_code);
+        let t = self.node().get_mandatory_child_by_name("type");
+        result.push_str(&visit_node(
+            &t,
+            context,
+            &mut shape.clone_with_stand_alone(false),
+        ));
 
         let declarator_nodes = self.node().get_mandatory_children_by_name("declarator");
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
             .map(|d| {
                 let name = d.get_mandatory_child_value_by_name("name", context.source_code);
+                result.push_str(" = ");
                 let value = d
                     .child_by_field_name("value")
-                    .map(|n| format!(" = {}", visit_node(&n, context, shape)))
+                    .map(|n| visit_node(&n, context, shape))
                     .unwrap_or_default();
 
                 format!("{}{}", name, value)
             })
             .collect();
 
-        result.push_str(&format!("{} {}", type_value, declarator_values.join(", ")));
+        result.push_str(&declarator_values.join(", "));
 
         add_standalone_suffix(&mut result, shape);
         result
@@ -406,6 +414,22 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 
                 result
             }
+            "object_creation_expression" => {
+                let t = n.get_mandatory_child_by_name("type");
+                result.push_str(&visit_node(
+                    &t,
+                    context,
+                    &mut shape.clone_with_stand_alone(false),
+                ));
+
+                let arguments = n.get_mandatory_child_by_name("arguments");
+                result.push_str(&visit_node(
+                    &arguments,
+                    context,
+                    &mut shape.clone_with_stand_alone(false),
+                ));
+                result
+            }
 
             v => {
                 eprintln!("### Unknow Expression node: {}", v);
@@ -441,6 +465,58 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
 
         add_standalone_suffix(&mut result, shape);
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for GenericType<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
+        let mut result = String::new();
+
+        let name = node.get_mandatory_child_by_kind("type_identifier");
+        result.push_str(name.get_value(source_code));
+
+        let arguments = node.get_mandatory_child_by_kind("type_arguments");
+        result.push_str(arguments.get_value(source_code));
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        result.push('(');
+        let mut cursor = node.walk();
+        let arguments_doc = node
+            .named_children(&mut cursor)
+            .map(|n| visit_node(&n, context, shape))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        result.push_str(&arguments_doc);
+        result.push(')');
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for TypeArguments<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        result.push('<');
+        let mut cursor = node.walk();
+        let arguments_doc = node
+            .named_children(&mut cursor)
+            .map(|n| visit_node(&n, context, shape))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        result.push_str(&arguments_doc);
+        result.push('>');
         result
     }
 }

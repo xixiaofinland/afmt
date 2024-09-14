@@ -103,6 +103,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = VariableDeclarator::new(&node);
             n.rewrite(context, shape)
         }
+        NodeKind::ArgumentList => {
+            let n = ArgumentList::new(&node);
+            n.rewrite(context, shape)
+        }
         NodeKind::IfStatement => {
             let n = IfStatement::new(&node);
             n.rewrite(context, shape)
@@ -117,6 +121,14 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
         }
         NodeKind::ReturnStatement => {
             let n = ReturnStatement::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::TypeArguments => {
+            let n = TypeArguments::new(&node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::GenericType => {
+            let n = GenericType::new(&node);
             n.rewrite(context, shape)
         }
         _ => {
