@@ -19,7 +19,7 @@ pub trait NodeExt<'tree> {
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
 
     fn c_by_n(&self, name: &str) -> Node<'tree>;
-    fn get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
 
     fn try_get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
 
@@ -63,7 +63,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         child_node.v(source_code)
     }
 
-    fn get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
+    fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
         let node = self
             .child_by_field_name(name)
             .unwrap_or_else(|| panic!("mandatory named child: {} missing.", name));
