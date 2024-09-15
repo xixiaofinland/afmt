@@ -1,6 +1,6 @@
 public class Me {
   {
-    Map  < String, Intege r> intsBymap =  new Map
+    Map  < String, Integer> intsBymap =  new Map
     <     String, Integer > (   ) ;
   }
 }
