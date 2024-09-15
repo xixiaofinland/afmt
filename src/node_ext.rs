@@ -8,7 +8,7 @@ pub trait NodeExt<'tree> {
     fn try_get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
 
     fn try_get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
-    fn get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
+    fn try_get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
 
     fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 
@@ -110,7 +110,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .join(" ")
     }
 
-    fn get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
+    fn try_get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_get_child_by_kind(kind)
             .map(|child| child.get_value(source_code))
     }
