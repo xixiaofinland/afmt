@@ -2,6 +2,8 @@
 
 Afmt is a **Salesforce Apex Code Formatter** written in **Rust**! This tool formats your Apex code for consistency and readability. 🎯
 
+It uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) to traverse AST nodes.
+
 Note. this is a project in its early phase.
 
 ## ✨ Features
