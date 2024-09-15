@@ -1,4 +1,4 @@
-use crate::{context::FmtContext, node_ext::*, shape::Shape};
+use crate::{context::FmtContext, node_ext::*, shape::Shape, visitor::visit_node};
 use anyhow::{bail, Context, Result};
 use tree_sitter::Node;
 
@@ -18,6 +18,13 @@ pub fn try_add_standalone_suffix(result: &mut String, shape: &Shape) {
 
 pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
     result.push_str(&shape.indent.as_string(context.config));
+}
+
+pub fn visit_children_nodes(node: &Node, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
+    let mut cursor = node.walk();
+    node.named_children(&mut cursor)
+        .map(|n| visit_node(&n, context, shape))
+        .collect::<Vec<_>>()
 }
 
 //pub fn get_indent_string(indent: &Indent) -> String {

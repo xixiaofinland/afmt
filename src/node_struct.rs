@@ -546,14 +546,10 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
         result.push('(');
-        let mut cursor = node.walk();
-        let arguments_value = node
-            .named_children(&mut cursor)
-            .map(|n| visit_node(&n, context, shape))
-            .collect::<Vec<String>>()
-            .join(", ");
 
-        result.push_str(&arguments_value);
+        let joined = visit_children_nodes(node, context, shape).join(", ");
+
+        result.push_str(&joined);
         result.push(')');
         result
     }
@@ -564,14 +560,10 @@ impl<'a, 'tree> Rewrite for TypeArguments<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
         result.push('<');
-        let mut cursor = node.walk();
-        let arguments_value = node
-            .named_children(&mut cursor)
-            .map(|n| visit_node(&n, context, shape))
-            .collect::<Vec<String>>()
-            .join(", ");
 
-        result.push_str(&arguments_value);
+        let joined = visit_children_nodes(node, context, shape).join(", ");
+        result.push_str(&joined);
+
         result.push('>');
         result
     }
@@ -581,17 +573,11 @@ impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
 
-        let mut cursor = node.walk();
-        let joined_children = node
-            .named_children(&mut cursor)
-            .map(|n| visit_node(&n, context, shape))
-            .collect::<Vec<String>>()
-            .join(", ");
-
-        if joined_children.is_empty() {
+        let joined = visit_children_nodes(node, context, shape).join(", ");
+        if joined.is_empty() {
             "{}".to_string()
         } else {
-            format!("{{ {} }}", joined_children)
+            format!("{{ {} }}", joined)
         }
     }
 }
