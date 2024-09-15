@@ -100,7 +100,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
             .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
-            .unwrap_or_else(Vec::new)
+            .unwrap_or_default()
             .join(" ");
 
         result.push_str(&modifiers_value);
