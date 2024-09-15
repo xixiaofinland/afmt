@@ -7,7 +7,7 @@ pub trait NodeExt<'tree> {
     fn try_get_child_by_name(&self, kind: &str) -> Option<Node<'tree>>;
     fn try_get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
 
-    fn get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
+    fn try_get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
     fn get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
 
     fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
@@ -33,7 +33,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .expect(&format!("{}: get_value failed.", self.kind()))
     }
 
-    fn get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>> {
+    fn try_get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>> {
         let mut cursor = self.walk();
         let child = self.children(&mut cursor).find(|c| c.kind() == kind);
         child
@@ -56,7 +56,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn get_mandatory_child_by_kind(&self, kind: &str) -> Node<'tree> {
-        self.get_child_by_kind(kind)
+        self.try_get_child_by_kind(kind)
             .unwrap_or_else(|| panic!("mandatory kind child: {} not found.", kind))
     }
 
@@ -111,7 +111,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
-        self.get_child_by_kind(kind)
+        self.try_get_child_by_kind(kind)
             .map(|child| child.get_value(source_code))
     }
 }

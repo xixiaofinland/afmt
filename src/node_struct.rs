@@ -50,7 +50,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         let modifiers_value = node
-            .get_child_by_kind("modifiers")
+            .try_get_child_by_kind("modifiers")
             .and_then(|n| Some(n.get_children_value_by_kind("modifier", context.source_code)))
             .unwrap_or_else(Vec::new)
             .join(" ");
@@ -89,7 +89,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         let modifiers_value = node
-            .get_child_by_kind("modifiers")
+            .try_get_child_by_kind("modifiers")
             .and_then(|n| Some(n.get_children_value_by_kind("modifier", source_code)))
             .unwrap_or_else(Vec::new)
             .join(" ");
@@ -159,7 +159,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         let modifiers_value = node
-            .get_child_by_kind("modifiers")
+            .try_get_child_by_kind("modifiers")
             .and_then(|n| Some(n.get_children_value_by_kind("modifier", source_code)))
             .unwrap_or_else(Vec::new)
             .join(" ");
