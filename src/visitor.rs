@@ -48,100 +48,100 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
     let kind = NodeKind::from_kind(node.kind());
     match kind {
         NodeKind::ClassDeclaration => {
-            let n = ClassDeclaration::new(&node);
+            let n = ClassDeclaration::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::MethodDeclaration => {
-            let n = MethodDeclaration::new(&node);
+            let n = MethodDeclaration::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::FieldDeclaration => {
-            let n = FieldDeclaration::new(&node);
+            let n = FieldDeclaration::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::Statement => {
-            let n = Statement::new(&node);
+            let n = Statement::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::EmptyNode => visit_standalone_children(node, context, shape),
         NodeKind::Block => {
-            let n = Block::new(&node);
+            let n = Block::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::Interfaces => {
-            let n = Interfaces::new(&node);
+            let n = Interfaces::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::SuperClass => {
-            let n = SuperClass::new(&node);
+            let n = SuperClass::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::Expression => {
-            let n = Expression::new(&node);
+            let n = Expression::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::Value => {
-            let n = Value::new(&node);
+            let n = Value::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::ValueSpace => {
-            let n = ValueSpace::new(&node);
+            let n = ValueSpace::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::SpaceValueSpace => {
-            let n = SpaceValueSpace::new(&node);
+            let n = SpaceValueSpace::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::LocalVariableDeclaration => {
-            let n = LocalVariableDeclaration::new(&node);
+            let n = LocalVariableDeclaration::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::VariableDeclarator => {
-            let n = VariableDeclarator::new(&node);
+            let n = VariableDeclarator::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::ArgumentList => {
-            let n = ArgumentList::new(&node);
+            let n = ArgumentList::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::ArrayInitializer => {
-            let n = ArrayInitializer::new(&node);
+            let n = ArrayInitializer::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::IfStatement => {
-            let n = IfStatement::new(&node);
+            let n = IfStatement::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::ParenthesizedExpression => {
-            let n = ParenthesizedExpression::new(&node);
+            let n = ParenthesizedExpression::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::LineComment => {
-            let n = LineComment::new(&node);
+            let n = LineComment::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::ReturnStatement => {
-            let n = ReturnStatement::new(&node);
+            let n = ReturnStatement::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::TypeArguments => {
-            let n = TypeArguments::new(&node);
+            let n = TypeArguments::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::GenericType => {
-            let n = GenericType::new(&node);
+            let n = GenericType::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::DimensionsExpr => {
-            let n = DimensionsExpr::new(&node);
+            let n = DimensionsExpr::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::ArrayType => {
-            let n = ArrayType::new(&node);
+            let n = ArrayType::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::MapInitializer => {
-            let n = MapInitializer::new(&node);
+            let n = MapInitializer::new(node);
             n.rewrite(context, shape)
         }
         _ => {
