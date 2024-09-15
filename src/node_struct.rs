@@ -257,7 +257,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         result.push(' ');
 
-        let declarator_nodes = self.node().get_mandatory_children_by_name("declarator");
+        let declarator_nodes = self.node().get_children_by_name("declarator");
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
             .map(|d| {
