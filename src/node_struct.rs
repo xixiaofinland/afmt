@@ -198,9 +198,7 @@ impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
         let mut result = String::new();
         result.push_str(" extends ");
 
-        let value = self
-            .node()
-            .get_child_value_by_kind("type_identifier", context.source_code);
+        let value = self.node().cv_by_k("type_identifier", context.source_code);
         result.push_str(value);
 
         result

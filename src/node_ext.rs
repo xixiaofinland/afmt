@@ -14,9 +14,9 @@ pub trait NodeExt<'tree> {
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
 
     fn c_by_k(&self, kind: &str) -> Node<'tree>;
-    fn get_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
 
-    fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
+    fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
 
     fn get_child_by_name(&self, name: &str) -> Node<'tree>;
     fn get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
@@ -58,7 +58,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .unwrap_or_else(|| panic!("mandatory kind child: {} not found.", kind))
     }
 
-    fn get_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
+    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
         let child_node = self.c_by_k(name);
         child_node.v(source_code)
     }
@@ -84,7 +84,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         children
     }
 
-    fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>> {
+    fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>> {
         let children = self.try_cs_by_k(kind);
         if children.is_empty() {
             panic!("Mandatory kind children: {} missing", kind);
