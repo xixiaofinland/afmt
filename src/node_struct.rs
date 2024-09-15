@@ -2,9 +2,7 @@ use crate::context::FmtContext;
 use crate::node_ext::*;
 use crate::shape::Shape;
 use crate::utility::*;
-use crate::visitor::{
-    visit_named_children_in_same_line, visit_node, visit_standalone_named_children,
-};
+use crate::visitor::{visit_named_children_in_same_line, visit_node, visit_standalone_children};
 use crate::{define_struct, define_struct_and_enum};
 use anyhow::{Context, Result};
 use log::debug;
@@ -73,7 +71,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         result.push_str(" {\n");
 
         let body_node = node.get_child_by_name("body");
-        result.push_str(&visit_standalone_named_children(&body_node, context, shape));
+        result.push_str(&visit_standalone_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.to_string(context.config)));
 
         result
@@ -144,7 +142,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push_str(") {\n");
 
         let body_node = self.node().get_child_by_name("body");
-        result.push_str(&visit_standalone_named_children(&body_node, context, shape));
+        result.push_str(&visit_standalone_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.to_string(config)));
 
         result
@@ -358,11 +356,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         result.push_str("{\n");
 
-        result.push_str(&visit_standalone_named_children(
-            self.node(),
-            context,
-            shape,
-        ));
+        result.push_str(&visit_standalone_children(self.node(), context, shape));
 
         add_indent(&mut result, shape, context);
         result.push('}');

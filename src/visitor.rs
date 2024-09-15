@@ -66,7 +66,7 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = Statement::new(&node);
             n.rewrite(context, shape)
         }
-        NodeKind::EmptyNode => visit_standalone_named_children(node, context, shape),
+        NodeKind::EmptyNode => visit_standalone_children(node, context, shape),
         NodeKind::Block => {
             let n = Block::new(&node);
             n.rewrite(context, shape)
@@ -171,7 +171,7 @@ pub fn visit_root_children(root: &Node, context: &FmtContext) -> String {
     result
 }
 
-pub fn visit_standalone_named_children(node: &Node, context: &FmtContext, shape: &Shape) -> String {
+pub fn visit_standalone_children(node: &Node, context: &FmtContext, shape: &Shape) -> String {
     let mut result = String::new();
     let shape = shape.copy_with_indent_block_plus(context.config);
 
