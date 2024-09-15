@@ -52,14 +52,14 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         if let Some(ref a) = node
-            .try_get_child_by_kind("modifiers")
-            .and_then(|n| n.try_get_child_by_kind("annotation"))
+            .try_c_by_k("modifiers")
+            .and_then(|n| n.try_c_by_k("annotation"))
         {
             result.push_str(&Annotation::new(a).rewrite(context, shape));
         }
 
         let modifiers_value = node
-            .try_get_child_by_kind("modifiers")
+            .try_c_by_k("modifiers")
             .map(|n| n.try_get_children_value_by_kind("modifier", context.source_code))
             .unwrap_or_else(Vec::new)
             .join(" ");
@@ -98,7 +98,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         let modifiers_value = node
-            .try_get_child_by_kind("modifiers")
+            .try_c_by_k("modifiers")
             .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
             .unwrap_or_default()
             .join(" ");
@@ -168,7 +168,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         let modifiers_value = node
-            .try_get_child_by_kind("modifiers")
+            .try_c_by_k("modifiers")
             .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
             .unwrap_or_default()
             .join(" ");
@@ -706,8 +706,8 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         result.push_str(&joined_children);
 
         if let Some(ref a) = node
-            .try_get_child_by_kind("modifiers")
-            .and_then(|n| n.try_get_child_by_kind("annotation"))
+            .try_c_by_k("modifiers")
+            .and_then(|n| n.try_c_by_k("annotation"))
         {
             result.push_str(&Annotation::new(a).rewrite(context, shape));
         }
