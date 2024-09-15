@@ -6,7 +6,7 @@ pub trait NodeExt<'tree> {
 
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'tree>>;
 
-    fn try_get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
+    fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
 
     fn try_get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
     fn try_get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
@@ -49,7 +49,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         self.child_by_field_name(name)
     }
 
-    fn try_get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str> {
+    fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str> {
         self.child_by_field_name(name).map(|n| n.v(source_code))
     }
 

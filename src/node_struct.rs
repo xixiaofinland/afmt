@@ -405,7 +405,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "int" => node.v(source_code).to_string(),
             "method_invocation" => {
                 let object = &node
-                    .try_get_child_value_by_name("object", source_code)
+                    .try_cv_by_n("object", source_code)
                     .map(|v| format!("{}.", v))
                     .unwrap_or_default();
                 result.push_str(object);
