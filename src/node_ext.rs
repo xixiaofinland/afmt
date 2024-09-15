@@ -17,7 +17,7 @@ pub trait NodeExt<'tree> {
 
     fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 
-    fn get_mandatory_child_by_name(&self, name: &str) -> Node<'tree>;
+    fn get_child_by_name(&self, name: &str) -> Node<'tree>;
     fn get_mandatory_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
 
     fn get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
@@ -72,7 +72,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         node.get_value(source_code)
     }
 
-    fn get_mandatory_child_by_name(&self, name: &str) -> Node<'tree> {
+    fn get_child_by_name(&self, name: &str) -> Node<'tree> {
         self.child_by_field_name(name)
             .unwrap_or_else(|| panic!("mandatory named child: {} missing.", name))
     }

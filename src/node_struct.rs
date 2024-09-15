@@ -72,7 +72,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         result.push_str(" {\n");
 
-        let body_node = node.get_mandatory_child_by_name("body");
+        let body_node = node.get_child_by_name("body");
         result.push_str(&visit_standalone_named_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.to_string(context.config)));
 
@@ -143,7 +143,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push_str(") {\n");
 
-        let body_node = self.node().get_mandatory_child_by_name("body");
+        let body_node = self.node().get_child_by_name("body");
         result.push_str(&visit_standalone_named_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.to_string(config)));
 
@@ -174,7 +174,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         result.push(' ');
 
         let name_node_value = node
-            .get_mandatory_child_by_name("declarator")
+            .get_child_by_name("declarator")
             .get_mandatory_child_value_by_name("name", source_code);
         result.push_str(name_node_value);
 
@@ -248,7 +248,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        let t = self.node().get_mandatory_child_by_name("type");
+        let t = self.node().get_child_by_name("type");
         result.push_str(&visit_node(
             &t,
             context,
@@ -383,7 +383,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     node.get_mandatory_child_value_by_name("operator", source_code);
                 result.push_str(operator_value);
 
-                let operand = node.get_mandatory_child_by_name("operand");
+                let operand = node.get_child_by_name("operand");
                 result.push_str(&visit_node(
                     &operand,
                     context,
@@ -410,7 +410,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(name);
                 result.push('(');
 
-                let arguments = node.get_mandatory_child_by_name("arguments");
+                let arguments = node.get_child_by_name("arguments");
                 let mut cursor = arguments.walk();
                 let arguments_value = arguments
                     .named_children(&mut cursor)
@@ -425,14 +425,14 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             }
             "object_creation_expression" => {
                 result.push_str("new ");
-                let t = node.get_mandatory_child_by_name("type");
+                let t = node.get_child_by_name("type");
                 result.push_str(&visit_node(
                     &t,
                     context,
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                let arguments = node.get_mandatory_child_by_name("arguments");
+                let arguments = node.get_child_by_name("arguments");
                 result.push_str(&visit_node(
                     &arguments,
                     context,
@@ -442,7 +442,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             }
             "array_creation_expression" => {
                 result.push_str("new ");
-                let t = self.node().get_mandatory_child_by_name("type");
+                let t = self.node().get_child_by_name("type");
                 result.push_str(&visit_node(
                     &t,
                     context,
@@ -469,14 +469,14 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "map_creation_expression" => {
                 result.push_str("new ");
 
-                let t = node.get_mandatory_child_by_name("type");
+                let t = node.get_child_by_name("type");
                 result.push_str(&visit_node(
                     &t,
                     context,
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                let value = node.get_mandatory_child_by_name("value");
+                let value = node.get_child_by_name("value");
                 let n = MapInitializer::new(&value);
                 result.push_str(&n.rewrite(context, shape));
 
