@@ -341,16 +341,10 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let mut result = String::new();
-        result.push('(');
-        result.push_str(&visit_named_children_in_same_line(
-            self.node(),
-            context,
-            shape,
-        ));
-        result.push(')');
-
-        result
+        format!(
+            "({})",
+            &visit_named_children_in_same_line(self.node(), context, shape)
+        )
     }
 }
 
@@ -420,13 +414,13 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 
                 let arguments = node.get_mandatory_child_by_name("arguments");
                 let mut cursor = arguments.walk();
-                let arguments_doc = arguments
+                let arguments_value = arguments
                     .named_children(&mut cursor)
                     .map(|n| visit_node(&n, context, shape))
                     .collect::<Vec<String>>()
                     .join(", ");
 
-                result.push_str(&arguments_doc);
+                result.push_str(&arguments_value);
                 result.push(')');
 
                 result
@@ -556,13 +550,13 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
         let mut result = String::new();
         result.push('(');
         let mut cursor = node.walk();
-        let arguments_doc = node
+        let arguments_value = node
             .named_children(&mut cursor)
             .map(|n| visit_node(&n, context, shape))
             .collect::<Vec<String>>()
             .join(", ");
 
-        result.push_str(&arguments_doc);
+        result.push_str(&arguments_value);
         result.push(')');
         result
     }
@@ -574,13 +568,13 @@ impl<'a, 'tree> Rewrite for TypeArguments<'a, 'tree> {
         let mut result = String::new();
         result.push('<');
         let mut cursor = node.walk();
-        let arguments_doc = node
+        let arguments_value = node
             .named_children(&mut cursor)
             .map(|n| visit_node(&n, context, shape))
             .collect::<Vec<String>>()
             .join(", ");
 
-        result.push_str(&arguments_doc);
+        result.push_str(&arguments_value);
         result.push('>');
         result
     }
