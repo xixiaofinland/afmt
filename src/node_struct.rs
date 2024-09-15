@@ -691,6 +691,10 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
+        if let Some(c) = node.try_get_child_by_name("value") {
+            result.push_str(&c.get_value(context.source_code));
+        }
+
         let joined_children = node
             .try_get_children_by_kind("annotation_key_value")
             .iter()
