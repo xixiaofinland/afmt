@@ -407,7 +407,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 let object = &node
                     .try_get_child_value_by_name("object", source_code)
                     .map(|v| format!("{}.", v))
-                    .unwrap_or("".to_string());
+                    .unwrap_or_default();
                 result.push_str(object);
 
                 let name = node.get_child_value_by_name("name", source_code);
