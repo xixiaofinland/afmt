@@ -1,0 +1,3 @@
+@Annotation
+public class Me {
+}

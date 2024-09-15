@@ -1,5 +1,2 @@
-public class Me {
-  {
-    Integer i = 1;
-  }
+public with sharing class MyClass {
 }

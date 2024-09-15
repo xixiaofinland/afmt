@@ -38,7 +38,8 @@ define_struct_and_enum!(
     true; ArrayInitializer => "array_initializer",
     true; DimensionsExpr => "dimensions_expr",
     true; ArrayType => "array_type",
-    true; MapInitializer => "map_initializer"
+    true; MapInitializer => "map_initializer",
+    true; Annotation => "annotation"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -46,6 +47,12 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
+
+        node.try_get_child_by_kind("modifiers")
+            .and_then(|n| n.try_get_child_by_kind("annotation"))
+            .map(|ref a| {
+                result.push_str(&Annotation::new(a).rewrite(context, shape));
+            });
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
@@ -651,6 +658,19 @@ impl<'a, 'tree> Rewrite for MapInitializer<'a, 'tree> {
         };
 
         result.push_str(&children_value);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push('@');
+        let name = node.get_child_by_name("name");
+        result.push_str(&visit_node(&name, context, shape));
+        result.push('\n');
         result
     }
 }
