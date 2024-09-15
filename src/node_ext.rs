@@ -5,24 +5,22 @@ pub trait NodeExt<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
 
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'tree>>;
+    fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>>;
 
     fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
-
-    fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>>;
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
 
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
 
-    fn c_by_k(&self, kind: &str) -> Node<'tree>;
-    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
-
-    fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
-
-    fn c_by_n(&self, name: &str) -> Node<'tree>;
-    fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
-
     fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
 
+    fn c_by_n(&self, name: &str) -> Node<'tree>;
+    fn c_by_k(&self, kind: &str) -> Node<'tree>;
+
+    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+
+    fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>>;
 }
 

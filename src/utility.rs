@@ -4,13 +4,13 @@ use tree_sitter::Node;
 
 use crate::shape::Indent;
 
-pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
+pub fn try_add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
     if shape.standalone {
         add_indent(result, shape, context);
     }
 }
 
-pub fn add_standalone_suffix(result: &mut String, shape: &Shape) {
+pub fn try_add_standalone_suffix(result: &mut String, shape: &Shape) {
     if shape.standalone {
         result.push(';');
     }

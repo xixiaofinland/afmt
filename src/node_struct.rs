@@ -49,7 +49,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         if let Some(ref a) = node
             .try_c_by_k("modifiers")
@@ -95,7 +95,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let source_code = context.source_code;
         let config = context.config;
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         let modifiers_value = node
             .try_c_by_k("modifiers")
@@ -165,7 +165,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let node = self.node();
         let source_code = context.source_code;
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         let modifiers_value = node
             .try_c_by_k("modifiers")
@@ -185,7 +185,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let name_node_value = node.c_by_n("declarator").cv_by_n("name", source_code);
         result.push_str(name_node_value);
 
-        add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(&mut result, shape);
 
         result
     }
@@ -250,7 +250,7 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         let t = self.node().c_by_n("type");
         result.push_str(&visit_node(
@@ -272,7 +272,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         result.push_str(&declarator_values.join(", "));
 
-        add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(&mut result, shape);
         result
     }
 }
@@ -281,7 +281,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         match node.kind() {
             "expression_statement" => {
@@ -293,7 +293,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             }
             _ => unreachable!(),
         }
-        add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(&mut result, shape);
 
         result
     }
@@ -324,7 +324,7 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("if ");
         let condition = self.node().c_by_k("parenthesized_expression");
@@ -497,7 +497,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str(self.node().v(context.source_code));
 
@@ -509,7 +509,7 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
         let mut result = String::new();
-        add_standalone_prefix(&mut result, shape, context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("return");
         if node.named_child_count() != 0 {
@@ -518,7 +518,7 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
             result.push_str(&visit_node(&child, context, shape));
         }
 
-        add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(&mut result, shape);
 
         result
     }
