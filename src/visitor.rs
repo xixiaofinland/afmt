@@ -192,11 +192,7 @@ pub fn visit_standalone_children(node: &Node, context: &FmtContext, shape: &Shap
     result
 }
 
-pub fn visit_named_children_in_same_line(
-    node: &Node,
-    context: &FmtContext,
-    shape: &mut Shape,
-) -> String {
+pub fn visit_children_in_same_line(node: &Node, context: &FmtContext, shape: &mut Shape) -> String {
     let mut result = String::new();
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {

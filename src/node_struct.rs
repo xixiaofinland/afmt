@@ -2,7 +2,7 @@ use crate::context::FmtContext;
 use crate::node_ext::*;
 use crate::shape::Shape;
 use crate::utility::*;
-use crate::visitor::{visit_named_children_in_same_line, visit_node, visit_standalone_children};
+use crate::visitor::{visit_children_in_same_line, visit_node, visit_standalone_children};
 use crate::{define_struct, define_struct_and_enum};
 use anyhow::{Context, Result};
 use log::debug;
@@ -339,7 +339,7 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         format!(
             "({})",
-            &visit_named_children_in_same_line(self.node(), context, shape)
+            &visit_children_in_same_line(self.node(), context, shape)
         )
     }
 }
