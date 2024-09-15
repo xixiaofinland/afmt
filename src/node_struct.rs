@@ -49,7 +49,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
-            .and_then(|n| Some(n.try_get_children_value_by_kind("modifier", context.source_code)))
+            .map(|n| n.try_get_children_value_by_kind("modifier", context.source_code))
             .unwrap_or_else(Vec::new)
             .join(" ");
         result.push_str(&modifiers_value);
@@ -88,7 +88,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
-            .and_then(|n| Some(n.try_get_children_value_by_kind("modifier", source_code)))
+            .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
             .unwrap_or_else(Vec::new)
             .join(" ");
 
@@ -106,7 +106,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let parameters_node = node
             .child_by_field_name("parameters")
-            .and_then(|n| Some(n.try_get_children_by_kind("formal_parameter")))
+            .map(|n| n.try_get_children_by_kind("formal_parameter"))
             .unwrap_or_else(Vec::new);
 
         let parameters_value = parameters_node
@@ -158,7 +158,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
-            .and_then(|n| Some(n.try_get_children_value_by_kind("modifier", source_code)))
+            .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
             .unwrap_or_else(Vec::new)
             .join(" ");
 
