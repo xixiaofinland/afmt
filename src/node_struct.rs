@@ -191,7 +191,7 @@ impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
 
         let value = self
             .node()
-            .get_mandatory_child_value_by_kind("type_identifier", context.source_code);
+            .get_child_value_by_kind("type_identifier", context.source_code);
         result.push_str(&value);
 
         result
@@ -204,7 +204,7 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
         let mut result = String::new();
         result.push_str(" implements ");
 
-        let type_list = node.get_mandatory_child_by_kind("type_list");
+        let type_list = node.get_child_by_kind("type_list");
 
         let type_lists =
             type_list.get_children_value_by_kind("type_identifier", context.source_code);
@@ -323,12 +323,10 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("if ");
-        let condition = self
-            .node()
-            .get_mandatory_child_by_kind("parenthesized_expression");
+        let condition = self.node().get_child_by_kind("parenthesized_expression");
         result.push_str(&visit_node(&condition, context, shape));
 
-        let consequence = self.node().get_mandatory_child_by_kind("block");
+        let consequence = self.node().get_child_by_kind("block");
         result.push_str(&visit_node(
             &consequence,
             context,
@@ -533,10 +531,10 @@ impl<'a, 'tree> Rewrite for GenericType<'a, 'tree> {
         let source_code = context.source_code;
         let mut result = String::new();
 
-        let name = node.get_mandatory_child_by_kind("type_identifier");
+        let name = node.get_child_by_kind("type_identifier");
         result.push_str(name.get_value(source_code));
 
-        let arguments = node.get_mandatory_child_by_kind("type_arguments");
+        let arguments = node.get_child_by_kind("type_arguments");
         let n = TypeArguments::new(&arguments);
         result.push_str(&n.rewrite(context, shape));
 

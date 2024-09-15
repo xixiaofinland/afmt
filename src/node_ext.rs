@@ -12,8 +12,8 @@ pub trait NodeExt<'tree> {
 
     fn try_get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 
-    fn get_mandatory_child_by_kind(&self, kind: &str) -> Node<'tree>;
-    fn get_mandatory_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn get_child_by_kind(&self, kind: &str) -> Node<'tree>;
+    fn get_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
 
     fn get_mandatory_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 
@@ -55,13 +55,13 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .map(|n| n.get_value(source_code))
     }
 
-    fn get_mandatory_child_by_kind(&self, kind: &str) -> Node<'tree> {
+    fn get_child_by_kind(&self, kind: &str) -> Node<'tree> {
         self.try_get_child_by_kind(kind)
             .unwrap_or_else(|| panic!("mandatory kind child: {} not found.", kind))
     }
 
-    fn get_mandatory_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
-        let child_node = self.get_mandatory_child_by_kind(name);
+    fn get_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
+        let child_node = self.get_child_by_kind(name);
         child_node.get_value(source_code)
     }
 
