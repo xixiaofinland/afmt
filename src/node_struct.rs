@@ -81,7 +81,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         result.push_str(" {\n");
 
-        let body_node = node.get_child_by_name("body");
+        let body_node = node.c_by_n("body");
         result.push_str(&visit_standalone_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
 
@@ -152,7 +152,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push_str(") {\n");
 
-        let body_node = self.node().get_child_by_name("body");
+        let body_node = self.node().c_by_n("body");
         result.push_str(&visit_standalone_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.as_string(config)));
 
@@ -183,7 +183,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         result.push(' ');
 
         let name_node_value = node
-            .get_child_by_name("declarator")
+            .c_by_n("declarator")
             .get_child_value_by_name("name", source_code);
         result.push_str(name_node_value);
 
@@ -255,7 +255,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        let t = self.node().get_child_by_name("type");
+        let t = self.node().c_by_n("type");
         result.push_str(&visit_node(
             &t,
             context,
@@ -385,7 +385,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 let operator_value = node.get_child_value_by_name("operator", source_code);
                 result.push_str(operator_value);
 
-                let operand = node.get_child_by_name("operand");
+                let operand = node.c_by_n("operand");
                 result.push_str(&visit_node(
                     &operand,
                     context,
@@ -412,7 +412,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(name);
                 result.push('(');
 
-                let arguments = node.get_child_by_name("arguments");
+                let arguments = node.c_by_n("arguments");
                 let mut cursor = arguments.walk();
                 let arguments_value = arguments
                     .named_children(&mut cursor)
@@ -427,14 +427,14 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             }
             "object_creation_expression" => {
                 result.push_str("new ");
-                let t = node.get_child_by_name("type");
+                let t = node.c_by_n("type");
                 result.push_str(&visit_node(
                     &t,
                     context,
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                let arguments = node.get_child_by_name("arguments");
+                let arguments = node.c_by_n("arguments");
                 result.push_str(&visit_node(
                     &arguments,
                     context,
@@ -444,7 +444,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             }
             "array_creation_expression" => {
                 result.push_str("new ");
-                let t = self.node().get_child_by_name("type");
+                let t = self.node().c_by_n("type");
                 result.push_str(&visit_node(
                     &t,
                     context,
@@ -471,14 +471,14 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "map_creation_expression" => {
                 result.push_str("new ");
 
-                let t = node.get_child_by_name("type");
+                let t = node.c_by_n("type");
                 result.push_str(&visit_node(
                     &t,
                     context,
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                let value = node.get_child_by_name("value");
+                let value = node.c_by_n("value");
                 let n = MapInitializer::new(&value);
                 result.push_str(&n.rewrite(context, shape));
 
@@ -671,7 +671,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
 
         result.push('@');
 
-        let name = node.get_child_by_name("name");
+        let name = node.c_by_n("name");
         result.push_str(&visit_node(&name, context, shape));
 
         if let Some(a) = node.try_c_by_n("arguments") {
@@ -719,12 +719,12 @@ impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        let key = node.get_child_by_name("key");
+        let key = node.c_by_n("key");
         result.push_str(key.v(context.source_code));
 
         result.push('=');
 
-        let value = node.get_child_by_name("value");
+        let value = node.c_by_n("value");
         result.push_str(&visit_node(&value, context, shape));
 
         result
