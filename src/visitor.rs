@@ -39,10 +39,8 @@ impl Visitor {
 }
 
 pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> String {
-    if node.is_named() {
-        if node.grammar_name() == "operator" {
-            return node.get_value(context.source_code).to_string();
-        }
+    if node.is_named() && node.grammar_name() == "operator" {
+        return node.get_value(context.source_code).to_string();
     }
 
     let kind = NodeKind::from_kind(node.kind());
