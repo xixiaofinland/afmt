@@ -23,7 +23,7 @@ pub trait NodeExt<'tree> {
 
     fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
 
-    fn get_children_by_name(&self, name: &str) -> Vec<Node<'tree>>;
+    fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>>;
 }
 
 impl<'tree> NodeExt<'tree> for Node<'tree> {
@@ -75,7 +75,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .unwrap_or_else(|| panic!("mandatory named child: {} missing.", name))
     }
 
-    fn get_children_by_name(&self, name: &str) -> Vec<Node<'tree>> {
+    fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>> {
         let mut cursor = self.walk();
         let children: Vec<Node<'tree>> = self.children_by_field_name(name, &mut cursor).collect();
         if children.is_empty() {
