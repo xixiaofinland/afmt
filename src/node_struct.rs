@@ -120,14 +120,14 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             .map(|n| n.try_get_children_by_kind("formal_parameter"))
             .unwrap_or_default();
 
-        let parameters_value = parameters_node
+        let parameters_value: Vec<String> = parameters_node
             .iter()
             .map(|n| {
                 let type_str = n.get_child_value_by_name("type", source_code);
                 let name_str = n.get_child_value_by_name("name", source_code);
                 format!("{} {}", type_str, name_str)
             })
-            .collect::<Vec<String>>();
+            .collect();
 
         let params_single_line = parameters_value.join(", ");
 
@@ -170,7 +170,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
             .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
-            .unwrap_or_else(Vec::new)
+            .unwrap_or_default()
             .join(" ");
 
         result.push_str(&modifiers_value);
