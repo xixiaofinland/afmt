@@ -1,1 +1,6 @@
 dep/* linguist-vendored
+*.c linguist-vendored
+*.h linguist-vendored
+*.cpp linguist-vendored
+*.hpp linguist-vendored
+*.cc linguist-vendored
