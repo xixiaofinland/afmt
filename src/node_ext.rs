@@ -28,7 +28,7 @@ pub trait NodeExt<'tree> {
 impl<'tree> NodeExt<'tree> for Node<'tree> {
     fn get_value<'a>(&self, source_code: &'a str) -> &'a str {
         self.utf8_text(source_code.as_bytes())
-            .expect(&format!("{}: get_value failed.", self.kind()))
+            .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind()))
     }
 
     fn try_get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>> {
