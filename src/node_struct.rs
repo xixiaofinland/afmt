@@ -60,12 +60,12 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let name_node_value = node.get_mandatory_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
 
-        if let Some(c) = node.get_child_by_name("superclass") {
+        if let Some(c) = node.try_get_child_by_name("superclass") {
             let n = SuperClass::new(&c);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         }
 
-        if let Some(c) = node.get_child_by_name("interfaces") {
+        if let Some(c) = node.try_get_child_by_name("interfaces") {
             let n = Interfaces::new(&c);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         }
@@ -304,7 +304,7 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
         let name = node.get_mandatory_child_value_by_name("name", source_code);
         result.push_str(name);
 
-        if let Some(v) = node.get_child_by_name("value") {
+        if let Some(v) = node.try_get_child_by_name("value") {
             result.push_str(" = ");
             result.push_str(&visit_node(
                 &v,
@@ -403,7 +403,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "int" => node.get_value(source_code).to_string(),
             "method_invocation" => {
                 let object = &node
-                    .get_child_value_by_name("object", source_code)
+                    .try_get_child_value_by_name("object", source_code)
                     .map(|v| format!("{}.", v))
                     .unwrap_or("".to_string());
                 result.push_str(object);
@@ -451,7 +451,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                if let Some(v) = node.get_child_by_name("value") {
+                if let Some(v) = node.try_get_child_by_name("value") {
                     result.push_str(&visit_node(
                         &v,
                         context,
@@ -459,7 +459,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     ));
                 }
 
-                if let Some(v) = node.get_child_by_name("dimensions") {
+                if let Some(v) = node.try_get_child_by_name("dimensions") {
                     result.push_str(&visit_node(
                         &v,
                         context,
