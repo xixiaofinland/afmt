@@ -143,7 +143,15 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             n.rewrite(context, shape)
         }
         NodeKind::Annotation => {
-            let n = MapInitializer::new(node);
+            let n = Annotation::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::AnnotationArgumentList => {
+            let n = AnnotationArgumentList::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::AnnotationKeyValue => {
+            let n = AnnotationKeyValue::new(node);
             n.rewrite(context, shape)
         }
         _ => {

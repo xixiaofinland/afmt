@@ -39,7 +39,10 @@ define_struct_and_enum!(
     true; DimensionsExpr => "dimensions_expr",
     true; ArrayType => "array_type",
     true; MapInitializer => "map_initializer",
-    true; Annotation => "annotation"
+    true; Annotation => "annotation",
+    true; AnnotationArgumentList => "annotation_argument_list",
+    true; AnnotationKeyValue => "annotation_key_value"
+
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -668,9 +671,55 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
         let mut result = String::new();
 
         result.push('@');
+
         let name = node.get_child_by_name("name");
         result.push_str(&visit_node(&name, context, shape));
+
+        if let Some(a) = node.try_get_child_by_name("arguments") {
+            result.push('(');
+            result.push_str(&visit_node(&a, context, shape));
+            result.push(')');
+        }
+
         result.push('\n');
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        node.try_get_children_by_kind("annotation_key_value")
+            .iter()
+            .for_each(|c| {
+                result.push_str(&AnnotationKeyValue::new(c).rewrite(context, shape));
+            });
+
+        node.try_get_child_by_kind("modifiers")
+            .and_then(|n| n.try_get_child_by_kind("annotation"))
+            .map(|ref a| {
+                result.push_str(&Annotation::new(a).rewrite(context, shape));
+            });
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        let key = node.get_child_by_name("key");
+        result.push_str(key.get_value(context.source_code));
+
+        result.push('=');
+
+        let value = node.get_child_by_name("value");
+        result.push_str(&visit_node(&value, context, shape));
+
         result
     }
 }
