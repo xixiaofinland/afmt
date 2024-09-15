@@ -190,7 +190,7 @@ impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
         let value = self
             .node()
             .get_child_value_by_kind("type_identifier", context.source_code);
-        result.push_str(&value);
+        result.push_str(value);
 
         result
     }
@@ -259,7 +259,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
             .map(|d| {
-                let n = VariableDeclarator::new(&d);
+                let n = VariableDeclarator::new(d);
                 n.rewrite(context, shape)
             })
             .collect();
@@ -637,8 +637,7 @@ impl<'a, 'tree> Rewrite for MapInitializer<'a, 'tree> {
             // Example: ["'hello'", "1", "'world'", "2"] becomes 'hello' => 1, 'world' => 2
             let joined_children = children
                 .chunks(2)
-                .enumerate()
-                .map(|(_, chunk)| {
+                .map(|chunk| {
                     if chunk.len() == 2 {
                         format!("{} => {}", chunk[0], chunk[1])
                     } else {
