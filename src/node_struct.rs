@@ -57,7 +57,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         result.push_str(&modifiers_value);
         result.push_str(" class ");
 
-        let name_node_value = node.get_mandatory_child_value_by_name("name", context.source_code);
+        let name_node_value = node.get_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
 
         if let Some(c) = node.try_get_child_by_name("superclass") {
@@ -97,11 +97,11 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push_str(&modifiers_value);
         result.push(' ');
 
-        let type_node_value = node.get_mandatory_child_value_by_name("type", source_code);
+        let type_node_value = node.get_child_value_by_name("type", source_code);
         result.push_str(type_node_value);
         result.push(' ');
 
-        let name_node_value = node.get_mandatory_child_value_by_name("name", source_code);
+        let name_node_value = node.get_child_value_by_name("name", source_code);
         result.push_str(name_node_value);
 
         result.push('(');
@@ -114,8 +114,8 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let parameters_value = parameters_node
             .iter()
             .map(|n| {
-                let type_str = n.get_mandatory_child_value_by_name("type", source_code);
-                let name_str = n.get_mandatory_child_value_by_name("name", source_code);
+                let type_str = n.get_child_value_by_name("type", source_code);
+                let name_str = n.get_child_value_by_name("name", source_code);
                 format!("{} {}", type_str, name_str)
             })
             .collect::<Vec<String>>();
@@ -168,14 +168,14 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         result.push(' ');
 
-        let type_node_value = node.get_mandatory_child_value_by_name("type", source_code);
+        let type_node_value = node.get_child_value_by_name("type", source_code);
         result.push_str(type_node_value);
 
         result.push(' ');
 
         let name_node_value = node
             .get_child_by_name("declarator")
-            .get_mandatory_child_value_by_name("name", source_code);
+            .get_child_value_by_name("name", source_code);
         result.push_str(name_node_value);
 
         add_standalone_suffix(&mut result, shape);
@@ -301,7 +301,7 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
         let source_code = context.source_code;
         let mut result = String::new();
 
-        let name = node.get_mandatory_child_value_by_name("name", source_code);
+        let name = node.get_child_value_by_name("name", source_code);
         result.push_str(name);
 
         if let Some(v) = node.try_get_child_by_name("value") {
@@ -379,8 +379,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 
         match node.kind() {
             "unary_expression" => {
-                let operator_value =
-                    node.get_mandatory_child_value_by_name("operator", source_code);
+                let operator_value = node.get_child_value_by_name("operator", source_code);
                 result.push_str(operator_value);
 
                 let operand = node.get_child_by_name("operand");
@@ -392,9 +391,9 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "binary_expression" => {
-                let left = node.get_mandatory_child_value_by_name("left", source_code);
-                let op = node.get_mandatory_child_value_by_name("operator", source_code);
-                let right = node.get_mandatory_child_value_by_name("right", source_code);
+                let left = node.get_child_value_by_name("left", source_code);
+                let op = node.get_child_value_by_name("operator", source_code);
+                let right = node.get_child_value_by_name("right", source_code);
                 result = format!("{} {} {}", left, op, right);
                 result
             }
@@ -406,7 +405,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     .unwrap_or("".to_string());
                 result.push_str(object);
 
-                let name = node.get_mandatory_child_value_by_name("name", source_code);
+                let name = node.get_child_value_by_name("name", source_code);
                 result.push_str(name);
                 result.push('(');
 
@@ -614,11 +613,11 @@ impl<'a, 'tree> Rewrite for ArrayType<'a, 'tree> {
 
         let element_value = self
             .node()
-            .get_mandatory_child_value_by_name("element", context.source_code);
+            .get_child_value_by_name("element", context.source_code);
         result.push_str(element_value);
         let element_value = self
             .node()
-            .get_mandatory_child_value_by_name("dimensions", context.source_code);
+            .get_child_value_by_name("dimensions", context.source_code);
         result.push_str(element_value);
         result
     }
