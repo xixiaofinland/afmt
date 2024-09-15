@@ -116,7 +116,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push('(');
 
         let parameters_node = node
-            .child_by_field_name("parameters")
+            .try_c_by_n("parameters")
             .map(|n| n.try_cs_by_k("formal_parameter"))
             .unwrap_or_default();
 
