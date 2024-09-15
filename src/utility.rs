@@ -12,12 +12,12 @@ pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtCo
 
 pub fn add_standalone_suffix(result: &mut String, shape: &Shape) {
     if shape.standalone {
-        result.push_str(";");
+        result.push(';');
     }
 }
 
 pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
-    result.push_str(&shape.indent.to_string(context.config));
+    result.push_str(&shape.indent.as_string(context.config));
 }
 
 //pub fn get_indent_string(indent: &Indent) -> String {

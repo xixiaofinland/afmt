@@ -72,7 +72,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         let body_node = node.get_child_by_name("body");
         result.push_str(&visit_standalone_children(&body_node, context, shape));
-        result.push_str(&format!("{}}}", shape.indent.to_string(context.config)));
+        result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
 
         result
     }
@@ -107,7 +107,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let parameters_node = node
             .child_by_field_name("parameters")
             .map(|n| n.try_get_children_by_kind("formal_parameter"))
-            .unwrap_or_else(Vec::new);
+            .unwrap_or_default();
 
         let parameters_value = parameters_node
             .iter()
@@ -128,7 +128,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             let param_shape = shape.copy_with_indent_block_plus(config);
             result.push('\n');
             for (i, param) in parameters_value.iter().enumerate() {
-                result.push_str(&param_shape.indent.to_string(config));
+                result.push_str(&param_shape.indent.as_string(config));
                 result.push_str(param);
 
                 if i < parameters_value.len() - 1 {
@@ -136,14 +136,14 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
                 }
                 result.push('\n');
             }
-            result.push_str(&shape.indent.to_string(config));
+            result.push_str(&shape.indent.as_string(config));
         }
 
         result.push_str(") {\n");
 
         let body_node = self.node().get_child_by_name("body");
         result.push_str(&visit_standalone_children(&body_node, context, shape));
-        result.push_str(&format!("{}}}", shape.indent.to_string(config)));
+        result.push_str(&format!("{}}}", shape.indent.as_string(config)));
 
         result
     }
@@ -576,7 +576,7 @@ impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
         let node = self.node();
 
         let mut cursor = node.walk();
-        let mut joined_children = node
+        let joined_children = node
             .named_children(&mut cursor)
             .map(|n| visit_node(&n, context, shape))
             .collect::<Vec<String>>()

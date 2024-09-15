@@ -40,11 +40,8 @@ impl Visitor {
 
 pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> String {
     if node.is_named() {
-        match node.grammar_name() {
-            "operator" => {
-                return node.get_value(context.source_code).to_string();
-            }
-            _ => {}
+        if node.grammar_name() == "operator" {
+            return node.get_value(context.source_code).to_string();
         }
     }
 
