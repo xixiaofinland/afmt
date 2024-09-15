@@ -691,11 +691,14 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        node.try_get_children_by_kind("annotation_key_value")
+        let joined_children = node
+            .try_get_children_by_kind("annotation_key_value")
             .iter()
-            .for_each(|c| {
-                result.push_str(&AnnotationKeyValue::new(c).rewrite(context, shape));
-            });
+            .map(|c| AnnotationKeyValue::new(c).rewrite(context, shape))
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        result.push_str(&joined_children);
 
         node.try_get_child_by_kind("modifiers")
             .and_then(|n| n.try_get_child_by_kind("annotation"))
