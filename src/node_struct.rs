@@ -51,11 +51,12 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        node.try_get_child_by_kind("modifiers")
+        if let Some(ref a) = node
+            .try_get_child_by_kind("modifiers")
             .and_then(|n| n.try_get_child_by_kind("annotation"))
-            .map(|ref a| {
-                result.push_str(&Annotation::new(a).rewrite(context, shape));
-            });
+        {
+            result.push_str(&Annotation::new(a).rewrite(context, shape));
+        }
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
@@ -692,7 +693,7 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         let mut result = String::new();
 
         if let Some(c) = node.try_get_child_by_name("value") {
-            result.push_str(&c.get_value(context.source_code));
+            result.push_str(c.get_value(context.source_code));
         }
 
         let joined_children = node
@@ -704,11 +705,12 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
 
         result.push_str(&joined_children);
 
-        node.try_get_child_by_kind("modifiers")
+        if let Some(ref a) = node
+            .try_get_child_by_kind("modifiers")
             .and_then(|n| n.try_get_child_by_kind("annotation"))
-            .map(|ref a| {
-                result.push_str(&Annotation::new(a).rewrite(context, shape));
-            });
+        {
+            result.push_str(&Annotation::new(a).rewrite(context, shape));
+        }
 
         result
     }
