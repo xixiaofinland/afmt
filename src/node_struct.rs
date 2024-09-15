@@ -60,7 +60,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_c_by_k("modifiers")
-            .map(|n| n.try_get_children_value_by_kind("modifier", context.source_code))
+            .map(|n| n.try_csv_by_k("modifier", context.source_code))
             .unwrap_or_else(Vec::new)
             .join(" ");
         result.push_str(&modifiers_value);
@@ -99,7 +99,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_c_by_k("modifiers")
-            .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
+            .map(|n| n.try_csv_by_k("modifier", source_code))
             .unwrap_or_default()
             .join(" ");
 
@@ -169,7 +169,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_c_by_k("modifiers")
-            .map(|n| n.try_get_children_value_by_kind("modifier", source_code))
+            .map(|n| n.try_csv_by_k("modifier", source_code))
             .unwrap_or_default()
             .join(" ");
 
@@ -211,8 +211,7 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
 
         let type_list = node.c_by_k("type_list");
 
-        let type_lists =
-            type_list.try_get_children_value_by_kind("type_identifier", context.source_code);
+        let type_lists = type_list.try_csv_by_k("type_identifier", context.source_code);
         result.push_str(&type_lists.join(", "));
 
         result

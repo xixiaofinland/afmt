@@ -21,7 +21,7 @@ pub trait NodeExt<'tree> {
     fn c_by_n(&self, name: &str) -> Node<'tree>;
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
 
-    fn try_get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
+    fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
 
     fn get_children_by_name(&self, name: &str) -> Vec<Node<'tree>>;
 }
@@ -92,7 +92,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         children
     }
 
-    fn try_get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
+    fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
         self.try_cs_by_k(kind)
             .iter()
             .map(|n| n.v(source_code))
