@@ -1,5 +1,5 @@
 use anyhow::{bail, Context, Result};
-use tree_sitter::Node;
+use tree_sitter::{Node, TreeCursor};
 
 pub trait NodeExt<'tree> {
     fn get_value<'a>(&self, source_code: &'a str) -> &'a str;

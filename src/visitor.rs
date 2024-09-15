@@ -143,6 +143,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = ArrayType::new(&node);
             n.rewrite(context, shape)
         }
+        NodeKind::MapInitializer => {
+            let n = MapInitializer::new(&node);
+            n.rewrite(context, shape)
+        }
         _ => {
             panic!("### Unknow node: {}", node.kind());
         }

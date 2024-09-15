@@ -21,12 +21,12 @@ define_struct_and_enum!(
     false; EmptyNode => "class_body",
     true; Block => "block",
     true; Statement => "expression_statement",
-    true; Value => "boolean" | "int" | "identifier" | "string_literal" | "operator" | "type_identifier",
+    true; Value => "boolean" | "identifier" | "operator" | "type_identifier",
     true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
     true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
-        "object_creation_expression" | "array_creation_expression",
+        "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
@@ -39,7 +39,8 @@ define_struct_and_enum!(
     true; GenericType => "generic_type",
     true; ArrayInitializer => "array_initializer",
     true; DimensionsExpr => "dimensions_expr",
-    true; ArrayType => "array_type"
+    true; ArrayType => "array_type",
+    true; MapInitializer => "map_initializer"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -380,16 +381,17 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let n = self.node();
+        let node = self.node();
         let source_code = context.source_code;
         let mut result = String::new();
 
-        match n.kind() {
+        match node.kind() {
             "unary_expression" => {
-                let operator_value = n.get_mandatory_child_value_by_name("operator", source_code);
+                let operator_value =
+                    node.get_mandatory_child_value_by_name("operator", source_code);
                 result.push_str(operator_value);
 
-                let operand = n.get_mandatory_child_by_name("operand");
+                let operand = node.get_mandatory_child_by_name("operand");
                 result.push_str(&visit_node(
                     &operand,
                     context,
@@ -398,25 +400,25 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "binary_expression" => {
-                let left = n.get_mandatory_child_value_by_name("left", source_code);
-                let op = n.get_mandatory_child_value_by_name("operator", source_code);
-                let right = n.get_mandatory_child_value_by_name("right", source_code);
+                let left = node.get_mandatory_child_value_by_name("left", source_code);
+                let op = node.get_mandatory_child_value_by_name("operator", source_code);
+                let right = node.get_mandatory_child_value_by_name("right", source_code);
                 result = format!("{} {} {}", left, op, right);
                 result
             }
-            "int" => n.get_value(source_code).to_string(),
+            "int" => node.get_value(source_code).to_string(),
             "method_invocation" => {
-                let object = &n
+                let object = &node
                     .get_child_value_by_name("object", source_code)
                     .map(|v| format!("{}.", v))
                     .unwrap_or("".to_string());
                 result.push_str(object);
 
-                let name = n.get_mandatory_child_value_by_name("name", source_code);
+                let name = node.get_mandatory_child_value_by_name("name", source_code);
                 result.push_str(name);
                 result.push('(');
 
-                let arguments = n.get_mandatory_child_by_name("arguments");
+                let arguments = node.get_mandatory_child_by_name("arguments");
                 let mut cursor = arguments.walk();
                 let arguments_doc = arguments
                     .named_children(&mut cursor)
@@ -431,14 +433,14 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             }
             "object_creation_expression" => {
                 result.push_str("new ");
-                let t = n.get_mandatory_child_by_name("type");
+                let t = node.get_mandatory_child_by_name("type");
                 result.push_str(&visit_node(
                     &t,
                     context,
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                let arguments = n.get_mandatory_child_by_name("arguments");
+                let arguments = node.get_mandatory_child_by_name("arguments");
                 result.push_str(&visit_node(
                     &arguments,
                     context,
@@ -455,7 +457,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                if let Some(v) = n.get_child_by_name("value") {
+                if let Some(v) = node.get_child_by_name("value") {
                     result.push_str(&visit_node(
                         &v,
                         context,
@@ -463,7 +465,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     ));
                 }
 
-                if let Some(v) = n.get_child_by_name("dimensions") {
+                if let Some(v) = node.get_child_by_name("dimensions") {
                     result.push_str(&visit_node(
                         &v,
                         context,
@@ -472,6 +474,27 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 }
                 result
             }
+            "map_creation_expression" => {
+                result.push_str("new ");
+
+                let t = node.get_mandatory_child_by_name("type");
+                result.push_str(&visit_node(
+                    &t,
+                    context,
+                    &mut shape.clone_with_stand_alone(false),
+                ));
+
+                let value = node.get_mandatory_child_by_name("value");
+                let n = MapInitializer::new(&value);
+                result.push_str(&n.rewrite(context, shape));
+
+                result
+            }
+            "string_literal" => {
+                result.push_str(node.get_value(source_code));
+                result
+            }
+
             v => {
                 eprintln!("### Unknow Expression node: {}", v);
                 unreachable!();
@@ -566,38 +589,30 @@ impl<'a, 'tree> Rewrite for TypeArguments<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
-        let mut result = String::new();
-        result.push_str("{ ");
+
         let mut cursor = node.walk();
-        let mut arguments_doc = node
+        let mut joined_children = node
             .named_children(&mut cursor)
             .map(|n| visit_node(&n, context, shape))
             .collect::<Vec<String>>()
             .join(", ");
 
-        if arguments_doc.is_empty() {
-            result.push_str("}");
+        if joined_children.is_empty() {
+            "{}".to_string()
         } else {
-            result.push_str(&arguments_doc);
-            result.push_str(" }");
+            format!("{{ {} }}", joined_children)
         }
-
-        result
     }
 }
 
 impl<'a, 'tree> Rewrite for DimensionsExpr<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let mut result = String::new();
         let child = self
             .node()
             .named_child(0)
             .unwrap_or_else(|| panic!("mandatory child expression node missing."));
         let exp = Expression::new(&child);
-        result.push('[');
-        result.push_str(&exp.rewrite(context, shape));
-        result.push(']');
-        result
+        format!("[{}]", &exp.rewrite(context, shape))
     }
 }
 
@@ -613,6 +628,45 @@ impl<'a, 'tree> Rewrite for ArrayType<'a, 'tree> {
             .node()
             .get_mandatory_child_value_by_name("dimensions", context.source_code);
         result.push_str(element_value);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for MapInitializer<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        let mut cursor = node.walk();
+        let children = node
+            .named_children(&mut cursor)
+            .map(|c| {
+                let n = Expression::new(&c);
+                n.rewrite(context, shape)
+            })
+            .collect::<Vec<String>>();
+
+        let children_value = if children.is_empty() {
+            "{}".to_string()
+        } else {
+            // Example: ["'hello'", "1", "'world'", "2"] becomes 'hello' => 1, 'world' => 2
+            let joined_children = children
+                .chunks(2)
+                .enumerate()
+                .map(|(_, chunk)| {
+                    if chunk.len() == 2 {
+                        format!("{} => {}", chunk[0], chunk[1])
+                    } else {
+                        chunk[0].to_string()
+                    }
+                })
+                .collect::<Vec<String>>()
+                .join(", ");
+
+            format!("{{ {} }}", joined_children)
+        };
+
+        result.push_str(&children_value);
         result
     }
 }
