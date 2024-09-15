@@ -1,6 +1,5 @@
 use crate::context::FmtContext;
 use anyhow::Result;
-use std::cell::RefCell;
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::{fs, path::Path};
@@ -11,14 +10,16 @@ pub struct Config {
     pub indent_size: usize,
 }
 
-impl Config {
-    pub fn default() -> Self {
+impl Default for Config {
+    fn default() -> Self {
         Self {
             max_width: 80,
             indent_size: 2,
         }
     }
+}
 
+impl Config {
     pub fn new(max_width: usize) -> Self {
         Self {
             max_width,
