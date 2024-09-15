@@ -117,7 +117,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let parameters_node = node
             .child_by_field_name("parameters")
-            .map(|n| n.try_get_children_by_kind("formal_parameter"))
+            .map(|n| n.try_cs_by_k("formal_parameter"))
             .unwrap_or_default();
 
         let parameters_value: Vec<String> = parameters_node
@@ -213,7 +213,7 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
         let mut result = String::new();
         result.push_str(" implements ");
 
-        let type_list = node.get_child_by_kind("type_list");
+        let type_list = node.c_by_k("type_list");
 
         let type_lists =
             type_list.try_get_children_value_by_kind("type_identifier", context.source_code);
@@ -332,10 +332,10 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("if ");
-        let condition = self.node().get_child_by_kind("parenthesized_expression");
+        let condition = self.node().c_by_k("parenthesized_expression");
         result.push_str(&visit_node(&condition, context, shape));
 
-        let consequence = self.node().get_child_by_kind("block");
+        let consequence = self.node().c_by_k("block");
         result.push_str(&visit_node(
             &consequence,
             context,
@@ -535,10 +535,10 @@ impl<'a, 'tree> Rewrite for GenericType<'a, 'tree> {
         let source_code = context.source_code;
         let mut result = String::new();
 
-        let name = node.get_child_by_kind("type_identifier");
+        let name = node.c_by_k("type_identifier");
         result.push_str(name.v(source_code));
 
-        let arguments = node.get_child_by_kind("type_arguments");
+        let arguments = node.c_by_k("type_arguments");
         let n = TypeArguments::new(&arguments);
         result.push_str(&n.rewrite(context, shape));
 
@@ -697,7 +697,7 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         }
 
         let joined_children = node
-            .try_get_children_by_kind("annotation_key_value")
+            .try_cs_by_k("annotation_key_value")
             .iter()
             .map(|c| AnnotationKeyValue::new(c).rewrite(context, shape))
             .collect::<Vec<_>>()

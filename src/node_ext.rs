@@ -9,11 +9,11 @@ pub trait NodeExt<'tree> {
     fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
 
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>>;
-    fn try_get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
+    fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
 
-    fn try_get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
+    fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
 
-    fn get_child_by_kind(&self, kind: &str) -> Node<'tree>;
+    fn c_by_k(&self, kind: &str) -> Node<'tree>;
     fn get_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
 
     fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
@@ -38,7 +38,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         child
     }
 
-    fn try_get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>> {
+    fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'tree>> {
         let mut cursor = self.walk();
         self.children(&mut cursor)
             .filter(|c| c.kind() == kind)
@@ -53,13 +53,13 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         self.child_by_field_name(name).map(|n| n.v(source_code))
     }
 
-    fn get_child_by_kind(&self, kind: &str) -> Node<'tree> {
+    fn c_by_k(&self, kind: &str) -> Node<'tree> {
         self.try_c_by_k(kind)
             .unwrap_or_else(|| panic!("mandatory kind child: {} not found.", kind))
     }
 
     fn get_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
-        let child_node = self.get_child_by_kind(name);
+        let child_node = self.c_by_k(name);
         child_node.v(source_code)
     }
 
@@ -85,7 +85,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>> {
-        let children = self.try_get_children_by_kind(kind);
+        let children = self.try_cs_by_k(kind);
         if children.is_empty() {
             panic!("Mandatory kind children: {} missing", kind);
         }
@@ -93,13 +93,13 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn try_get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
-        self.try_get_children_by_kind(kind)
+        self.try_cs_by_k(kind)
             .iter()
             .map(|n| n.v(source_code))
             .collect::<Vec<&str>>()
     }
 
-    fn try_get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
+    fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_c_by_k(kind).map(|child| child.v(source_code))
     }
 }
