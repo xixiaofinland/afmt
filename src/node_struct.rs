@@ -108,7 +108,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let parameters_node = node
             .child_by_field_name("parameters")
-            .and_then(|n| Some(n.get_children_by_kind("formal_parameter")))
+            .and_then(|n| Some(n.try_get_children_by_kind("formal_parameter")))
             .unwrap_or_else(Vec::new);
 
         let parameters_value = parameters_node

@@ -10,7 +10,7 @@ pub trait NodeExt<'tree> {
     fn try_get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
     fn try_get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
 
-    fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
+    fn try_get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>>;
 
     fn get_mandatory_child_by_kind(&self, kind: &str) -> Node<'tree>;
     fn get_mandatory_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
@@ -39,7 +39,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
         child
     }
 
-    fn get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>> {
+    fn try_get_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>> {
         let mut cursor = self.walk();
         self.children(&mut cursor)
             .filter(|c| c.kind() == kind)
@@ -87,7 +87,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn get_mandatory_children_by_kind(&self, kind: &str) -> Vec<Node<'tree>> {
-        let children = self.get_children_by_kind(kind);
+        let children = self.try_get_children_by_kind(kind);
         if children.is_empty() {
             panic!("Mandatory kind children: {} missing", kind);
         }
@@ -95,14 +95,14 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
-        self.get_children_by_kind(kind)
+        self.try_get_children_by_kind(kind)
             .iter()
             .map(|n| n.get_value(source_code))
             .collect::<Vec<&str>>()
     }
 
     fn get_modifiers_value(&self, source_code: &str) -> String {
-        let modifier_nodes = self.get_children_by_kind("modifier");
+        let modifier_nodes = self.try_get_children_by_kind("modifier");
         modifier_nodes
             .iter()
             .map(|n| n.get_value(source_code))
