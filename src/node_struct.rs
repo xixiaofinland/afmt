@@ -51,7 +51,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
-            .and_then(|n| Some(n.get_children_value_by_kind("modifier", context.source_code)))
+            .and_then(|n| Some(n.try_get_children_value_by_kind("modifier", context.source_code)))
             .unwrap_or_else(Vec::new)
             .join(" ");
         result.push_str(&modifiers_value);
@@ -90,7 +90,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
-            .and_then(|n| Some(n.get_children_value_by_kind("modifier", source_code)))
+            .and_then(|n| Some(n.try_get_children_value_by_kind("modifier", source_code)))
             .unwrap_or_else(Vec::new)
             .join(" ");
 
@@ -160,7 +160,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         let modifiers_value = node
             .try_get_child_by_kind("modifiers")
-            .and_then(|n| Some(n.get_children_value_by_kind("modifier", source_code)))
+            .and_then(|n| Some(n.try_get_children_value_by_kind("modifier", source_code)))
             .unwrap_or_else(Vec::new)
             .join(" ");
 
@@ -207,7 +207,7 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
         let type_list = node.get_child_by_kind("type_list");
 
         let type_lists =
-            type_list.get_children_value_by_kind("type_identifier", context.source_code);
+            type_list.try_get_children_value_by_kind("type_identifier", context.source_code);
         result.push_str(&type_lists.join(", "));
 
         result
