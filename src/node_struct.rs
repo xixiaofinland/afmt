@@ -69,12 +69,12 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let name_node_value = node.get_child_value_by_name("name", context.source_code);
         result.push_str(name_node_value);
 
-        if let Some(c) = node.try_get_child_by_name("superclass") {
+        if let Some(c) = node.try_c_by_n("superclass") {
             let n = SuperClass::new(&c);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         }
 
-        if let Some(c) = node.try_get_child_by_name("interfaces") {
+        if let Some(c) = node.try_c_by_n("interfaces") {
             let n = Interfaces::new(&c);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         }
@@ -226,7 +226,7 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        let name_node_value = self.node().get_value(context.source_code);
+        let name_node_value = self.node().v(context.source_code);
         result.push_str(name_node_value);
         result
     }
@@ -235,7 +235,7 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::from(' ');
-        let name_node_value = self.node().get_value(context.source_code);
+        let name_node_value = self.node().v(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
         result
@@ -245,7 +245,7 @@ impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
-        let name_node_value = self.node().get_value(context.source_code);
+        let name_node_value = self.node().v(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
         result
@@ -313,7 +313,7 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
         let name = node.get_child_value_by_name("name", source_code);
         result.push_str(name);
 
-        if let Some(v) = node.try_get_child_by_name("value") {
+        if let Some(v) = node.try_c_by_n("value") {
             result.push_str(" = ");
             result.push_str(&visit_node(
                 &v,
@@ -402,7 +402,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result = format!("{} {} {}", left, op, right);
                 result
             }
-            "int" => node.get_value(source_code).to_string(),
+            "int" => node.v(source_code).to_string(),
             "method_invocation" => {
                 let object = &node
                     .try_get_child_value_by_name("object", source_code)
@@ -453,7 +453,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     &mut shape.clone_with_stand_alone(false),
                 ));
 
-                if let Some(v) = node.try_get_child_by_name("value") {
+                if let Some(v) = node.try_c_by_n("value") {
                     result.push_str(&visit_node(
                         &v,
                         context,
@@ -461,7 +461,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                     ));
                 }
 
-                if let Some(v) = node.try_get_child_by_name("dimensions") {
+                if let Some(v) = node.try_c_by_n("dimensions") {
                     result.push_str(&visit_node(
                         &v,
                         context,
@@ -487,7 +487,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "string_literal" => {
-                result.push_str(node.get_value(source_code));
+                result.push_str(node.v(source_code));
                 result
             }
 
@@ -504,7 +504,7 @@ impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
         let mut result = String::new();
         add_standalone_prefix(&mut result, shape, context);
 
-        result.push_str(self.node().get_value(context.source_code));
+        result.push_str(self.node().v(context.source_code));
 
         result
     }
@@ -536,7 +536,7 @@ impl<'a, 'tree> Rewrite for GenericType<'a, 'tree> {
         let mut result = String::new();
 
         let name = node.get_child_by_kind("type_identifier");
-        result.push_str(name.get_value(source_code));
+        result.push_str(name.v(source_code));
 
         let arguments = node.get_child_by_kind("type_arguments");
         let n = TypeArguments::new(&arguments);
@@ -676,7 +676,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
         let name = node.get_child_by_name("name");
         result.push_str(&visit_node(&name, context, shape));
 
-        if let Some(a) = node.try_get_child_by_name("arguments") {
+        if let Some(a) = node.try_c_by_n("arguments") {
             result.push('(');
             result.push_str(&visit_node(&a, context, shape));
             result.push(')');
@@ -692,8 +692,8 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        if let Some(c) = node.try_get_child_by_name("value") {
-            result.push_str(c.get_value(context.source_code));
+        if let Some(c) = node.try_c_by_n("value") {
+            result.push_str(c.v(context.source_code));
         }
 
         let joined_children = node
@@ -722,7 +722,7 @@ impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
         let mut result = String::new();
 
         let key = node.get_child_by_name("key");
-        result.push_str(key.get_value(context.source_code));
+        result.push_str(key.v(context.source_code));
 
         result.push('=');
 

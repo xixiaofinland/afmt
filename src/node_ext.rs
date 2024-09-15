@@ -2,9 +2,10 @@ use anyhow::{bail, Context, Result};
 use tree_sitter::{Node, TreeCursor};
 
 pub trait NodeExt<'tree> {
-    fn get_value<'a>(&self, source_code: &'a str) -> &'a str;
+    fn v<'a>(&self, source_code: &'a str) -> &'a str;
 
-    fn try_get_child_by_name(&self, kind: &str) -> Option<Node<'tree>>;
+    fn try_c_by_n(&self, kind: &str) -> Option<Node<'tree>>;
+
     fn try_get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
 
     fn try_get_child_by_kind(&self, kind: &str) -> Option<Node<'tree>>;
@@ -26,7 +27,7 @@ pub trait NodeExt<'tree> {
 }
 
 impl<'tree> NodeExt<'tree> for Node<'tree> {
-    fn get_value<'a>(&self, source_code: &'a str) -> &'a str {
+    fn v<'a>(&self, source_code: &'a str) -> &'a str {
         self.utf8_text(source_code.as_bytes())
             .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind()))
     }
@@ -44,13 +45,12 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .collect()
     }
 
-    fn try_get_child_by_name(&self, name: &str) -> Option<Node<'tree>> {
+    fn try_c_by_n(&self, name: &str) -> Option<Node<'tree>> {
         self.child_by_field_name(name)
     }
 
     fn try_get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str> {
-        self.child_by_field_name(name)
-            .map(|n| n.get_value(source_code))
+        self.child_by_field_name(name).map(|n| n.v(source_code))
     }
 
     fn get_child_by_kind(&self, kind: &str) -> Node<'tree> {
@@ -60,14 +60,14 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
 
     fn get_child_value_by_kind<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
         let child_node = self.get_child_by_kind(name);
-        child_node.get_value(source_code)
+        child_node.v(source_code)
     }
 
     fn get_child_value_by_name<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
         let node = self
             .child_by_field_name(name)
             .unwrap_or_else(|| panic!("mandatory named child: {} missing.", name));
-        node.get_value(source_code)
+        node.v(source_code)
     }
 
     fn get_child_by_name(&self, name: &str) -> Node<'tree> {
@@ -95,12 +95,12 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     fn try_get_children_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
         self.try_get_children_by_kind(kind)
             .iter()
-            .map(|n| n.get_value(source_code))
+            .map(|n| n.v(source_code))
             .collect::<Vec<&str>>()
     }
 
     fn try_get_child_value_by_kind<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_get_child_by_kind(kind)
-            .map(|child| child.get_value(source_code))
+            .map(|child| child.v(source_code))
     }
 }
