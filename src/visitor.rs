@@ -158,6 +158,22 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = Modifiers::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::ConstructorDeclaration => {
+            let n = ConstructorDeclaration::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::ConstructorBody => {
+            let n = ConstructorBody::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::ExplicitConstructorInvocation => {
+            let n = ExplicitConstructorInvocation::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::AssignmentExpression => {
+            let n = AssignmentExpression::new(node);
+            n.rewrite(context, shape)
+        }
         _ => {
             panic!("### Unknow node: {}", node.kind());
         }

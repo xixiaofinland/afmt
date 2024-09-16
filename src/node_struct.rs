@@ -24,7 +24,9 @@ define_struct_and_enum!(
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
     true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
-        "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression",
+        "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression" |
+        "assignment_expression",
+    true; AssignmentExpression => "assignment_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
@@ -42,8 +44,10 @@ define_struct_and_enum!(
     true; Annotation => "annotation",
     true; AnnotationArgumentList => "annotation_argument_list",
     true; AnnotationKeyValue => "annotation_key_value",
-    true; Modifiers => "modifiers"
-
+    true; Modifiers => "modifiers",
+    true; ConstructorDeclaration => "constructor_declaration",
+    true; ConstructorBody => "constructor_body",
+    true; ExplicitConstructorInvocation => "explicit_constructor_invocation"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -158,9 +162,8 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&Modifiers::new(a).rewrite(context, shape));
+            result.push(' ');
         }
-
-        result.push(' ');
 
         let type_node_value = node.cv_by_n("type", source_code);
         result.push_str(type_node_value);
@@ -477,6 +480,11 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(node.v(source_code));
                 result
             }
+            "assignment_expression" => {
+                let n = AssignmentExpression::new(node);
+                result.push_str(&n.rewrite(context, shape));
+                result
+            }
 
             v => {
                 eprintln!("### Unknow Expression node: {}", v);
@@ -703,6 +711,7 @@ impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
         result
     }
 }
+
 impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
@@ -716,6 +725,93 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
 
         result.push_str(&node.try_csv_by_k("modifier", context.source_code).join(" "));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ConstructorDeclaration<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
+        let mut result = String::new();
+
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        if let Some(ref c) = node.try_c_by_k("modifiers") {
+            let n = Modifiers::new(c);
+            result.push_str(&n.rewrite(context, shape));
+        }
+
+        result.push(' ');
+        result.push_str(node.c_by_n("name").v(source_code));
+
+        result.push('(');
+        let parameters_node = node
+            .try_c_by_n("parameters")
+            .map(|n| n.try_cs_by_k("formal_parameter"))
+            .unwrap_or_default();
+
+        let parameters_value: Vec<String> = parameters_node
+            .iter()
+            .map(|n| {
+                let type_str = n.cv_by_n("type", source_code);
+                let name_str = n.cv_by_n("name", source_code);
+                format!("{} {}", type_str, name_str)
+            })
+            .collect();
+        let params_single_line = parameters_value.join(", ");
+        result.push_str(&params_single_line);
+        result.push(')');
+
+        let constructor_body = node.c_by_n("body");
+        let n = ConstructorBody::new(&constructor_body);
+        result.push_str(&n.rewrite(context, shape));
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ConstructorBody<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str(" { \n");
+        result.push_str(&visit_standalone_children(node, context, shape));
+        result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ExplicitConstructorInvocation<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        let constructor = node.c_by_n("constructor");
+        result.push_str(constructor.v(source_code));
+
+        let arguments = node.c_by_n("arguments");
+        let n = ArgumentList::new(&arguments);
+        result.push_str(&n.rewrite(context, shape));
+        try_add_standalone_suffix(&mut result, shape);
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
+        let mut result = String::new();
+
+        let left = node.cv_by_n("left", source_code);
+        let op = node.cv_by_n("operator", source_code);
+        let right = node.cv_by_n("right", source_code);
+        result.push_str(&format!("{} {} {}", left, op, right));
         result
     }
 }
