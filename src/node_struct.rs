@@ -170,8 +170,9 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         result.push(' ');
 
-        let name_node_value = node.c_by_n("declarator").cv_by_n("name", source_code);
-        result.push_str(name_node_value);
+        let variable_declarator = node.c_by_k("variable_declarator");
+        let n = VariableDeclarator::new(&variable_declarator);
+        result.push_str(&n.rewrite(context, shape));
 
         try_add_standalone_suffix(&mut result, shape);
 
@@ -776,7 +777,7 @@ impl<'a, 'tree> Rewrite for ConstructorBody<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(" { \n");
+        result.push_str(" {\n");
         result.push_str(&visit_standalone_children(node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
         result
