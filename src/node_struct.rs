@@ -52,19 +52,10 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         let mut result = String::new();
         try_add_standalone_prefix(&mut result, shape, context);
 
-        if let Some(ref a) = node
-            .try_c_by_k("modifiers")
-            .and_then(|n| n.try_c_by_k("annotation"))
-        {
-            result.push_str(&Annotation::new(a).rewrite(context, shape));
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            result.push_str(&Modifiers::new(a).rewrite(context, shape));
         }
 
-        let modifiers_value = node
-            .try_c_by_k("modifiers")
-            .map(|n| n.try_csv_by_k("modifier", context.source_code))
-            .unwrap_or_else(Vec::new)
-            .join(" ");
-        result.push_str(&modifiers_value);
         result.push_str(" class ");
 
         let name_node_value = node.cv_by_n("name", context.source_code);
@@ -98,13 +89,10 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let mut result = String::new();
         try_add_standalone_prefix(&mut result, shape, context);
 
-        let modifiers_value = node
-            .try_c_by_k("modifiers")
-            .map(|n| n.try_csv_by_k("modifier", source_code))
-            .unwrap_or_default()
-            .join(" ");
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            result.push_str(&Modifiers::new(a).rewrite(context, shape));
+        }
 
-        result.push_str(&modifiers_value);
         result.push(' ');
 
         let type_node_value = node.cv_by_n("type", source_code);
@@ -168,13 +156,9 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let mut result = String::new();
         try_add_standalone_prefix(&mut result, shape, context);
 
-        let modifiers_value = node
-            .try_c_by_k("modifiers")
-            .map(|n| n.try_csv_by_k("modifier", source_code))
-            .unwrap_or_default()
-            .join(" ");
-
-        result.push_str(&modifiers_value);
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            result.push_str(&Modifiers::new(a).rewrite(context, shape));
+        }
 
         result.push(' ');
 
@@ -251,9 +235,16 @@ impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
+        let node = self.node();
+
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            result.push_str(&Modifiers::new(a).rewrite(context, shape));
+        }
+
+        debug!("{:?}", shape);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        let t = self.node().c_by_n("type");
+        let t = node.c_by_n("type");
         result.push_str(&visit_node(
             &t,
             context,
@@ -262,7 +253,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         result.push(' ');
 
-        let declarator_nodes = self.node().cs_by_n("declarator");
+        let declarator_nodes = node.cs_by_n("declarator");
         let declarator_values: Vec<String> = declarator_nodes
             .iter()
             .map(|d| {
@@ -715,21 +706,12 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(&node.try_visit_cs(context, shape).join(" "));
+        node.try_cs_by_k("annotation").iter().for_each(|c| {
+            result.push_str(&Annotation::new(c).rewrite(context, shape));
+        });
 
-        if let Some(ref a) = node
-            .try_c_by_k("modifiers")
-            .and_then(|n| n.try_c_by_k("annotation"))
-        {
-            result.push_str(&Annotation::new(a).rewrite(context, shape));
-        }
+        result.push_str(&node.try_csv_by_k("modifier", context.source_code).join(" "));
 
-        if let Some(ref a) = node
-            .try_c_by_k("modifiers")
-            .and_then(|n| n.try_c_by_k("annotation"))
-        {
-            result.push_str(&Annotation::new(a).rewrite(context, shape));
-        }
         result
     }
 }
