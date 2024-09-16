@@ -239,10 +239,10 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&Modifiers::new(a).rewrite(context, shape));
+            result.push(' ');
+        } else {
+            try_add_standalone_prefix(&mut result, shape, context);
         }
-
-        debug!("{:?}", shape);
-        try_add_standalone_prefix(&mut result, shape, context);
 
         let t = node.c_by_n("type");
         result.push_str(&visit_node(
@@ -640,6 +640,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
+        try_add_standalone_prefix(&mut result, shape, context);
         result.push('@');
 
         let name = node.c_by_n("name");
@@ -652,6 +653,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
         }
 
         result.push('\n');
+        add_indent(&mut result, shape, context);
         result
     }
 }
@@ -670,7 +672,7 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
             .iter()
             .map(|c| AnnotationKeyValue::new(c).rewrite(context, shape))
             .collect::<Vec<_>>()
-            .join(", ");
+            .join(" ");
 
         result.push_str(&joined_children);
 
@@ -707,7 +709,9 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
         let mut result = String::new();
 
         node.try_cs_by_k("annotation").iter().for_each(|c| {
-            result.push_str(&Annotation::new(c).rewrite(context, shape));
+            result.push_str(
+                &Annotation::new(c).rewrite(context, &mut shape.clone_with_stand_alone(true)),
+            );
         });
 
         result.push_str(&node.try_csv_by_k("modifier", context.source_code).join(" "));

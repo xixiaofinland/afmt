@@ -4,6 +4,6 @@ public without sharing class Me {
              label =   'Old User'  )
 
 
-    public Id oldUserId;
+    public     Id oldUserId;
   }
 }
