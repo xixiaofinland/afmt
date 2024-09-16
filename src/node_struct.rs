@@ -548,7 +548,7 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
         let mut result = String::new();
         result.push('(');
 
-        let joined = try_visit_cs(node, context, shape).join(", ");
+        let joined = node.try_visit_cs(context, shape).join(", ");
 
         result.push_str(&joined);
         result.push(')');
@@ -562,7 +562,7 @@ impl<'a, 'tree> Rewrite for TypeArguments<'a, 'tree> {
         let mut result = String::new();
         result.push('<');
 
-        let joined = try_visit_cs(node, context, shape).join(", ");
+        let joined = node.try_visit_cs(context, shape).join(", ");
         result.push_str(&joined);
 
         result.push('>');
@@ -574,7 +574,7 @@ impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
 
-        let joined = try_visit_cs(node, context, shape).join(", ");
+        let joined = node.try_visit_cs(context, shape).join(", ");
         if joined.is_empty() {
             "{}".to_string()
         } else {
@@ -715,7 +715,7 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(&try_visit_cs(node, context, shape).join(" "));
+        result.push_str(&node.try_visit_cs(context, shape).join(" "));
 
         if let Some(ref a) = node
             .try_c_by_k("modifiers")

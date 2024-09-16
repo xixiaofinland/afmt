@@ -1,5 +1,5 @@
-use anyhow::{bail, Context, Result};
-use tree_sitter::{Node, TreeCursor};
+use crate::{context::FmtContext, shape::Shape, visitor::visit_node};
+use tree_sitter::Node;
 
 // `c` => child
 // `cv` => child value
@@ -16,6 +16,10 @@ pub trait NodeExt<'tree> {
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
     fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
+
+    fn try_visit_cs_by_k(&self, kind: &str, context: &FmtContext, shape: &mut Shape)
+        -> Vec<String>;
+    fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String>;
 
     fn c_by_n(&self, name: &str) -> Node<'tree>;
     fn c_by_k(&self, kind: &str) -> Node<'tree>;
@@ -100,5 +104,24 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
 
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_c_by_k(kind).map(|child| child.v(source_code))
+    }
+
+    fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
+        let mut cursor = self.walk();
+        self.named_children(&mut cursor)
+            .map(|n| visit_node(&n, context, shape))
+            .collect::<Vec<_>>()
+    }
+
+    fn try_visit_cs_by_k(
+        &self,
+        kind: &str,
+        context: &FmtContext,
+        shape: &mut Shape,
+    ) -> Vec<String> {
+        self.try_cs_by_k(kind)
+            .iter()
+            .map(|n| visit_node(&n, context, shape))
+            .collect::<Vec<_>>()
     }
 }
