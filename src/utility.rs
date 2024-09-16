@@ -20,7 +20,7 @@ pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
     result.push_str(&shape.indent.as_string(context.config));
 }
 
-pub fn visit_children_nodes(node: &Node, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
+pub fn try_visit_cs(node: &Node, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
     let mut cursor = node.walk();
     node.named_children(&mut cursor)
         .map(|n| visit_node(&n, context, shape))

@@ -41,7 +41,8 @@ define_struct_and_enum!(
     true; MapInitializer => "map_initializer",
     true; Annotation => "annotation",
     true; AnnotationArgumentList => "annotation_argument_list",
-    true; AnnotationKeyValue => "annotation_key_value"
+    true; AnnotationKeyValue => "annotation_key_value",
+    true; Modifiers => "modifiers"
 
 );
 
@@ -547,7 +548,7 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
         let mut result = String::new();
         result.push('(');
 
-        let joined = visit_children_nodes(node, context, shape).join(", ");
+        let joined = try_visit_cs(node, context, shape).join(", ");
 
         result.push_str(&joined);
         result.push(')');
@@ -561,7 +562,7 @@ impl<'a, 'tree> Rewrite for TypeArguments<'a, 'tree> {
         let mut result = String::new();
         result.push('<');
 
-        let joined = visit_children_nodes(node, context, shape).join(", ");
+        let joined = try_visit_cs(node, context, shape).join(", ");
         result.push_str(&joined);
 
         result.push('>');
@@ -573,7 +574,7 @@ impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
 
-        let joined = visit_children_nodes(node, context, shape).join(", ");
+        let joined = try_visit_cs(node, context, shape).join(", ");
         if joined.is_empty() {
             "{}".to_string()
         } else {
@@ -706,6 +707,29 @@ impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
         let value = node.c_by_n("value");
         result.push_str(&visit_node(&value, context, shape));
 
+        result
+    }
+}
+impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str(&try_visit_cs(node, context, shape).join(" "));
+
+        if let Some(ref a) = node
+            .try_c_by_k("modifiers")
+            .and_then(|n| n.try_c_by_k("annotation"))
+        {
+            result.push_str(&Annotation::new(a).rewrite(context, shape));
+        }
+
+        if let Some(ref a) = node
+            .try_c_by_k("modifiers")
+            .and_then(|n| n.try_c_by_k("annotation"))
+        {
+            result.push_str(&Annotation::new(a).rewrite(context, shape));
+        }
         result
     }
 }
