@@ -3,6 +3,9 @@ name = "afmt"
 version = "0.1.0"
 edition = "2021"
 
+[dev-dependencies]
+similar = "2.6.0"
+
 [dependencies]
 anyhow = "1.0.86"
 clap = "4.5.16"

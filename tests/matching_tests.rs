@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use afmt::config::*;
+    use similar::{ChangeTag, TextDiff};
     use std::path::Path;
 
     #[test]
@@ -30,6 +31,46 @@ mod tests {
         let output_path = source_path.with_extension("cls");
         let expected = std::fs::read_to_string(&output_path)
             .expect(&format!("Failed to read output file: {:?}", output_path));
-        assert_eq!(output, expected, "Mismatch in {}", source_path.display());
+
+        // Assert that output matches expected
+        if output != expected {
+            // Print the colorized side-by-side diff
+            print_side_by_side_diff(&output, &expected, source_path);
+
+            // Fail the test
+            assert_eq!(output, expected, "Mismatch in {}", source_path.display());
+        }
+    }
+
+    fn print_side_by_side_diff(output: &str, expected: &str, source_path: &Path) {
+        println!("Mismatch in {}:", source_path.display());
+
+        let diff = TextDiff::from_lines(expected, output);
+        let mut left_col = String::new();
+        let mut right_col = String::new();
+
+        // Header for the side-by-side view
+        println!("{:<40} | {:<40}", "Expected", "Actual");
+
+        for change in diff.iter_all_changes() {
+            match change.tag() {
+                ChangeTag::Delete => {
+                    left_col = format!("\x1b[91m- {:<38}\x1b[0m", change.to_string().trim_end()); // Red for deletions (left)
+                    right_col = String::from(""); // Empty on the right side
+                }
+                ChangeTag::Insert => {
+                    left_col = String::from(""); // Empty on the left side
+                    right_col = format!("\x1b[92m+ {:<38}\x1b[0m", change.to_string().trim_end());
+                    // Green for insertions (right)
+                }
+                ChangeTag::Equal => {
+                    left_col = format!("  {:<38}", change.to_string().trim_end()); // No color for unchanged lines
+                    right_col = format!("  {:<38}", change.to_string().trim_end());
+                }
+            }
+
+            // Print the two columns side-by-side
+            println!("{:<40} | {:<40}", left_col, right_col);
+        }
     }
 }
