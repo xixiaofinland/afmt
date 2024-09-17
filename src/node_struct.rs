@@ -339,7 +339,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
             let n = Block::new(&consequence);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         } else {
-            result.push_str("{\n");
+            result.push_str(" {\n");
             let mut child_shape = shape.copy_with_indent_block_plus(context.config);
             result.push_str(&visit_node(&consequence, context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
@@ -353,7 +353,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
                 let n = Block::new(&a);
                 result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
             } else {
-                result.push_str("{\n");
+                result.push_str(" {\n");
                 let mut child_shape = shape.copy_with_indent_block_plus(context.config);
                 result.push_str(&visit_node(&a, context, &mut child_shape));
                 result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
