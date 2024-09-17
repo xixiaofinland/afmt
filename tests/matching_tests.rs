@@ -34,17 +34,35 @@ mod tests {
 
         // Assert that output matches expected
         if output != expected {
-            // Print the colorized side-by-side diff
-            print_side_by_side_diff(&output, &expected, source_path);
+            print_diff(&output, &expected, source_path);
 
-            // Fail the test
+            println!("-------------------------------------");
+
+            print_side_by_side_diff(&output, &expected, source_path);
             assert_eq!(output, expected, "Mismatch in {}", source_path.display());
         }
     }
 
-    fn print_side_by_side_diff(output: &str, expected: &str, source_path: &Path) {
+    fn print_diff(output: &str, expected: &str, source_path: &Path) {
         println!("Mismatch in {}:", source_path.display());
 
+        let diff = TextDiff::from_lines(expected, output);
+
+        // Print the colorized diff
+        for change in diff.iter_all_changes() {
+            let (sign, color) = match change.tag() {
+                ChangeTag::Delete => ("-", "\x1b[91m"), // Red for deletions
+                ChangeTag::Insert => ("+", "\x1b[92m"), // Green for insertions
+                ChangeTag::Equal => (" ", "\x1b[0m"),   // Reset color for unchanged lines
+            };
+
+            // Print each change with proper color and prefix
+            print!("{}{}{}", color, sign, change);
+            print!("\x1b[0m"); // Reset the color after each line
+        }
+    }
+
+    fn print_side_by_side_diff(output: &str, expected: &str, source_path: &Path) {
         let diff = TextDiff::from_lines(expected, output);
         let mut left_col = String::new();
         let mut right_col = String::new();
