@@ -242,9 +242,11 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let node = self.node();
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
+            debug!("1{:?}", shape);
             result.push_str(&Modifiers::new(a).rewrite(context, shape));
             result.push(' ');
         } else {
+            debug!("2{:?}", shape);
             try_add_standalone_prefix(&mut result, shape, context);
         }
 
@@ -328,36 +330,44 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("if ");
-        let condition = node.c_by_k("parenthesized_expression");
+        let condition = node.c_by_n("condition");
         let n = ParenthesizedExpression::new(&condition);
         result.push_str(&n.rewrite(context, shape));
 
         let consequence = node.c_by_n("consequence");
-        let has_block_node = consequence.kind() == "block";
+        let is_block_node = consequence.kind() == "block";
 
-        if has_block_node {
+        if is_block_node {
             let n = Block::new(&consequence);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         } else {
             result.push_str(" {\n");
-            let mut child_shape = shape.copy_with_indent_block_plus(context.config);
+            let mut child_shape = shape
+                .copy_with_indent_block_plus(context.config)
+                .clone_with_stand_alone(true);
             result.push_str(&visit_node(&consequence, context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
 
-        node.try_c_by_n("alternative").map(|a| {
-            result.push_str(" else");
-
-            let has_block_node = a.kind() == "block";
-            if has_block_node {
+        node.try_c_by_n("alternative").map(|a| match a.kind() {
+            "block" => {
+                result.push_str(" else");
                 let n = Block::new(&a);
                 result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
-            } else {
-                result.push_str(" {\n");
-                let mut child_shape = shape.copy_with_indent_block_plus(context.config);
+            }
+            "if_statement" => {
+                result.push_str(" else ");
+                let n = IfStatement::new(&a);
+                result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            }
+            _ => {
+                result.push_str(" else {\n");
+                let mut child_shape = shape
+                    .copy_with_indent_block_plus(context.config)
+                    .clone_with_stand_alone(true);
                 result.push_str(&visit_node(&a, context, &mut child_shape));
                 result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
-            };
+            }
         });
 
         result
@@ -385,7 +395,11 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         result.push_str("{\n");
 
-        result.push_str(&visit_standalone_children(self.node(), context, shape));
+        result.push_str(&visit_standalone_children(
+            self.node(),
+            context,
+            &mut shape.clone_with_stand_alone(true),
+        ));
 
         add_indent(&mut result, shape, context);
         result.push('}');
