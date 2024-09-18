@@ -18,7 +18,8 @@ define_struct_and_enum!(
     true; MethodDeclaration => "method_declaration",
     false; EmptyNode => "class_body",
     true; Block => "block",
-    true; Statement => "expression_statement",
+    true; Statement => "expression_statement" | "do_statement",
+    true; DoStatement => "do_statement",
     true; Value => "boolean" | "identifier" | "operator" | "type_identifier",
     true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
@@ -288,6 +289,10 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
                     .unwrap_or_else(|| panic!("mandatory child expression node missing."));
                 let exp = Expression::new(&child);
                 result.push_str(&exp.rewrite(context, shape));
+            }
+            "do_statement" => {
+                let n = DoStatement::new(node);
+                result.push_str(&n.rewrite(context, shape));
             }
             "block" => {
                 let n = Block::new(node);
@@ -854,6 +859,26 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
         let op = node.cv_by_n("operator", source_code);
         let right = node.cv_by_n("right", source_code);
         result.push_str(&format!("{} {} {}", left, op, right));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let source_code = context.source_code;
+        let mut result = String::new();
+
+        result.push_str("do");
+        let body = node.c_by_n("body");
+        let n = Block::new(&body);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
+        result.push_str(" while ");
+        let condition = node.c_by_n("condition");
+        let n = ParenthesizedExpression::new(&condition);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
         result
     }
 }
