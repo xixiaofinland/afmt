@@ -70,7 +70,7 @@ mod tests {
             print_side_by_side_diff(&output, &expected);
             println!("\n-------------------------------------\n");
 
-            assert_eq!(output, expected, "Mismatch in {}", source.display());
+            assert_eq!(expected, output, "Mismatch in {}", source.display());
         }
     }
 

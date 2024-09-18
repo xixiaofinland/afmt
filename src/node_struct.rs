@@ -20,6 +20,7 @@ define_struct_and_enum!(
     true; Block => "block",
     true; Statement => "expression_statement" | "do_statement",
     true; DoStatement => "do_statement",
+    true; WhileStatement => "while_statement",
     true; Value => "boolean" | "identifier" | "operator" | "type_identifier",
     true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
@@ -243,11 +244,9 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let node = self.node();
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
-            debug!("1{:?}", shape);
             result.push_str(&Modifiers::new(a).rewrite(context, shape));
             result.push(' ');
         } else {
-            debug!("2{:?}", shape);
             try_add_standalone_prefix(&mut result, shape, context);
         }
 
@@ -294,6 +293,11 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
                 let n = DoStatement::new(node);
                 result.push_str(&n.rewrite(context, shape));
             }
+            // it conflicts with try_add_standalone_prefix() which adds extra `;` at end
+            //"while_statement" => {
+            //    let n = WhileStatement::new(node);
+            //    result.push_str(&n.rewrite(context, shape));
+            //}
             "block" => {
                 let n = Block::new(node);
                 result.push_str(&n.rewrite(context, shape));
@@ -876,6 +880,25 @@ impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
         result.push_str(" while ");
         let condition = node.c_by_n("condition");
         let n = ParenthesizedExpression::new(&condition);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("while ");
+        let condition = node.c_by_n("condition");
+        let n = ParenthesizedExpression::new(&condition);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
+        let body = node.c_by_n("body");
+        let n = Block::new(&body);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
         result

@@ -57,6 +57,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = FieldDeclaration::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::WhileStatement => {
+            let n = WhileStatement::new(node);
+            n.rewrite(context, shape)
+        }
         NodeKind::Statement => {
             let n = Statement::new(node);
             n.rewrite(context, shape)
