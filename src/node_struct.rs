@@ -293,7 +293,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
                 let n = DoStatement::new(node);
                 result.push_str(&n.rewrite(context, shape));
             }
-            // it conflicts with try_add_standalone_prefix() which adds extra `;` at end
+            // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
             //"while_statement" => {
             //    let n = WhileStatement::new(node);
             //    result.push_str(&n.rewrite(context, shape));
