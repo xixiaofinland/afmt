@@ -1,36 +1,16 @@
 {
   "devDependencies": {
-    "prettier": "^3.3.3",
-    "prettier-plugin-apex": "^2.1.4"
+    "prettier": "3.3.3",
+    "prettier-plugin-apex": "2.1.4"
   },
-  "name": "afmt",
+  "name": "prettier for afmt test",
   "version": "1.0.0",
-  "description": "Afmt is a **Salesforce Apex Code Formatter** written in **Rust**! This tool formats your Apex code for consistency and readability. 🎯",
-  "main": "index.js",
+  "description": "Running Prettier apex to format test scripts to compare with afmt's result",
   "directories": {
     "test": "tests"
   },
-  "dependencies": {
-    "asynckit": "^0.4.0",
-    "axios": "^1.7.7",
-    "combined-stream": "^1.0.8",
-    "delayed-stream": "^1.0.0",
-    "detect-newline": "^3.1.0",
-    "follow-redirects": "^1.15.9",
-    "form-data": "^4.0.0",
-    "jest-docblock": "^29.7.0",
-    "joi": "^17.13.3",
-    "lodash": "^4.17.21",
-    "mime-db": "^1.52.0",
-    "mime-types": "^2.1.35",
-    "minimist": "^1.2.8",
-    "proxy-from-env": "^1.1.0",
-    "rxjs": "^7.8.1",
-    "tslib": "^2.7.0",
-    "wait-on": "^7.2.0"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prettier": "prettier"
   },
   "keywords": [],
   "author": "",
