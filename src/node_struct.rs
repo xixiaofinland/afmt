@@ -399,7 +399,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         };
         result.push(';');
 
-        if let Some(c) = node.try_c_by_n("init") {
+        if let Some(c) = node.try_c_by_n("condition") {
             result.push(' ');
             let n = Expression::new(&c);
             result.push_str(&n.rewrite(context, shape));
