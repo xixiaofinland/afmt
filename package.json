@@ -9,9 +9,6 @@
   "directories": {
     "test": "tests"
   },
-  "scripts": {
-    "prettier": "prettier"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC"
