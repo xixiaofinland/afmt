@@ -866,7 +866,6 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
-        let source_code = context.source_code;
         let mut result = String::new();
 
         result.push_str("do");
