@@ -110,6 +110,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = ArrayInitializer::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::ForStatement => {
+            let n = IfStatement::new(node);
+            n.rewrite(context, shape)
+        }
         NodeKind::IfStatement => {
             let n = IfStatement::new(node);
             n.rewrite(context, shape)

@@ -21,6 +21,7 @@ define_struct_and_enum!(
     true; Statement => "expression_statement" | "do_statement",
     true; DoStatement => "do_statement",
     true; WhileStatement => "while_statement",
+    true; ForStatement => "for_statement",
     true; Value => "boolean" | "identifier" | "operator" | "type_identifier",
     true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
@@ -378,6 +379,49 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
                 result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
             }
         });
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("for");
+        node.try_c_by_n("init").map(|c| {
+            let n = Expression::new(&c);
+            result.push_str(&n.rewrite(context, shape));
+        });
+        result.push_str(";");
+
+        node.try_c_by_n("condition").map(|c| {
+            let n = Expression::new(&c);
+            result.push_str(&n.rewrite(context, shape));
+        });
+        result.push_str(";");
+
+        node.try_c_by_n("update").map(|c| {
+            let n = Expression::new(&c);
+            result.push_str(&n.rewrite(context, shape));
+        });
+
+        let body = node.c_by_n("body");
+        let is_block_node = body.kind() == "block";
+
+        if is_block_node {
+            let n = Block::new(&body);
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        } else {
+            result.push_str(" {\n");
+            let mut child_shape = shape
+                .copy_with_indent_block_plus(context.config)
+                .clone_with_stand_alone(true);
+            result.push_str(&visit_node(&body, context, &mut child_shape));
+            result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
+        };
 
         result
     }
