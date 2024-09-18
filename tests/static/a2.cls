@@ -1,6 +1,3 @@
- @ Annotation  (   param1
-   = 
-false   )
-
-  public class Me {
+@Annotation(param1=false)
+public class Me {
 }

@@ -1,8 +1,5 @@
 public class Me {
   {
-       Integer i   , j 
-          ,    k
-
-    ;
+    Integer i, j, k;
   }
 }

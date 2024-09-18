@@ -1,9 +1,11 @@
 public class Me {
   {
-      if     (true)
-      Integer i = 1; else if (false)
+    if (true) {
+      Integer i = 1;
+    } else if (false) {
       Integer l = 3;
-        else
+    } else {
       Integer j = 2;
     }
+  }
 }

@@ -1,8 +1,5 @@
 public class Me {
   {
-     Integer [] ints   =     new 
-    Integer [
-    0
-    ]   ;
+    Integer[] ints = new Integer[0];
   }
 }

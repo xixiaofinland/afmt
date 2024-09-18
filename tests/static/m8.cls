@@ -1,8 +1,5 @@
 public class OuterClass {
   public static Integer getInt() {
-    return   hello  (
-
-    )
-          ;
+    return hello();
   }
 }

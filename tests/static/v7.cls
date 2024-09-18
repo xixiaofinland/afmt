@@ -1,8 +1,5 @@
 public class Me {
   {
-       Set  <
-       Integer  > ints =     new 
-       Set <   Integer> ( )
-          ;
+    Set<Integer> ints = new Set<Integer>();
   }
 }

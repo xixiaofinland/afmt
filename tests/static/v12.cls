@@ -1,9 +1,5 @@
 public class Me {
   {
-        Integer   i   = 0 , j    , 
-       k 
-          = 1  
-
-          ;
+    Integer i = 0, j, k = 1;
   }
 }

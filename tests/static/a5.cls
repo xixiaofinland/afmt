@@ -1,4 +1,3 @@
-  @Annotation  (  'this is a test of \' strings'  )
-
+@Annotation('this is a test of \' strings')
 public class Me {
 }

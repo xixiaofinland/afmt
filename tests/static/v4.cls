@@ -1,12 +1,5 @@
 public class Me {
   {
-        List
-          <  Integer
-      > ints = 
-         new            Integer   [
-                   0
-         ]
-
-         ;
+    List<Integer> ints = new Integer[0];
   }
 }

@@ -1,4 +1,2 @@
-public   class Me    implements 
-  Interface1 
-  {
+public class Me implements Interface1 {
 }

@@ -1,5 +1,3 @@
-  @Annotation
-    public    class   Me 
-    {
-
+@Annotation
+public class Me {
 }

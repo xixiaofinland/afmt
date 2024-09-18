@@ -1,7 +1,7 @@
 public class Me {
   {
-      if  (true  )  
-          Integer i = 1 ;
-
+    if (true) {
+      Integer i = 1;
+    }
   }
 }

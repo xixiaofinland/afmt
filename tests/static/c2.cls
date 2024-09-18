@@ -1,9 +1,6 @@
 public class Me {
-
-    public class Inside {
-        {
-
-          }
+  public class Inside {
+    {
+    }
   }
-
 }

@@ -1,5 +1,5 @@
 public class Me {
-   {
-        Integer i = -  1 ;
-   }
+  {
+    Integer i = -1;
+  }
 }
