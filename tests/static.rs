@@ -6,10 +6,10 @@ mod tests {
 
     #[test]
     fn source_target_tests() {
-        for entry in std::fs::read_dir("tests/files").unwrap() {
+        for entry in std::fs::read_dir("tests/static").unwrap() {
             let entry = entry.unwrap();
             let source_path = entry.path();
-            if source_path.extension().and_then(|ext| ext.to_str()) == Some("in") {
+            if source_path.extension().and_then(|ext| ext.to_str()) == Some("cls") {
                 println!("### Processing file: {:?}", source_path);
                 process_test_file(&source_path);
             }
@@ -28,7 +28,7 @@ mod tests {
             .next()
             .and_then(|result| result.ok())
             .expect("format result failed.");
-        let output_path = source_path.with_extension("cls");
+        let output_path = source_path.with_extension("out");
         let expected = std::fs::read_to_string(&output_path)
             .expect(&format!("Failed to read output file: {:?}", output_path));
 
