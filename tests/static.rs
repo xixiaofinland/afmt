@@ -21,7 +21,7 @@ mod tests {
             .to_str()
             .expect("PathBuf to String failed.")
             .to_string();
-        let session = Session::new(Config::default(), vec![file_path]);
+        let session = Session::new(Config::default(), vec![file_path.clone()]);
         let vec = session.format();
         let output = vec
             .into_iter()
@@ -34,31 +34,17 @@ mod tests {
 
         // Assert that output matches expected
         if output != expected {
-            print_diff(&output, &expected, source_path);
+            let file_content =
+                std::fs::read_to_string(&file_path).expect("Failed to read the file content.");
 
-            println!("-------------------------------------");
-
+            println!("\nFailed: {:?}:", file_path);
+            println!("-------------------------------------\n");
+            println!("{}", file_content);
+            println!("-------------------------------------\n");
             print_side_by_side_diff(&output, &expected, source_path);
+            println!("\n-------------------------------------\n");
+
             assert_eq!(output, expected, "Mismatch in {}", source_path.display());
-        }
-    }
-
-    fn print_diff(output: &str, expected: &str, source_path: &Path) {
-        println!("Mismatch in {}:", source_path.display());
-
-        let diff = TextDiff::from_lines(expected, output);
-
-        // Print the colorized diff
-        for change in diff.iter_all_changes() {
-            let (sign, color) = match change.tag() {
-                ChangeTag::Delete => ("-", "\x1b[91m"), // Red for deletions
-                ChangeTag::Insert => ("+", "\x1b[92m"), // Green for insertions
-                ChangeTag::Equal => (" ", "\x1b[0m"),   // Reset color for unchanged lines
-            };
-
-            // Print each change with proper color and prefix
-            print!("{}{}{}", color, sign, change);
-            print!("\x1b[0m"); // Reset the color after each line
         }
     }
 
