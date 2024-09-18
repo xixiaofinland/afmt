@@ -41,14 +41,14 @@ mod tests {
             println!("-------------------------------------\n");
             println!("{}", file_content);
             println!("-------------------------------------\n");
-            print_side_by_side_diff(&output, &expected, source_path);
+            print_side_by_side_diff(&output, &expected);
             println!("\n-------------------------------------\n");
 
             assert_eq!(output, expected, "Mismatch in {}", source_path.display());
         }
     }
 
-    fn print_side_by_side_diff(output: &str, expected: &str, source_path: &Path) {
+    fn print_side_by_side_diff(output: &str, expected: &str) {
         let diff = TextDiff::from_lines(expected, output);
         let mut left_col = String::new();
         let mut right_col = String::new();
