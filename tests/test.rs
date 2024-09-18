@@ -8,12 +8,7 @@ mod tests {
     use std::process::Command;
 
     #[test]
-    fn source_target_tests() {
-        run_static_tests();
-        run_prettier_tests();
-    }
-
-    fn run_static_tests() {
+    fn manual() {
         println!("Running static content tests...");
         for entry in std::fs::read_dir("tests/static").unwrap() {
             let entry = entry.unwrap();
@@ -25,7 +20,8 @@ mod tests {
         }
     }
 
-    fn run_prettier_tests() {
+    #[test]
+    fn prettier() {
         println!("Running Prettier-based tests...");
         for entry in std::fs::read_dir("tests/prettier").unwrap() {
             let entry = entry.unwrap();
