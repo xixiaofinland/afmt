@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use afmt::config::*;
+    use colored::Colorize;
     use similar::{ChangeTag, TextDiff};
     use std::fs::{self, File};
     use std::io::Write;
@@ -9,12 +10,11 @@ mod tests {
 
     #[test]
     fn manual() {
-        println!("Running static content tests...");
         for entry in std::fs::read_dir("tests/static").unwrap() {
             let entry = entry.unwrap();
             let source = entry.path();
             if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
-                println!("### Processing static file: {:?}", source);
+                println!("{} {:?}", "### Processing static file:".green(), source);
                 run_static_test_files(&source);
             }
         }
@@ -27,7 +27,7 @@ mod tests {
             let entry = entry.unwrap();
             let source = entry.path();
             if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
-                println!("### Processing Prettier file: {:?}", source);
+                println!("{} {:?}", "### Processing prettier file:".green(), source);
                 run_prettier_test_files(&source);
             }
         }
@@ -46,7 +46,7 @@ mod tests {
         let prettier_file = source.with_extension("pre");
 
         if !prettier_file.exists() {
-            println!("### .pre file not found, generating...");
+            println!("{}", "### .pre file not found, generating...".yellow());
             let prettier_output = run_prettier(source).expect("Failed to run Prettier");
             save_prettier_output(&prettier_file, &prettier_output);
         }
@@ -113,8 +113,6 @@ mod tests {
                     right_col = format!("  {:<38}", change.to_string().trim_end());
                 }
             }
-
-            // Print the two columns side-by-side
             println!("{:<40} | {:<40}", left_col, right_col);
         }
     }
