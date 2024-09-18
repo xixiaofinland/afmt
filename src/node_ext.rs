@@ -121,7 +121,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     ) -> Vec<String> {
         self.try_cs_by_k(kind)
             .iter()
-            .map(|n| visit_node(&n, context, shape))
+            .map(|n| visit_node(n, context, shape))
             .collect::<Vec<_>>()
     }
 }

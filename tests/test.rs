@@ -39,7 +39,7 @@ mod tests {
         let expected =
             std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
 
-        compare(output, expected, source);
+        compare("Static:", output, expected, source);
     }
 
     fn run_prettier_test_files(source: &Path) {
@@ -55,10 +55,10 @@ mod tests {
         let prettier_output =
             std::fs::read_to_string(&prettier_file).expect("Failed to read the .pre file.");
 
-        compare(output, prettier_output, source);
+        compare("Prettier:", output, prettier_output, source);
     }
 
-    fn compare(output: String, expected: String, source: &Path) {
+    fn compare(against: &str, output: String, expected: String, source: &Path) {
         if output != expected {
             let source_content =
                 std::fs::read_to_string(source).expect("Failed to read the file content.");
@@ -67,7 +67,7 @@ mod tests {
             println!("-------------------------------------\n");
             println!("{}", source_content);
             println!("-------------------------------------\n");
-            print_side_by_side_diff(&output, &expected);
+            print_side_by_side_diff(against, &output, &expected);
             println!("\n-------------------------------------\n");
 
             assert_eq!(expected, output, "Mismatch in {}", source.display());
@@ -87,14 +87,14 @@ mod tests {
             .expect("format result failed.")
     }
 
-    fn print_side_by_side_diff(output: &str, expected: &str) {
+    fn print_side_by_side_diff(against: &str, output: &str, expected: &str) {
         let diff = TextDiff::from_lines(expected, output);
         let mut left_col = String::new();
         let mut right_col = String::new();
 
         println!(
             "\x1b[38;2;255;165;0m{:<40} | {:<40}\x1b[0m",
-            "Prettier:", "Afmt:\n"
+            against, "Afmt:\n"
         );
 
         for change in diff.iter_all_changes() {

@@ -3,16 +3,12 @@ use crate::{
     node_ext::*,
     node_struct::*,
     shape::{Indent, Shape},
-    utility::*,
 };
-use anyhow::{bail, Context, Result};
-use log::debug;
 use tree_sitter::Node;
 
 pub struct Visitor {
-    //parent_context: Option<&'a FmtContext<'_>>,
-    pub block_indent: Indent,
-    pub buffer: String,
+    //pub block_indent: Indent,
+    //pub buffer: String,
 }
 
 impl Visitor {
@@ -23,13 +19,12 @@ impl Visitor {
     //pub fn new(parent_context: Option<&'a FmtContext<'_>>, block_indent: Indent) -> Self {
     pub fn new(block_indent: Indent) -> Self {
         Self {
-            block_indent,
-            buffer: String::new(),
+            //block_indent,
+            //buffer: String::new(),
         }
     }
 
     pub fn visit_root(&mut self, context: &FmtContext) -> String {
-        let shape = Shape::empty(context.config);
         let mut result = visit_root_children(&context.ast_tree.root_node(), context);
 
         // remove the extra "\n" introduced by the top-level class declaration
