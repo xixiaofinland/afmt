@@ -1,6 +1,6 @@
 public class Me {
   {
-    for (; i < 3; i++) {
+    for (Integer i = 0; i < 3; i++) {
       System.debug(i);
     }
   }

@@ -22,17 +22,18 @@ define_struct_and_enum!(
     true; DoStatement => "do_statement",
     true; WhileStatement => "while_statement",
     true; ForStatement => "for_statement",
-    true; Value => "boolean" | "identifier" | "operator" | "type_identifier",
+    true; Value => "boolean" | "operator" | "type_identifier",
     true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
     true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
         "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression" |
-        "assignment_expression",
+        "assignment_expression" | "local_variable_declaration" | "update_expression" | "identifier",
     true; AssignmentExpression => "assignment_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
+    true; UpdateExpression => "update_expression",
     true; ParenthesizedExpression => "parenthesized_expression",
     true; Interfaces => "interfaces",
     true; LineComment => "line_comment",
@@ -390,23 +391,26 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         let mut result = String::new();
         try_add_standalone_prefix(&mut result, shape, context);
 
-        result.push_str("for");
+        result.push_str("for (");
         node.try_c_by_n("init").map(|c| {
             let n = Expression::new(&c);
-            result.push_str(&n.rewrite(context, shape));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         });
         result.push_str(";");
 
         node.try_c_by_n("condition").map(|c| {
+            result.push(' ');
             let n = Expression::new(&c);
             result.push_str(&n.rewrite(context, shape));
         });
         result.push_str(";");
 
         node.try_c_by_n("update").map(|c| {
+            result.push(' ');
             let n = Expression::new(&c);
             result.push_str(&n.rewrite(context, shape));
         });
+        result.push_str(")");
 
         let body = node.c_by_n("body");
         let is_block_node = body.kind() == "block";
@@ -578,6 +582,20 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "assignment_expression" => {
                 let n = AssignmentExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
+                result
+            }
+            "local_variable_declaration" => {
+                let n = LocalVariableDeclaration::new(node);
+                result.push_str(&n.rewrite(context, shape));
+                result
+            }
+            "update_expression" => {
+                let n = UpdateExpression::new(node);
+                result.push_str(&n.rewrite(context, shape));
+                result
+            }
+            "identifier" => {
+                result.push_str(node.v(context.source_code));
                 result
             }
 
@@ -945,6 +963,19 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         let n = Block::new(&body);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        let child = node.named_child(0).unwrap();
+        let n = Expression::new(&child);
+        result.push_str(&n.rewrite(context, shape));
+        result.push_str("++");
         result
     }
 }

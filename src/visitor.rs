@@ -111,7 +111,7 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             n.rewrite(context, shape)
         }
         NodeKind::ForStatement => {
-            let n = IfStatement::new(node);
+            let n = ForStatement::new(node);
             n.rewrite(context, shape)
         }
         NodeKind::IfStatement => {
