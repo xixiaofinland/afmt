@@ -256,9 +256,6 @@ pub fn visit_children_in_same_line(
 ) -> String {
     let mut result = String::new();
     let mut cursor = node.walk();
-    //for child in node.named_children(&mut cursor) {
-    //    result.push_str(&visit_node(&child, context, shape));
-    //}
     let fields = node
         .named_children(&mut cursor)
         .map(|child| {
