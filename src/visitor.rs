@@ -4,6 +4,7 @@ use crate::{
     node_struct::*,
     shape::{Indent, Shape},
 };
+use colored::Colorize;
 use tree_sitter::Node;
 
 pub struct Visitor {
@@ -186,7 +187,12 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             n.rewrite(context, shape)
         }
         _ => {
-            panic!("### Unknow node: {}", node.kind());
+            println!(
+                "{} {}",
+                "### Visitor: unknown node: {}".red(),
+                node.kind().red()
+            );
+            panic!();
         }
     }
 }

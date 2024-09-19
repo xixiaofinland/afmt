@@ -4,6 +4,7 @@ use crate::shape::Shape;
 use crate::utility::*;
 use crate::visitor::{visit_children_in_same_line, visit_node, visit_standalone_children};
 use crate::{define_struct, define_struct_and_enum};
+use colored::Colorize;
 use log::debug;
 use tree_sitter::Node;
 
@@ -651,7 +652,11 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             }
 
             v => {
-                eprintln!("### Unknow Expression node: {}", v);
+                println!(
+                    "{} {}",
+                    "### Unknown Expression node: ".red(),
+                    node.kind().red()
+                );
                 unreachable!();
             }
         }
