@@ -21,6 +21,7 @@ define_struct_and_enum!(
     true; DoStatement => "do_statement",
     true; WhileStatement => "while_statement",
     true; ForStatement => "for_statement",
+    true; EnhancedForStatement => "enhanced_for_statement",
     true; Value => "boolean" | "operator" | "type_identifier",
     true; ValueSpace => "N/A",
     true; SpaceValueSpace => "assignment_operator",
@@ -412,6 +413,53 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
             let n = Expression::new(&c);
             result.push_str(&n.rewrite(context, shape));
         };
+        result.push(')');
+
+        let body = node.c_by_n("body");
+        let is_block_node = body.kind() == "block";
+
+        if is_block_node {
+            let n = Block::new(&body);
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        } else {
+            result.push_str(" {\n");
+            let mut child_shape = shape
+                .copy_with_indent_block_plus(context.config)
+                .clone_with_stand_alone(true);
+            result.push_str(&visit_node(&body, context, &mut child_shape));
+            result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
+        };
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("for (");
+        result.push_str(&visit_node(
+            &node.c_by_n("type"),
+            context,
+            &mut shape.clone_with_stand_alone(false),
+        ));
+        result.push(' ');
+
+        result.push_str(&visit_node(
+            &node.c_by_n("name"),
+            context,
+            &mut shape.clone_with_stand_alone(false),
+        ));
+        result.push_str(" : ");
+
+        result.push_str(&visit_node(
+            &node.c_by_n("value"),
+            context,
+            &mut shape.clone_with_stand_alone(false),
+        ));
         result.push(')');
 
         let body = node.c_by_n("body");

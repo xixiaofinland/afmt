@@ -109,6 +109,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = ForStatement::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::EnhancedForStatement => {
+            let n = EnhancedForStatement::new(node);
+            n.rewrite(context, shape)
+        }
         NodeKind::IfStatement => {
             let n = IfStatement::new(node);
             n.rewrite(context, shape)
