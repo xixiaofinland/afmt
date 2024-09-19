@@ -59,7 +59,9 @@ define_struct_and_enum!(
     true; ConstructorBody => "constructor_body",
     true; ExplicitConstructorInvocation => "explicit_constructor_invocation",
     true; RunAsStatement => "run_as_statement",
-    true; ScopedTypeIdentifier => "scoped_type_identifier"
+    true; ScopedTypeIdentifier => "scoped_type_identifier",
+    true; ObjectCreationExpression => "object_creation_expression"
+
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -571,24 +573,11 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 
                 result.push_str(&arguments_value);
                 result.push(')');
-
                 result
             }
             "object_creation_expression" => {
-                result.push_str("new ");
-                let t = node.c_by_n("type");
-                result.push_str(&visit_node(
-                    &t,
-                    context,
-                    &mut shape.clone_with_stand_alone(false),
-                ));
-
-                let arguments = node.c_by_n("arguments");
-                result.push_str(&visit_node(
-                    &arguments,
-                    context,
-                    &mut shape.clone_with_stand_alone(false),
-                ));
+                let n = ObjectCreationExpression::new(&node);
+                result.push_str(&n.rewrite(context, shape));
                 result
             }
             "array_creation_expression" => {
@@ -727,7 +716,15 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
         let mut result = String::new();
         result.push('(');
 
-        let joined = node.try_visit_cs(context, shape).join(", ");
+        let mut cursor = node.walk();
+        let joined = node
+            .named_children(&mut cursor)
+            .map(|c| {
+                let n = Expression::new(&c);
+                n.rewrite(context, &mut shape.clone_with_stand_alone(false))
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
 
         result.push_str(&joined);
         result.push(')');
@@ -983,15 +980,23 @@ impl<'a, 'tree> Rewrite for ExplicitConstructorInvocation<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
-    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
         let source_code = context.source_code;
         let mut result = String::new();
 
         let left = node.cv_by_n("left", source_code);
         let op = node.cv_by_n("operator", source_code);
-        let right = node.cv_by_n("right", source_code);
-        result.push_str(&format!("{} {} {}", left, op, right));
+
+        let right = node.c_by_n("right");
+        let n = Expression::new(&right);
+
+        result.push_str(&format!(
+            "{} {} {}",
+            left,
+            op,
+            &n.rewrite(context, &mut shape.clone_with_stand_alone(false))
+        ));
         result
     }
 }
@@ -1118,6 +1123,27 @@ impl<'a, 'tree> Rewrite for ScopedTypeIdentifier<'a, 'tree> {
         let mut result = String::new();
 
         result.push_str(&visit_children_in_same_line(node, ".", context, shape));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ObjectCreationExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str("new ");
+        let t = node.c_by_n("type");
+        result.push_str(&visit_node(
+            &t,
+            context,
+            &mut shape.clone_with_stand_alone(false),
+        ));
+
+        let arguments = node.c_by_n("arguments");
+        let n = ArgumentList::new(&arguments);
+
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         result
     }
 }

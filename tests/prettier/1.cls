@@ -1,9 +1,6 @@
-public with sharing class MyClass {
-
-  public void hello() {
-          Boolean c = true;
-          c    ==
-            true;
+public class Me {
+  {
+    insert accMG = new Account  (  Name 
+    =    'matching gift company'   );
+  }
 }
-}
-
