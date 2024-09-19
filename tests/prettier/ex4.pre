@@ -1,0 +1,9 @@
+public class Me {
+  {
+    try {
+      insert a;
+    } finally {
+      Boolean finallyRan = true;
+    }
+  }
+}
