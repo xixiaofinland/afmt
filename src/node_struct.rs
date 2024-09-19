@@ -659,8 +659,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
-
-            v => {
+            _ => {
                 println!(
                     "{} {}",
                     "### Unknown Expression node: ".yellow(),
