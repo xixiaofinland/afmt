@@ -34,6 +34,7 @@ define_struct_and_enum!(
     true; ArrayAccess => "array_access",
     true; PrimaryExpression => "primary_expression",
     true; DmlExpression => "dml_expression",
+    true; DmlSecurityMode => "dml_security_mode",
     true; DmlType => "dml_type",
     true; AssignmentExpression => "assignment_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
@@ -1074,6 +1075,13 @@ impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
 
         result.push_str(&visit_children_in_same_line(node, " ", context, shape));
         result
+    }
+}
+
+impl<'a, 'tree> Rewrite for DmlSecurityMode<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
+        let node = self.node();
+        node.v(context.source_code).to_string()
     }
 }
 
