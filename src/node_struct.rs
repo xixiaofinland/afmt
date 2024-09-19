@@ -64,8 +64,10 @@ define_struct_and_enum!(
     true; ExplicitConstructorInvocation => "explicit_constructor_invocation",
     true; RunAsStatement => "run_as_statement",
     true; ScopedTypeIdentifier => "scoped_type_identifier",
-    true; ObjectCreationExpression => "object_creation_expression"
-
+    true; ObjectCreationExpression => "object_creation_expression",
+    true; TryStatement => "try_statement",
+    true; CatchClause => "catch_clause",
+    true; CatchFormalParameter => "catch_formal_parameter"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -387,6 +389,54 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
         }
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for TryStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("try");
+        let body = node.c_by_n("body");
+        let n = Block::new(&body);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
+        let catch = node.c_by_k("catch_clause");
+        let n = CatchClause::new(&catch);
+        result.push_str(&n.rewrite(context, shape));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for CatchClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str(" catch ");
+
+        let param = node.c_by_k("catch_formal_parameter");
+        let n = CatchFormalParameter::new(&param);
+        result.push_str(&n.rewrite(context, shape));
+
+        let body = node.c_by_n("body");
+        let n = Block::new(&body);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for CatchFormalParameter<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push('(');
+        result.push_str(&node.visit_children_in_same_line(" ", context, shape));
+        result.push(')');
         result
     }
 }
