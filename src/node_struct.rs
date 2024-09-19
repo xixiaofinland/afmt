@@ -1081,7 +1081,11 @@ impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for DmlSecurityMode<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
         let node = self.node();
-        node.v(context.source_code).to_string()
+        let mut result = String::new();
+
+        result.push_str("as ");
+        result.push_str(node.v(context.source_code));
+        result
     }
 }
 
