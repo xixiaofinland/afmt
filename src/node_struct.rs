@@ -67,7 +67,8 @@ define_struct_and_enum!(
     true; ObjectCreationExpression => "object_creation_expression",
     true; TryStatement => "try_statement",
     true; CatchClause => "catch_clause",
-    true; CatchFormalParameter => "catch_formal_parameter"
+    true; CatchFormalParameter => "catch_formal_parameter",
+    true; FinallyClause => "finally_clause"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -199,7 +200,7 @@ impl<'a, 'tree> Rewrite for EnumConstant<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
         try_add_standalone_prefix(&mut result, shape, context);
-        result.push_str(&node.v(context.source_code));
+        result.push_str(node.v(context.source_code));
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
 
         result
@@ -221,7 +222,7 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
 
         add_indent(
             &mut result,
-            &mut shape.copy_with_indent_block_plus(context.config),
+            &shape.copy_with_indent_block_plus(context.config),
             context,
         );
         result.push_str(
@@ -404,9 +405,32 @@ impl<'a, 'tree> Rewrite for TryStatement<'a, 'tree> {
         let n = Block::new(&body);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
-        let catch = node.c_by_k("catch_clause");
-        let n = CatchClause::new(&catch);
-        result.push_str(&n.rewrite(context, shape));
+        let joined_children = node
+            .try_cs_by_k("catch_clause")
+            .iter()
+            .map(|c| CatchClause::new(c).rewrite(context, shape))
+            .collect::<Vec<_>>()
+            .join("");
+        result.push_str(&joined_children);
+
+        if let Some(f) = node.try_c_by_k("finally_clause") {
+            let n = FinallyClause::new(&f);
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        }
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for FinallyClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str(" finally");
+        let block = node.c_by_k("block");
+        let n = Block::new(&block);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         result
     }
 }
@@ -697,7 +721,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "object_creation_expression" => {
-                let n = ObjectCreationExpression::new(&node);
+                let n = ObjectCreationExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
@@ -771,8 +795,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
-
-            v => {
+            _ => {
                 println!(
                     "{} {}",
                     "### Unknown Expression node: ".yellow(),
@@ -1166,11 +1189,11 @@ impl<'a, 'tree> Rewrite for ArrayAccess<'a, 'tree> {
         let mut result = String::new();
 
         let array = &node.c_by_n("array");
-        let n = Expression::new(&array);
+        let n = Expression::new(array);
         result.push_str(&n.rewrite(context, shape));
 
         let index = &node.c_by_n("index");
-        let n = Expression::new(&index);
+        let n = Expression::new(index);
         result.push('[');
         result.push_str(&n.rewrite(context, shape));
         result.push(']');
@@ -1238,11 +1261,11 @@ impl<'a, 'tree> Rewrite for RunAsStatement<'a, 'tree> {
 
         result.push_str("System.runAs");
         let user = &node.c_by_n("user");
-        let n = ParenthesizedExpression::new(&user);
+        let n = ParenthesizedExpression::new(user);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
         let user = &node.c_by_k("block");
-        let n = Block::new(&user);
+        let n = Block::new(user);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
         result

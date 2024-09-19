@@ -1,6 +1,14 @@
 public class Me {
   {
-    insert accMG = new Account  (  Name 
-    =    'matching gift company'   );
+    try {
+      insert a;
+    } catch (DmlException e) {
+      Boolean failed = true;
+    } catch (Exception e) {
+      Boolean failed = true;
+    } finally {
+      Boolean finallyRan = true;
+    }
   }
 }
+
