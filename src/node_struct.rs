@@ -29,7 +29,10 @@ define_struct_and_enum!(
     true; SuperClass => "superclass",
     true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
         "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression" |
-        "assignment_expression" | "local_variable_declaration" | "update_expression" | "identifier",
+        "assignment_expression" | "local_variable_declaration" | "update_expression" | "identifier" |
+        "dml_expression",
+    true; DmlExpression => "dml_expression",
+    true; DmlType => "dml_type",
     true; AssignmentExpression => "assignment_expression",
     true; LocalVariableDeclaration => "local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
@@ -297,15 +300,15 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
                 let n = DoStatement::new(node);
                 result.push_str(&n.rewrite(context, shape));
             }
+            "block" => {
+                let n = Block::new(node);
+                result.push_str(&n.rewrite(context, shape));
+            }
             // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
             //"while_statement" => {
             //    let n = WhileStatement::new(node);
             //    result.push_str(&n.rewrite(context, shape));
             //}
-            "block" => {
-                let n = Block::new(node);
-                result.push_str(&n.rewrite(context, shape));
-            }
             _ => unreachable!(),
         }
         try_add_standalone_suffix(&mut result, shape);
@@ -650,11 +653,16 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(node.v(context.source_code));
                 result
             }
+            "dml_expression" => {
+                let n = DmlExpression::new(node);
+                result.push_str(&n.rewrite(context, shape));
+                result
+            }
 
             v => {
                 println!(
                     "{} {}",
-                    "### Unknown Expression node: ".red(),
+                    "### Unknown Expression node: ".yellow(),
                     node.kind().red()
                 );
                 unreachable!();
@@ -1019,6 +1027,25 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         let n = Block::new(&body);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str(&visit_children_in_same_line(node, context, shape));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for DmlType<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
+        let mut result = String::new();
+        result.push_str(self.node().v(context.source_code));
+        result.push(' ');
         result
     }
 }

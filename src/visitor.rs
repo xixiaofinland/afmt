@@ -182,6 +182,14 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = AssignmentExpression::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::DmlExpression => {
+            let n = DmlExpression::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::DmlType => {
+            let n = DmlType::new(node);
+            n.rewrite(context, shape)
+        }
         NodeKind::RunAsStatement => {
             let n = RunAsStatement::new(node);
             n.rewrite(context, shape)
@@ -189,7 +197,7 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
         _ => {
             println!(
                 "{} {}",
-                "### Visitor: unknown node: {}".red(),
+                "### Visitor: unknown node: ".yellow(),
                 node.kind().red()
             );
             panic!();
