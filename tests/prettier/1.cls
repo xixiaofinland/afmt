@@ -1,10 +1,9 @@
-public class Me {
-  {
+public with sharing class MyClass {
 
-System.runAs  ( 
-        new User  (  Id 
-        =  
-UserInfo.getUserId()  ) ) {  
+  public void hello() {
+          Boolean c = true;
+          c    ==
+            true;
 }
-  }
 }
+

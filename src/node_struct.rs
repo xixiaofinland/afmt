@@ -186,7 +186,7 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let n = VariableDeclarator::new(&variable_declarator);
         result.push_str(&n.rewrite(context, shape));
 
-        try_add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
 
         result
     }
@@ -280,7 +280,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         result.push_str(&declarator_values.join(", "));
 
-        try_add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -314,7 +314,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             //}
             _ => unreachable!(),
         }
-        try_add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
 
         result
     }
@@ -698,7 +698,7 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
             result.push_str(&visit_node(&child, context, shape));
         }
 
-        try_add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
 
         result
     }
@@ -976,7 +976,7 @@ impl<'a, 'tree> Rewrite for ExplicitConstructorInvocation<'a, 'tree> {
         let arguments = node.c_by_n("arguments");
         let n = ArgumentList::new(&arguments);
         result.push_str(&n.rewrite(context, shape));
-        try_add_standalone_suffix(&mut result, shape);
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
 
         result
     }
