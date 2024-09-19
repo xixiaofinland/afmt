@@ -217,11 +217,6 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
 
         result.push_str("{\n");
 
-        //result.push_str(&visit_standalone_children(
-        //    node,
-        //    context,
-        //    &shape.clone_with_stand_alone(true),
-        //));
         add_indent(
             &mut result,
             &mut shape.copy_with_indent_block_plus(context.config),
