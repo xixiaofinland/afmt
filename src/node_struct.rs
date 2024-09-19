@@ -56,7 +56,8 @@ define_struct_and_enum!(
     true; ConstructorDeclaration => "constructor_declaration",
     true; ConstructorBody => "constructor_body",
     true; ExplicitConstructorInvocation => "explicit_constructor_invocation",
-    true; RunAsStatement => "run_as_statement"
+    true; RunAsStatement => "run_as_statement",
+    true; ScopedTypeIdentifier => "scoped_type_identifier"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -490,7 +491,7 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         format!(
             "({})",
-            &visit_children_in_same_line(self.node(), context, shape)
+            &visit_children_in_same_line(self.node(), ", ", context, shape)
         )
     }
 }
@@ -1036,7 +1037,7 @@ impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(&visit_children_in_same_line(node, context, shape));
+        result.push_str(&visit_children_in_same_line(node, " ", context, shape));
         result
     }
 }
@@ -1045,7 +1046,6 @@ impl<'a, 'tree> Rewrite for DmlType<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
         let mut result = String::new();
         result.push_str(self.node().v(context.source_code));
-        result.push(' ');
         result
     }
 }
@@ -1078,6 +1078,16 @@ impl<'a, 'tree> Rewrite for RunAsStatement<'a, 'tree> {
         let n = Block::new(&user);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ScopedTypeIdentifier<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str(&visit_children_in_same_line(node, ".", context, shape));
         result
     }
 }

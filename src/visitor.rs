@@ -194,6 +194,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = RunAsStatement::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::ScopedTypeIdentifier => {
+            let n = ScopedTypeIdentifier::new(node);
+            n.rewrite(context, shape)
+        }
         _ => {
             println!(
                 "{} {}",
@@ -244,11 +248,26 @@ pub fn visit_standalone_children(node: &Node, context: &FmtContext, shape: &Shap
     result
 }
 
-pub fn visit_children_in_same_line(node: &Node, context: &FmtContext, shape: &mut Shape) -> String {
+pub fn visit_children_in_same_line(
+    node: &Node,
+    delimiter: &str,
+    context: &FmtContext,
+    shape: &mut Shape,
+) -> String {
     let mut result = String::new();
     let mut cursor = node.walk();
-    for child in node.named_children(&mut cursor) {
-        result.push_str(&visit_node(&child, context, shape));
-    }
+    //for child in node.named_children(&mut cursor) {
+    //    result.push_str(&visit_node(&child, context, shape));
+    //}
+    let fields = node
+        .named_children(&mut cursor)
+        .map(|child| {
+            let mut child_shape = shape.clone_with_stand_alone(false);
+            visit_node(&child, context, &mut child_shape)
+        })
+        .collect::<Vec<_>>()
+        .join(delimiter);
+
+    result.push_str(&fields);
     result
 }
