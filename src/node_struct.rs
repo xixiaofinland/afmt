@@ -51,7 +51,8 @@ define_struct_and_enum!(
     true; Modifiers => "modifiers",
     true; ConstructorDeclaration => "constructor_declaration",
     true; ConstructorBody => "constructor_body",
-    true; ExplicitConstructorInvocation => "explicit_constructor_invocation"
+    true; ExplicitConstructorInvocation => "explicit_constructor_invocation",
+    true; RunAsStatement => "run_as_statement"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -1026,6 +1027,25 @@ impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
         let n = Expression::new(&child);
         result.push_str(&n.rewrite(context, shape));
         result.push_str("++");
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for RunAsStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("System.runAs");
+        let user = &node.c_by_n("user");
+        let n = ParenthesizedExpression::new(&user);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
+        let user = &node.c_by_k("block");
+        let n = Block::new(&user);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
         result
     }
 }

@@ -181,6 +181,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = AssignmentExpression::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::RunAsStatement => {
+            let n = RunAsStatement::new(node);
+            n.rewrite(context, shape)
+        }
         _ => {
             panic!("### Unknow node: {}", node.kind());
         }
