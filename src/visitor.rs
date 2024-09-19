@@ -194,6 +194,14 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = RunAsStatement::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::PrimaryExpression => {
+            let n = PrimaryExpression::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::ArrayAccess => {
+            let n = ArrayAccess::new(node);
+            n.rewrite(context, shape)
+        }
         NodeKind::ScopedTypeIdentifier => {
             let n = ScopedTypeIdentifier::new(node);
             n.rewrite(context, shape)

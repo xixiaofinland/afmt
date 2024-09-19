@@ -31,6 +31,8 @@ define_struct_and_enum!(
         "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression" |
         "assignment_expression" | "local_variable_declaration" | "update_expression" | "identifier" |
         "dml_expression",
+    true; ArrayAccess => "array_access",
+    true; PrimaryExpression => "primary_expression",
     true; DmlExpression => "dml_expression",
     true; DmlType => "dml_type",
     true; AssignmentExpression => "assignment_expression",
@@ -659,7 +661,8 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
-            _ => {
+
+            v => {
                 println!(
                     "{} {}",
                     "### Unknown Expression node: ".yellow(),
@@ -1027,6 +1030,34 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         let n = Block::new(&body);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ArrayAccess<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        let array = &node.c_by_n("array");
+        let n = Expression::new(&array);
+        result.push_str(&n.rewrite(context, shape));
+
+        let index = &node.c_by_n("index");
+        let n = Expression::new(&index);
+        result.push('[');
+        result.push_str(&n.rewrite(context, shape));
+        result.push(']');
+
+        result
+    }
+}
+impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push_str(&visit_children_in_same_line(node, " ", context, shape));
         result
     }
 }
