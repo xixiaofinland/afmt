@@ -27,6 +27,13 @@ pub trait NodeExt<'tree> {
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>>;
+
+    fn visit_children_in_same_line(
+        &self,
+        delimiter: &str,
+        context: &FmtContext,
+        shape: &mut Shape,
+    ) -> String;
 }
 
 impl<'tree> NodeExt<'tree> for Node<'tree> {
@@ -123,5 +130,26 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
             .iter()
             .map(|n| visit_node(n, context, shape))
             .collect::<Vec<_>>()
+    }
+
+    fn visit_children_in_same_line(
+        &self,
+        delimiter: &str,
+        context: &FmtContext,
+        shape: &mut Shape,
+    ) -> String {
+        let mut result = String::new();
+        let mut cursor = self.walk();
+        let fields = self
+            .named_children(&mut cursor)
+            .map(|child| {
+                let mut child_shape = shape.clone_with_stand_alone(false);
+                visit_node(&child, context, &mut child_shape)
+            })
+            .collect::<Vec<_>>()
+            .join(delimiter);
+
+        result.push_str(&fields);
+        result
     }
 }

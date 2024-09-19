@@ -2,7 +2,7 @@ use crate::context::FmtContext;
 use crate::node_ext::*;
 use crate::shape::Shape;
 use crate::utility::*;
-use crate::visitor::{visit_children_in_same_line, visit_node, visit_standalone_children};
+use crate::visitor::{visit_node, visit_standalone_children};
 use crate::{define_struct, define_struct_and_enum};
 use colored::Colorize;
 use log::debug;
@@ -564,7 +564,9 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         format!(
             "({})",
-            &visit_children_in_same_line(self.node(), ", ", context, shape)
+            &self
+                .node()
+                .visit_children_in_same_line(", ", context, shape)
         )
     }
 }
@@ -1131,7 +1133,7 @@ impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(&visit_children_in_same_line(node, " ", context, shape));
+        result.push_str(&node.visit_children_in_same_line(" ", context, shape));
         result
     }
 }
@@ -1141,7 +1143,7 @@ impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(&visit_children_in_same_line(node, " ", context, shape));
+        result.push_str(&node.visit_children_in_same_line(" ", context, shape));
         result
     }
 }
@@ -1202,7 +1204,7 @@ impl<'a, 'tree> Rewrite for ScopedTypeIdentifier<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(&visit_children_in_same_line(node, ".", context, shape));
+        result.push_str(&node.visit_children_in_same_line(".", context, shape));
         result
     }
 }
