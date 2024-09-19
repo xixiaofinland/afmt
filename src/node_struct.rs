@@ -16,6 +16,9 @@ define_struct_and_enum!(
     true; ClassDeclaration => "class_declaration",
     true; FieldDeclaration => "field_declaration",
     true; MethodDeclaration => "method_declaration",
+    true; EnumDeclaration => "enum_declaration",
+    true; EnumConstant => "enum_constant",
+    true; EnumBody => "enum_body",
     false; EmptyNode => "class_body",
     true; Block => "block",
     true; Statement => "expression_statement" | "do_statement",
@@ -163,6 +166,76 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let body_node = self.node().c_by_n("body");
         result.push_str(&visit_standalone_children(&body_node, context, shape));
         result.push_str(&format!("{}}}", shape.indent.as_string(config)));
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            result.push_str(&Modifiers::new(a).rewrite(context, shape));
+        }
+
+        result.push_str(" enum ");
+        result.push_str(node.cv_by_n("name", context.source_code));
+
+        let body = node.c_by_n("body");
+        let n = EnumBody::new(&body);
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for EnumConstant<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+        try_add_standalone_prefix(&mut result, shape, context);
+        result.push_str(&node.v(context.source_code));
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        if shape.standalone {
+            add_indent(&mut result, shape, context);
+        } else {
+            result.push(' ');
+        }
+
+        result.push_str("{\n");
+
+        //result.push_str(&visit_standalone_children(
+        //    node,
+        //    context,
+        //    &shape.clone_with_stand_alone(true),
+        //));
+        add_indent(
+            &mut result,
+            &mut shape.copy_with_indent_block_plus(context.config),
+            context,
+        );
+        result.push_str(
+            &node
+                .try_csv_by_k("enum_constant", context.source_code)
+                .join(", "),
+        );
+
+        result.push('\n');
+        add_indent(&mut result, shape, context);
+        result.push('}');
 
         result
     }

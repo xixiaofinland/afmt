@@ -210,6 +210,14 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = DmlSecurityMode::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::EnumDeclaration => {
+            let n = EnumDeclaration::new(node);
+            n.rewrite(context, shape)
+        }
+        NodeKind::EnumConstant => {
+            let n = EnumConstant::new(node);
+            n.rewrite(context, shape)
+        }
         _ => {
             println!(
                 "{} {}",
