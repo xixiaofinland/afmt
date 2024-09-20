@@ -41,13 +41,13 @@ impl<'tree> Accessor<'tree> for Node<'tree> {
 
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>> {
         let mut cursor = self.walk();
-        let child = self.children(&mut cursor).find(|c| c.kind() == kind);
+        let child = self.named_children(&mut cursor).find(|c| c.kind() == kind);
         child
     }
 
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'tree>> {
         let mut cursor = self.walk();
-        self.children(&mut cursor)
+        self.named_children(&mut cursor)
             .filter(|c| c.kind() == kind)
             .collect()
     }
