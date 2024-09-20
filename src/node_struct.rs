@@ -69,7 +69,9 @@ define_struct_and_enum!(
     true; CatchClause => "catch_clause",
     true; CatchFormalParameter => "catch_formal_parameter",
     true; FinallyClause => "finally_clause",
-    true; FieldAccess => "field_access"
+    true; FieldAccess => "field_access",
+    true; InstanceOfExpression => "instanceof_expression",
+    true; CastExpression => "cast_expression"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -796,6 +798,11 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
+            "cast_expression" => {
+                let n = CastExpression::new(node);
+                result.push_str(&n.rewrite(context, shape));
+                result
+            }
             _ => {
                 println!(
                     "{} {}",
@@ -1130,18 +1137,14 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
         let source_code = context.source_code;
         let mut result = String::new();
 
-        let left = node.cv_by_n("left", source_code);
+        let left_value = node.cv_by_n("left", source_code);
         let op = node.cv_by_n("operator", source_code);
 
         let right = node.c_by_n("right");
         let n = Expression::new(&right);
+        let right_value = &n.rewrite(context, &mut shape.clone_with_stand_alone(false));
 
-        result.push_str(&format!(
-            "{} {} {}",
-            left,
-            op,
-            &n.rewrite(context, &mut shape.clone_with_stand_alone(false))
-        ));
+        result.push_str(&format!("{} {} {}", left_value, op, right_value));
         result
     }
 }
@@ -1333,6 +1336,39 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
         result.push('.');
 
         result.push_str(node.cv_by_n("field", context.source_code));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for InstanceOfExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        let left = node.c_by_n("left");
+        let n = Expression::new(&left);
+        result.push_str(&n.rewrite(context, shape));
+
+        result.push_str(" instanceof ");
+
+        result.push_str(node.cv_by_n("right", context.source_code));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for CastExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push('(');
+        result.push_str(node.cv_by_n("type", context.source_code));
+        result.push_str(") ");
+
+        let value = node.c_by_n("value");
+        let n = Expression::new(&value);
+        result.push_str(&n.rewrite(context, shape));
+
         result
     }
 }

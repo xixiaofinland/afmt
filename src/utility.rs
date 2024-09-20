@@ -18,9 +18,7 @@ pub fn try_add_standalone_suffix(
     if shape.standalone {
         result.push(';');
         if let Some(n) = node.next_named_sibling() {
-            debug!("node: {}", n.kind());
             let count_new_lines = newlines_to_add(node, source_code);
-            debug!("new_line: {}", count_new_lines);
             result.push_str(&"\n".repeat(count_new_lines));
         }
     }
@@ -37,7 +35,6 @@ fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     }
 
     let remaining_code = &source_code[index..];
-    debug!("code: {}", remaining_code);
     let mut bytes_iter = remaining_code.bytes();
 
     match (bytes_iter.next(), bytes_iter.next()) {
