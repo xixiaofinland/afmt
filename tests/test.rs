@@ -91,29 +91,27 @@ mod tests {
         let diff = TextDiff::from_lines(expected, output);
         let mut left_col = String::new();
         let mut right_col = String::new();
-
         println!(
-            "\x1b[38;2;255;165;0m{:<40} | {:<40}\x1b[0m",
+            "\x1b[38;2;255;165;0m{:<60} | {:<60}\x1b[0m",
             against, "Afmt:\n"
         );
-
         for change in diff.iter_all_changes() {
             match change.tag() {
                 ChangeTag::Delete => {
-                    left_col = format!("\x1b[91m- {:<38}\x1b[0m", change.to_string().trim_end()); // Red for deletions (left)
+                    left_col = format!("\x1b[91m- {:<58}\x1b[0m", change.to_string().trim_end()); // Red for deletions (left)
                     right_col = String::from(""); // Empty on the right side
                 }
                 ChangeTag::Insert => {
                     left_col = String::from(""); // Empty on the left side
-                    right_col = format!("\x1b[92m+ {:<38}\x1b[0m", change.to_string().trim_end());
+                    right_col = format!("\x1b[92m+ {:<58}\x1b[0m", change.to_string().trim_end());
                     // Green for insertions (right)
                 }
                 ChangeTag::Equal => {
-                    left_col = format!("  {:<38}", change.to_string().trim_end()); // No color for unchanged lines
-                    right_col = format!("  {:<38}", change.to_string().trim_end());
+                    left_col = format!("  {:<58}", change.to_string().trim_end()); // No color for unchanged lines
+                    right_col = format!("  {:<58}", change.to_string().trim_end());
                 }
             }
-            println!("{:<40} | {:<40}", left_col, right_col);
+            println!("{:<60} | {:<60}", left_col, right_col);
         }
     }
 
