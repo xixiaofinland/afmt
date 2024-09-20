@@ -1294,6 +1294,11 @@ impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            result.push_str(&Modifiers::new(a).rewrite(context, shape));
+            result.push(' ');
+        }
+
         // need to traverse unnamed node;
         let mut cursor = node.walk();
         node.children(&mut cursor).for_each(|c| {
