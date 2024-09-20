@@ -74,7 +74,10 @@ define_struct_and_enum!(
     true; CastExpression => "cast_expression",
     true; Boolean => "N/boolean",
     true; TernaryExpression => "ternary_expression",
-    true; MethodInvocation => "method_invocation"
+    true; MethodInvocation => "method_invocation",
+    true; AccessorList => "accessor_list",
+    true; AccessorDeclaration => "accessor_declartion"
+
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -252,7 +255,15 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
         let n = VariableDeclarator::new(&variable_declarator);
         result.push_str(&n.rewrite(context, shape));
 
-        try_add_standalone_suffix(node, &mut result, shape, source_code);
+        if let Some(a) = node.try_c_by_k("accessor_list") {
+            let n = AccessorList::new(&a);
+            result.push_str(&n.rewrite(context, shape));
+
+            // special case: it has no `;` ending with "accessor_list"
+            try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, context.source_code);
+        } else {
+            try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        }
 
         result
     }
@@ -1259,6 +1270,41 @@ impl<'a, 'tree> Rewrite for CastExpression<'a, 'tree> {
         result
     }
 }
+
+impl<'a, 'tree> Rewrite for AccessorList<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        result.push_str(" { ");
+        let joined = node
+            .cs_by_k("accessor_declaration")
+            .iter()
+            .map(|c| AccessorDeclaration::new(c).rewrite(context, shape))
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        result.push_str(&joined);
+        result.push_str(" }");
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        // need to traverse unnamed node;
+        let mut cursor = node.walk();
+        node.children(&mut cursor).for_each(|c| {
+            if !c.is_named() {
+                result.push_str(c.v(source_code));
+            }
+        });
+        result
+    }
+}
+
 impl<'a, 'tree> Rewrite for Boolean<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);

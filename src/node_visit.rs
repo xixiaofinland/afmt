@@ -14,6 +14,9 @@ pub trait Visitor<'tree> {
         context: &FmtContext,
         shape: &mut Shape,
     ) -> String;
+    fn try_visit_cs_by_k(&self, kind: &str, context: &FmtContext, shape: &mut Shape)
+        -> Vec<String>;
+    fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String>;
 }
 
 impl<'tree> Visitor<'tree> for Node<'tree> {
@@ -264,5 +267,24 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
 
         result.push_str(&fields);
         result
+    }
+
+    fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
+        let mut cursor = self.walk();
+        self.named_children(&mut cursor)
+            .map(|n| n.visit(context, shape))
+            .collect::<Vec<_>>()
+    }
+
+    fn try_visit_cs_by_k(
+        &self,
+        kind: &str,
+        context: &FmtContext,
+        shape: &mut Shape,
+    ) -> Vec<String> {
+        self.try_cs_by_k(kind)
+            .iter()
+            .map(|n| n.visit(context, shape))
+            .collect::<Vec<_>>()
     }
 }

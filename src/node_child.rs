@@ -1,6 +1,3 @@
-use crate::context::FmtContext;
-use crate::node_visit::Visitor;
-use crate::shape::Shape;
 use colored::Colorize;
 use tree_sitter::Node;
 
@@ -20,10 +17,6 @@ pub trait Accessor<'tree> {
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
     fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
-
-    fn try_visit_cs_by_k(&self, kind: &str, context: &FmtContext, shape: &mut Shape)
-        -> Vec<String>;
-    fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String>;
 
     fn c_by_n(&self, name: &str) -> Node<'tree>;
     fn c_by_k(&self, kind: &str) -> Node<'tree>;
@@ -124,24 +117,5 @@ impl<'tree> Accessor<'tree> for Node<'tree> {
 
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_c_by_k(kind).map(|child| child.v(source_code))
-    }
-
-    fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
-        let mut cursor = self.walk();
-        self.named_children(&mut cursor)
-            .map(|n| n.visit(context, shape))
-            .collect::<Vec<_>>()
-    }
-
-    fn try_visit_cs_by_k(
-        &self,
-        kind: &str,
-        context: &FmtContext,
-        shape: &mut Shape,
-    ) -> Vec<String> {
-        self.try_cs_by_k(kind)
-            .iter()
-            .map(|n| n.visit(context, shape))
-            .collect::<Vec<_>>()
     }
 }

@@ -48,11 +48,25 @@ pub fn try_add_standalone_suffix(
     }
 }
 
+pub fn try_add_standalone_suffix_no_semicolumn(
+    node: &Node,
+    result: &mut String,
+    shape: &Shape,
+    source_code: &str,
+) {
+    if shape.standalone {
+        if let Some(_) = node.next_named_sibling() {
+            let count_new_lines = newlines_to_add(node, source_code);
+            result.push_str(&"\n".repeat(count_new_lines));
+        }
+    }
+}
+
 pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
     result.push_str(&shape.indent.as_string(context.config));
 }
 
-fn newlines_to_add(node: &Node, source_code: &str) -> usize {
+pub fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     let index = node.end_byte();
     if index >= source_code.len() {
         return 0;

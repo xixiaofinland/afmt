@@ -1,14 +1,4 @@
 public class Me {
-    {
-        SObject a 
-        = new Account();
-
-
-        if(a instanceof Account){
-            Account = (Account)   a;
-        } else {
-            // something else...
-
-        }
-    }
+   public double MyReadWriteProp { get; set; }
+   public string MyWriteOnlyProp { set; }
 }
