@@ -78,7 +78,7 @@ define_struct_and_enum!(
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
@@ -87,8 +87,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         result.push_str(" class ");
 
-        let name_node_value = node.cv_by_n("name", context.source_code);
-        result.push_str(name_node_value);
+        result.push_str(node.cv_by_n("name", source_code));
 
         if let Some(c) = node.try_c_by_n("superclass") {
             let n = SuperClass::new(&c);
@@ -167,7 +166,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push_str(") {\n");
 
-        let body_node = self.node().c_by_n("body");
+        let body_node = node.c_by_n("body");
         result.push_str(&body_node.visit_standalone_children(context, shape));
         result.push_str(&format!("{}}}", shape.indent.as_string(config)));
 
@@ -177,7 +176,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
@@ -185,7 +184,7 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
         }
 
         result.push_str(" enum ");
-        result.push_str(node.cv_by_n("name", context.source_code));
+        result.push_str(node.cv_by_n("name", source_code));
 
         let body = node.c_by_n("body");
         let n = EnumBody::new(&body);
@@ -197,10 +196,10 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for EnumConstant<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
-        result.push_str(node.v(context.source_code));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        result.push_str(node.v(source_code));
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
 
         result
     }
@@ -208,7 +207,7 @@ impl<'a, 'tree> Rewrite for EnumConstant<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         if shape.standalone {
             add_indent(&mut result, shape, context);
@@ -223,11 +222,7 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
             &shape.copy_with_indent_block_plus(context.config),
             context,
         );
-        result.push_str(
-            &node
-                .try_csv_by_k("enum_constant", context.source_code)
-                .join(", "),
-        );
+        result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
 
         result.push('\n');
         add_indent(&mut result, shape, context);
@@ -264,10 +259,10 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         result.push_str(" extends ");
 
-        let value = node.cv_by_k("type_identifier", context.source_code);
+        let value = node.cv_by_k("type_identifier", source_code);
         result.push_str(value);
 
         result
@@ -276,12 +271,12 @@ impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         result.push_str(" implements ");
 
         let type_list = node.c_by_k("type_list");
 
-        let type_lists = type_list.try_csv_by_k("type_identifier", context.source_code);
+        let type_lists = type_list.try_csv_by_k("type_identifier", source_code);
         result.push_str(&type_lists.join(", "));
 
         result
@@ -290,8 +285,8 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let mut result = String::new();
-        let name_node_value = self.node().v(context.source_code);
+        let (node, mut result, source_code, _) = self.prepare(context);
+        let name_node_value = node.v(source_code);
         result.push_str(name_node_value);
         result
     }
@@ -299,8 +294,8 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let mut result = String::from(' ');
-        let name_node_value = self.node().v(context.source_code);
+        let (node, mut result, source_code, _) = self.prepare(context);
+        let name_node_value = node.v(source_code);
         result.push_str(name_node_value);
         result.push(' ');
         result
@@ -309,7 +304,7 @@ impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&Modifiers::new(a).rewrite(context, shape));
@@ -334,14 +329,14 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         result.push_str(&declarator_values.join(", "));
 
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
         result
     }
 }
 
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         match node.kind() {
@@ -367,7 +362,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             //}
             _ => unreachable!(),
         }
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
 
         result
     }
@@ -721,7 +716,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "identifier" => {
-                result.push_str(node.v(context.source_code));
+                result.push_str(node.v(source_code));
                 result
             }
             "dml_expression" => {
@@ -748,9 +743,9 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
-        result.push_str(node.v(context.source_code));
+        result.push_str(node.v(source_code));
 
         result
     }
@@ -758,7 +753,7 @@ impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("return");
@@ -768,7 +763,7 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
             result.push_str(&child.visit(context, shape));
         }
 
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
 
         result
     }
@@ -848,11 +843,11 @@ impl<'a, 'tree> Rewrite for DimensionsExpr<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ArrayType<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
-        let element_value = node.cv_by_n("element", context.source_code);
+        let element_value = node.cv_by_n("element", source_code);
         result.push_str(element_value);
-        let element_value = node.cv_by_n("dimensions", context.source_code);
+        let element_value = node.cv_by_n("dimensions", source_code);
         result.push_str(element_value);
         result
     }
@@ -919,10 +914,10 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         if let Some(c) = node.try_c_by_n("value") {
-            result.push_str(c.v(context.source_code));
+            result.push_str(c.v(source_code));
         }
 
         let joined_children = node
@@ -947,10 +942,10 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         let key = node.c_by_n("key");
-        result.push_str(key.v(context.source_code));
+        result.push_str(key.v(source_code));
 
         result.push('=');
 
@@ -963,7 +958,7 @@ impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         node.try_cs_by_k("annotation").iter().for_each(|c| {
             result.push_str(
@@ -971,7 +966,7 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
             );
         });
 
-        result.push_str(&node.try_csv_by_k("modifier", context.source_code).join(" "));
+        result.push_str(&node.try_csv_by_k("modifier", source_code).join(" "));
 
         result
     }
@@ -1116,7 +1111,7 @@ impl<'a, 'tree> Rewrite for ArrayAccess<'a, 'tree> {
 }
 impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         if node.named_child_count() != 0 {
             result.push_str(&node.visit_children_in_same_line(" ", context, shape));
@@ -1125,7 +1120,7 @@ impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
 
         match node.kind() {
             "identifier" => {
-                result.push_str(node.v(context.source_code));
+                result.push_str(node.v(source_code));
                 result
             }
             _ => {
@@ -1151,18 +1146,18 @@ impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for DmlSecurityMode<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         result.push_str("as ");
-        result.push_str(node.v(context.source_code));
+        result.push_str(node.v(source_code));
         result
     }
 }
 
 impl<'a, 'tree> Rewrite for DmlType<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
-        result.push_str(node.v(context.source_code));
+        let (node, mut result, source_code, _) = self.prepare(context);
+        result.push_str(node.v(source_code));
         result
     }
 }
