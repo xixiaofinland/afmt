@@ -22,12 +22,11 @@ define_struct_and_enum!(
     false; EmptyNode => "class_body",
     true; Block => "block",
     true; Statement => "expression_statement" | "do_statement",
-    true; DoStatement => "do_statement",
+    true; DoStatement => "N/A",
     true; WhileStatement => "while_statement",
     true; ForStatement => "for_statement",
     true; EnhancedForStatement => "enhanced_for_statement",
-    true; Value => "boolean" | "operator" | "type_identifier",
-    true; ValueSpace => "N/A",
+    true; Value =>   "N/operator" | "type_identifier",
     true; SpaceValueSpace => "assignment_operator",
     true; SuperClass => "superclass",
     true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
@@ -36,14 +35,14 @@ define_struct_and_enum!(
         "dml_expression" | "boolean",
     true; ArrayAccess => "array_access",
     true; PrimaryExpression => "primary_expression",
-    true; DmlExpression => "dml_expression",
+    true; DmlExpression => "N/dml_expression",
     true; DmlSecurityMode => "dml_security_mode",
     true; DmlType => "dml_type",
-    true; AssignmentExpression => "assignment_expression",
-    true; LocalVariableDeclaration => "local_variable_declaration",
+    true; AssignmentExpression => "N/assignment_expression",
+    true; LocalVariableDeclaration => "N/local_variable_declaration",
     true; VariableDeclarator => "variable_declarator",
     true; IfStatement => "if_statement",
-    true; UpdateExpression => "update_expression",
+    true; UpdateExpression => "N/update_expression",
     true; ParenthesizedExpression => "parenthesized_expression",
     true; Interfaces => "interfaces",
     true; LineComment => "line_comment",
@@ -64,7 +63,7 @@ define_struct_and_enum!(
     true; ExplicitConstructorInvocation => "explicit_constructor_invocation",
     true; RunAsStatement => "run_as_statement",
     true; ScopedTypeIdentifier => "scoped_type_identifier",
-    true; ObjectCreationExpression => "object_creation_expression",
+    true; ObjectCreationExpression => "N/object_creation_expression",
     true; TryStatement => "try_statement",
     true; CatchClause => "catch_clause",
     true; CatchFormalParameter => "catch_formal_parameter",
@@ -72,7 +71,7 @@ define_struct_and_enum!(
     true; FieldAccess => "field_access",
     true; InstanceOfExpression => "instanceof_expression",
     true; CastExpression => "cast_expression",
-    true; Boolean => "boolean",
+    true; Boolean => "N/boolean",
     true; TernaryExpression => "ternary_expression"
 );
 
@@ -301,16 +300,6 @@ impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
         let mut result = String::from(' ');
         let name_node_value = self.node().v(context.source_code);
-        result.push_str(name_node_value);
-        result.push(' ');
-        result
-    }
-}
-
-impl<'a, 'tree> Rewrite for ValueSpace<'a, 'tree> {
-    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
-        let name_node_value = node.v(context.source_code);
         result.push_str(name_node_value);
         result.push(' ');
         result

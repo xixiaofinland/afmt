@@ -64,10 +64,6 @@ impl<'tree> NodeVisit<'tree> for Node<'tree> {
                 let n = Value::new(self);
                 n.rewrite(context, shape)
             }
-            NodeKind::ValueSpace => {
-                let n = ValueSpace::new(self);
-                n.rewrite(context, shape)
-            }
             NodeKind::SpaceValueSpace => {
                 let n = SpaceValueSpace::new(self);
                 n.rewrite(context, shape)
