@@ -13,6 +13,17 @@ macro_rules! define_struct {
             pub fn node(&self) -> &'a Node<'tree> {
                 self.inner
             }
+
+            pub fn prepare<'b>(
+                &self,
+                context: &'b FmtContext,
+            ) -> (&'a Node<'tree>, String, &'b str, &'b crate::config::Config) {
+                let node = self.node();
+                let result = String::new();
+                let source_code = context.source_code;
+                let config = context.config;
+                (node, result, source_code, config)
+            }
         }
     };
 }
