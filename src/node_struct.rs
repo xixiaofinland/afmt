@@ -73,7 +73,8 @@ define_struct_and_enum!(
     true; InstanceOfExpression => "instanceof_expression",
     true; CastExpression => "cast_expression",
     true; Boolean => "N/boolean",
-    true; TernaryExpression => "ternary_expression"
+    true; TernaryExpression => "ternary_expression",
+    true; MethodInvocation => "method_invocation"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -643,26 +644,8 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "int" => node.v(source_code).to_string(),
             "boolean" => node.v(source_code).to_string(),
             "method_invocation" => {
-                let object = &node
-                    .try_cv_by_n("object", source_code)
-                    .map(|v| format!("{}.", v))
-                    .unwrap_or_default();
-                result.push_str(object);
-
-                let name = node.cv_by_n("name", source_code);
-                result.push_str(name);
-                result.push('(');
-
-                let arguments = node.c_by_n("arguments");
-                let mut cursor = arguments.walk();
-                let arguments_value = arguments
-                    .named_children(&mut cursor)
-                    .map(|n| n.visit(context, shape))
-                    .collect::<Vec<String>>()
-                    .join(", ");
-
-                result.push_str(&arguments_value);
-                result.push(')');
+                let n = MethodInvocation::new(node);
+                result.push_str(&n.rewrite(context, shape));
                 result
             }
             "object_creation_expression" => {
@@ -1166,7 +1149,7 @@ impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        // use unanmed node as parser can't tell `i++` v.s. `++i` OR `i++` v.s. `i--`
+        // use unnamed node as parser can't tell `i++` v.s. `++i` OR `i++` v.s. `i--`
         let mut cursor = node.walk();
         node.children(&mut cursor).for_each(|c| {
             if c.is_named() {
@@ -1230,7 +1213,16 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
         let n = PrimaryExpression::new(&object);
         result.push_str(&n.rewrite(context, shape));
 
-        result.push('.');
+        // `?.` need to traverse unnamed node;
+        let mut current_node = object.next_sibling();
+        while let Some(cur) = current_node {
+            if cur.is_named() {
+                break;
+            } else {
+                result.push_str(&cur.v(source_code));
+                current_node = cur.next_sibling();
+            }
+        }
 
         result.push_str(node.cv_by_n("field", source_code));
         result
@@ -1302,6 +1294,43 @@ impl<'a, 'tree> Rewrite for TernaryExpression<'a, 'tree> {
         let alternative = node.c_by_n("alternative");
         let n = Expression::new(&alternative);
         result.push_str(&n.rewrite(context, shape));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        node.try_c_by_n("object").map(|c| {
+            result.push_str(c.v(source_code));
+
+            // `?.` need to traverse unnamed node;
+            let mut current_node = c.next_sibling();
+            while let Some(cur) = current_node {
+                if cur.is_named() {
+                    break;
+                } else {
+                    result.push_str(&cur.v(source_code));
+                    current_node = cur.next_sibling();
+                }
+            }
+        });
+
+        let name = node.cv_by_n("name", source_code);
+        result.push_str(name);
+        result.push('(');
+
+        let arguments = node.c_by_n("arguments");
+        let mut cursor = arguments.walk();
+        let arguments_value = arguments
+            .named_children(&mut cursor)
+            .map(|n| n.visit(context, shape))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        result.push_str(&arguments_value);
+        result.push(')');
         result
     }
 }
