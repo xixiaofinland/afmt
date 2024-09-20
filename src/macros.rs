@@ -5,6 +5,7 @@ macro_rules! define_struct {
             inner: &'a Node<'tree>,
         }
 
+        #[allow(dead_code)]
         impl<'a, 'tree> $name<'a, 'tree> {
             pub fn new(node: &'a Node<'tree>) -> Self {
                 Self { inner: node }

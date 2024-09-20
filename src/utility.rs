@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use log::debug;
 use tree_sitter::Node;
 
@@ -39,7 +40,7 @@ pub fn try_add_standalone_suffix(
 ) {
     if shape.standalone {
         result.push(';');
-        if let Some(n) = node.next_named_sibling() {
+        if let Some(_) = node.next_named_sibling() {
             let count_new_lines = newlines_to_add(node, source_code);
             result.push_str(&"\n".repeat(count_new_lines));
         }

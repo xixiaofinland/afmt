@@ -5,6 +5,7 @@ use crate::shape::Shape;
 use crate::utility::*;
 use crate::{define_struct, define_struct_and_enum};
 use colored::Colorize;
+#[allow(unused_imports)]
 use log::debug;
 use tree_sitter::Node;
 

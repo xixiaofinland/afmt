@@ -9,16 +9,16 @@ pub struct Shape {
 }
 
 impl Shape {
-    pub fn new(indent: Indent, config: &Config) -> Self {
-        Self {
-            indent,
-            width: config
-                .max_width()
-                .saturating_sub(indent.block_indent * config.indent_size()),
-            offset: 0,
-            standalone: false,
-        }
-    }
+    //pub fn new(indent: Indent, config: &Config) -> Self {
+    //    Self {
+    //        indent,
+    //        width: config
+    //            .max_width()
+    //            .saturating_sub(indent.block_indent * config.indent_size()),
+    //        offset: 0,
+    //        standalone: false,
+    //    }
+    //}
 
     pub fn clone_with_stand_alone(&self, stand_alone: bool) -> Self {
         Self {

@@ -8,6 +8,7 @@ use tree_sitter::Node;
 // `csv` => children value
 // `by_n` => by name
 // `by_k` => by kind
+#[allow(dead_code)]
 pub trait NodeExt<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
 
