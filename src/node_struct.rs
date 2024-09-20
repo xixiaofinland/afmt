@@ -68,7 +68,8 @@ define_struct_and_enum!(
     true; TryStatement => "try_statement",
     true; CatchClause => "catch_clause",
     true; CatchFormalParameter => "catch_formal_parameter",
-    true; FinallyClause => "finally_clause"
+    true; FinallyClause => "finally_clause",
+    true; FieldAccess => "field_access"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -798,7 +799,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             _ => {
                 println!(
                     "{} {}",
-                    "### Unknown Expression node: ".yellow(),
+                    "### Expression: unknown node: ".yellow(),
                     node.kind().red()
                 );
                 unreachable!();
@@ -1206,8 +1207,25 @@ impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
         let node = self.node();
         let mut result = String::new();
 
-        result.push_str(&node.visit_children_in_same_line(" ", context, shape));
-        result
+        if node.named_child_count() != 0 {
+            result.push_str(&node.visit_children_in_same_line(" ", context, shape));
+            return result;
+        }
+
+        match node.kind() {
+            "identifier" => {
+                result.push_str(node.v(context.source_code));
+                result
+            }
+            _ => {
+                println!(
+                    "{} {}",
+                    "### PrimaryExpression: unknown node: ".yellow(),
+                    node.kind().red()
+                );
+                unreachable!();
+            }
+        }
     }
 }
 
@@ -1299,6 +1317,22 @@ impl<'a, 'tree> Rewrite for ObjectCreationExpression<'a, 'tree> {
         let n = ArgumentList::new(&arguments);
 
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        let object = node.c_by_n("object");
+        let n = PrimaryExpression::new(&object);
+        result.push_str(&n.rewrite(context, shape));
+
+        result.push('.');
+
+        result.push_str(node.cv_by_n("field", context.source_code));
         result
     }
 }

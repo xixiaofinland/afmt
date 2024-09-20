@@ -222,6 +222,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = TryStatement::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::FieldAccess => {
+            let n = FieldAccess::new(node);
+            n.rewrite(context, shape)
+        }
         _ => {
             println!(
                 "{} {}",
