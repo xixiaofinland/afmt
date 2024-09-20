@@ -33,7 +33,7 @@ define_struct_and_enum!(
     true; Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
         "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression" |
         "assignment_expression" | "local_variable_declaration" | "update_expression" | "identifier" |
-        "dml_expression",
+        "dml_expression" | "boolean",
     true; ArrayAccess => "array_access",
     true; PrimaryExpression => "primary_expression",
     true; DmlExpression => "dml_expression",
@@ -71,7 +71,8 @@ define_struct_and_enum!(
     true; FinallyClause => "finally_clause",
     true; FieldAccess => "field_access",
     true; InstanceOfExpression => "instanceof_expression",
-    true; CastExpression => "cast_expression"
+    true; CastExpression => "cast_expression",
+    true; Boolean => "boolean"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -700,6 +701,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "int" => node.v(source_code).to_string(),
+            "boolean" => node.v(source_code).to_string(),
             "method_invocation" => {
                 let object = &node
                     .try_cv_by_n("object", source_code)
@@ -1357,6 +1359,22 @@ impl<'a, 'tree> Rewrite for InstanceOfExpression<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for CastExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        result.push('(');
+        result.push_str(node.cv_by_n("type", context.source_code));
+        result.push_str(") ");
+
+        let value = node.c_by_n("value");
+        let n = Expression::new(&value);
+        result.push_str(&n.rewrite(context, shape));
+
+        result
+    }
+}
+impl<'a, 'tree> Rewrite for Boolean<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let node = self.node();
         let mut result = String::new();
