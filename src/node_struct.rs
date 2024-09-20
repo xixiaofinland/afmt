@@ -1164,12 +1164,18 @@ impl<'a, 'tree> Rewrite for DmlType<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
-        let child = node.named_child(0).unwrap();
-        let n = Expression::new(&child);
-        result.push_str(&n.rewrite(context, shape));
-        result.push_str("++");
+        // use unanmed node as parser can't tell `i++` v.s. `++i` OR `i++` v.s. `i--`
+        let mut cursor = node.walk();
+        node.children(&mut cursor).for_each(|c| {
+            if c.is_named() {
+                let n = Expression::new(&c);
+                result.push_str(&n.rewrite(context, shape));
+            } else {
+                result.push_str(c.v(source_code));
+            }
+        });
         result
     }
 }
