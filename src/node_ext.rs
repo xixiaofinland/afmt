@@ -1,4 +1,5 @@
 use crate::{context::FmtContext, shape::Shape, visitor::visit_node};
+use colored::Colorize;
 use tree_sitter::Node;
 
 // `c` => child
@@ -39,7 +40,7 @@ pub trait NodeExt<'tree> {
 impl<'tree> NodeExt<'tree> for Node<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str {
         self.utf8_text(source_code.as_bytes())
-            .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind()))
+            .expect(&format!("{}: get_value failed.", self.kind().red()))
     }
 
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>> {
@@ -64,8 +65,11 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn c_by_k(&self, kind: &str) -> Node<'tree> {
-        self.try_c_by_k(kind)
-            .unwrap_or_else(|| panic!("mandatory kind child: {} not found.", kind))
+        self.try_c_by_k(kind).expect(&format!(
+            "{}: missing mandatory kind child: {}.",
+            self.kind().red(),
+            kind.red()
+        ))
     }
 
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
@@ -74,22 +78,31 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     }
 
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
-        let node = self
-            .child_by_field_name(name)
-            .unwrap_or_else(|| panic!("mandatory named child: {} missing.", name));
+        let node = self.child_by_field_name(name).expect(&format!(
+            "{}: missing mandatory name child: {}.",
+            self.kind().red(),
+            name.red()
+        ));
         node.v(source_code)
     }
 
     fn c_by_n(&self, name: &str) -> Node<'tree> {
-        self.child_by_field_name(name)
-            .unwrap_or_else(|| panic!("mandatory named child: {} missing.", name))
+        self.child_by_field_name(name).expect(&format!(
+            "{}: missing mandatory name child: {}.",
+            self.kind().red(),
+            name.red()
+        ))
     }
 
     fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>> {
         let mut cursor = self.walk();
         let children: Vec<Node<'tree>> = self.children_by_field_name(name, &mut cursor).collect();
         if children.is_empty() {
-            panic!("Mandatory named children: {} missing", name);
+            panic!(
+                "{}: missing mandatory name child: {}.",
+                self.kind().red(),
+                name.red()
+            );
         }
         children
     }
@@ -97,7 +110,11 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>> {
         let children = self.try_cs_by_k(kind);
         if children.is_empty() {
-            panic!("Mandatory kind children: {} missing", kind);
+            panic!(
+                "{}: missing mandatory kind children: {}.",
+                self.kind().red(),
+                kind.red()
+            );
         }
         children
     }
