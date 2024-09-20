@@ -1,6 +1,6 @@
 use crate::context::FmtContext;
-use crate::node_ext::*;
-use crate::node_visit::*;
+use crate::node_child::Accessor;
+use crate::node_visit::Visitor;
 use crate::shape::Shape;
 use crate::utility::*;
 use crate::{define_struct, define_struct_and_enum};

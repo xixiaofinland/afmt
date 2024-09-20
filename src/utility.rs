@@ -1,8 +1,9 @@
+use crate::context::FmtContext;
+use crate::node_visit::Visitor;
+use crate::shape::Shape;
 #[allow(unused_imports)]
 use log::debug;
 use tree_sitter::Node;
-
-use crate::{context::FmtContext, node_visit::NodeVisit, shape::Shape};
 
 pub fn visit_root(context: &FmtContext) -> String {
     let mut result = String::new();

@@ -1,4 +1,6 @@
-use crate::{context::FmtContext, node_visit::NodeVisit, shape::Shape};
+use crate::context::FmtContext;
+use crate::node_visit::Visitor;
+use crate::shape::Shape;
 use colored::Colorize;
 use tree_sitter::Node;
 
@@ -9,7 +11,7 @@ use tree_sitter::Node;
 // `by_n` => by name
 // `by_k` => by kind
 #[allow(dead_code)]
-pub trait NodeExt<'tree> {
+pub trait Accessor<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
 
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'tree>>;
@@ -31,7 +33,7 @@ pub trait NodeExt<'tree> {
     fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>>;
 }
 
-impl<'tree> NodeExt<'tree> for Node<'tree> {
+impl<'tree> Accessor<'tree> for Node<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str {
         self.utf8_text(source_code.as_bytes())
             .expect(&format!("{}: get_value failed.", self.kind().red()))

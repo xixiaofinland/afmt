@@ -1,10 +1,11 @@
-use crate::node_ext::*;
+use crate::context::FmtContext;
+use crate::node_child::Accessor;
 use crate::node_struct::*;
-use crate::{context::FmtContext, shape::Shape};
+use crate::shape::Shape;
 use colored::Colorize;
 use tree_sitter::Node;
 
-pub trait NodeVisit<'tree> {
+pub trait Visitor<'tree> {
     fn visit(&self, context: &FmtContext, shape: &mut Shape) -> String;
     fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String;
     fn visit_children_in_same_line(
@@ -15,7 +16,7 @@ pub trait NodeVisit<'tree> {
     ) -> String;
 }
 
-impl<'tree> NodeVisit<'tree> for Node<'tree> {
+impl<'tree> Visitor<'tree> for Node<'tree> {
     fn visit(&self, context: &FmtContext, shape: &mut Shape) -> String {
         if self.is_named() && self.grammar_name() == "operator" {
             return self.v(context.source_code).to_string();
