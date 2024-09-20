@@ -66,7 +66,7 @@ pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
     result.push_str(&shape.indent.as_string(context.config));
 }
 
-pub fn newlines_to_add(node: &Node, source_code: &str) -> usize {
+fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     let index = node.end_byte();
     if index >= source_code.len() {
         return 0;
