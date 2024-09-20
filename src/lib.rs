@@ -4,9 +4,9 @@ mod context;
 mod macros;
 mod node_ext;
 mod node_struct;
+mod node_visit;
 mod shape;
 mod utility;
-mod visitor;
 
 use anyhow::Result;
 use args::Args;

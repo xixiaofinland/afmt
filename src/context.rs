@@ -1,4 +1,5 @@
-use crate::{config::Config, visitor::Visitor};
+use crate::config::Config;
+use crate::utility::visit_root;
 use anyhow::Result;
 use tree_sitter::{Language, Parser, Tree};
 
@@ -31,9 +32,8 @@ impl<'a> FmtContext<'a> {
 
     pub fn format_one_file(&self) -> Result<String> {
         let mut result = String::new();
+        result.push_str(&visit_root(self));
 
-        let mut visitor = Visitor::default();
-        result.push_str(&visitor.visit_root(self));
         // add file ending new line;
         result.push('\n');
 

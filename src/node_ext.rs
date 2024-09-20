@@ -1,4 +1,4 @@
-use crate::{context::FmtContext, shape::Shape, visitor::visit_node};
+use crate::{context::FmtContext, node_visit::NodeVisit, shape::Shape};
 use colored::Colorize;
 use tree_sitter::Node;
 
@@ -28,13 +28,6 @@ pub trait NodeExt<'tree> {
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>>;
-
-    fn visit_children_in_same_line(
-        &self,
-        delimiter: &str,
-        context: &FmtContext,
-        shape: &mut Shape,
-    ) -> String;
 }
 
 impl<'tree> NodeExt<'tree> for Node<'tree> {
@@ -133,7 +126,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
         let mut cursor = self.walk();
         self.named_children(&mut cursor)
-            .map(|n| visit_node(&n, context, shape))
+            .map(|n| n.visit(context, shape))
             .collect::<Vec<_>>()
     }
 
@@ -145,28 +138,7 @@ impl<'tree> NodeExt<'tree> for Node<'tree> {
     ) -> Vec<String> {
         self.try_cs_by_k(kind)
             .iter()
-            .map(|n| visit_node(n, context, shape))
+            .map(|n| n.visit(context, shape))
             .collect::<Vec<_>>()
-    }
-
-    fn visit_children_in_same_line(
-        &self,
-        delimiter: &str,
-        context: &FmtContext,
-        shape: &mut Shape,
-    ) -> String {
-        let mut result = String::new();
-        let mut cursor = self.walk();
-        let fields = self
-            .named_children(&mut cursor)
-            .map(|child| {
-                let mut child_shape = shape.clone_with_stand_alone(false);
-                visit_node(&child, context, &mut child_shape)
-            })
-            .collect::<Vec<_>>()
-            .join(delimiter);
-
-        result.push_str(&fields);
-        result
     }
 }

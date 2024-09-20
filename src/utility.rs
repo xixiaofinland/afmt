@@ -1,7 +1,29 @@
 use log::debug;
 use tree_sitter::Node;
 
-use crate::{context::FmtContext, shape::Shape};
+use crate::{context::FmtContext, node_visit::NodeVisit, shape::Shape};
+
+pub fn visit_root(context: &FmtContext) -> String {
+    let mut result = String::new();
+    let shape = Shape::empty(context.config);
+    let root = &context.ast_tree.root_node();
+
+    let mut cursor = root.walk();
+    let children = root
+        .named_children(&mut cursor)
+        .map(|child| -> _ {
+            let mut child_shape = shape.clone_with_stand_alone(true);
+            child.visit(context, &mut child_shape)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    result.push_str(&children);
+
+    // remove the extra "\n" introduced by the top-level class declaration
+    result.truncate(result.trim_end_matches('\n').len());
+    result
+}
 
 pub fn try_add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
     if shape.standalone {
