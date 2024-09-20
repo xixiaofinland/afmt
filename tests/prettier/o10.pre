@@ -1,0 +1,5 @@
+public class Me {
+  {
+    String test = true ? 't' : 'f';
+  }
+}

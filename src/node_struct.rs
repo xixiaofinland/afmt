@@ -72,7 +72,8 @@ define_struct_and_enum!(
     true; FieldAccess => "field_access",
     true; InstanceOfExpression => "instanceof_expression",
     true; CastExpression => "cast_expression",
-    true; Boolean => "boolean"
+    true; Boolean => "boolean",
+    true; TernaryExpression => "ternary_expression"
 );
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
@@ -1387,6 +1388,30 @@ impl<'a, 'tree> Rewrite for Boolean<'a, 'tree> {
         let n = Expression::new(&value);
         result.push_str(&n.rewrite(context, shape));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for TernaryExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let node = self.node();
+        let mut result = String::new();
+
+        let condition = node.c_by_n("condition");
+        let n = Expression::new(&condition);
+        result.push_str(&n.rewrite(context, shape));
+
+        result.push_str(" ? ");
+
+        let consequence = node.c_by_n("consequence");
+        let n = Expression::new(&consequence);
+        result.push_str(&n.rewrite(context, shape));
+
+        result.push_str(" : ");
+
+        let alternative = node.c_by_n("alternative");
+        let n = Expression::new(&alternative);
+        result.push_str(&n.rewrite(context, shape));
         result
     }
 }

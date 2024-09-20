@@ -230,6 +230,10 @@ pub fn visit_node(node: &Node, context: &FmtContext, shape: &mut Shape) -> Strin
             let n = InstanceOfExpression::new(node);
             n.rewrite(context, shape)
         }
+        NodeKind::TernaryExpression => {
+            let n = TernaryExpression::new(node);
+            n.rewrite(context, shape)
+        }
         _ => {
             println!(
                 "{} {}",
