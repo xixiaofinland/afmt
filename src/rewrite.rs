@@ -228,11 +228,11 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
     }
 }
 
+// a common struct for all simple nodes;
 impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        let name_node_value = node.v(source_code);
-        result.push_str(name_node_value);
+        result.push_str(node.v(source_code));
         result
     }
 }
@@ -569,22 +569,17 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 
         match node.kind() {
             "unary_expression" => {
-                let operator_value = node.cv_by_n("operator", source_code);
-                result.push_str(operator_value);
-
-                let operand = node.c_by_n("operand");
-                result.push_str(&operand.visit(context, &mut shape.clone_with_stand_alone(false)));
+                let n = UnaryExpression::new(node);
+                result.push_str(&n.rewrite(context, shape));
                 result
             }
             "binary_expression" => {
-                let left = node.cv_by_n("left", source_code);
-                let op = node.cv_by_n("operator", source_code);
-                let right = node.cv_by_n("right", source_code);
-                result = format!("{} {} {}", left, op, right);
+                let n = BinaryExpression::new(node);
+                result.push_str(&n.rewrite(context, shape));
                 result
             }
-            "int" => node.v(source_code).to_string(),
-            "boolean" => node.v(source_code).to_string(),
+            "int" => Value::new(node).rewrite(context, shape),
+            "boolean" => Value::new(node).rewrite(context, shape),
             "method_invocation" => {
                 let n = MethodInvocation::new(node);
                 result.push_str(&n.rewrite(context, shape));
@@ -596,35 +591,16 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result
             }
             "array_creation_expression" => {
-                result.push_str("new ");
-                let t = self.node().c_by_n("type");
-                result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
-
-                if let Some(v) = node.try_c_by_n("value") {
-                    result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
-                }
-
-                if let Some(v) = node.try_c_by_n("dimensions") {
-                    result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
-                }
+                let n = ArrayCreationExpression::new(node);
+                result.push_str(&n.rewrite(context, shape));
                 result
             }
             "map_creation_expression" => {
-                result.push_str("new ");
-
-                let t = node.c_by_n("type");
-                result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
-
-                let value = node.c_by_n("value");
-                let n = MapInitializer::new(&value);
+                let n = MapCreationExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
-
                 result
             }
-            "string_literal" => {
-                result.push_str(node.v(source_code));
-                result
-            }
+            "string_literal" => Value::new(node).rewrite(context, shape),
             "assignment_expression" => {
                 let n = AssignmentExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
@@ -640,10 +616,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
-            "identifier" => {
-                result.push_str(node.v(source_code));
-                result
-            }
+            "identifier" => Value::new(node).rewrite(context, shape),
             "dml_expression" => {
                 let n = DmlExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
@@ -1363,6 +1336,63 @@ impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let left = node.cv_by_n("left", source_code);
+        let op = node.cv_by_n("operator", source_code);
+        let right = node.cv_by_n("right", source_code);
+        result = format!("{} {} {}", left, op, right);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        result.push_str("new ");
+        let t = self.node().c_by_n("type");
+        result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
+
+        if let Some(v) = node.try_c_by_n("value") {
+            result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
+        }
+
+        if let Some(v) = node.try_c_by_n("dimensions") {
+            result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
+        }
+        result
+    }
+}
+impl<'a, 'tree> Rewrite for MapCreationExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        result.push_str("new ");
+        let t = node.c_by_n("type");
+        result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
+
+        let value = node.c_by_n("value");
+        let n = MapInitializer::new(&value);
+        result.push_str(&n.rewrite(context, shape));
+        result
+    }
+}
+impl<'a, 'tree> Rewrite for UnaryExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let operator_value = node.cv_by_n("operator", source_code);
+        result.push_str(operator_value);
+
+        let operand = node.c_by_n("operand");
+        result.push_str(&operand.visit(context, &mut shape.clone_with_stand_alone(false)));
         result
     }
 }

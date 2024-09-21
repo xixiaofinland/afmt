@@ -69,6 +69,10 @@ define_struct_and_enum!(
     QueryExpression => "query_expression",
     SoqlQuery => "soql_query",
     SoqlQueryBody => "soql_query_body",
-    SoslQuery => "sosl_query"
+    SoslQuery => "sosl_query",
+    BinaryExpression => "binary_expression",
+    UnaryExpression => "unary_expression",
+    ArrayCreationExpression => "array_creation_expression",
+    MapCreationExpression => "map_creation_expression"
 
 );

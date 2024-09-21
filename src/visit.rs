@@ -70,10 +70,6 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
                 let n = Value::new(self);
                 n.rewrite(context, shape)
             }
-            NodeKind::SpaceValueSpace => {
-                let n = SpaceValueSpace::new(self);
-                n.rewrite(context, shape)
-            }
             NodeKind::LocalVariableDeclaration => {
                 let n = LocalVariableDeclaration::new(self);
                 n.rewrite(context, shape)
