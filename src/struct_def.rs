@@ -9,7 +9,6 @@ define_struct!(
     EnumDeclaration,
     EnumConstant,
     EnumBody,
-    EmptyNode, // FIXME: remove this
     Block,
     Statement,
     DoStatement,
