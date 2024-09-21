@@ -33,7 +33,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         let mut result = String::new();
 
         let route_name = "1 visitor";
-        define_routing!(self, result, context, shape, route_name;
+        define_routing!(self, result, context, shape;
             "class_declaration" => ClassDeclaration,
             "method_declaration" => MethodDeclaration,
             "block" => Block,

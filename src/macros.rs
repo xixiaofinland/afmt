@@ -33,7 +33,7 @@ macro_rules! define_struct {
 
 #[macro_export]
 macro_rules! define_routing {
-    ( $node:ident, $result:ident, $context:ident, $shape:ident, $route_name:ident;
+    ( $node:ident, $result:ident, $context:ident, $shape:ident;
       $( $kind:literal => $struct_name:ident ),* ) => {
         match $node.kind() {
             $(
@@ -42,12 +42,8 @@ macro_rules! define_routing {
                 }
             )*
             _ => {
-                println!(
-                    "{} {}",
-                    format!("### {} Routing - unknown child: ", $route_name).yellow(),
-                    $node.kind().red()
-                );
-                panic!();
+                let function_name = module_path!();
+                panic!( "### {} routing - unknown node: {}", function_name.yellow(), $node.kind().red());
             }
         }
     };

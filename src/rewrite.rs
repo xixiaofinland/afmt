@@ -559,7 +559,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         let route_name = "3 Expression";
-        define_routing!(node, result, context, shape, route_name;
+        define_routing!(node, result, context, shape;
             "string_literal" => Value,
             "unary_expression" => UnaryExpression,
             "local_variable_declaration" => LocalVariableDeclaration,
@@ -1243,7 +1243,7 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         let c = node.first_c();
 
         let route_name = "3 QueryExpression";
-        define_routing!(node, result, context, shape, route_name;
+        define_routing!(node, result, context, shape;
             "sosl_query" => SoslQuery,
             "soql_query" => SoqlQuery
         );
@@ -1258,7 +1258,7 @@ impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
         let c = node.first_c();
 
         let route_name = "3 QueryExpression";
-        define_routing!(node, result, context, shape, route_name;
+        define_routing!(node, result, context, shape;
             "soql_query_body" => SoqlQueryBody
         );
 
