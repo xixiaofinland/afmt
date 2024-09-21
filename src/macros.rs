@@ -32,7 +32,7 @@ macro_rules! def_struct {
 }
 
 #[macro_export]
-macro_rules! define_routing {
+macro_rules! match_routing {
     ( $node:ident, $result:ident, $context:ident, $shape:ident;
       $( $kind:literal => $struct_name:ident ),* $(,)? ) => {
         match $node.kind() {

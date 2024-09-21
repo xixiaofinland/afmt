@@ -1,6 +1,6 @@
 use crate::child::Accessor;
 use crate::context::FmtContext;
-use crate::define_routing;
+use crate::match_routing;
 use crate::shape::Shape;
 use crate::struct_def::*;
 use crate::utility::*;
@@ -274,27 +274,26 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        result.push_str(&node.visit(context, shape));
-
-        //define_routing!(node, result, context, shape;
-        //    "block" => Block,
-        //    //"break_statement"
-        //    //"continue_statement"
-        //    //"declaration"
-        //    "do_statement" => DoStatement,
-        //    "enhanced_for_statement" => EnhancedForStatement,
-        //    "expression_statement" => ExpressionStatement,
-        //    "for_statement" => ForStatement,
-        //    "if_statement" => IfStatement,
-        //    //"labeled_statement"
-        //    "local_variable_declaration" => LocalVariableDeclaration,
-        //    "return_statement" => ReturnStatement,
-        //    "run_as_statement" => RunAsStatement,
-        //    //"switch_expression" =>
-        //    //"throw_statement" => Thr
-        //    "try_statement" => TryStatement,
-        //    //"while_statement" => WhileStatement, // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
-        //);
+        // FIXME: shall this switch to use COMMON_MAP?
+        match_routing!(node, result, context, shape;
+            "block" => Block,
+            //"break_statement"
+            //"continue_statement"
+            //"declaration"
+            "do_statement" => DoStatement,
+            "enhanced_for_statement" => EnhancedForStatement,
+            "expression_statement" => ExpressionStatement,
+            "for_statement" => ForStatement,
+            "if_statement" => IfStatement,
+            //"labeled_statement"
+            "local_variable_declaration" => LocalVariableDeclaration,
+            "return_statement" => ReturnStatement,
+            "run_as_statement" => RunAsStatement,
+            //"switch_expression" =>
+            //"throw_statement" => Thr
+            "try_statement" => TryStatement,
+            //"while_statement" => WhileStatement, // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
+        );
 
         try_add_standalone_suffix(node, &mut result, shape, source_code);
 
@@ -575,7 +574,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
         node.visit(context, shape)
 
         // FIXME: remove them once phf is stable
-        //define_routing!(node, result, context, shape;
+        //match_routing!(node, result, context, shape;
         //    "assignment_expression" => AssignmentExpression,
         //    "binary_expression" => BinaryExpression,
         //    "cast_expression" => CastExpression,
@@ -1263,7 +1262,7 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
 
-        define_routing!(node, result, context, shape;
+        match_routing!(node, result, context, shape;
             "sosl_query" => SoslQuery,
             "soql_query" => SoqlQuery
         );
@@ -1277,7 +1276,7 @@ impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
         result.push_str("[ ");
         let c = node.first_c();
 
-        define_routing!(node, result, context, shape;
+        match_routing!(node, result, context, shape;
             "soql_query_body" => SoqlQueryBody
         );
 
