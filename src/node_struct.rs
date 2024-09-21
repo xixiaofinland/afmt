@@ -20,7 +20,7 @@ define_struct_and_enum!(
     EnumDeclaration => "enum_declaration",
     EnumConstant => "enum_constant",
     EnumBody => "enum_body",
-     EmptyNode => "class_body",
+    EmptyNode => "class_body", // FIXME: remove this
     Block => "block",
     Statement => "expression_statement" | "do_statement",
     DoStatement => "N/A",
