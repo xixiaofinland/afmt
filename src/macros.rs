@@ -59,20 +59,19 @@ macro_rules! define_struct_and_enum {
 
 #[macro_export]
 macro_rules! define_routing {
-    ( $c_node:ident, $result:ident, $context:ident, $shape:ident;
+    ( $node:ident, $result:ident, $context:ident, $shape:ident;
       $( $kind:literal => $struct_name:ident ),* ) => {
-        match $c_node.kind() {
+        match $node.kind() {
             $(
                 $kind => {
-                    $result.push_str(&$struct_name::new(&$c_node).rewrite($context, $shape));
+                    $result.push_str(&$struct_name::new(&$node).rewrite($context, $shape));
                 }
             )*
             _ => {
-                let struct_names = stringify!($($struct_name),*);
                 println!(
                     "{} {}",
-                    format!("### {}: unknown child: ", struct_names).yellow(),
-                    $c_node.kind().red()
+                    format!("### Routing - unknown child: ").yellow(),
+                    $node.kind().red()
                 );
                 panic!();
             }

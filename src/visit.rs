@@ -5,6 +5,7 @@ use crate::rewrite::Rewrite;
 use crate::shape::Shape;
 use crate::struct_and_enum::*;
 use colored::Colorize;
+use log::debug;
 use tree_sitter::Node;
 
 #[allow(dead_code)]
@@ -30,17 +31,42 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
 
         let mut result = String::new();
 
+        println!("||| 1 routing");
         define_routing!(self, result, context, shape;
+            "class_declaration" => ClassDeclaration,
+            "method_declaration" => MethodDeclaration,
+            "block" => Block,
+            "local_variable_declaration" => LocalVariableDeclaration,
+            "array_creation_expression" => ArrayCreationExpression,
+            "array_initializer" => ArrayInitializer,
+            "expression_statement" => Statement,
+            "generic_type" => GenericType,
+            "dml_type" => DmlType,
+            "object_creation_expression" => ObjectCreationExpression,
+            "instanceof_expression" => InstanceOfExpression,
+            "annotation_argument_list" => AnnotationArgumentList,
+            "for_statement" => ForStatement,
+            "try_statement" => TryStatement,
+            "line_comment" => LineComment,
+            "method_invocation" => MethodInvocation,
+            "scoped_type_identifier" => ScopedTypeIdentifier,
+            "field_declaration" => FieldDeclaration,
+            "unary_expression" => UnaryExpression,
+            "dml_security_mode" => DmlSecurityMode,
+            "map_creation_expression" => MapCreationExpression,
+            "if_statement" => IfStatement,
+            "binary_expression" => BinaryExpression,
+            "ternary_expression" => TernaryExpression,
             "string_literal" => Value,
-            "identifier" => Value
+            "boolean" => Value,
+            "type_identifier" => Value,
+            "identifier" => Value,
+            "int" => Value
         );
+        return result;
 
         let kind = NodeKind::from_kind(self.kind());
         match kind {
-            NodeKind::ClassDeclaration => {
-                let n = ClassDeclaration::new(self);
-                n.rewrite(context, shape)
-            }
             NodeKind::MethodDeclaration => {
                 let n = MethodDeclaration::new(self);
                 n.rewrite(context, shape)

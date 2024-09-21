@@ -567,16 +567,23 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        println!("||| 3 routing");
         define_routing!(node, result, context, shape;
-            "unary_expression" => UnaryExpression,
-            "local_variable_declaration" => LocalVariableDeclaration,
-            "map_creation_expression" => MapCreationExpression,
-            "dml_expression" => DmlExpression,
-            "string_literal" => Value,
-            "identifier" => Value,
-            "int" => Value,
-            "boolean" => Value
-        );
+                            "string_literal" => Value,
+                            "unary_expression" => UnaryExpression,
+                            "local_variable_declaration" => LocalVariableDeclaration,
+                            "map_creation_expression" => MapCreationExpression,
+                            "dml_expression" => DmlExpression,
+                    "assignment_expression" => AssignmentExpression,
+                            "binary_expression" => BinaryExpression,
+                "update_expression" => UpdateExpression,
+            "method_invocation" => MethodInvocation,
+        "cast_expression" => CastExpression,
+                            "identifier" => Value,
+                            "int" => Value,
+                            "boolean" => Value
+                        );
+        return result;
 
         match node.kind() {
             "binary_expression" => {
