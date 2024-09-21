@@ -5,7 +5,7 @@ mod context;
 mod macros;
 mod rewrite;
 mod shape;
-mod struct_and_enum;
+mod struct_def;
 mod utility;
 mod visit;
 

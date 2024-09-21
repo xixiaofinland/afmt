@@ -3,7 +3,7 @@ use crate::context::FmtContext;
 use crate::define_routing;
 use crate::rewrite::Rewrite;
 use crate::shape::Shape;
-use crate::struct_and_enum::*;
+use crate::struct_def::*;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;

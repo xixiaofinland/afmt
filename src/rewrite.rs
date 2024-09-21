@@ -2,7 +2,7 @@ use crate::child::Accessor;
 use crate::context::FmtContext;
 use crate::define_routing;
 use crate::shape::Shape;
-use crate::struct_and_enum::*;
+use crate::struct_def::*;
 use crate::utility::*;
 use crate::visit::Visitor;
 use colored::Colorize;
