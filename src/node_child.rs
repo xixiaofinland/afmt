@@ -20,6 +20,7 @@ pub trait Accessor<'tree> {
 
     fn c_by_n(&self, name: &str) -> Node<'tree>;
     fn c_by_k(&self, kind: &str) -> Node<'tree>;
+    fn first_c(&self) -> Node<'tree>;
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
@@ -58,6 +59,13 @@ impl<'tree> Accessor<'tree> for Node<'tree> {
             "{}: missing mandatory kind child: {}.",
             self.kind().red(),
             kind.red()
+        ))
+    }
+
+    fn first_c(&self) -> Node<'tree> {
+        self.named_child(0).expect(&format!(
+            "{}: missing a mandatory child.",
+            self.kind().red()
         ))
     }
 

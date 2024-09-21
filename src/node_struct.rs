@@ -76,7 +76,10 @@ define_struct_and_enum!(
     true; TernaryExpression => "ternary_expression",
     true; MethodInvocation => "method_invocation",
     true; AccessorList => "accessor_list",
-    true; AccessorDeclaration => "accessor_declartion"
+    true; AccessorDeclaration => "accessor_declartion",
+    true; QueryExpression => "query_expression",
+    true; SoqlQuery => "soql_query",
+    true; SoslQuery => "sosl_query"
 
 );
 
@@ -353,9 +356,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
 
         match node.kind() {
             "expression_statement" => {
-                let child = node
-                    .named_child(0)
-                    .unwrap_or_else(|| panic!("mandatory child expression node missing."));
+                let child = node.first_c();
                 let exp = Expression::new(&child);
                 result.push_str(&exp.rewrite(context, shape));
             }
@@ -752,7 +753,7 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
 
         result.push_str("return");
         if node.named_child_count() != 0 {
-            let child = node.named_child(0).unwrap();
+            let child = node.first_c();
             result.push(' ');
             result.push_str(&child.visit(context, shape));
         }
@@ -826,10 +827,7 @@ impl<'a, 'tree> Rewrite for ArrayInitializer<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for DimensionsExpr<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let child = self
-            .node()
-            .named_child(0)
-            .unwrap_or_else(|| panic!("mandatory child expression node missing."));
+        let child = self.node().first_c();
         let exp = Expression::new(&child);
         format!("[{}]", &exp.rewrite(context, shape))
     }
@@ -1306,6 +1304,14 @@ impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
                 result.push_str(c.v(source_code));
             }
         });
+
+        // FIXME: implements max-width logic
+        if let Some(ref b) = node.try_c_by_k("block") {
+            result.push_str(
+                &Block::new(b).rewrite(context, &mut shape.clone_with_stand_alone(false)),
+            );
+            result.push(' ');
+        }
         result
     }
 }
@@ -1382,6 +1388,48 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
 
         result.push_str(&arguments_value);
         result.push(')');
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+        let c = node.first_c();
+        let c_kind = c.kind();
+
+        match c_kind {
+            "sosl_query" => {
+                result.push_str(&SoslQuery::new(&c).rewrite(context, shape));
+            }
+            "soql_query" => {
+                result.push_str(&SoqlQuery::new(&c).rewrite(context, shape));
+            }
+            _ => {
+                println!(
+                    "{} {}",
+                    "### QueryExpression: unknown child: ".yellow(),
+                    c_kind.red()
+                );
+                panic!();
+            }
+        }
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result
+    }
+}
+impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
         result
     }
 }

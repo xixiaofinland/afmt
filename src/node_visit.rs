@@ -216,6 +216,10 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
                 let n = TernaryExpression::new(self);
                 n.rewrite(context, shape)
             }
+            NodeKind::QueryExpression => {
+                let n = QueryExpression::new(self);
+                n.rewrite(context, shape)
+            }
             _ => {
                 println!(
                     "{} {}",
