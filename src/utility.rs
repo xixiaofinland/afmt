@@ -54,11 +54,9 @@ pub fn try_add_standalone_suffix_no_semicolumn(
     shape: &Shape,
     source_code: &str,
 ) {
-    if shape.standalone {
-        if node.next_named_sibling().is_some() {
-            let count_new_lines = newlines_to_add(node, source_code);
-            result.push_str(&"\n".repeat(count_new_lines));
-        }
+    if shape.standalone && node.next_named_sibling().is_some() {
+        let count_new_lines = newlines_to_add(node, source_code);
+        result.push_str(&"\n".repeat(count_new_lines));
     }
 }
 
