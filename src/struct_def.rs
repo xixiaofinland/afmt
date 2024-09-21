@@ -1,8 +1,8 @@
 use crate::context::FmtContext;
-use crate::define_struct;
+use crate::def_struct;
 use tree_sitter::Node;
 
-define_struct!(
+def_struct!(
     ClassDeclaration,
     FieldDeclaration,
     MethodDeclaration,

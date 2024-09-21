@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! define_struct {
+macro_rules! def_struct {
     ( $( $name:ident ),+ ) => {
         $(
             pub struct $name<'a, 'tree> {
