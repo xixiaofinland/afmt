@@ -1,9 +1,9 @@
 use crate::child::Accessor;
 use crate::context::FmtContext;
-use crate::define_routing;
 use crate::rewrite::Rewrite;
+use crate::route::COMMON_MAP;
+use crate::routing;
 use crate::shape::Shape;
-use crate::struct_def::*;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
@@ -32,53 +32,55 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         }
 
         let mut result = String::new();
-        define_routing!(self, result, context, shape;
-            "class_declaration" => ClassDeclaration,
-            "method_declaration" => MethodDeclaration,
-            "block" => Block,
-            "local_variable_declaration" => LocalVariableDeclaration,
-            "array_creation_expression" => ArrayCreationExpression,
-            "array_initializer" => ArrayInitializer,
-            "expression_statement" => Statement,
-            "generic_type" => GenericType,
-            "dml_type" => DmlType,
-            "object_creation_expression" => ObjectCreationExpression,
-            "instanceof_expression" => InstanceOfExpression,
-            "annotation_argument_list" => AnnotationArgumentList,
-            "for_statement" => ForStatement,
-            "try_statement" => TryStatement,
-            "line_comment" => LineComment,
-            "method_invocation" => MethodInvocation,
-            "scoped_type_identifier" => ScopedTypeIdentifier,
-            "field_declaration" => FieldDeclaration,
-            "unary_expression" => UnaryExpression,
-            "update_expression" => UpdateExpression,
-            "dml_expression" => DmlExpression,
-            "dml_security_mode" => DmlSecurityMode,
-            "map_creation_expression" => MapCreationExpression,
-            "enum_declaration" => EnumDeclaration,
-            "enhanced_for_statement" => EnhancedForStatement,
-            "assignment_expression" => AssignmentExpression,
-            "if_statement" => IfStatement,
-            "constructor_declaration" => ConstructorDeclaration,
-            "explicit_constructor_invocation" => ExplicitConstructorInvocation,
-            "while_statement" => WhileStatement,
-            "binary_expression" => BinaryExpression,
-            "cast_expression" => CastExpression,
-            "run_as_statement" => RunAsStatement,
-            "return_statement" => ReturnStatement,
-            "dimensions_expr" => DimensionsExpr,
-            "field_access" => FieldAccess,
-            "array_access" => ArrayAccess,
-            "array_type" => ArrayType,
-            "do_statement" => DoStatement,
-            "ternary_expression" => TernaryExpression,
-            "string_literal" => Value,
-            "boolean" => Value,
-            "type_identifier" => Value,
-            "identifier" => Value,
-            "int" => Value
-        );
+        routing!(COMMON_MAP, self, result, context, shape);
+
+        //define_routing!(self, result, context, shape;
+        //    "class_declaration" => ClassDeclaration,
+        //    "method_declaration" => MethodDeclaration,
+        //    "block" => Block,
+        //    "local_variable_declaration" => LocalVariableDeclaration,
+        //    "array_creation_expression" => ArrayCreationExpression,
+        //    "array_initializer" => ArrayInitializer,
+        //    "expression_statement" => Statement,
+        //    "generic_type" => GenericType,
+        //    "dml_type" => DmlType,
+        //    "object_creation_expression" => ObjectCreationExpression,
+        //    "instanceof_expression" => InstanceOfExpression,
+        //    "annotation_argument_list" => AnnotationArgumentList,
+        //    "for_statement" => ForStatement,
+        //    "try_statement" => TryStatement,
+        //    "line_comment" => LineComment,
+        //    "method_invocation" => MethodInvocation,
+        //    "scoped_type_identifier" => ScopedTypeIdentifier,
+        //    "field_declaration" => FieldDeclaration,
+        //    "unary_expression" => UnaryExpression,
+        //    "update_expression" => UpdateExpression,
+        //    "dml_expression" => DmlExpression,
+        //    "dml_security_mode" => DmlSecurityMode,
+        //    "map_creation_expression" => MapCreationExpression,
+        //    "enum_declaration" => EnumDeclaration,
+        //    "enhanced_for_statement" => EnhancedForStatement,
+        //    "assignment_expression" => AssignmentExpression,
+        //    "if_statement" => IfStatement,
+        //    "constructor_declaration" => ConstructorDeclaration,
+        //    "explicit_constructor_invocation" => ExplicitConstructorInvocation,
+        //    "while_statement" => WhileStatement,
+        //    "binary_expression" => BinaryExpression,
+        //    "cast_expression" => CastExpression,
+        //    "run_as_statement" => RunAsStatement,
+        //    "return_statement" => ReturnStatement,
+        //    "dimensions_expr" => DimensionsExpr,
+        //    "field_access" => FieldAccess,
+        //    "array_access" => ArrayAccess,
+        //    "array_type" => ArrayType,
+        //    "do_statement" => DoStatement,
+        //    "ternary_expression" => TernaryExpression,
+        //    "string_literal" => Value,
+        //    "boolean" => Value,
+        //    "type_identifier" => Value,
+        //    "identifier" => Value,
+        //    "int" => Value
+        //);
         return result;
     }
 

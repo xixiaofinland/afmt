@@ -50,7 +50,7 @@ macro_rules! define_routing {
 }
 
 #[macro_export]
-macro_rules! define_routing_phf {
+macro_rules! routing {
     ( $map:expr, $node:ident, $result:ident, $context:ident, $shape:ident ) => {
         if let Some(constructor) = $map.get($node.kind()) {
             let struct_instance: Box<dyn Rewrite> = constructor(&$node);
