@@ -3,7 +3,7 @@ use crate::node_child::Accessor;
 use crate::node_visit::Visitor;
 use crate::shape::Shape;
 use crate::utility::*;
-use crate::{define_struct, define_struct_and_enum};
+use crate::{define_routing, define_struct, define_struct_and_enum};
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
@@ -1398,22 +1398,28 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         let c = node.first_c();
         let c_kind = c.kind();
 
-        match c_kind {
-            "sosl_query" => {
-                result.push_str(&SoslQuery::new(&c).rewrite(context, shape));
-            }
-            "soql_query" => {
-                result.push_str(&SoqlQuery::new(&c).rewrite(context, shape));
-            }
-            _ => {
-                println!(
-                    "{} {}",
-                    "### QueryExpression: unknown child: ".yellow(),
-                    c_kind.red()
-                );
-                panic!();
-            }
-        }
+        //match c_kind {
+        //    "sosl_query" => {
+        //        result.push_str(&SoslQuery::new(&c).rewrite(context, shape));
+        //    }
+        //    "soql_query" => {
+        //        result.push_str(&SoqlQuery::new(&c).rewrite(context, shape));
+        //    }
+        //    _ => {
+        //        println!(
+        //            "{} {}",
+        //            "### QueryExpression: unknown child: ".yellow(),
+        //            c_kind.red()
+        //        );
+        //        panic!();
+        //    }
+        //}
+
+        define_routing!(
+            c, result, context, shape;
+            "sosl_query" => SoslQuery,
+            "soql_query" => SoqlQuery
+        );
 
         result
     }

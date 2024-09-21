@@ -66,3 +66,26 @@ macro_rules! conditional_struct_creation {
         // No struct is created when the flag is false
     };
 }
+
+#[macro_export]
+macro_rules! define_routing {
+    ( $c_node:ident, $result:ident, $context:ident, $shape:ident;
+      $( $kind:literal => $struct_name:ident ),* ) => {
+        match $c_node.kind() {
+            $(
+                $kind => {
+                    $result.push_str(&$struct_name::new(&$c_node).rewrite($context, $shape));
+                }
+            )*
+            _ => {
+                let struct_names = stringify!($($struct_name),*);
+                println!(
+                    "{} {}",
+                    format!("### {}: unknown child: ", struct_names).yellow(),
+                    $c_node.kind().red()
+                );
+                panic!();
+            }
+        }
+    };
+}
