@@ -6,6 +6,7 @@ use crate::struct_and_enum::*;
 use colored::Colorize;
 use tree_sitter::Node;
 
+#[allow(dead_code)]
 pub trait Visitor<'tree> {
     fn visit(&self, context: &FmtContext, shape: &mut Shape) -> String;
     fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String;

@@ -3,9 +3,9 @@ mod tests {
     use afmt::config::*;
     use colored::Colorize;
     use similar::{ChangeTag, TextDiff};
-    use std::fs::{self, File};
+    use std::fs::File;
     use std::io::Write;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::process::Command;
 
     #[test]

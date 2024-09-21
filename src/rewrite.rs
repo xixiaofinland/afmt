@@ -1158,7 +1158,7 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
             if cur.is_named() {
                 break;
             } else {
-                result.push_str(&cur.v(source_code));
+                result.push_str(cur.v(source_code));
                 current_node = cur.next_sibling();
             }
         }
@@ -1289,7 +1289,7 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        node.try_c_by_n("object").map(|c| {
+        if let Some(c) = node.try_c_by_n("object") {
             result.push_str(c.v(source_code));
 
             // `?.` need to traverse unnamed node;
@@ -1298,11 +1298,11 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
                 if cur.is_named() {
                     break;
                 } else {
-                    result.push_str(&cur.v(source_code));
+                    result.push_str(cur.v(source_code));
                     current_node = cur.next_sibling();
                 }
             }
-        });
+        };
 
         let name = node.cv_by_n("name", source_code);
         result.push_str(name);
@@ -1337,7 +1337,7 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _, _) = self.prepare(context);
         result.push_str("[ ");
         let c = node.first_c();
 
