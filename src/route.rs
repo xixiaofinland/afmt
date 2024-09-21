@@ -12,7 +12,7 @@ pub static COMMON_MAP: phf::Map<
     "local_variable_declaration" => |node| Box::new(LocalVariableDeclaration::new(node)),
     "array_creation_expression" => |node| Box::new(ArrayCreationExpression::new(node)),
     "array_initializer" => |node| Box::new(ArrayInitializer::new(node)),
-    "expression_statement" => |node| Box::new(Statement::new(node)),
+    "expression_statement" => |node| Box::new(ExpressionStatement::new(node)),
     "generic_type" => |node| Box::new(GenericType::new(node)),
     "dml_type" => |node| Box::new(DmlType::new(node)),
     "object_creation_expression" => |node| Box::new(ObjectCreationExpression::new(node)),

@@ -274,25 +274,27 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        define_routing!(node, result, context, shape;
-            "block" => Block,
-            //"break_statement"
-            //"continue_statement"
-            //"declaration"
-            "do_statement" => DoStatement,
-            "enhanced_for_statement" => EnhancedForStatement,
-            "expression_statement" => ExpressionStatement,
-            "for_statement" => ForStatement,
-            "if_statement" => IfStatement,
-            //"labeled_statement"
-            "local_variable_declaration" => LocalVariableDeclaration,
-            "return_statement" => ReturnStatement,
-            "run_as_statement" => RunAsStatement,
-            //"switch_expression" =>
-            //"throw_statement" => Thr
-            "try_statement" => TryStatement,
-            //"while_statement" => WhileStatement, // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
-        );
+        result.push_str(&node.visit(context, shape));
+
+        //define_routing!(node, result, context, shape;
+        //    "block" => Block,
+        //    //"break_statement"
+        //    //"continue_statement"
+        //    //"declaration"
+        //    "do_statement" => DoStatement,
+        //    "enhanced_for_statement" => EnhancedForStatement,
+        //    "expression_statement" => ExpressionStatement,
+        //    "for_statement" => ForStatement,
+        //    "if_statement" => IfStatement,
+        //    //"labeled_statement"
+        //    "local_variable_declaration" => LocalVariableDeclaration,
+        //    "return_statement" => ReturnStatement,
+        //    "run_as_statement" => RunAsStatement,
+        //    //"switch_expression" =>
+        //    //"throw_statement" => Thr
+        //    "try_statement" => TryStatement,
+        //    //"while_statement" => WhileStatement, // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
+        //);
 
         try_add_standalone_suffix(node, &mut result, shape, source_code);
 
@@ -570,29 +572,31 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        node.visit(context, shape)
 
-        define_routing!(node, result, context, shape;
-            "assignment_expression" => AssignmentExpression,
-            "binary_expression" => BinaryExpression,
-            "cast_expression" => CastExpression,
-            "dml_expression" => DmlExpression,
-            "instanceof_expression" => InstanceOfExpression,
-            "primary_expression" => PrimaryExpression,
-            "ternary_expression" => TernaryExpression,
-            "unary_expression" => UnaryExpression,
-            "update_expression" => UpdateExpression,
-
-            // NOTE: These are not defined in json;
-            //"string_literal" => Value,
-            //"local_variable_declaration" => LocalVariableDeclaration,
-            //"map_creation_expression" => MapCreationExpression,
-            //"object_creation_expression" => ObjectCreationExpression,
-            //"method_invocation" => MethodInvocation,
-            //"identifier" => Value,
-            //"int" => Value,
-            //"boolean" => Value
-        );
-        return result;
+        // FIXME: remove them once phf is stable
+        //define_routing!(node, result, context, shape;
+        //    "assignment_expression" => AssignmentExpression,
+        //    "binary_expression" => BinaryExpression,
+        //    "cast_expression" => CastExpression,
+        //    "dml_expression" => DmlExpression,
+        //    "instanceof_expression" => InstanceOfExpression,
+        //    "primary_expression" => PrimaryExpression,
+        //    "ternary_expression" => TernaryExpression,
+        //    "unary_expression" => UnaryExpression,
+        //    "update_expression" => UpdateExpression,
+        //
+        //    // NOTE: These are not defined in json;
+        //    //"string_literal" => Value,
+        //    //"local_variable_declaration" => LocalVariableDeclaration,
+        //    //"map_creation_expression" => MapCreationExpression,
+        //    //"object_creation_expression" => ObjectCreationExpression,
+        //    //"method_invocation" => MethodInvocation,
+        //    //"identifier" => Value,
+        //    //"int" => Value,
+        //    //"boolean" => Value
+        //);
+        //return result;
     }
 }
 
