@@ -544,6 +544,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
+        debug!("B:{}:{:?}", node.parent().unwrap().kind(), shape);
         if shape.standalone {
             add_indent(&mut result, shape, context);
         } else {
@@ -573,6 +574,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "unary_expression" => UnaryExpression,
             "local_variable_declaration" => LocalVariableDeclaration,
             "map_creation_expression" => MapCreationExpression,
+            "object_creation_expression" => ObjectCreationExpression,
             "dml_expression" => DmlExpression,
             "assignment_expression" => AssignmentExpression,
             "binary_expression" => BinaryExpression,
@@ -902,6 +904,7 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("do");
         let body = node.c_by_n("body");
@@ -913,6 +916,7 @@ impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
         let n = ParenthesizedExpression::new(&condition);
         result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
 
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
