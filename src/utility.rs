@@ -1,6 +1,6 @@
 use crate::context::FmtContext;
-use crate::node_visit::Visitor;
 use crate::shape::Shape;
+use crate::visit::Visitor;
 #[allow(unused_imports)]
 use log::debug;
 use tree_sitter::Node;

@@ -1,13 +1,13 @@
 pub mod args;
+mod child;
 pub mod config;
 mod context;
 mod macros;
-mod node_child;
-mod node_struct;
-mod node_visit;
+mod rewrite;
 mod shape;
 mod struct_and_enum;
 mod utility;
+mod visit;
 
 use anyhow::Result;
 use args::Args;

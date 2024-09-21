@@ -1,10 +1,10 @@
+use crate::child::Accessor;
 use crate::context::FmtContext;
 use crate::define_routing;
-use crate::node_child::Accessor;
-use crate::node_visit::Visitor;
 use crate::shape::Shape;
 use crate::struct_and_enum::*;
 use crate::utility::*;
+use crate::visit::Visitor;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
