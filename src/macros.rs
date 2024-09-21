@@ -34,7 +34,7 @@ macro_rules! define_struct {
 #[macro_export]
 macro_rules! define_routing {
     ( $node:ident, $result:ident, $context:ident, $shape:ident;
-      $( $kind:literal => $struct_name:ident ),* ) => {
+      $( $kind:literal => $struct_name:ident ),* $(,)? ) => {
         match $node.kind() {
             $(
                 $kind => {

@@ -562,20 +562,25 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         define_routing!(node, result, context, shape;
-            "string_literal" => Value,
-            "unary_expression" => UnaryExpression,
-            "local_variable_declaration" => LocalVariableDeclaration,
-            "map_creation_expression" => MapCreationExpression,
-            "object_creation_expression" => ObjectCreationExpression,
-            "dml_expression" => DmlExpression,
             "assignment_expression" => AssignmentExpression,
             "binary_expression" => BinaryExpression,
-            "update_expression" => UpdateExpression,
-            "method_invocation" => MethodInvocation,
             "cast_expression" => CastExpression,
-            "identifier" => Value,
-            "int" => Value,
-            "boolean" => Value
+            "dml_expression" => DmlExpression,
+            "instanceof_expression" => InstanceOfExpression,
+            "primary_expression" => PrimaryExpression,
+            "ternary_expression" => TernaryExpression,
+            "unary_expression" => UnaryExpression,
+            "update_expression" => UpdateExpression,
+
+            // NOTE: These are not defined in json;
+            //"string_literal" => Value,
+            //"local_variable_declaration" => LocalVariableDeclaration,
+            //"map_creation_expression" => MapCreationExpression,
+            //"object_creation_expression" => ObjectCreationExpression,
+            //"method_invocation" => MethodInvocation,
+            //"identifier" => Value,
+            //"int" => Value,
+            //"boolean" => Value
         );
         return result;
     }

@@ -1,10 +1,8 @@
 public class Me {
-     {
-            List<Account> accs = [  SELECT Id   FROM Account
-     WHERE Name   
-         =   :var1
-     ];
-
-     }
-
+  {
+    Map<String, Integer> intsBymap = new Map<String, Integer>{
+      'hello' => 1,
+      'world' => 2
+    };
+  }
 }
