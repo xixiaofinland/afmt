@@ -1242,7 +1242,6 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
 
-        let route_name = "3 QueryExpression";
         define_routing!(node, result, context, shape;
             "sosl_query" => SoslQuery,
             "soql_query" => SoqlQuery
@@ -1257,7 +1256,6 @@ impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
         result.push_str("[ ");
         let c = node.first_c();
 
-        let route_name = "3 QueryExpression";
         define_routing!(node, result, context, shape;
             "soql_query_body" => SoqlQueryBody
         );
