@@ -377,9 +377,12 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 
         if let Some(v) = node.try_c_by_n("value") {
             result.push_str(" = ");
-            result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
+            //result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
+            define_routing!(v, result, context, shape;
+                "expression" => Expression,
+                "array_initializer" => ArrayInitializer
+            );
         }
-
         result
     }
 }
@@ -558,7 +561,6 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        let route_name = "3 Expression";
         define_routing!(node, result, context, shape;
             "string_literal" => Value,
             "unary_expression" => UnaryExpression,

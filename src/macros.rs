@@ -42,8 +42,8 @@ macro_rules! define_routing {
                 }
             )*
             _ => {
-                let function_name = module_path!();
-                panic!( "### {} routing - unknown node: {}", function_name.yellow(), $node.kind().red());
+                let struct_name = std::any::type_name::<Self>().split("::").last().unwrap();
+                panic!( "### {} routing - unknown node: {}", struct_name.yellow(), $node.kind().red());
             }
         }
     };
