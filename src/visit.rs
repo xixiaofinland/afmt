@@ -1,5 +1,6 @@
 use crate::child::Accessor;
 use crate::context::FmtContext;
+use crate::define_routing;
 use crate::rewrite::Rewrite;
 use crate::shape::Shape;
 use crate::struct_and_enum::*;
@@ -26,6 +27,13 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         if self.is_named() && self.grammar_name() == "operator" {
             return self.v(context.source_code).to_string();
         }
+
+        let mut result = String::new();
+
+        define_routing!(self, result, context, shape;
+            "string_literal" => Value,
+            "identifier" => Value
+        );
 
         let kind = NodeKind::from_kind(self.kind());
         match kind {

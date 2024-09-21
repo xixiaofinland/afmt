@@ -567,19 +567,23 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        define_routing!(node, result, context, shape;
+            "unary_expression" => UnaryExpression,
+            "local_variable_declaration" => LocalVariableDeclaration,
+            "map_creation_expression" => MapCreationExpression,
+            "dml_expression" => DmlExpression,
+            "string_literal" => Value,
+            "identifier" => Value,
+            "int" => Value,
+            "boolean" => Value
+        );
+
         match node.kind() {
-            "unary_expression" => {
-                let n = UnaryExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
             "binary_expression" => {
                 let n = BinaryExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
-            "int" => Value::new(node).rewrite(context, shape),
-            "boolean" => Value::new(node).rewrite(context, shape),
             "method_invocation" => {
                 let n = MethodInvocation::new(node);
                 result.push_str(&n.rewrite(context, shape));
@@ -595,30 +599,13 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
-            "map_creation_expression" => {
-                let n = MapCreationExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "string_literal" => Value::new(node).rewrite(context, shape),
             "assignment_expression" => {
                 let n = AssignmentExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
-            "local_variable_declaration" => {
-                let n = LocalVariableDeclaration::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
             "update_expression" => {
                 let n = UpdateExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "identifier" => Value::new(node).rewrite(context, shape),
-            "dml_expression" => {
-                let n = DmlExpression::new(node);
                 result.push_str(&n.rewrite(context, shape));
                 result
             }
