@@ -2,8 +2,8 @@ use crate::child::Accessor;
 use crate::context::FmtContext;
 use crate::rewrite::Rewrite;
 use crate::route::COMMON_MAP;
-use crate::routing;
 use crate::shape::Shape;
+use crate::static_routing;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
@@ -32,7 +32,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         }
 
         let mut result = String::new();
-        routing!(COMMON_MAP, self, result, context, shape);
+        static_routing!(COMMON_MAP, self, result, context, shape);
         return result;
     }
 

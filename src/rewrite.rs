@@ -1262,6 +1262,7 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
 
+        // FIXME: remove this, too small. if-else
         match_routing!(node, result, context, shape;
             "sosl_query" => SoslQuery,
             "soql_query" => SoqlQuery
@@ -1276,6 +1277,7 @@ impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
         result.push_str("[ ");
         let c = node.first_c();
 
+        // FIXME: remove this, too small
         match_routing!(node, result, context, shape;
             "soql_query_body" => SoqlQueryBody
         );

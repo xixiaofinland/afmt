@@ -50,7 +50,7 @@ macro_rules! match_routing {
 }
 
 #[macro_export]
-macro_rules! routing {
+macro_rules! static_routing {
     ( $map:expr, $node:ident, $result:ident, $context:ident, $shape:ident ) => {
         if let Some(constructor) = $map.get($node.kind()) {
             let struct_instance: Box<dyn Rewrite> = constructor(&$node);
