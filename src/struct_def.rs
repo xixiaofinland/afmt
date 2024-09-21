@@ -17,7 +17,6 @@ define_struct!(
     ForStatement,
     EnhancedForStatement,
     Value,
-    SpaceValueSpace,
     SuperClass,
     Expression,
     ArrayAccess,

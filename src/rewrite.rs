@@ -237,16 +237,6 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for SpaceValueSpace<'a, 'tree> {
-    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
-        let name_node_value = node.v(source_code);
-        result.push_str(name_node_value);
-        result.push(' ');
-        result
-    }
-}
-
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
