@@ -584,52 +584,6 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "boolean" => Value
         );
         return result;
-
-        match node.kind() {
-            "binary_expression" => {
-                let n = BinaryExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "method_invocation" => {
-                let n = MethodInvocation::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "object_creation_expression" => {
-                let n = ObjectCreationExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "array_creation_expression" => {
-                let n = ArrayCreationExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "assignment_expression" => {
-                let n = AssignmentExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "update_expression" => {
-                let n = UpdateExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            "cast_expression" => {
-                let n = CastExpression::new(node);
-                result.push_str(&n.rewrite(context, shape));
-                result
-            }
-            _ => {
-                println!(
-                    "{} {}",
-                    "### Expression: unknown node: ".yellow(),
-                    node.kind().red()
-                );
-                unreachable!();
-            }
-        }
     }
 }
 

@@ -32,7 +32,6 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
 
         let mut result = String::new();
 
-        //println!("||| 1 routing");
         let route_name = "1 visitor";
         define_routing!(self, result, context, shape, route_name;
             "class_declaration" => ClassDeclaration,
