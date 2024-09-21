@@ -48,3 +48,20 @@ macro_rules! define_routing {
         }
     };
 }
+
+#[macro_export]
+macro_rules! define_routing_phf {
+    ( $map:expr, $node:ident, $result:ident, $context:ident, $shape:ident ) => {
+        if let Some(constructor) = $map.get($node.kind()) {
+            let struct_instance = constructor(&$node);
+            $result.push_str(&struct_instance.rewrite($context, $shape));
+        } else {
+            let struct_name = std::any::type_name::<Self>().split("::").last().unwrap();
+            panic!(
+                "### {} routing - unknown node: {}",
+                struct_name.yellow(),
+                $node.kind().red()
+            );
+        }
+    };
+}
