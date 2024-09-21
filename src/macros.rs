@@ -31,9 +31,9 @@ macro_rules! define_struct {
 
 #[macro_export]
 macro_rules! define_struct_and_enum {
-    ($( $create_struct:ident; $name:ident => $($str_repr:tt)|+ ),* ) => {
+    ($( $name:ident => $($str_repr:tt)|+ ),* ) => {
         $(
-            $crate::conditional_struct_creation!($create_struct, $name);
+            define_struct!($name);
         )*
 
         #[derive(Debug)]
@@ -54,16 +54,6 @@ macro_rules! define_struct_and_enum {
                 }
             }
         }
-    };
-}
-
-#[macro_export]
-macro_rules! conditional_struct_creation {
-    (true, $name:ident) => {
-        define_struct!($name);
-    };
-    (false, $name:ident) => {
-        // No struct is created when the flag is false
     };
 }
 
