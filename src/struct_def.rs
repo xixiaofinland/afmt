@@ -11,6 +11,7 @@ define_struct!(
     EnumBody,
     Block,
     Statement,
+    ExpressionStatement,
     DoStatement,
     WhileStatement,
     ForStatement,

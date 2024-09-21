@@ -274,29 +274,38 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        match node.kind() {
-            "expression_statement" => {
-                let child = node.first_c();
-                let exp = Expression::new(&child);
-                result.push_str(&exp.rewrite(context, shape));
-            }
-            "do_statement" => {
-                let n = DoStatement::new(node);
-                result.push_str(&n.rewrite(context, shape));
-            }
-            "block" => {
-                let n = Block::new(node);
-                result.push_str(&n.rewrite(context, shape));
-            }
-            // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
-            //"while_statement" => {
-            //    let n = WhileStatement::new(node);
-            //    result.push_str(&n.rewrite(context, shape));
-            //}
-            _ => unreachable!(),
-        }
+        define_routing!(node, result, context, shape;
+            "block" => Block,
+            //"break_statement"
+            //"continue_statement"
+            //"declaration"
+            "do_statement" => DoStatement,
+            "enhanced_for_statement" => EnhancedForStatement,
+            "expression_statement" => ExpressionStatement,
+            "for_statement" => ForStatement,
+            "if_statement" => IfStatement,
+            //"labeled_statement"
+            "local_variable_declaration" => LocalVariableDeclaration,
+            "return_statement" => ReturnStatement,
+            "run_as_statement" => RunAsStatement,
+            //"switch_expression" =>
+            //"throw_statement" => Thr
+            "try_statement" => TryStatement,
+            //"while_statement" => WhileStatement, // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
+        );
+
         try_add_standalone_suffix(node, &mut result, shape, source_code);
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let c = node.first_c();
+        result.push_str(&Expression::new(&c).rewrite(context, shape));
         result
     }
 }
@@ -377,11 +386,12 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 
         if let Some(v) = node.try_c_by_n("value") {
             result.push_str(" = ");
-            //result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
-            define_routing!(v, result, context, shape;
-                "expression" => Expression,
-                "array_initializer" => ArrayInitializer
-            );
+            let mut c_shape = shape.clone_with_stand_alone(false);
+            if v.kind() == "array_initializer" {
+                result.push_str(&ArrayInitializer::new(&v).rewrite(context, &mut c_shape));
+            } else {
+                result.push_str(&Expression::new(&v).rewrite(context, &mut c_shape));
+            }
         }
         result
     }

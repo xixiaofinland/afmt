@@ -26,12 +26,12 @@ pub trait Visitor<'tree> {
 
 impl<'tree> Visitor<'tree> for Node<'tree> {
     fn visit(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        // FIXME: get rid of this
         if self.is_named() && self.grammar_name() == "operator" {
             return self.v(context.source_code).to_string();
         }
 
         let mut result = String::new();
-
         define_routing!(self, result, context, shape;
             "class_declaration" => ClassDeclaration,
             "method_declaration" => MethodDeclaration,
