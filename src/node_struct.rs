@@ -1,87 +1,17 @@
 use crate::context::FmtContext;
+use crate::define_routing;
 use crate::node_child::Accessor;
 use crate::node_visit::Visitor;
 use crate::shape::Shape;
+use crate::struct_and_enum::*;
 use crate::utility::*;
-use crate::{define_routing, define_struct, define_struct_and_enum};
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
-use tree_sitter::Node;
 
 pub trait Rewrite {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String;
 }
-
-define_struct_and_enum!(
-    ClassDeclaration => "class_declaration",
-    FieldDeclaration => "field_declaration",
-    MethodDeclaration => "method_declaration",
-    EnumDeclaration => "enum_declaration",
-    EnumConstant => "enum_constant",
-    EnumBody => "enum_body",
-    EmptyNode => "class_body", // FIXME: remove this
-    Block => "block",
-    Statement => "expression_statement" | "do_statement",
-    DoStatement => "N/A",
-    WhileStatement => "while_statement",
-    ForStatement => "for_statement",
-    EnhancedForStatement => "enhanced_for_statement",
-    Value =>   "N/operator" | "type_identifier",
-    SpaceValueSpace => "assignment_operator",
-    SuperClass => "superclass",
-    Expression => "binary_expression" | "int" | "method_invocation" | "unary_expression" |
-        "object_creation_expression" | "array_creation_expression" | "string_literal" | "map_creation_expression" |
-        "assignment_expression" | "local_variable_declaration" | "update_expression" | "identifier" |
-        "dml_expression" | "boolean",
-    ArrayAccess => "array_access",
-    PrimaryExpression => "primary_expression",
-    DmlExpression => "N/dml_expression",
-    DmlSecurityMode => "dml_security_mode",
-    DmlType => "dml_type",
-    AssignmentExpression => "N/assignment_expression",
-    LocalVariableDeclaration => "N/local_variable_declaration",
-    VariableDeclarator => "variable_declarator",
-    IfStatement => "if_statement",
-    UpdateExpression => "N/update_expression",
-    ParenthesizedExpression => "parenthesized_expression",
-    Interfaces => "interfaces",
-    LineComment => "line_comment",
-    ReturnStatement => "return_statement",
-    ArgumentList => "argument_list",
-    TypeArguments => "type_arguments",
-    GenericType => "generic_type",
-    ArrayInitializer => "array_initializer",
-    DimensionsExpr => "dimensions_expr",
-    ArrayType => "array_type",
-    MapInitializer => "map_initializer",
-    Annotation => "annotation",
-    AnnotationArgumentList => "annotation_argument_list",
-    AnnotationKeyValue => "annotation_key_value",
-    Modifiers => "modifiers",
-    ConstructorDeclaration => "constructor_declaration",
-    ConstructorBody => "constructor_body",
-    ExplicitConstructorInvocation => "explicit_constructor_invocation",
-    RunAsStatement => "run_as_statement",
-    ScopedTypeIdentifier => "scoped_type_identifier",
-    ObjectCreationExpression => "N/object_creation_expression",
-    TryStatement => "try_statement",
-    CatchClause => "catch_clause",
-    CatchFormalParameter => "catch_formal_parameter",
-    FinallyClause => "finally_clause",
-    FieldAccess => "field_access",
-    InstanceOfExpression => "instanceof_expression",
-    CastExpression => "cast_expression",
-    Boolean => "N/boolean",
-    TernaryExpression => "ternary_expression",
-    MethodInvocation => "method_invocation",
-    AccessorList => "accessor_list",
-    AccessorDeclaration => "accessor_declartion",
-    QueryExpression => "query_expression",
-    SoqlQuery => "soql_query",
-    SoslQuery => "sosl_query"
-
-);
 
 impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
@@ -1396,31 +1326,11 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
-        let c_kind = c.kind();
-
-        //match c_kind {
-        //    "sosl_query" => {
-        //        result.push_str(&SoslQuery::new(&c).rewrite(context, shape));
-        //    }
-        //    "soql_query" => {
-        //        result.push_str(&SoqlQuery::new(&c).rewrite(context, shape));
-        //    }
-        //    _ => {
-        //        println!(
-        //            "{} {}",
-        //            "### QueryExpression: unknown child: ".yellow(),
-        //            c_kind.red()
-        //        );
-        //        panic!();
-        //    }
-        //}
-
         define_routing!(
             c, result, context, shape;
             "sosl_query" => SoslQuery,
             "soql_query" => SoqlQuery
         );
-
         result
     }
 }
@@ -1428,10 +1338,27 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        result.push_str("[ ");
+        let c = node.first_c();
+
+        define_routing!(
+            c, result, context, shape;
+            "soql_query_body" => SoqlQueryBody
+        );
+
+        result.push_str("] ");
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         result
     }
 }
+
 impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);

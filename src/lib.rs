@@ -6,6 +6,7 @@ mod node_child;
 mod node_struct;
 mod node_visit;
 mod shape;
+mod struct_and_enum;
 mod utility;
 
 use anyhow::Result;

@@ -1,7 +1,8 @@
 use crate::context::FmtContext;
 use crate::node_child::Accessor;
-use crate::node_struct::*;
+use crate::node_struct::Rewrite;
 use crate::shape::Shape;
+use crate::struct_and_enum::*;
 use colored::Colorize;
 use tree_sitter::Node;
 
