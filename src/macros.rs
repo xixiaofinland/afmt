@@ -1,59 +1,33 @@
 #[macro_export]
 macro_rules! define_struct {
-    ($name:ident) => {
-        pub struct $name<'a, 'tree> {
-            inner: &'a Node<'tree>,
-        }
-
-        #[allow(dead_code)]
-        impl<'a, 'tree> $name<'a, 'tree> {
-            pub fn new(node: &'a Node<'tree>) -> Self {
-                Self { inner: node }
-            }
-
-            pub fn node(&self) -> &'a Node<'tree> {
-                self.inner
-            }
-
-            pub fn prepare<'b>(
-                &self,
-                context: &'b FmtContext,
-            ) -> (&'a Node<'tree>, String, &'b str, &'b $crate::config::Config) {
-                let node = self.node();
-                let result = String::new();
-                let source_code = context.source_code;
-                let config = context.config;
-                (node, result, source_code, config)
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! define_struct_and_enum {
-    ($( $name:ident => $($str_repr:tt)|+ ),* ) => {
+    ( $( $name:ident ),+ ) => {
         $(
-            define_struct!($name);
-        )*
+            pub struct $name<'a, 'tree> {
+                inner: &'a Node<'tree>,
+            }
 
-        #[derive(Debug)]
-        pub enum NodeKind {
-            $($name,)*
-            Unknown,
-        }
+            #[allow(dead_code)]
+            impl<'a, 'tree> $name<'a, 'tree> {
+                pub fn new(node: &'a Node<'tree>) -> Self {
+                    Self { inner: node }
+                }
 
-        impl NodeKind {
-            pub fn from_kind(kind: &str) -> NodeKind {
-                match kind {
-                    $(
-                        $(
-                            $str_repr => NodeKind::$name,
-                        )+
-                    )*
-                    _ => NodeKind::Unknown,
+                pub fn node(&self) -> &'a Node<'tree> {
+                    self.inner
+                }
+
+                pub fn prepare<'b>(
+                    &self,
+                    context: &'b FmtContext,
+                ) -> (&'a Node<'tree>, String, &'b str, &'b $crate::config::Config) {
+                    let node = self.node();
+                    let result = String::new();
+                    let source_code = context.source_code;
+                    let config = context.config;
+                    (node, result, source_code, config)
                 }
             }
-        }
+        )+
     };
 }
 
