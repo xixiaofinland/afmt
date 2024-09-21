@@ -1,9 +1,13 @@
+use std::time::Instant;
+
 use afmt::args::{get_args, Args};
 use afmt::format;
 use anyhow::Result;
+use colored::Colorize;
 use log::info;
 
 fn main() {
+    let start = Instant::now();
     env_logger::init();
     info!("starting up");
 
@@ -11,6 +15,8 @@ fn main() {
         eprintln!("{e}");
         std::process::exit(1);
     }
+    let duration = start.elapsed();
+    println!("\n{} {:?}", "Execution time:".green(), duration);
 }
 
 fn run(args: Args) -> Result<()> {
