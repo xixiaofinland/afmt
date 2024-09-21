@@ -59,7 +59,7 @@ macro_rules! define_struct_and_enum {
 
 #[macro_export]
 macro_rules! define_routing {
-    ( $node:ident, $result:ident, $context:ident, $shape:ident;
+    ( $node:ident, $result:ident, $context:ident, $shape:ident, $route_name:ident;
       $( $kind:literal => $struct_name:ident ),* ) => {
         match $node.kind() {
             $(
@@ -70,7 +70,7 @@ macro_rules! define_routing {
             _ => {
                 println!(
                     "{} {}",
-                    format!("### Routing - unknown child: ").yellow(),
+                    format!("### {} Routing - unknown child: ", $route_name).yellow(),
                     $node.kind().red()
                 );
                 panic!();

@@ -567,22 +567,22 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        println!("||| 3 routing");
-        define_routing!(node, result, context, shape;
-                            "string_literal" => Value,
-                            "unary_expression" => UnaryExpression,
-                            "local_variable_declaration" => LocalVariableDeclaration,
-                            "map_creation_expression" => MapCreationExpression,
-                            "dml_expression" => DmlExpression,
-                    "assignment_expression" => AssignmentExpression,
-                            "binary_expression" => BinaryExpression,
-                "update_expression" => UpdateExpression,
+        let route_name = "3 Expression";
+        define_routing!(node, result, context, shape, route_name;
+            "string_literal" => Value,
+            "unary_expression" => UnaryExpression,
+            "local_variable_declaration" => LocalVariableDeclaration,
+            "map_creation_expression" => MapCreationExpression,
+            "dml_expression" => DmlExpression,
+            "assignment_expression" => AssignmentExpression,
+            "binary_expression" => BinaryExpression,
+            "update_expression" => UpdateExpression,
             "method_invocation" => MethodInvocation,
-        "cast_expression" => CastExpression,
-                            "identifier" => Value,
-                            "int" => Value,
-                            "boolean" => Value
-                        );
+            "cast_expression" => CastExpression,
+            "identifier" => Value,
+            "int" => Value,
+            "boolean" => Value
+        );
         return result;
 
         match node.kind() {
@@ -1293,8 +1293,9 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
-        define_routing!(
-            c, result, context, shape;
+
+        let route_name = "3 QueryExpression";
+        define_routing!(node, result, context, shape, route_name;
             "sosl_query" => SoslQuery,
             "soql_query" => SoqlQuery
         );
@@ -1308,8 +1309,8 @@ impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
         result.push_str("[ ");
         let c = node.first_c();
 
-        define_routing!(
-            c, result, context, shape;
+        let route_name = "3 QueryExpression";
+        define_routing!(node, result, context, shape, route_name;
             "soql_query_body" => SoqlQueryBody
         );
 

@@ -5,6 +5,7 @@ use crate::rewrite::Rewrite;
 use crate::shape::Shape;
 use crate::struct_and_enum::*;
 use colored::Colorize;
+#[allow(unused_imports)]
 use log::debug;
 use tree_sitter::Node;
 
@@ -31,8 +32,9 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
 
         let mut result = String::new();
 
-        println!("||| 1 routing");
-        define_routing!(self, result, context, shape;
+        //println!("||| 1 routing");
+        let route_name = "1 visitor";
+        define_routing!(self, result, context, shape, route_name;
             "class_declaration" => ClassDeclaration,
             "method_declaration" => MethodDeclaration,
             "block" => Block,
@@ -56,6 +58,12 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             "map_creation_expression" => MapCreationExpression,
             "if_statement" => IfStatement,
             "binary_expression" => BinaryExpression,
+            "run_as_statement" => RunAsStatement,
+            "return_statement" => ReturnStatement,
+            "dimensions_expr" => DimensionsExpr,
+            "field_access" => FieldAccess,
+            "array_access" => ArrayAccess,
+            "do_statement" => DoStatement,
             "ternary_expression" => TernaryExpression,
             "string_literal" => Value,
             "boolean" => Value,
