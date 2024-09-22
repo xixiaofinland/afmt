@@ -1371,7 +1371,9 @@ impl<'a, 'tree> Rewrite for UnaryExpression<'a, 'tree> {
         result.push_str(operator_value);
 
         let operand = node.c_by_n("operand");
-        result.push_str(&operand.visit(context, &mut shape.clone_with_standalone(false)));
+        result.push_str(
+            &Expression::new(&operand).rewrite(context, &mut shape.clone_with_standalone(false)),
+        );
         result
     }
 }
