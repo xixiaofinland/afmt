@@ -87,7 +87,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         if shape.offset + params_single_line.len() <= shape.width {
             result.push_str(&params_single_line);
         } else {
-            let param_shape = shape.copy_with_indent_block_plus(config);
+            let param_shape = shape.copy_with_indent_increase(config);
             result.push('\n');
             for (i, param) in parameters_value.iter().enumerate() {
                 result.push_str(&param_shape.indent.as_string(config));
@@ -156,7 +156,7 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
 
         add_indent(
             &mut result,
-            &shape.copy_with_indent_block_plus(context.config),
+            &shape.copy_with_indent_increase(context.config),
             context,
         );
         result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
@@ -418,7 +418,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut child_shape = shape
-                .copy_with_indent_block_plus(context.config)
+                .copy_with_indent_increase(context.config)
                 .clone_with_standalone(true);
             result.push_str(&consequence.visit(context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
@@ -439,7 +439,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
                 _ => {
                     result.push_str(" else {\n");
                     let mut child_shape = shape
-                        .copy_with_indent_block_plus(context.config)
+                        .copy_with_indent_increase(context.config)
                         .clone_with_standalone(true);
                     result.push_str(&a.visit(context, &mut child_shape));
                     result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
@@ -487,7 +487,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         } else {
             result.push('\n');
             let mut child_shape = shape
-                .copy_with_indent_block_plus(context.config)
+                .copy_with_indent_increase(context.config)
                 .clone_with_standalone(true);
             result.push_str(&body.visit(context, &mut child_shape));
             //result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
@@ -524,7 +524,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut child_shape = shape
-                .copy_with_indent_block_plus(context.config)
+                .copy_with_indent_increase(context.config)
                 .clone_with_standalone(true);
             result.push_str(&body.visit(context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
