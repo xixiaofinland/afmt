@@ -760,7 +760,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
 
         if let Some(a) = node.try_c_by_n("arguments") {
             result.push('(');
-            result.push_str(&a.visit(context, shape));
+            result.push_str(&AnnotationArgumentList::new(&a).rewrite(context, shape));
             result.push(')');
         }
 
