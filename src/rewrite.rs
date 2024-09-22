@@ -530,7 +530,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
             let mut child_shape = shape
                 .copy_with_indent_increase(context.config)
                 .clone_with_standalone(true);
-            result.push_str(&body.visit(context, &mut child_shape));
+            result.push_str(&Statement::new(&value).rewrite(context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
 
