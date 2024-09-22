@@ -548,6 +548,7 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
+        debug!("Block: {:?}", result);
 
         if shape.standalone {
             add_indent(&mut result, shape, context);
@@ -563,6 +564,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         add_indent(&mut result, shape, context);
         result.push('}');
+        debug!("Block2: {:?}", result);
         result
     }
 }
@@ -651,10 +653,12 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
             .named_children(&mut cursor)
             .map(|c| {
                 let n = Expression::new(&c);
-                n.rewrite(context, &mut shape.clone_with_stand_alone(false))
+                let s = n.rewrite(context, &mut shape.clone_with_stand_alone(false));
+                s
             })
             .collect::<Vec<_>>()
             .join(", ");
+        debug!("joined: {:?}", joined);
 
         result.push_str(&joined);
         result.push(')');
@@ -746,13 +750,13 @@ impl<'a, 'tree> Rewrite for MapInitializer<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         try_add_standalone_prefix(&mut result, shape, context);
         result.push('@');
 
         let name = node.c_by_n("name");
-        result.push_str(&name.visit(context, shape));
+        result.push_str(name.v(source_code));
 
         if let Some(a) = node.try_c_by_n("arguments") {
             result.push('(');
@@ -777,7 +781,10 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         let joined_children = node
             .try_cs_by_k("annotation_key_value")
             .iter()
-            .map(|c| AnnotationKeyValue::new(c).rewrite(context, shape))
+            .map(|c| {
+                AnnotationKeyValue::new(c)
+                    .rewrite(context, &mut shape.clone_with_stand_alone(false))
+            })
             .collect::<Vec<_>>()
             .join(" ");
 
@@ -1225,9 +1232,7 @@ impl<'a, 'tree> Rewrite for TernaryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        debug!("MethodInvocation1: {:?}", result);
         try_add_standalone_prefix(&mut result, shape, context);
-        debug!("MethodInvocation2: {:?}", result);
 
         if let Some(c) = node.try_c_by_n("object") {
             result.push_str(c.v(source_code));
@@ -1246,20 +1251,10 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
 
         let name = node.cv_by_n("name", source_code);
         result.push_str(name);
-        result.push('(');
 
         let arguments = node.c_by_n("arguments");
-        let mut cursor = arguments.walk();
-        let arguments_value = arguments
-            .named_children(&mut cursor)
-            .map(|n| n.visit(context, shape))
-            .collect::<Vec<String>>()
-            .join(", ");
-
-        result.push_str(&arguments_value);
-        result.push(')');
+        result.push_str(&ArgumentList::new(&arguments).rewrite(context, shape));
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
-        debug!("MethodInvocation3 result: {:?}", result);
         result
     }
 }
