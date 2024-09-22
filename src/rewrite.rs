@@ -810,7 +810,7 @@ impl<'a, 'tree> Rewrite for AnnotationKeyValue<'a, 'tree> {
         result.push('=');
 
         let value = node.c_by_n("value");
-        result.push_str(&value.visit(context, shape));
+        result.push_str(&Expression::new(&value).rewrite(context, shape));
 
         result
     }
