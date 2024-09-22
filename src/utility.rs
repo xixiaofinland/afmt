@@ -15,7 +15,7 @@ pub fn visit_root(context: &FmtContext) -> String {
         .named_children(&mut cursor)
         .map(|child| -> _ {
             let mut child_shape = shape.clone_with_standalone(true);
-            child.visit(context, &mut child_shape)
+            child._visit(context, &mut child_shape)
         })
         .collect::<Vec<_>>()
         .join("\n");

@@ -11,7 +11,6 @@ use tree_sitter::Node;
 
 #[allow(dead_code)]
 pub trait Visitor<'tree> {
-    fn visit(&self, context: &FmtContext, shape: &mut Shape) -> String;
     fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String;
     fn visit_children_in_same_line(
         &self,
@@ -22,10 +21,12 @@ pub trait Visitor<'tree> {
     fn try_visit_cs_by_k(&self, kind: &str, context: &FmtContext, shape: &mut Shape)
         -> Vec<String>;
     fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String>;
+    fn _visit(&self, context: &FmtContext, shape: &mut Shape) -> String;
 }
 
 impl<'tree> Visitor<'tree> for Node<'tree> {
-    fn visit(&self, context: &FmtContext, shape: &mut Shape) -> String {
+    // this should be used outside as few as possible and be deleted in the end;
+    fn _visit(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
         static_routing!(COMMON_MAP, self, result, context, shape);
         result
@@ -41,7 +42,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             .named_children(&mut cursor)
             .map(|child| {
                 let mut c_shape = shape_base.clone_with_standalone(true);
-                child.visit(context, &mut c_shape)
+                child._visit(context, &mut c_shape)
             })
             .collect::<Vec<_>>()
             .join("\n");
@@ -65,7 +66,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             .named_children(&mut cursor)
             .map(|child| {
                 let mut child_shape = shape.clone_with_standalone(false);
-                child.visit(context, &mut child_shape)
+                child._visit(context, &mut child_shape)
             })
             .collect::<Vec<_>>()
             .join(delimiter);
@@ -77,7 +78,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
     fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
         let mut cursor = self.walk();
         self.named_children(&mut cursor)
-            .map(|n| n.visit(context, shape))
+            .map(|n| n._visit(context, shape))
             .collect::<Vec<_>>()
     }
 
@@ -89,7 +90,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
     ) -> Vec<String> {
         self.try_cs_by_k(kind)
             .iter()
-            .map(|n| n.visit(context, shape))
+            .map(|n| n._visit(context, shape))
             .collect::<Vec<_>>()
     }
 }
