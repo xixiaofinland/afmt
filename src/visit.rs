@@ -33,7 +33,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
 
         let mut result = String::new();
         static_routing!(COMMON_MAP, self, result, context, shape);
-        return result;
+        result
     }
 
     fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String {

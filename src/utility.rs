@@ -1,8 +1,6 @@
 use crate::context::FmtContext;
-use crate::route::EXP_MAP;
 use crate::shape::Shape;
 use crate::visit::Visitor;
-use crate::{match_routing, static_routing};
 #[allow(unused_imports)]
 use log::debug;
 use tree_sitter::Node;
@@ -46,11 +44,11 @@ pub fn try_add_standalone_suffix(
     source_code: &str,
 ) {
     if shape.standalone {
-        add_standalone_suffix(node, result, shape, source_code);
+        add_standalone_suffix(node, result, source_code);
     }
 }
 
-pub fn add_standalone_suffix(node: &Node, result: &mut String, shape: &Shape, source_code: &str) {
+pub fn add_standalone_suffix(node: &Node, result: &mut String, source_code: &str) {
     result.push(';');
     if node.next_named_sibling().is_some() {
         let count_new_lines = newlines_to_add(node, source_code);

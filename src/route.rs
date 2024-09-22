@@ -2,10 +2,9 @@ use crate::{rewrite::Rewrite, struct_def::*};
 use phf::phf_map;
 use tree_sitter::Node;
 
-pub static COMMON_MAP: phf::Map<
-    &'static str,
-    for<'a, 'tree> fn(&'a Node<'tree>) -> Box<dyn Rewrite + 'a>,
-> = phf_map! {
+type PhfMap = phf::Map<&'static str, for<'a, 'tree> fn(&'a Node<'tree>) -> Box<dyn Rewrite + 'a>>;
+
+pub static COMMON_MAP: PhfMap = phf_map! {
     "class_declaration" => |node| Box::new(ClassDeclaration::new(node)),
     "method_declaration" => |node| Box::new(MethodDeclaration::new(node)),
     "block" => |node| Box::new(Block::new(node)),
@@ -53,10 +52,7 @@ pub static COMMON_MAP: phf::Map<
     "int" => |node| Box::new(Value::new(node)),
 };
 
-pub static EXP_MAP: phf::Map<
-    &'static str,
-    for<'a, 'tree> fn(&'a Node<'tree>) -> Box<dyn Rewrite + 'a>,
-> = phf_map! {
+pub static EXP_MAP: PhfMap = phf_map! {
     //"class_declaration" => |node| Box::new(ClassDeclaration::new(node)),
     //"method_declaration" => |node| Box::new(MethodDeclaration::new(node)),
     //"block" => |node| Box::new(Block::new(node)),

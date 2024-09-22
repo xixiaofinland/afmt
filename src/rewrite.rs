@@ -485,7 +485,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
             let n = Block::new(&body);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         } else {
-            result.push_str("\n");
+            result.push('\n');
             let mut child_shape = shape
                 .copy_with_indent_block_plus(context.config)
                 .clone_with_standalone(true);
@@ -570,8 +570,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
-        //try_add_standalone_prefix(&mut result, shape, context);
+        let (node, mut result, _, _) = self.prepare(context);
 
         match_routing!(node, result, context, shape;
             "field_access" => FieldAccess,
@@ -594,8 +593,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "int" => Value,
             "boolean" => Value
         );
-        //try_add_standalone_suffix(node, &mut result, shape, context.source_code);
-        return result;
+        result
     }
 }
 
@@ -654,8 +652,7 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
             .named_children(&mut cursor)
             .map(|c| {
                 let n = Expression::new(&c);
-                let s = n.rewrite(context, &mut shape.clone_with_standalone(false));
-                s
+                n.rewrite(context, &mut shape.clone_with_standalone(false))
             })
             .collect::<Vec<_>>()
             .join(", ");
@@ -1262,9 +1259,7 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
-
-        // FIXME: remove this, too small. if-else
-        match_routing!(node, result, context, shape;
+        match_routing!(c, result, context, shape;
             "sosl_query" => SoslQuery,
             "soql_query" => SoqlQuery
         );
@@ -1279,7 +1274,7 @@ impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
         let c = node.first_c();
 
         // FIXME: remove this, too small
-        match_routing!(node, result, context, shape;
+        match_routing!(c, result, context, shape;
             "soql_query_body" => SoqlQueryBody
         );
 
