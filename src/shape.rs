@@ -20,7 +20,7 @@ impl Shape {
     //    }
     //}
 
-    pub fn clone_with_stand_alone(&self, stand_alone: bool) -> Self {
+    pub fn clone_with_standalone(&self, stand_alone: bool) -> Self {
         Self {
             indent: self.indent,
             width: self.width,

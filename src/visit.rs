@@ -45,7 +45,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         let children = self
             .named_children(&mut cursor)
             .map(|child| {
-                let mut child_shape = shape.clone_with_stand_alone(true);
+                let mut child_shape = shape.clone_with_standalone(true);
                 child.visit(context, &mut child_shape)
             })
             .collect::<Vec<_>>()
@@ -70,7 +70,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         let fields = self
             .named_children(&mut cursor)
             .map(|child| {
-                let mut child_shape = shape.clone_with_stand_alone(false);
+                let mut child_shape = shape.clone_with_standalone(false);
                 child.visit(context, &mut child_shape)
             })
             .collect::<Vec<_>>()

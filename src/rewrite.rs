@@ -28,12 +28,12 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         if let Some(c) = node.try_c_by_n("superclass") {
             let n = SuperClass::new(&c);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         }
 
         if let Some(c) = node.try_c_by_n("interfaces") {
             let n = Interfaces::new(&c);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         }
 
         result.push_str(" {\n");
@@ -125,7 +125,7 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
 
         let body = node.c_by_n("body");
         let n = EnumBody::new(&body);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         result
     }
@@ -251,7 +251,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         }
 
         let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
 
         result.push(' ');
 
@@ -320,7 +320,7 @@ impl<'a, 'tree> Rewrite for TryStatement<'a, 'tree> {
         result.push_str("try");
         let body = node.c_by_n("body");
         let n = Block::new(&body);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         let joined_children = node
             .try_cs_by_k("catch_clause")
@@ -332,7 +332,7 @@ impl<'a, 'tree> Rewrite for TryStatement<'a, 'tree> {
 
         if let Some(f) = node.try_c_by_k("finally_clause") {
             let n = FinallyClause::new(&f);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         }
 
         result
@@ -346,7 +346,7 @@ impl<'a, 'tree> Rewrite for FinallyClause<'a, 'tree> {
         result.push_str(" finally");
         let block = node.c_by_k("block");
         let n = Block::new(&block);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         result
     }
 }
@@ -363,7 +363,7 @@ impl<'a, 'tree> Rewrite for CatchClause<'a, 'tree> {
 
         let body = node.c_by_n("body");
         let n = Block::new(&body);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         result
     }
 }
@@ -388,7 +388,7 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 
         if let Some(v) = node.try_c_by_n("value") {
             result.push_str(" = ");
-            let mut c_shape = shape.clone_with_stand_alone(false);
+            let mut c_shape = shape.clone_with_standalone(false);
             if v.kind() == "array_initializer" {
                 result.push_str(&ArrayInitializer::new(&v).rewrite(context, &mut c_shape));
             } else {
@@ -414,12 +414,12 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
 
         if is_block_node {
             let n = Block::new(&consequence);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         } else {
             result.push_str(" {\n");
             let mut child_shape = shape
                 .copy_with_indent_block_plus(context.config)
-                .clone_with_stand_alone(true);
+                .clone_with_standalone(true);
             result.push_str(&consequence.visit(context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
@@ -429,18 +429,18 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
                 "block" => {
                     result.push_str(" else");
                     let n = Block::new(&a);
-                    result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+                    result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
                 }
                 "if_statement" => {
                     result.push_str(" else ");
                     let n = IfStatement::new(&a);
-                    result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+                    result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
                 }
                 _ => {
                     result.push_str(" else {\n");
                     let mut child_shape = shape
                         .copy_with_indent_block_plus(context.config)
-                        .clone_with_stand_alone(true);
+                        .clone_with_standalone(true);
                     result.push_str(&a.visit(context, &mut child_shape));
                     result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
                 }
@@ -459,14 +459,14 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         result.push_str("for (");
         if let Some(c) = node.try_c_by_n("init") {
             let n = Expression::new(&c);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         };
         result.push(';');
 
         if let Some(c) = node.try_c_by_n("condition") {
             result.push(' ');
             let n = Expression::new(&c);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         };
 
         result.push(';');
@@ -474,7 +474,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         if let Some(c) = node.try_c_by_n("update") {
             result.push(' ');
             let n = Expression::new(&c);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         };
         result.push(')');
 
@@ -483,12 +483,12 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
 
         if is_block_node {
             let n = Block::new(&body);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         } else {
             result.push_str("\n");
             let mut child_shape = shape
                 .copy_with_indent_block_plus(context.config)
-                .clone_with_stand_alone(true);
+                .clone_with_standalone(true);
             result.push_str(&body.visit(context, &mut child_shape));
             //result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
@@ -504,15 +504,15 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
 
         result.push_str("for (");
         let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
         result.push(' ');
 
         let name = node.c_by_n("name");
-        result.push_str(&name.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&name.visit(context, &mut shape.clone_with_standalone(false)));
         result.push_str(" : ");
 
         let value = node.c_by_n("value");
-        result.push_str(&value.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&value.visit(context, &mut shape.clone_with_standalone(false)));
         result.push(')');
 
         let body = node.c_by_n("body");
@@ -520,12 +520,12 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
 
         if is_block_node {
             let n = Block::new(&body);
-            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         } else {
             result.push_str(" {\n");
             let mut child_shape = shape
                 .copy_with_indent_block_plus(context.config)
-                .clone_with_stand_alone(true);
+                .clone_with_standalone(true);
             result.push_str(&body.visit(context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
@@ -558,9 +558,8 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         result.push_str("{\n");
 
-        result.push_str(
-            &node.visit_standalone_children(context, &shape.clone_with_stand_alone(true)),
-        );
+        result
+            .push_str(&node.visit_standalone_children(context, &shape.clone_with_standalone(true)));
 
         add_indent(&mut result, shape, context);
         result.push('}');
@@ -620,7 +619,7 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
             let child = node.first_c();
             result.push(' ');
             result.push_str(
-                &Expression::new(&child).rewrite(context, &mut shape.clone_with_stand_alone(false)),
+                &Expression::new(&child).rewrite(context, &mut shape.clone_with_standalone(false)),
             );
         }
 
@@ -655,7 +654,7 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
             .named_children(&mut cursor)
             .map(|c| {
                 let n = Expression::new(&c);
-                let s = n.rewrite(context, &mut shape.clone_with_stand_alone(false));
+                let s = n.rewrite(context, &mut shape.clone_with_standalone(false));
                 s
             })
             .collect::<Vec<_>>()
@@ -784,8 +783,7 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
             .try_cs_by_k("annotation_key_value")
             .iter()
             .map(|c| {
-                AnnotationKeyValue::new(c)
-                    .rewrite(context, &mut shape.clone_with_stand_alone(false))
+                AnnotationKeyValue::new(c).rewrite(context, &mut shape.clone_with_standalone(false))
             })
             .collect::<Vec<_>>()
             .join(" ");
@@ -825,7 +823,7 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
 
         node.try_cs_by_k("annotation").iter().for_each(|c| {
             result.push_str(
-                &Annotation::new(c).rewrite(context, &mut shape.clone_with_stand_alone(true)),
+                &Annotation::new(c).rewrite(context, &mut shape.clone_with_standalone(true)),
             );
         });
 
@@ -913,7 +911,7 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
 
         let right = node.c_by_n("right");
         let n = Expression::new(&right);
-        let right_value = &n.rewrite(context, &mut shape.clone_with_stand_alone(false));
+        let right_value = &n.rewrite(context, &mut shape.clone_with_standalone(false));
 
         result.push_str(&format!("{} {} {}", left_value, op, right_value));
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
@@ -929,12 +927,12 @@ impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
         result.push_str("do");
         let body = node.c_by_n("body");
         let n = Block::new(&body);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         result.push_str(" while ");
         let condition = node.c_by_n("condition");
         let n = ParenthesizedExpression::new(&condition);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
@@ -949,11 +947,11 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         result.push_str("while ");
         let condition = node.c_by_n("condition");
         let n = ParenthesizedExpression::new(&condition);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         let body = node.c_by_n("body");
         let n = Block::new(&body);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         result
     }
@@ -1056,11 +1054,11 @@ impl<'a, 'tree> Rewrite for RunAsStatement<'a, 'tree> {
         result.push_str("System.runAs");
         let user = &node.c_by_n("user");
         let n = ParenthesizedExpression::new(user);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         let user = &node.c_by_k("block");
         let n = Block::new(user);
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
 
         result
     }
@@ -1080,12 +1078,12 @@ impl<'a, 'tree> Rewrite for ObjectCreationExpression<'a, 'tree> {
 
         result.push_str("new ");
         let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
 
         let arguments = node.c_by_n("arguments");
         let n = ArgumentList::new(&arguments);
 
-        result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&n.rewrite(context, &mut shape.clone_with_standalone(false)));
         result
     }
 }
@@ -1183,9 +1181,8 @@ impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
 
         // FIXME: implements max-width logic
         if let Some(ref b) = node.try_c_by_k("block") {
-            result.push_str(
-                &Block::new(b).rewrite(context, &mut shape.clone_with_stand_alone(false)),
-            );
+            result
+                .push_str(&Block::new(b).rewrite(context, &mut shape.clone_with_standalone(false)));
             result.push(' ');
         }
         result
@@ -1328,14 +1325,14 @@ impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
 
         result.push_str("new ");
         let t = self.node().c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
 
         if let Some(v) = node.try_c_by_n("value") {
-            result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&v.visit(context, &mut shape.clone_with_standalone(false)));
         }
 
         if let Some(v) = node.try_c_by_n("dimensions") {
-            result.push_str(&v.visit(context, &mut shape.clone_with_stand_alone(false)));
+            result.push_str(&v.visit(context, &mut shape.clone_with_standalone(false)));
         }
         result
     }
@@ -1347,7 +1344,7 @@ impl<'a, 'tree> Rewrite for MapCreationExpression<'a, 'tree> {
 
         result.push_str("new ");
         let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
 
         let value = node.c_by_n("value");
         let n = MapInitializer::new(&value);
@@ -1364,7 +1361,7 @@ impl<'a, 'tree> Rewrite for UnaryExpression<'a, 'tree> {
         result.push_str(operator_value);
 
         let operand = node.c_by_n("operand");
-        result.push_str(&operand.visit(context, &mut shape.clone_with_stand_alone(false)));
+        result.push_str(&operand.visit(context, &mut shape.clone_with_standalone(false)));
         result
     }
 }
