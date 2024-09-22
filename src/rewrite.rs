@@ -465,7 +465,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         if let Some(c) = node.try_c_by_n("condition") {
             result.push(' ');
             let n = Expression::new(&c);
-            result.push_str(&n.rewrite(context, shape));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         };
 
         result.push(';');
@@ -473,7 +473,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         if let Some(c) = node.try_c_by_n("update") {
             result.push(' ');
             let n = Expression::new(&c);
-            result.push_str(&n.rewrite(context, shape));
+            result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         };
         result.push(')');
 
@@ -571,6 +571,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         match_routing!(node, result, context, shape;
             "assignment_expression" => AssignmentExpression,
@@ -591,6 +592,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "int" => Value,
             "boolean" => Value
         );
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         return result;
     }
 }
