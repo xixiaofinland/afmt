@@ -1262,40 +1262,42 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
 impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
-        let c = node.first_c();
-        match_routing!(c, result, context, shape;
-            "sosl_query" => SoslQuery,
-            "soql_query" => SoqlQuery
-        );
-        result
-    }
-}
-
-impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
-    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
         result.push_str("[ ");
-        let c = node.first_c();
 
-        // FIXME: remove this, too small
+        let c = node.first_c().first_c(); // skip SoslQuery and SoqlQuery container node;
         match_routing!(c, result, context, shape;
-            "soql_query_body" => SoqlQueryBody
+            "sosl_query_body" => SoslQueryBody,
+            "soql_query_body" => SoqlQueryBody,
         );
 
-        result.push_str("] ");
+        result.push_str(" ]");
         result
     }
 }
 
 impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _, _) = self.prepare(context);
+
+        //select_clause //
+        //from_clause //
+        //where_clause
+
+        //all_rows_clause
+        //for_clause
+        //group_by_clause
+        //limit_clause
+        //offset_clause
+        //order_by_clause
+        //update_clause
+        //using_clause
+        //with_clause
 
         result
     }
 }
 
-impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
+impl<'a, 'tree> Rewrite for SoslQueryBody<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 

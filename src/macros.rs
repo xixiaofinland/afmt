@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! def_struct {
-    ( $( $name:ident ),+ ) => {
+    ( $( $name:ident ),+ $(,)? ) => {
         $(
             pub struct $name<'a, 'tree> {
                 inner: &'a Node<'tree>,

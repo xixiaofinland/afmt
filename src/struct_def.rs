@@ -63,11 +63,11 @@ def_struct!(
     AccessorList,
     AccessorDeclaration,
     QueryExpression,
-    SoqlQuery,
     SoqlQueryBody,
-    SoslQuery,
+    SoslQueryBody,
     BinaryExpression,
     UnaryExpression,
     ArrayCreationExpression,
-    MapCreationExpression
+    MapCreationExpression,
+    SelectClause,
 );
