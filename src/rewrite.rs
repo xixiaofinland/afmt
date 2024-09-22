@@ -1319,7 +1319,7 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         result.push_str("new ");
         let t = node.c_by_n("type"); // _simple_type, send to Exp for simplicity for now
@@ -1335,7 +1335,13 @@ impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
         }
 
         if let Some(v) = node.try_c_by_n("dimensions") {
-            result.push_str(&v.visit(context, &mut shape.clone_with_standalone(false)));
+            if v.kind() == "dimensions" {
+                result.push_str(v.v(source_code));
+            } else {
+                result.push_str(
+                    &Expression::new(&v).rewrite(context, &mut shape.clone_with_standalone(false)),
+                );
+            }
         }
         result
     }
