@@ -1,8 +1,8 @@
 public class Me {
-   {
-        Integer i = 1;
-        i
-        =  ~i ;
-   }
+  {
+    for (Integer i = 0; i < 3; i++)
+      System.debug(i);
+    integer i = 1;
+  }
 }
 

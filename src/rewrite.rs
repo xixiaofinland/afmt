@@ -230,9 +230,11 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
 
 // a common struct for all simple nodes;
 impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
-    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
         result.push_str(node.v(source_code));
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -304,11 +306,8 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
-        try_add_standalone_prefix(&mut result, shape, context);
-
         let c = node.first_c();
         result.push_str(&Expression::new(&c).rewrite(context, shape));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -486,12 +485,12 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
             let n = Block::new(&body);
             result.push_str(&n.rewrite(context, &mut shape.clone_with_stand_alone(false)));
         } else {
-            result.push_str(" {\n");
+            result.push_str("\n");
             let mut child_shape = shape
                 .copy_with_indent_block_plus(context.config)
                 .clone_with_stand_alone(true);
             result.push_str(&body.visit(context, &mut child_shape));
-            result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
+            //result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
 
         result
@@ -550,7 +549,6 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        debug!("Block:{}:{:?}", node.parent().unwrap().kind(), shape);
         if shape.standalone {
             add_indent(&mut result, shape, context);
         } else {
@@ -565,8 +563,6 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         add_indent(&mut result, shape, context);
         result.push('}');
-        debug!("Block: {:?}", result);
-
         result
     }
 }
@@ -1229,7 +1225,9 @@ impl<'a, 'tree> Rewrite for TernaryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        debug!("MethodInvocation1: {:?}", result);
         try_add_standalone_prefix(&mut result, shape, context);
+        debug!("MethodInvocation2: {:?}", result);
 
         if let Some(c) = node.try_c_by_n("object") {
             result.push_str(c.v(source_code));
@@ -1261,6 +1259,7 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
         result.push_str(&arguments_value);
         result.push(')');
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        debug!("MethodInvocation3 result: {:?}", result);
         result
     }
 }
