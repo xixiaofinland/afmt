@@ -304,10 +304,11 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         let c = node.first_c();
         result.push_str(&Expression::new(&c).rewrite(context, shape));
-        debug!("ExpressionStatement: {:?}", result);
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -573,7 +574,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        try_add_standalone_prefix(&mut result, shape, context);
+        //try_add_standalone_prefix(&mut result, shape, context);
 
         match_routing!(node, result, context, shape;
             "field_access" => FieldAccess,
@@ -596,7 +597,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
             "int" => Value,
             "boolean" => Value
         );
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        //try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         return result;
     }
 }
@@ -900,6 +901,7 @@ impl<'a, 'tree> Rewrite for ExplicitConstructorInvocation<'a, 'tree> {
 impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         let left_value = node.cv_by_n("left", source_code);
         let op = node.cv_by_n("operator", source_code);
@@ -909,7 +911,7 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
         let right_value = &n.rewrite(context, &mut shape.clone_with_stand_alone(false));
 
         result.push_str(&format!("{} {} {}", left_value, op, right_value));
-        debug!("AssignmentExp: {:?}", result);
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -998,8 +1000,9 @@ impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
-
+        try_add_standalone_prefix(&mut result, shape, context);
         result.push_str(&node.visit_children_in_same_line(" ", context, shape));
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -1226,6 +1229,7 @@ impl<'a, 'tree> Rewrite for TernaryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         if let Some(c) = node.try_c_by_n("object") {
             result.push_str(c.v(source_code));
@@ -1256,6 +1260,7 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
 
         result.push_str(&arguments_value);
         result.push(')');
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -1309,11 +1314,14 @@ impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
 impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         let left = node.cv_by_n("left", source_code);
         let op = node.cv_by_n("operator", source_code);
         let right = node.cv_by_n("right", source_code);
-        result = format!("{} {} {}", left, op, right);
+        result.push_str(&format!("{} {} {}", left, op, right));
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        debug!("2: {:?}", result);
         result
     }
 }
