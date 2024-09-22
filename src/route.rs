@@ -50,6 +50,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "type_identifier" => |node| Box::new(Value::new(node)),
     "identifier" => |node| Box::new(Value::new(node)),
     "int" => |node| Box::new(Value::new(node)),
+    //"operator" => |node| Box::new(Value::new(node)),
 };
 
 pub static EXP_MAP: PhfMap = phf_map! {
