@@ -1,10 +1,9 @@
 public class Me {
-    {
-        for(  ; i < 3  ; i++  )
-        {
-            System.debug(i);
-            }
-
-    }
+  {
+    List<Account> accs = [
+      SELECT Id
+      FROM Account
+      WHERE Name = :var1
+    ];
+  }
 }
-

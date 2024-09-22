@@ -86,6 +86,7 @@ pub static EXP_MAP: PhfMap = phf_map! {
     "ternary_expression" => |node| Box::new(TernaryExpression::new(node)),
     "unary_expression" => |node| Box::new(UnaryExpression::new(node)),
     "update_expression" => |node| Box::new(UpdateExpression::new(node)),
+    "query_expression" => |node| Box::new(QueryExpression::new(node)),
 
     // --------------- split
     //"array_initializer" => |node| Box::new(ArrayInitializer::new(node)),
