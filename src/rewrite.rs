@@ -548,7 +548,6 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
-        debug!("Block: {:?}", result);
 
         if shape.standalone {
             add_indent(&mut result, shape, context);
@@ -563,7 +562,6 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         add_indent(&mut result, shape, context);
         result.push('}');
-        debug!("Block2: {:?}", result);
         result
     }
 }
@@ -656,7 +654,6 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
             })
             .collect::<Vec<_>>()
             .join(", ");
-        debug!("joined: {:?}", joined);
 
         result.push_str(&joined);
         result.push(')');
@@ -1309,7 +1306,6 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
         let right = node.cv_by_n("right", source_code);
         result.push_str(&format!("{} {} {}", left, op, right));
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
-        debug!("2: {:?}", result);
         result
     }
 }

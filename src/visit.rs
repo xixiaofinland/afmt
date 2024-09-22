@@ -34,14 +34,14 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
     fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String {
         let mut result = String::new();
         // FIXME: unnessary clone
-        let shape = shape.copy_with_indent_increase(context.config);
+        let shape_base = shape.copy_with_indent_increase(context.config);
 
         let mut cursor = self.walk();
         let children = self
             .named_children(&mut cursor)
             .map(|child| {
-                let mut child_shape = shape.clone_with_standalone(true);
-                child.visit(context, &mut child_shape)
+                let mut c_shape = shape_base.clone_with_standalone(true);
+                child.visit(context, &mut c_shape)
             })
             .collect::<Vec<_>>()
             .join("\n");
@@ -50,7 +50,6 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             result.push_str(&children);
             result.push('\n');
         }
-        debug!("visit_standalone_children: {:?}", result);
         result
     }
 
