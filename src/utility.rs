@@ -1,6 +1,8 @@
 use crate::context::FmtContext;
+use crate::route::EXP_MAP;
 use crate::shape::Shape;
 use crate::visit::Visitor;
+use crate::{match_routing, static_routing};
 #[allow(unused_imports)]
 use log::debug;
 use tree_sitter::Node;

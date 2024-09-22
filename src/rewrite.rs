@@ -571,31 +571,27 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        node.visit(context, shape)
 
-        // FIXME: remove them once phf is stable
-        //match_routing!(node, result, context, shape;
-        //    "assignment_expression" => AssignmentExpression,
-        //    "binary_expression" => BinaryExpression,
-        //    "cast_expression" => CastExpression,
-        //    "dml_expression" => DmlExpression,
-        //    "instanceof_expression" => InstanceOfExpression,
-        //    "primary_expression" => PrimaryExpression,
-        //    "ternary_expression" => TernaryExpression,
-        //    "unary_expression" => UnaryExpression,
-        //    "update_expression" => UpdateExpression,
-        //
-        //    // NOTE: These are not defined in json;
-        //    //"string_literal" => Value,
-        //    //"local_variable_declaration" => LocalVariableDeclaration,
-        //    //"map_creation_expression" => MapCreationExpression,
-        //    //"object_creation_expression" => ObjectCreationExpression,
-        //    //"method_invocation" => MethodInvocation,
-        //    //"identifier" => Value,
-        //    //"int" => Value,
-        //    //"boolean" => Value
-        //);
-        //return result;
+        match_routing!(node, result, context, shape;
+            "assignment_expression" => AssignmentExpression,
+            "binary_expression" => BinaryExpression,
+            "cast_expression" => CastExpression,
+            "dml_expression" => DmlExpression,
+            "instanceof_expression" => InstanceOfExpression,
+            "primary_expression" => PrimaryExpression,
+            "ternary_expression" => TernaryExpression,
+            "unary_expression" => UnaryExpression,
+            "update_expression" => UpdateExpression,
+            "local_variable_declaration" => LocalVariableDeclaration,
+            "map_creation_expression" => MapCreationExpression,
+            "object_creation_expression" => ObjectCreationExpression,
+            "method_invocation" => MethodInvocation,
+            "string_literal" => Value,
+            "identifier" => Value,
+            "int" => Value,
+            "boolean" => Value
+        );
+        return result;
     }
 }
 
