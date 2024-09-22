@@ -619,7 +619,9 @@ impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
         if node.named_child_count() != 0 {
             let child = node.first_c();
             result.push(' ');
-            result.push_str(&child.visit(context, shape));
+            result.push_str(
+                &Expression::new(&child).rewrite(context, &mut shape.clone_with_stand_alone(false)),
+            );
         }
 
         try_add_standalone_suffix(node, &mut result, shape, source_code);
