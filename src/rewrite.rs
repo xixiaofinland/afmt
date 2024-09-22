@@ -1279,6 +1279,10 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
+        let s = node.c_by_n("select_clause");
+        //result.push_str(&SelectClause::new(&s).rewrite(context, shape));
+        result.push_str(&SelectClause::new(&s).rewrite(context, shape));
+
         //select_clause //
         //from_clause //
         //where_clause
@@ -1292,6 +1296,14 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
         //update_clause
         //using_clause
         //with_clause
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SelectClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         result
     }

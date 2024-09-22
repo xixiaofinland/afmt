@@ -19,27 +19,13 @@ macro_rules! def_struct {
                 pub fn prepare<'b>(
                     &self,
                     context: &'b FmtContext,
-                ) -> (&'a Node<'tree>, String, &'b str, &'b $crate::config::Config) {
+                ) -> (&'a Node<'tree>, String, &'b str, &'b Config) {
                     let node = self.node();
                     let result = String::new();
                     let source_code = context.source_code;
                     let config = context.config;
                     (node, result, source_code, config)
                 }
-
-                //pub fn rewrite_inner(
-                //    node: &Node<'tree>,
-                //    context: &FmtContext,
-                //    shape: &mut $crate::shape::Shape,
-                //    apply_formatting: impl FnOnce(&Node<'tree>, &mut String, &FmtContext, &mut $crate::shape::Shape),
-                //) -> String {
-                //    $crate::utility::try_add_standalone_prefix(result, shape, context);
-                //
-                //    apply_formatting(node, result, context, shape);
-                //
-                //    $crate::utility::try_add_standalone_suffix(node, result, shape, source_code);
-                //    result
-                //}
             }
         )+
     };
