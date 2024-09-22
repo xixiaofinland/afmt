@@ -1,5 +1,5 @@
 use colored::Colorize;
-use tree_sitter::Node;
+use tree_sitter::{Node, TreeCursor};
 
 // `c` => child
 // `cv` => child value
@@ -10,6 +10,7 @@ use tree_sitter::Node;
 #[allow(dead_code)]
 pub trait Accessor<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
+    fn children_vec(&self) -> Vec<Node<'tree>>;
 
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'tree>>;
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>>;
@@ -31,6 +32,11 @@ impl<'tree> Accessor<'tree> for Node<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str {
         self.utf8_text(source_code.as_bytes())
             .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind().red()))
+    }
+
+    fn children_vec(&self) -> Vec<Node<'tree>> {
+        let mut cursor = self.walk();
+        self.named_children(&mut cursor).collect()
     }
 
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>> {
@@ -129,5 +135,22 @@ impl<'tree> Accessor<'tree> for Node<'tree> {
 
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_c_by_k(kind).map(|child| child.v(source_code))
+    }
+}
+
+pub struct NamedChildren<'tree> {
+    cursor: TreeCursor<'tree>,
+    node: Node<'tree>,
+}
+
+impl<'tree> Iterator for NamedChildren<'tree> {
+    type Item = Node<'tree>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.cursor.goto_first_child() {
+            Some(self.node)
+        } else {
+            None
+        }
     }
 }

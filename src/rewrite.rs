@@ -650,9 +650,9 @@ impl<'a, 'tree> Rewrite for ArgumentList<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         result.push('(');
-        let mut cursor = node.walk();
         let joined = node
-            .named_children(&mut cursor)
+            .children_vec()
+            .iter()
             .map(|c| {
                 let n = Expression::new(&c);
                 n.rewrite(context, &mut shape.clone_with_standalone(false))
@@ -715,9 +715,9 @@ impl<'a, 'tree> Rewrite for MapInitializer<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        let mut cursor = node.walk();
         let children = node
-            .named_children(&mut cursor)
+            .children_vec()
+            .iter()
             .map(|c| {
                 let n = Expression::new(&c);
                 n.rewrite(context, shape)
@@ -1032,8 +1032,7 @@ impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         // use unnamed node as parser can't tell `i++` v.s. `++i` OR `i++` v.s. `i--`
-        let mut cursor = node.walk();
-        node.children(&mut cursor).for_each(|c| {
+        node.children_vec().iter().for_each(|c| {
             if c.is_named() {
                 let n = Expression::new(&c);
                 result.push_str(&n.rewrite(context, shape));
@@ -1173,8 +1172,7 @@ impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
         }
 
         // need to traverse unnamed node;
-        let mut cursor = node.walk();
-        node.children(&mut cursor).for_each(|c| {
+        node.children_vec().iter().for_each(|c| {
             if !c.is_named() {
                 result.push_str(c.v(source_code));
             }
@@ -1280,8 +1278,10 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         let s = node.c_by_n("select_clause");
-        //result.push_str(&SelectClause::new(&s).rewrite(context, shape));
         result.push_str(&SelectClause::new(&s).rewrite(context, shape));
+        result.push(' ');
+        let f = node.c_by_n("from_clause");
+        result.push_str(&FromClause::new(&f).rewrite(context, shape));
 
         //select_clause //
         //from_clause //
@@ -1305,6 +1305,60 @@ impl<'a, 'tree> Rewrite for SelectClause<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        result.push_str("SELECT ");
+        let joined_children = node
+            .children_vec()
+            .iter()
+            .map(|c| {
+                //let mut c_shape = shape.clone_with_standalone(false);
+                c.v(source_code)
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        result.push_str(&joined_children);
+
+        //"type": "alias_expression",
+        //"type": "count_expression",
+        //"type": "field_identifier",
+        //"type": "fields_expression",
+        //"type": "function_expression",
+        //"type": "subquery",
+        //"type": "type_of_clause",
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for FromClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        result.push_str(" FROM ");
+
+        let joined = node.children_vec().iter().for_each(|c| {
+            match_routing!(c, result, context, shape;
+            "storage_alias" => StorageAlias,
+            "storage_identifier" => StorageIdentifier,
+            );
+        });
+
+        result
+        //"type": "storage_alias",
+        //"type": "storage_identifier",
+    }
+}
+
+impl<'a, 'tree> Rewrite for StorageAlias<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for StorageIdentifier<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
         result
     }
 }

@@ -71,4 +71,7 @@ def_struct!(
     ArrayCreationExpression,
     MapCreationExpression,
     SelectClause,
+    FromClause,
+    StorageAlias,
+    StorageIdentifier,
 );
