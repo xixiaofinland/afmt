@@ -1328,7 +1328,10 @@ impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
         );
 
         if let Some(v) = node.try_c_by_n("value") {
-            result.push_str(&v.visit(context, &mut shape.clone_with_standalone(false)));
+            result.push_str(
+                &ArrayInitializer::new(&v)
+                    .rewrite(context, &mut shape.clone_with_standalone(false)),
+            );
         }
 
         if let Some(v) = node.try_c_by_n("dimensions") {
