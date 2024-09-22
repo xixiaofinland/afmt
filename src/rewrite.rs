@@ -1331,6 +1331,7 @@ impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
         result
     }
 }
+
 impl<'a, 'tree> Rewrite for MapCreationExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
@@ -1345,6 +1346,7 @@ impl<'a, 'tree> Rewrite for MapCreationExpression<'a, 'tree> {
         result
     }
 }
+
 impl<'a, 'tree> Rewrite for UnaryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
