@@ -1,7 +1,9 @@
 use crate::child::Accessor;
 use crate::context::FmtContext;
 use crate::match_routing;
+use crate::route::EXP_MAP;
 use crate::shape::Shape;
+use crate::static_routing;
 use crate::struct_def::*;
 use crate::utility::*;
 use crate::visit::Visitor;
@@ -249,8 +251,10 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
             try_add_standalone_prefix(&mut result, shape, context);
         }
 
-        let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
+        let t = node.c_by_n("type"); // _unannotated_type
+        result.push_str(
+            &Expression::new(&t).rewrite(context, &mut shape.clone_with_standalone(false)),
+        );
 
         result.push(' ');
 
@@ -275,6 +279,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         match_routing!(node, result, context, shape;
+            "type_identifier" => Value,
             "block" => Block,
             //"break_statement"
             //"continue_statement"
@@ -414,10 +419,11 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
             let mut child_shape = shape
                 .copy_with_indent_increase(context.config)
                 .clone_with_standalone(true);
-            result.push_str(&consequence.visit(context, &mut child_shape));
+            result.push_str(&Statement::new(&consequence).rewrite(context, &mut child_shape));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
 
+        // FIXME: don't auto add `{}` and move test from static to prettier;
         if let Some(a) = node.try_c_by_n("alternative") {
             match a.kind() {
                 "block" => {
@@ -435,7 +441,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
                     let mut child_shape = shape
                         .copy_with_indent_increase(context.config)
                         .clone_with_standalone(true);
-                    result.push_str(&a.visit(context, &mut child_shape));
+                    result.push_str(&Statement::new(&a).rewrite(context, &mut child_shape));
                     result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
                 }
             }
@@ -483,7 +489,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
             let mut child_shape = shape
                 .copy_with_indent_increase(context.config)
                 .clone_with_standalone(true);
-            result.push_str(&body.visit(context, &mut child_shape));
+            result.push_str(&Statement::new(&body).rewrite(context, &mut child_shape));
             //result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
 
@@ -498,7 +504,9 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
 
         result.push_str("for (");
         let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
+        result.push_str(
+            &Statement::new(&t).rewrite(context, &mut shape.clone_with_standalone(false)),
+        );
         result.push(' ');
 
         let name = node.c_by_n("name");
@@ -564,27 +572,28 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        match_routing!(node, result, context, shape;
-            "field_access" => FieldAccess,
-            "array_creation_expression" => ArrayCreationExpression,
-            "assignment_expression" => AssignmentExpression,
-            "binary_expression" => BinaryExpression,
-            "cast_expression" => CastExpression,
-            "dml_expression" => DmlExpression,
-            "instanceof_expression" => InstanceOfExpression,
-            "primary_expression" => PrimaryExpression,
-            "ternary_expression" => TernaryExpression,
-            "unary_expression" => UnaryExpression,
-            "update_expression" => UpdateExpression,
-            "local_variable_declaration" => LocalVariableDeclaration,
-            "map_creation_expression" => MapCreationExpression,
-            "object_creation_expression" => ObjectCreationExpression,
-            "method_invocation" => MethodInvocation,
-            "string_literal" => Value,
-            "identifier" => Value,
-            "int" => Value,
-            "boolean" => Value
-        );
+        static_routing!(EXP_MAP, node, result, context, shape);
+        //match_routing!(node, result, context, shape;
+        //    "field_access" => FieldAccess,
+        //    "array_creation_expression" => ArrayCreationExpression,
+        //    "assignment_expression" => AssignmentExpression,
+        //    "binary_expression" => BinaryExpression,
+        //    "cast_expression" => CastExpression,
+        //    "dml_expression" => DmlExpression,
+        //    "instanceof_expression" => InstanceOfExpression,
+        //    "primary_expression" => PrimaryExpression,
+        //    "ternary_expression" => TernaryExpression,
+        //    "unary_expression" => UnaryExpression,
+        //    "update_expression" => UpdateExpression,
+        //    "local_variable_declaration" => LocalVariableDeclaration,
+        //    "map_creation_expression" => MapCreationExpression,
+        //    "object_creation_expression" => ObjectCreationExpression,
+        //    "method_invocation" => MethodInvocation,
+        //    "string_literal" => Value,
+        //    "identifier" => Value,
+        //    "int" => Value,
+        //    "boolean" => Value
+        //);
         result
     }
 }
