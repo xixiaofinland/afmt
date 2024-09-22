@@ -1031,8 +1031,9 @@ impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        // use unnamed node as parser can't tell `i++` v.s. `++i` OR `i++` v.s. `i--`
-        node.children_vec().iter().for_each(|c| {
+        // Needs to travsers un-named children
+        // AST can't tell `i++` v.s. `++i` OR `i++` v.s. `i--`
+        node.all_children_vec().iter().for_each(|c| {
             if c.is_named() {
                 let n = Expression::new(&c);
                 result.push_str(&n.rewrite(context, shape));
@@ -1171,8 +1172,8 @@ impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
             result.push(' ');
         }
 
-        // need to traverse unnamed node;
-        node.children_vec().iter().for_each(|c| {
+        // it travsers un-named children
+        node.all_children_vec().iter().for_each(|c| {
             if !c.is_named() {
                 result.push_str(c.v(source_code));
             }

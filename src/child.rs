@@ -11,6 +11,7 @@ use tree_sitter::{Node, TreeCursor};
 pub trait Accessor<'tree> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
     fn children_vec(&self) -> Vec<Node<'tree>>;
+    fn all_children_vec(&self) -> Vec<Node<'tree>>;
 
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'tree>>;
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>>;
@@ -37,6 +38,11 @@ impl<'tree> Accessor<'tree> for Node<'tree> {
     fn children_vec(&self) -> Vec<Node<'tree>> {
         let mut cursor = self.walk();
         self.named_children(&mut cursor).collect()
+    }
+
+    fn all_children_vec(&self) -> Vec<Node<'tree>> {
+        let mut cursor = self.walk();
+        self.children(&mut cursor).collect()
     }
 
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'tree>> {
