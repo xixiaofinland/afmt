@@ -499,7 +499,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("for (");
@@ -510,11 +510,13 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
         result.push(' ');
 
         let name = node.c_by_n("name");
-        result.push_str(&name.visit(context, &mut shape.clone_with_standalone(false)));
+        result.push_str(name.v(source_code));
         result.push_str(" : ");
 
         let value = node.c_by_n("value");
-        result.push_str(&value.visit(context, &mut shape.clone_with_standalone(false)));
+        result.push_str(
+            &Expression::new(&value).rewrite(context, &mut shape.clone_with_standalone(false)),
+        );
         result.push(')');
 
         let body = node.c_by_n("body");
