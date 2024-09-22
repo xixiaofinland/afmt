@@ -2,15 +2,9 @@ public class Me {
     public void method1  (
         String param1 , Integer param2
     )   
-      
        {
-
-
         param1 = '1';
 
-
         param2 = 2;
-
-
     }
 }
