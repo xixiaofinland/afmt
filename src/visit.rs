@@ -33,11 +33,13 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
 
         let mut result = String::new();
         static_routing!(COMMON_MAP, self, result, context, shape);
+        debug!("visit(): {:?}", result);
         return result;
     }
 
     fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String {
         let mut result = String::new();
+        // FIXME: unnessary clone
         let shape = shape.copy_with_indent_block_plus(context.config);
 
         let mut cursor = self.walk();
@@ -54,6 +56,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             result.push_str(&children);
             result.push('\n');
         }
+        debug!("visit_standalone_children: {:?}", result);
         result
     }
 

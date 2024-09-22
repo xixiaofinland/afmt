@@ -303,10 +303,11 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _, _) = self.prepare(context);
 
         let c = node.first_c();
         result.push_str(&Expression::new(&c).rewrite(context, shape));
+        debug!("ExpressionStatement: {:?}", result);
         result
     }
 }
@@ -548,7 +549,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        debug!("B:{}:{:?}", node.parent().unwrap().kind(), shape);
+        debug!("Block:{}:{:?}", node.parent().unwrap().kind(), shape);
         if shape.standalone {
             add_indent(&mut result, shape, context);
         } else {
@@ -563,6 +564,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         add_indent(&mut result, shape, context);
         result.push('}');
+        debug!("Block: {:?}", result);
 
         result
     }
@@ -574,6 +576,8 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, context);
 
         match_routing!(node, result, context, shape;
+            "field_access" => FieldAccess,
+            "array_creation_expression" => ArrayCreationExpression,
             "assignment_expression" => AssignmentExpression,
             "binary_expression" => BinaryExpression,
             "cast_expression" => CastExpression,
@@ -905,6 +909,7 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
         let right_value = &n.rewrite(context, &mut shape.clone_with_stand_alone(false));
 
         result.push_str(&format!("{} {} {}", left_value, op, right_value));
+        debug!("AssignmentExp: {:?}", result);
         result
     }
 }
