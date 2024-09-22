@@ -1352,12 +1352,13 @@ impl<'a, 'tree> Rewrite for MapCreationExpression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         result.push_str("new ");
-        let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
+        let t = node.c_by_n("type"); // _simple_type, send to Exp for simplicity for now
+        result.push_str(
+            &Expression::new(&t).rewrite(context, &mut shape.clone_with_standalone(false)),
+        );
 
         let value = node.c_by_n("value");
-        let n = MapInitializer::new(&value);
-        result.push_str(&n.rewrite(context, shape));
+        result.push_str(&MapInitializer::new(&value).rewrite(context, shape));
         result
     }
 }
