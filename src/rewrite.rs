@@ -1073,11 +1073,13 @@ impl<'a, 'tree> Rewrite for ScopedTypeIdentifier<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ObjectCreationExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
         result.push_str("new ");
-        let t = node.c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
+        let t = node.c_by_n("type"); // _simple_type, send to Exp for simplicity for now
+        result.push_str(
+            &Expression::new(&t).rewrite(context, &mut shape.clone_with_standalone(false)),
+        );
 
         let arguments = node.c_by_n("arguments");
         let n = ArgumentList::new(&arguments);
@@ -1320,8 +1322,10 @@ impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         result.push_str("new ");
-        let t = self.node().c_by_n("type");
-        result.push_str(&t.visit(context, &mut shape.clone_with_standalone(false)));
+        let t = node.c_by_n("type"); // _simple_type, send to Exp for simplicity for now
+        result.push_str(
+            &Expression::new(&t).rewrite(context, &mut shape.clone_with_standalone(false)),
+        );
 
         if let Some(v) = node.try_c_by_n("value") {
             result.push_str(&v.visit(context, &mut shape.clone_with_standalone(false)));
