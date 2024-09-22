@@ -228,7 +228,6 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
     }
 }
 
-// a common struct for all simple nodes;
 impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
@@ -274,9 +273,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        try_add_standalone_prefix(&mut result, shape, context);
 
-        // FIXME: shall this switch to use COMMON_MAP?
         match_routing!(node, result, context, shape;
             "block" => Block,
             //"break_statement"
@@ -296,9 +293,6 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             "try_statement" => TryStatement,
             //"while_statement" => WhileStatement, // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
         );
-
-        try_add_standalone_suffix(node, &mut result, shape, source_code);
-
         result
     }
 }
