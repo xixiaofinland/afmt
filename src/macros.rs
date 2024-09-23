@@ -8,10 +8,6 @@ macro_rules! def_struct {
 
             #[allow(dead_code)]
             impl<'a, 'tree> $name<'a, 'tree> {
-                pub fn new(node: &'a Node<'tree>) -> Self {
-                    Self { inner: node }
-                }
-
                 pub fn node(&self) -> &'a Node<'tree> {
                     self.inner
                 }
@@ -25,6 +21,12 @@ macro_rules! def_struct {
                     let source_code = context.source_code;
                     let config = context.config;
                     (node, result, source_code, config)
+                }
+            }
+
+            impl<'a, 'tree> FromNode<'a, 'tree> for $name<'a, 'tree> {
+                fn new(node: &'a Node<'tree>) -> Self {
+                    Self { inner: node }
                 }
             }
         )+

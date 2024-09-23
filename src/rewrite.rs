@@ -21,7 +21,9 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, context);
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
-            result.push_str(&Modifiers::new(a).rewrite(context, shape));
+            //result.push_str(&rewrite_with_block::<Block>(context, shape, &body));
+            result.push_str(&rewrite::<Modifiers>(a, shape, context));
+            //result.push_str(&Modifiers::new(a).rewrite(context, shape));
         }
 
         result.push_str(" class ");

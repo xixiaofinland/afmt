@@ -3,6 +3,10 @@ use crate::context::FmtContext;
 use crate::def_struct;
 use tree_sitter::Node;
 
+pub trait FromNode<'a, 'tree> {
+    fn new(node: &'a Node<'tree>) -> Self;
+}
+
 def_struct!(
     ClassDeclaration,
     FieldDeclaration,

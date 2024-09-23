@@ -1,5 +1,7 @@
 use crate::context::FmtContext;
+use crate::rewrite::Rewrite;
 use crate::shape::Shape;
+use crate::struct_def::FromNode;
 use crate::visit::Visitor;
 #[allow(unused_imports)]
 use log::debug;
@@ -63,16 +65,11 @@ pub fn try_add_standalone_suffix_no_semicolumn(
     source_code: &str,
 ) {
     if shape.standalone && node.next_named_sibling().is_some() {
-        add_standalone_suffix_no_semicolumn(node, result, shape, source_code);
+        add_standalone_suffix_no_semicolumn(node, result, source_code);
     }
 }
 
-pub fn add_standalone_suffix_no_semicolumn(
-    node: &Node,
-    result: &mut String,
-    shape: &Shape,
-    source_code: &str,
-) {
+pub fn add_standalone_suffix_no_semicolumn(node: &Node, result: &mut String, source_code: &str) {
     let count_new_lines = newlines_to_add(node, source_code);
     result.push_str(&"\n".repeat(count_new_lines));
 }
@@ -94,4 +91,26 @@ fn newlines_to_add(node: &Node, source_code: &str) -> usize {
         (Some(b'\n'), Some(b'\n')) => 1, // Two consecutive newlines
         _ => 0,                          // No or only one newline
     }
+}
+
+pub fn rewrite<'a, 'tree, T>(n: &'a Node<'tree>, shape: &mut Shape, context: &FmtContext) -> String
+where
+    T: FromNode<'a, 'tree> + Rewrite,
+{
+    let block = T::new(n);
+    block.rewrite(context, shape)
+}
+
+pub fn rewrite_shape<'a, 'tree, T>(
+    n: &'a Node<'tree>,
+    shape: &mut Shape,
+    is_standalone: bool,
+    context: &FmtContext,
+) -> String
+where
+    T: FromNode<'a, 'tree> + Rewrite,
+{
+    let block = T::new(n);
+    let cloned = &mut shape.clone_with_standalone(is_standalone);
+    block.rewrite(context, cloned)
 }
