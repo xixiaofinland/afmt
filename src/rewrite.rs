@@ -1283,6 +1283,9 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
         result.push(' ');
         let f = node.c_by_n("from_clause");
         result.push_str(&FromClause::new(&f).rewrite(context, shape));
+        result.push(' ');
+        let f = node.c_by_n("where_clause");
+        result.push_str(&WhereCluase::new(&f).rewrite(context, shape));
 
         //select_clause //
         //from_clause //
@@ -1303,7 +1306,7 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for SelectClause<'a, 'tree> {
-    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         result.push_str("SELECT ");
@@ -1332,34 +1335,112 @@ impl<'a, 'tree> Rewrite for SelectClause<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for FromClause<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
-        result.push_str(" FROM ");
+        let (node, mut result, _, _) = self.prepare(context);
+        result.push_str("FROM ");
 
-        let joined = node.children_vec().iter().for_each(|c| {
+        node.children_vec().iter().for_each(|c| {
             match_routing!(c, result, context, shape;
             "storage_alias" => StorageAlias,
             "storage_identifier" => StorageIdentifier,
             );
         });
-
         result
-        //"type": "storage_alias",
-        //"type": "storage_identifier",
     }
 }
 
 impl<'a, 'tree> Rewrite for StorageAlias<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        try_add_standalone_prefix(&mut result, shape, context);
+
+        if node.kind() == "storage_identifier" {
+            result.push_str(&StorageIdentifier::new(&node).rewrite(context, shape));
+        } else {
+            result.push_str(&node.v(source_code));
+        }
         result
     }
 }
 
 impl<'a, 'tree> Rewrite for StorageIdentifier<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let c = node.first_c();
+        if c.kind() == "dotted_identifier" {
+            let joined = c
+                .children_vec()
+                .iter()
+                .map(|child| child.v(source_code))
+                .collect::<Vec<_>>()
+                .join(".");
+            result.push_str(&joined);
+        } else {
+            result.push_str(&node.v(source_code));
+        }
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for WhereCluase<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("WHERE ");
+        let c = node.first_c();
+        match_routing!(c, result, context, shape;
+            "comparison_expression" => ComparisonExpression,
+            //"and_expression" => StorageAlias,
+            //"not_expression" => StorageIdentifier,
+            //"or_expression" => StorageIdentifier,
+        );
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let c = node.first_c();
+        node.children_vec().iter().for_each(|c| {
+            match_routing!(c, result, context, shape;
+                "field_identifier" => FieldIdentifier,
+                "bound_apex_expression" => BoundApexExpression,
+                "value_comparison_operator" => Value,
+                //"storage_identifier" => StorageIdentifier,
+            );
+        });
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for FieldIdentifier<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let c = node.first_c();
+        if c.kind() == "dotted_identifier" {
+            let joined = c
+                .children_vec()
+                .iter()
+                .map(|child| child.v(source_code))
+                .collect::<Vec<_>>()
+                .join(".");
+            result.push_str(&joined);
+        } else {
+            result.push_str(&node.v(source_code));
+        }
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for BoundApexExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        result.push(':');
+        let c = node.first_c();
+        result.push_str(&Expression::new(&c).rewrite(context, shape));
         result
     }
 }

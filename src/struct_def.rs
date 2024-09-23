@@ -74,4 +74,8 @@ def_struct!(
     FromClause,
     StorageAlias,
     StorageIdentifier,
+    WhereCluase,
+    ComparisonExpression,
+    FieldIdentifier,
+    BoundApexExpression,
 );
