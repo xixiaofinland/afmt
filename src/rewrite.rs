@@ -1409,19 +1409,20 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        let c = node.first_c();
-        //node.children_vec()
-        //    .iter()
-        //    .map(|c| {
-        //        match_routing!(c, context, shape;
-        //            "field_identifier" => FieldIdentifier,
-        //            "bound_apex_expression" => BoundApexExpression,
-        //            "value_comparison_operator" => Value,
-        //            //"storage_identifier" => StorageIdentifier,
-        //        );
-        //    })
-        //    .collect::<Vec<_>>()
-        //    .join(' ');
+        let joined_children = node
+            .children_vec()
+            .iter()
+            .map(|child| {
+                match_routing!(child, context, shape;
+                    "field_identifier" => FieldIdentifier,
+                    "bound_apex_expression" => BoundApexExpression,
+                    "value_comparison_operator" => Value,
+                    //"storage_identifier" => StorageIdentifier,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_children);
         result
     }
 }

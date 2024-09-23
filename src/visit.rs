@@ -25,7 +25,6 @@ pub trait Visitor<'tree> {
 }
 
 impl<'tree> Visitor<'tree> for Node<'tree> {
-    // this should be used outside as few as possible and be deleted in the end;
     fn _visit(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let mut result = String::new();
         result.push_str(&static_routing!(COMMON_MAP, self, context, shape));
