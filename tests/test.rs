@@ -43,17 +43,17 @@ mod tests {
     }
 
     fn run_prettier_test_files(source: &Path) {
-        let prettier_file = source.with_extension("pre");
+        let prettier_file = source.with_extension("cls");
 
         if !prettier_file.exists() {
-            println!("{}", "### .pre file not found, generating...".yellow());
+            println!("{}", "### .cls file not found, generating...".yellow());
             let prettier_output = run_prettier(source).expect("Failed to run Prettier");
             save_prettier_output(&prettier_file, &prettier_output);
         }
 
         let output = format_with_afmt(source);
         let prettier_output =
-            std::fs::read_to_string(&prettier_file).expect("Failed to read the .pre file.");
+            std::fs::read_to_string(&prettier_file).expect("Failed to read the .cls file.");
 
         compare("Prettier:", output, prettier_output, source);
     }
@@ -136,7 +136,7 @@ mod tests {
     }
 
     fn save_prettier_output(file_path: &Path, output: &str) {
-        let mut file = File::create(file_path).expect("Failed to create .pre file");
+        let mut file = File::create(file_path).expect("Failed to create .cls file");
         file.write_all(output.as_bytes())
             .expect("Failed to write Prettier output");
     }
