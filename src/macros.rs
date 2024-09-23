@@ -33,12 +33,12 @@ macro_rules! def_struct {
 
 #[macro_export]
 macro_rules! match_routing {
-    ( $node:ident, $result:ident, $context:ident, $shape:ident;
+    ( $node:ident, $context:ident, $shape:ident;
       $( $kind:literal => $struct_name:ident ),* $(,)? ) => {
         match $node.kind() {
             $(
                 $kind => {
-                    $result.push_str(&$struct_name::new(&$node).rewrite($context, $shape));
+                    $struct_name::new(&$node).rewrite($context, $shape)
                 }
             )*
             _ => {
@@ -51,10 +51,10 @@ macro_rules! match_routing {
 
 #[macro_export]
 macro_rules! static_routing {
-    ( $map:expr, $node:ident, $result:ident, $context:ident, $shape:ident ) => {
+    ( $map:expr, $node:ident, $context:ident, $shape:ident ) => {
         if let Some(constructor) = $map.get($node.kind()) {
             let struct_instance: Box<dyn Rewrite> = constructor(&$node);
-            $result.push_str(&struct_instance.rewrite($context, $shape));
+            struct_instance.rewrite($context, $shape)
         } else {
             let struct_name = std::any::type_name::<Self>().split("::").last().unwrap();
             panic!(

@@ -278,7 +278,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        match_routing!(node, result, context, shape;
+        result.push_str(&match_routing!(node, context, shape;
             "type_identifier" => Value,
             "block" => Block,
             //"break_statement"
@@ -297,7 +297,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             //"throw_statement" => Thr
             "try_statement" => TryStatement,
             //"while_statement" => WhileStatement, // NOTE: it conflicts with try_add_standalone_prefix() which adds extra `;` at end
-        );
+        ));
         result
     }
 }
@@ -574,7 +574,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        static_routing!(EXP_MAP, node, result, context, shape);
+        result.push_str(&static_routing!(EXP_MAP, node, context, shape));
         //match_routing!(node, result, context, shape;
         //    "field_access" => FieldAccess,
         //    "array_creation_expression" => ArrayCreationExpression,
@@ -1264,10 +1264,10 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         result.push_str("[ ");
 
         let c = node.first_c().first_c(); // skip SoslQuery and SoqlQuery container node;
-        match_routing!(c, result, context, shape;
+        result.push_str(&match_routing!(c, context, shape;
             "sosl_query_body" => SoslQueryBody,
             "soql_query_body" => SoqlQueryBody,
-        );
+        ));
 
         result.push_str(" ]");
         result
@@ -1338,12 +1338,19 @@ impl<'a, 'tree> Rewrite for FromClause<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
         result.push_str("FROM ");
 
-        node.children_vec().iter().for_each(|c| {
-            match_routing!(c, result, context, shape;
-            "storage_alias" => StorageAlias,
-            "storage_identifier" => StorageIdentifier,
-            );
-        });
+        let joined_children = node
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                "storage_alias" => StorageAlias,
+                "storage_identifier" => StorageIdentifier,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_children);
+
         result
     }
 }
@@ -1387,12 +1394,12 @@ impl<'a, 'tree> Rewrite for WhereCluase<'a, 'tree> {
 
         result.push_str("WHERE ");
         let c = node.first_c();
-        match_routing!(c, result, context, shape;
+        result.push_str(&match_routing!(c, context, shape;
             "comparison_expression" => ComparisonExpression,
             //"and_expression" => StorageAlias,
             //"not_expression" => StorageIdentifier,
             //"or_expression" => StorageIdentifier,
-        );
+        ));
 
         result
     }
@@ -1403,14 +1410,18 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         let c = node.first_c();
-        node.children_vec().iter().for_each(|c| {
-            match_routing!(c, result, context, shape;
-                "field_identifier" => FieldIdentifier,
-                "bound_apex_expression" => BoundApexExpression,
-                "value_comparison_operator" => Value,
-                //"storage_identifier" => StorageIdentifier,
-            );
-        });
+        //node.children_vec()
+        //    .iter()
+        //    .map(|c| {
+        //        match_routing!(c, context, shape;
+        //            "field_identifier" => FieldIdentifier,
+        //            "bound_apex_expression" => BoundApexExpression,
+        //            "value_comparison_operator" => Value,
+        //            //"storage_identifier" => StorageIdentifier,
+        //        );
+        //    })
+        //    .collect::<Vec<_>>()
+        //    .join(' ');
         result
     }
 }
