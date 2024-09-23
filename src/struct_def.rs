@@ -86,4 +86,5 @@ def_struct!(
     BoundApexExpression,
     LimitClause,
     OffsetClause,
+    AllRowClause,
 );

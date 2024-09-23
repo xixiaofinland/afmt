@@ -1255,6 +1255,11 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
             result.push_str(&rewrite::<OffsetClause>(o, shape, context));
         }
 
+        if let Some(ref o) = node.try_c_by_n("all_rows_clause") {
+            result.push(' ');
+            result.push_str(&rewrite::<AllRowClause>(o, shape, context));
+        }
+
         result.push_str("]");
 
         //all_rows_clause
@@ -1332,6 +1337,12 @@ impl<'a, 'tree> Rewrite for OffsetClause<'a, 'tree> {
             result.push_str(c.v(source_code));
         }
         result
+    }
+}
+
+impl<'a, 'tree> Rewrite for AllRowClause<'a, 'tree> {
+    fn rewrite(&self, _context: &FmtContext, _shape: &mut Shape) -> String {
+        "ALL ROWS".to_string()
     }
 }
 
