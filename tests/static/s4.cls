@@ -1,5 +1,5 @@
 public class Me {
   {
-    List<Account> accs = [ SELECT Id FROM Account WHERE Name = :[ SELECT Name FROM Account WHERE Id = :A.Id ].Name ];
+    List<Account> accs = [SELECT Id FROM Account WHERE Name = :[SELECT Name FROM Account WHERE Id = :A.Id].Name];
   }
 }

@@ -1231,7 +1231,7 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        result.push_str("[ ");
+        result.push_str("[");
 
         let s = node.c_by_n("select_clause");
         result.push_str(&rewrite::<SelectClause>(&s, shape, context));
@@ -1239,10 +1239,11 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
         let f = node.c_by_n("from_clause");
         result.push_str(&rewrite::<FromClause>(&f, shape, context));
         result.push(' ');
-        let f = node.c_by_n("where_clause");
-        result.push_str(&rewrite::<WhereCluase>(&f, shape, context));
+        if let Some(f) = node.try_c_by_n("where_clause") {
+            result.push_str(&rewrite::<WhereCluase>(&f, shape, context));
+        }
 
-        result.push_str(" ]");
+        result.push_str("]");
 
         //select_clause //
         //from_clause //
