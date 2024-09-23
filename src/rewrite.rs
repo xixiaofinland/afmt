@@ -1250,17 +1250,17 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
             result.push_str(&rewrite::<LimitClause>(l, shape, context));
         }
 
-        result.push_str("]");
+        if let Some(ref o) = node.try_c_by_n("offset_clause") {
+            result.push(' ');
+            result.push_str(&rewrite::<OffsetClause>(o, shape, context));
+        }
 
-        //select_clause //
-        //from_clause //
-        //where_clause
+        result.push_str("]");
 
         //all_rows_clause
         //for_clause
         //group_by_clause
         //limit_clause
-        //offset_clause
         //order_by_clause
         //update_clause
         //using_clause
@@ -1316,6 +1316,21 @@ impl<'a, 'tree> Rewrite for FromClause<'a, 'tree> {
             .join(" ");
         result.push_str(&joined_children);
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for OffsetClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result.push_str("OFFSET ");
+        let c = node.first_c();
+        if c.kind() == "bound_apex_expression" {
+            result.push_str(&rewrite::<BoundApexExpression>(&c, shape, context));
+        } else {
+            result.push_str(c.v(source_code));
+        }
         result
     }
 }

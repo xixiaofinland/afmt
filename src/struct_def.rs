@@ -85,4 +85,5 @@ def_struct!(
     FieldIdentifier,
     BoundApexExpression,
     LimitClause,
+    OffsetClause,
 );
