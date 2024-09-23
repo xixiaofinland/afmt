@@ -1,16 +1,11 @@
 public class Me {
   {
-    List<Account> accs = [
-      SELECT Id
+    String name = [
+      SELECT Name
       FROM Account
-      WHERE
-        Name = :[
-          SELECT Name
-          FROM Account
-          WHERE Id = :A.Id
-        ]
-        .Name
-    ];
+      WHERE Id = :A.Id
+    ][0]
+    .Name;
   }
 }
 

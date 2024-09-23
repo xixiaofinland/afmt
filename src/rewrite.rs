@@ -1094,8 +1094,12 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         let object = node.c_by_n("object");
-        let n = PrimaryExpression::new(&object);
-        result.push_str(&n.rewrite(context, shape));
+        // special case: it has `[...]`
+        if object.kind() == "array_access" {
+            result.push_str(&ArrayAccess::new(&object).rewrite(context, shape));
+        } else {
+            result.push_str(&PrimaryExpression::new(&object).rewrite(context, shape));
+        }
 
         // `?.` need to traverse unnamed node;
         let mut current_node = object.next_sibling();
