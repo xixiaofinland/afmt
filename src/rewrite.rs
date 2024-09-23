@@ -1236,11 +1236,18 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
         let s = node.c_by_n("select_clause");
         result.push_str(&rewrite::<SelectClause>(&s, shape, context));
         result.push(' ');
+
         let f = node.c_by_n("from_clause");
         result.push_str(&rewrite::<FromClause>(&f, shape, context));
-        result.push(' ');
-        if let Some(f) = node.try_c_by_n("where_clause") {
-            result.push_str(&rewrite::<WhereCluase>(&f, shape, context));
+
+        if let Some(ref f) = node.try_c_by_n("where_clause") {
+            result.push(' ');
+            result.push_str(&rewrite::<WhereCluase>(f, shape, context));
+        }
+
+        if let Some(ref l) = node.try_c_by_n("limit_clause") {
+            result.push(' ');
+            result.push_str(&rewrite::<LimitClause>(l, shape, context));
         }
 
         result.push_str("]");
@@ -1359,6 +1366,21 @@ impl<'a, 'tree> Rewrite for WhereCluase<'a, 'tree> {
             //"or_expression" => StorageIdentifier,
         ));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for LimitClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result.push_str("LIMIT ");
+        let c = node.first_c();
+        if c.kind() == "bound_apex_expression" {
+            result.push_str(&rewrite::<BoundApexExpression>(&c, shape, context));
+        } else {
+            result.push_str(c.v(source_code));
+        }
         result
     }
 }

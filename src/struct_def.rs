@@ -84,4 +84,5 @@ def_struct!(
     ComparisonExpression,
     FieldIdentifier,
     BoundApexExpression,
+    LimitClause,
 );
