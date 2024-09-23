@@ -1261,15 +1261,21 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
 impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
-        result.push_str("[ ");
 
         let c = node.first_c().first_c(); // skip SoslQuery and SoqlQuery container node;
         result.push_str(&match_routing!(c, context, shape;
             "sosl_query_body" => SoslQueryBody,
             "soql_query_body" => SoqlQueryBody,
         ));
+        result
+    }
+}
 
-        result.push_str(" ]");
+impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+        let c = node.first_c();
+        result.push_str(&SoqlQueryBody::new(&c).rewrite(context, shape));
         result
     }
 }
@@ -1277,6 +1283,8 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
+
+        result.push_str("[ ");
 
         let s = node.c_by_n("select_clause");
         result.push_str(&SelectClause::new(&s).rewrite(context, shape));
@@ -1286,6 +1294,8 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
         result.push(' ');
         let f = node.c_by_n("where_clause");
         result.push_str(&WhereCluase::new(&f).rewrite(context, shape));
+
+        result.push_str(" ]");
 
         //select_clause //
         //from_clause //
@@ -1453,6 +1463,15 @@ impl<'a, 'tree> Rewrite for BoundApexExpression<'a, 'tree> {
         result.push(':');
         let c = node.first_c();
         result.push_str(&Expression::new(&c).rewrite(context, shape));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+        let c = node.first_c();
+        result.push_str(&SoqlQuery::new(&c).rewrite(context, shape));
         result
     }
 }

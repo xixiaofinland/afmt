@@ -46,6 +46,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "return_statement" => |node| Box::new(ReturnStatement::new(node)),
     "run_as_statement" => |node| Box::new(RunAsStatement::new(node)),
     "scoped_type_identifier" => |node| Box::new(ScopedTypeIdentifier::new(node)),
+    "soql_query" => |node| Box::new(SoqlQuery::new(node)),
     "ternary_expression" => |node| Box::new(TernaryExpression::new(node)),
     "try_statement" => |node| Box::new(TryStatement::new(node)),
     "unary_expression" => |node| Box::new(UnaryExpression::new(node)),
