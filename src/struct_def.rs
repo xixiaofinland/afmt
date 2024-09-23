@@ -87,4 +87,5 @@ def_struct!(
     LimitClause,
     OffsetClause,
     AllRowClause,
+    AndExpression,
 );

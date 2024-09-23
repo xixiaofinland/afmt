@@ -1387,11 +1387,30 @@ impl<'a, 'tree> Rewrite for WhereCluase<'a, 'tree> {
         let c = node.first_c();
         result.push_str(&match_routing!(c, context, shape;
             "comparison_expression" => ComparisonExpression,
-            //"and_expression" => StorageAlias,
+            "and_expression" => AndExpression,
             //"not_expression" => StorageIdentifier,
             //"or_expression" => StorageIdentifier,
         ));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for AndExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let joined_children = node
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                    "comparison_expression" => ComparisonExpression,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" AND ");
+        result.push_str(&joined_children);
         result
     }
 }
@@ -1423,6 +1442,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "field_identifier" => FieldIdentifier,
                     "bound_apex_expression" => BoundApexExpression,
                     "value_comparison_operator" => Value,
+                    "string_literal" => Value,
                     //"storage_identifier" => StorageIdentifier,
                 )
             })
@@ -1485,9 +1505,15 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        let left = node.cv_by_n("left", source_code);
+        let left = node.c_by_n("left");
+        result.push_str(&rewrite::<Expression>(&left, shape, context));
+
+        // hidden/un-named node, but has field_name so `cv_by_n()` works
         let op = node.cv_by_n("operator", source_code);
-        let right = node.cv_by_n("right", source_code);
+
+        let right = node.c_by_n("right");
+        result.push_str(&rewrite::<Expression>(&right, shape, context));
+
         result.push_str(&format!("{} {} {}", left, op, right));
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
