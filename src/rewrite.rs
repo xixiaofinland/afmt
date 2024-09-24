@@ -296,7 +296,7 @@ impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
-        result.push_str(&rewrite::<Expression>(&c, shape, context));
+        result.push_str(&rewrite_shape::<Expression>(&c, shape, false, context));
         result
     }
 }
@@ -1506,15 +1506,15 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, context);
 
         let left = node.c_by_n("left");
-        result.push_str(&rewrite::<Expression>(&left, shape, context));
+        let left_v = rewrite::<Expression>(&left, shape, context);
 
-        // hidden/un-named node, but has field_name so `cv_by_n()` works
+        // `operator`is a hidden/un-named node, but has field_name so `cv_by_n()` works
         let op = node.cv_by_n("operator", source_code);
 
         let right = node.c_by_n("right");
-        result.push_str(&rewrite::<Expression>(&right, shape, context));
+        let right_v = rewrite::<Expression>(&right, shape, context);
 
-        result.push_str(&format!("{} {} {}", left, op, right));
+        result.push_str(&format!("{} {} {}", left_v, op, right_v));
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
