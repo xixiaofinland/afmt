@@ -266,7 +266,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         result.push_str(&match_routing!(node, context, shape;
             "type_identifier" => Value,
@@ -283,6 +283,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             "local_variable_declaration" => LocalVariableDeclaration,
             "return_statement" => ReturnStatement,
             "run_as_statement" => RunAsStatement,
+            "generic_type" => GenericType,
             //"switch_expression" =>
             //"throw_statement" => Thr
             "try_statement" => TryStatement,
@@ -1498,6 +1499,92 @@ impl<'a, 'tree> Rewrite for SoslQueryBody<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        result.push('[');
+
+        let joined_c: String = node
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                    "find_clause" => FindClause,
+                    "returning_clause" => ReturningClause,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_c);
+
+        //let f = node.c_by_k("find_clause");
+        //result.push_str(&rewrite::<FindClause>(&f, shape, context));
+        //
+        //if let Some(r) = node.try_c_by_k("returning_clause");
+        //result.push_str(&rewrite::<FindClause>(&f, shape, context));
+        result.push(']');
+        result
+
+        //"type": "find_clause",
+        //"type": "in_clause",
+        //"type": "limit_clause",
+        //"type": "offset_clause",
+        //"type": "returning_clause",
+        //"type": "update_clause",
+        //"type": "with_clause",
+    }
+}
+
+impl<'a, 'tree> Rewrite for FindClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        result.push_str("FIND ");
+
+        let c = node.first_c();
+        if c.kind() == "bound_apex_expression" {
+            result.push_str(&rewrite::<BoundApexExpression>(&c, shape, context));
+        } else {
+            let joined_c = node
+                .children_vec()
+                .iter()
+                .map(|c| c.v(source_code))
+                .collect::<Vec<_>>()
+                .join("");
+            result.push_str(&joined_c);
+        }
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ReturningClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        result.push_str("RETURNING ");
+
+        let joined_c = node
+            .children_vec()
+            .iter()
+            .map(|c| rewrite::<SobjectReturn>(c, shape, context))
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_c);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SobjectReturn<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let c = node.first_c();
+        if c.kind() == "bound_apex_expression" {
+            result.push_str(&rewrite::<BoundApexExpression>(&c, shape, context));
+        } else {
+            let joined_c = node
+                .children_vec()
+                .iter()
+                .map(|c| c.v(source_code))
+                .collect::<Vec<_>>()
+                .join("");
+            result.push_str(&joined_c);
+        }
         result
     }
 }

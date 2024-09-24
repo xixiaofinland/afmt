@@ -88,4 +88,10 @@ def_struct!(
     OffsetClause,
     AllRowClause,
     AndExpression,
+    FindClause,
+    InClause,
+    ReturningClause,
+    UpdateClause,
+    WithClause,
+    SobjectReturn,
 );
