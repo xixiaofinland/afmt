@@ -295,8 +295,10 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
         let c = node.first_c();
         result.push_str(&rewrite_shape::<Expression>(&c, shape, false, context));
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
