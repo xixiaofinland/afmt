@@ -1144,19 +1144,19 @@ impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for Boolean<'a, 'tree> {
-    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
-
-        result.push('(');
-        result.push_str(node.cv_by_n("type", source_code));
-        result.push_str(") ");
-
-        let value = node.c_by_n("value");
-        result.push_str(&rewrite::<Expression>(&value, shape, context));
-        result
-    }
-}
+//impl<'a, 'tree> Rewrite for Boolean<'a, 'tree> {
+//    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+//        let (node, mut result, source_code, _) = self.prepare(context);
+//
+//        result.push('(');
+//        result.push_str(node.cv_by_n("type", source_code));
+//        result.push_str(") ");
+//
+//        let value = node.c_by_n("value");
+//        result.push_str(&rewrite::<Expression>(&value, shape, context));
+//        result
+//    }
+//}
 
 impl<'a, 'tree> Rewrite for TernaryExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
@@ -1246,7 +1246,8 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
                 "where_clause" => WhereCluase,
                 "limit_clause" => LimitClause,
                 "offset_clause" => OffsetClause,
-                "all_rows_clause" => AllRowClause
+                "all_rows_clause" => AllRowClause,
+                "order_by_clause" => OrderByClause,
                 )
             })
             .collect::<Vec<_>>()
@@ -1334,6 +1335,45 @@ impl<'a, 'tree> Rewrite for OffsetClause<'a, 'tree> {
 impl<'a, 'tree> Rewrite for AllRowClause<'a, 'tree> {
     fn rewrite(&self, _context: &FmtContext, _shape: &mut Shape) -> String {
         "ALL ROWS".to_string()
+    }
+}
+
+impl<'a, 'tree> Rewrite for OrderByClause<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result.push_str("ORDER BY ");
+
+        let joined_c: String = node
+            .children_vec()
+            .iter()
+            .map(|c| rewrite::<OrderExpression>(c, shape, context))
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_c);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for OrderExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let joined_c: String = node
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                    "field_identifier" => FieldIdentifier,
+                    //"type": "function_expression",
+                    //"type": "order_direction",
+                    //"type": "order_null_direction",
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_c);
+        result
     }
 }
 
@@ -1434,6 +1474,8 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "bound_apex_expression" => BoundApexExpression,
                     "value_comparison_operator" => Value,
                     "string_literal" => Value,
+                    "boolean" => Value,
+                    "set_comparison_operator" => Value,
                     //"storage_identifier" => StorageIdentifier,
                 )
             })
@@ -1467,9 +1509,25 @@ impl<'a, 'tree> Rewrite for FieldIdentifier<'a, 'tree> {
 impl<'a, 'tree> Rewrite for BoundApexExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+
+        // special case:
+        let after_bound_apex = node.prev_named_sibling().map_or(false, |prev_node| {
+            prev_node.kind() == "set_comparison_operator"
+        });
+
+        debug!("{}", after_bound_apex);
+
+        if after_bound_apex {
+            result.push('(');
+        }
+
         result.push(':');
         let c = node.first_c();
         result.push_str(&rewrite::<Expression>(&c, shape, context));
+
+        if after_bound_apex {
+            result.push(')');
+        }
         result
     }
 }

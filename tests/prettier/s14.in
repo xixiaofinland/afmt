@@ -12,7 +12,7 @@ public class Me {
                 AND Visible__c =   TRUE
     AND Channel__c INCLUDES (:channel)
                 AND   Market__c   INCLUDES   (  :marketCode  )
-    ORDER  BY  Order__c
+    ORDER BY  Order__c
       ];
   }
 }

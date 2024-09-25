@@ -62,7 +62,7 @@ def_struct!(
     FieldAccess,
     InstanceOfExpression,
     CastExpression,
-    Boolean,
+    //Boolean,
     TernaryExpression,
     MethodInvocation,
     AccessorList,
@@ -93,6 +93,8 @@ def_struct!(
     ReturningClause,
     UpdateClause,
     WithClause,
+    OrderByClause,
+    OrderExpression,
     SobjectReturn,
     WithDivisionExpression,
 );
