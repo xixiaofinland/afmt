@@ -1573,18 +1573,13 @@ impl<'a, 'tree> Rewrite for SobjectReturn<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        let c = node.first_c();
-        if c.kind() == "bound_apex_expression" {
-            result.push_str(&rewrite::<BoundApexExpression>(&c, shape, context));
-        } else {
-            let joined_c = node
-                .children_vec()
-                .iter()
-                .map(|c| c.v(source_code))
-                .collect::<Vec<_>>()
-                .join("");
-            result.push_str(&joined_c);
-        }
+        let joined_c = node
+            .children_vec()
+            .iter()
+            .map(|c| c.v(source_code))
+            .collect::<Vec<_>>()
+            .join("");
+        result.push_str(&joined_c);
         result
     }
 }
