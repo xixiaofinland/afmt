@@ -94,4 +94,5 @@ def_struct!(
     UpdateClause,
     WithClause,
     SobjectReturn,
+    WithDivisionExpression,
 );
