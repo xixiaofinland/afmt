@@ -1476,12 +1476,28 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "string_literal" => Value,
                     "boolean" => Value,
                     "set_comparison_operator" => Value,
+                    "date_literal_with_param" => DateLiteralWithParam,
                     //"storage_identifier" => StorageIdentifier,
                 )
             })
             .collect::<Vec<_>>()
             .join(" ");
         result.push_str(&joined_children);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for DateLiteralWithParam<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let joined_c: String = node
+            .children_vec()
+            .iter()
+            .map(|c| c.v(source_code))
+            .collect::<Vec<_>>()
+            .join(":");
+        result.push_str(&joined_c);
         result
     }
 }

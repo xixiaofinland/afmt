@@ -97,4 +97,5 @@ def_struct!(
     OrderExpression,
     SobjectReturn,
     WithDivisionExpression,
+    DateLiteralWithParam,
 );
