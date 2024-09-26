@@ -1906,12 +1906,17 @@ impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
             result.push_str("when else");
         } else {
             result.push_str("when ");
+            // NOTE. use has_comma flag as I can't differentiate delimeter `,` or ` `
+            let has_comma = node.all_children_vec().iter().any(|c| c.kind() == ",");
+            let join_str = if has_comma { ", " } else { " " };
+
             let joined = node
                 .children_vec()
                 .iter()
                 .map(|c| c.v(source_code))
                 .collect::<Vec<_>>()
-                .join(", ");
+                .join(join_str);
+
             result.push_str(&joined);
         }
         result
