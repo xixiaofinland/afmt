@@ -40,7 +40,17 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         result.push_str(" {\n");
 
         let body_node = node.c_by_n("body");
-        result.push_str(&body_node.visit_standalone_children(context, shape));
+        result.push_str(&body_node.visit_standalone_children(
+            context,
+            shape,
+            |c, c_context, c_shape| c._visit(c_context, c_shape),
+        ));
+
+        //let result =
+        //    node.visit_standalone_children(context, shape, |child, child_context, child_shape| {
+        //        child._visit(child_context, child_shape)
+        //    });
+
         result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
 
         result
@@ -105,7 +115,12 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         result.push_str(") {\n");
 
         let body_node = node.c_by_n("body");
-        result.push_str(&body_node.visit_standalone_children(context, shape));
+        result.push_str(&body_node.visit_standalone_children(
+            context,
+            shape,
+            |c, c_context, c_shape| c._visit(c_context, c_shape),
+        ));
+
         result.push_str(&format!("{}}}", shape.indent.as_string(config)));
 
         result
@@ -536,8 +551,11 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         result.push_str("{\n");
 
-        result
-            .push_str(&node.visit_standalone_children(context, &shape.clone_with_standalone(true)));
+        result.push_str(&node.visit_standalone_children(
+            context,
+            &shape.clone_with_standalone(true),
+            |c, c_context, c_shape| c._visit(c_context, c_shape),
+        ));
 
         add_indent(&mut result, shape, context);
         result.push('}');
@@ -839,7 +857,11 @@ impl<'a, 'tree> Rewrite for ConstructorBody<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         result.push_str(" {\n");
-        result.push_str(&node.visit_standalone_children(context, shape));
+        result.push_str(&node.visit_standalone_children(
+            context,
+            shape,
+            |c, c_context, c_shape| c._visit(c_context, c_shape),
+        ));
         result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
         result
     }
@@ -1816,8 +1838,11 @@ impl<'a, 'tree> Rewrite for SwitchBlock<'a, 'tree> {
 
         result.push_str(" {\n");
 
-        // create clojure for visit_* ??
-        node.visit_standalone_children(context, shape);
+        result.push_str(&node.visit_standalone_children(
+            context,
+            shape,
+            |c, c_context, c_shape| rewrite_shape::<SwitchRule>(&c, c_shape, false, c_context),
+        ));
 
         add_indent(&mut result, shape, context);
         result.push('}');

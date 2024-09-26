@@ -11,7 +11,10 @@ use tree_sitter::Node;
 
 #[allow(dead_code)]
 pub trait Visitor<'tree> {
-    fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String;
+    fn visit_standalone_children<F>(&self, context: &FmtContext, shape: &Shape, f: F) -> String
+    where
+        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String;
+
     fn visit_children_in_same_line(
         &self,
         delimiter: &str,
@@ -31,17 +34,19 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         result
     }
 
-    fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String {
+    fn visit_standalone_children<F>(&self, context: &FmtContext, shape: &Shape, mut f: F) -> String
+    where
+        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String,
+    {
         let mut result = String::new();
-        // FIXME: unnessary clone
         let shape_base = shape.copy_with_indent_increase(context.config);
-
         let mut cursor = self.walk();
+
         let children = self
             .named_children(&mut cursor)
             .map(|child| {
                 let mut c_shape = shape_base.clone_with_standalone(true);
-                child._visit(context, &mut c_shape)
+                f(&child, context, &mut c_shape)
             })
             .collect::<Vec<_>>()
             .join("\n");
@@ -52,6 +57,28 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         }
         result
     }
+
+    //fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String {
+    //    let mut result = String::new();
+    //    // FIXME: unnessary clone
+    //    let shape_base = shape.copy_with_indent_increase(context.config);
+    //
+    //    let mut cursor = self.walk();
+    //    let children = self
+    //        .named_children(&mut cursor)
+    //        .map(|child| {
+    //            let mut c_shape = shape_base.clone_with_standalone(true);
+    //            child._visit(context, &mut c_shape)
+    //        })
+    //        .collect::<Vec<_>>()
+    //        .join("\n");
+    //
+    //    if !children.is_empty() {
+    //        result.push_str(&children);
+    //        result.push('\n');
+    //    }
+    //    result
+    //}
 
     fn visit_children_in_same_line(
         &self,
