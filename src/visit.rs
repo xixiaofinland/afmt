@@ -11,28 +11,28 @@ use tree_sitter::Node;
 
 #[allow(dead_code)]
 pub trait Visitor<'tree> {
-    fn apply_to_standalone_children<F>(&self, context: &FmtContext, shape: &Shape, f: F) -> String
+    fn apply_to_standalone_children<F>(&self, shape: &Shape, context: &FmtContext, f: F) -> String
     where
-        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String;
+        F: FnMut(&Node<'tree>, &mut Shape, &FmtContext) -> String;
 
     fn apply_to_children_in_same_line<F>(
         &self,
         delimiter: &str,
-        context: &FmtContext,
         shape: &mut Shape,
+        context: &FmtContext,
         f: F,
     ) -> String
     where
-        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String;
+        F: FnMut(&Node<'tree>, &mut Shape, &FmtContext) -> String;
 
     fn try_visit_cs_by_k(&self, kind: &str, context: &FmtContext, shape: &mut Shape)
         -> Vec<String>;
     fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String>;
-    fn _visit(&self, context: &FmtContext, shape: &mut Shape) -> String;
+    fn _visit(&self, shape: &mut Shape, context: &FmtContext) -> String;
 }
 
 impl<'tree> Visitor<'tree> for Node<'tree> {
-    fn _visit(&self, context: &FmtContext, shape: &mut Shape) -> String {
+    fn _visit(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let mut result = String::new();
         result.push_str(&static_routing!(COMMON_MAP, self, context, shape));
         result
@@ -40,12 +40,12 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
 
     fn apply_to_standalone_children<F>(
         &self,
-        context: &FmtContext,
         shape: &Shape,
+        context: &FmtContext,
         mut f: F,
     ) -> String
     where
-        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String,
+        F: FnMut(&Node<'tree>, &mut Shape, &FmtContext) -> String,
     {
         let mut result = String::new();
         let shape_base = shape.copy_with_indent_increase(context.config);
@@ -55,7 +55,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             .named_children(&mut cursor)
             .map(|child| {
                 let mut c_shape = shape_base.clone_with_standalone(true);
-                f(&child, context, &mut c_shape)
+                f(&child, &mut c_shape, context)
             })
             .collect::<Vec<_>>()
             .join("\n");
@@ -70,12 +70,12 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
     fn apply_to_children_in_same_line<F>(
         &self,
         delimiter: &str,
-        context: &FmtContext,
         shape: &mut Shape,
+        context: &FmtContext,
         mut f: F,
     ) -> String
     where
-        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String,
+        F: FnMut(&Node<'tree>, &mut Shape, &FmtContext) -> String,
     {
         let mut result = String::new();
         let mut cursor = self.walk();
@@ -84,7 +84,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             .named_children(&mut cursor)
             .map(|child| {
                 let mut child_shape = shape.clone_with_standalone(false);
-                f(&child, context, &mut child_shape)
+                f(&child, &mut child_shape, context)
             })
             .collect::<Vec<_>>()
             .join(delimiter);
@@ -96,7 +96,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
     fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String> {
         let mut cursor = self.walk();
         self.named_children(&mut cursor)
-            .map(|n| n._visit(context, shape))
+            .map(|n| n._visit(shape, context))
             .collect::<Vec<_>>()
     }
 
@@ -108,7 +108,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
     ) -> Vec<String> {
         self.try_cs_by_k(kind)
             .iter()
-            .map(|n| n._visit(context, shape))
+            .map(|n| n._visit(shape, context))
             .collect::<Vec<_>>()
     }
 }

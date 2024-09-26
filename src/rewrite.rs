@@ -41,9 +41,9 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         let body_node = node.c_by_n("body");
         result.push_str(&body_node.apply_to_standalone_children(
-            context,
             shape,
-            |c, c_context, c_shape| c._visit(c_context, c_shape),
+            context,
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
 
         //let result =
@@ -116,9 +116,9 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let body_node = node.c_by_n("body");
         result.push_str(&body_node.apply_to_standalone_children(
-            context,
             shape,
-            |c, c_context, c_shape| c._visit(c_context, c_shape),
+            context,
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
 
         result.push_str(&format!("{}}}", shape.indent.as_string(config)));
@@ -377,9 +377,9 @@ impl<'a, 'tree> Rewrite for CatchFormalParameter<'a, 'tree> {
         result.push('(');
         result.push_str(&node.apply_to_children_in_same_line(
             " ",
-            context,
             shape,
-            |c, c_context, c_shape| c._visit(c_context, c_shape),
+            context,
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
         result.push(')');
         result
@@ -539,9 +539,9 @@ impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
             "({})",
             &self.node().apply_to_children_in_same_line(
                 ", ",
-                context,
                 shape,
-                |c, c_context, c_shape| c._visit(c_context, c_shape),
+                context,
+                |c, c_shape, c_context| c._visit(c_shape, c_context),
             )
         )
     }
@@ -560,9 +560,9 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
         result.push_str("{\n");
 
         result.push_str(&node.apply_to_standalone_children(
-            context,
             &shape.clone_with_standalone(true),
-            |c, c_context, c_shape| c._visit(c_context, c_shape),
+            context,
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
 
         add_indent(&mut result, shape, context);
@@ -866,9 +866,9 @@ impl<'a, 'tree> Rewrite for ConstructorBody<'a, 'tree> {
 
         result.push_str(" {\n");
         result.push_str(&node.apply_to_standalone_children(
-            context,
             shape,
-            |c, c_context, c_shape| c._visit(c_context, c_shape),
+            context,
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
         result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
         result
@@ -968,9 +968,9 @@ impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
         if node.named_child_count() != 0 {
             result.push_str(&node.apply_to_children_in_same_line(
                 " ",
-                context,
                 shape,
-                |c, c_context, c_shape| c._visit(c_context, c_shape),
+                context,
+                |c, c_shape, c_context| c._visit(c_shape, c_context),
             ));
             return result;
         }
@@ -998,9 +998,9 @@ impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, context);
         result.push_str(&node.apply_to_children_in_same_line(
             " ",
-            context,
             shape,
-            |c, c_context, c_shape| c._visit(c_context, c_shape),
+            context,
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
         try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
@@ -1065,9 +1065,9 @@ impl<'a, 'tree> Rewrite for ScopedTypeIdentifier<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
         result.push_str(&node.apply_to_children_in_same_line(
             ".",
-            context,
             shape,
-            |c, c_context, c_shape| c._visit(c_context, c_shape),
+            context,
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
         result
     }
@@ -1845,12 +1845,15 @@ impl<'a, 'tree> Rewrite for UnaryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SwitchExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("switch on ");
         result.push_str(node.cv_by_n("condition", source_code));
 
         let b = node.c_by_n("body");
         result.push_str(&rewrite_shape::<SwitchBlock>(&b, shape, false, context));
+
+        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -1862,9 +1865,9 @@ impl<'a, 'tree> Rewrite for SwitchBlock<'a, 'tree> {
         result.push_str(" {\n");
 
         result.push_str(&node.apply_to_standalone_children(
-            context,
             shape,
-            |c, c_context, c_shape| rewrite_shape::<SwitchRule>(&c, c_shape, false, c_context),
+            context,
+            |c, c_shape, c_context| rewrite::<SwitchRule>(&c, c_shape, c_context),
         ));
 
         add_indent(&mut result, shape, context);
