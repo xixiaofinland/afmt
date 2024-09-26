@@ -1801,10 +1801,11 @@ impl<'a, 'tree> Rewrite for SwitchExpression<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        result.push_str("switch on ");
         result.push_str(node.cv_by_n("condition", source_code));
 
         let b = node.c_by_n("body");
-        result.push_str(&rewrite::<Expression>(&b, shape, context));
+        result.push_str(&rewrite_shape::<SwitchBlock>(&b, shape, false, context));
         result
     }
 }
@@ -1813,13 +1814,14 @@ impl<'a, 'tree> Rewrite for SwitchBlock<'a, 'tree> {
     fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        let joined_c: String = node
-            .children_vec()
-            .iter()
-            .map(|c| rewrite::<SwitchRule>(c, shape, context))
-            .collect::<Vec<_>>()
-            .join(" ");
-        result.push_str(&joined_c);
+        result.push_str(" {\n");
+
+        // create clojure for visit_* ??
+        node.visit_standalone_children(context, shape);
+
+        add_indent(&mut result, shape, context);
+        result.push('}');
+
         result
     }
 }
