@@ -40,7 +40,7 @@ macro_rules! match_routing {
         match $node.kind() {
             $(
                 $kind => {
-                    $struct_name::new(&$node).rewrite($context, $shape)
+                    $struct_name::new(&$node).rewrite($shape, $context)
                 }
             )*
             _ => {
@@ -56,7 +56,7 @@ macro_rules! static_routing {
     ( $map:expr, $node:ident, $context:ident, $shape:ident ) => {
         if let Some(constructor) = $map.get($node.kind()) {
             let struct_instance: Box<dyn Rewrite> = constructor(&$node);
-            struct_instance.rewrite($context, $shape)
+            struct_instance.rewrite($shape, $context)
         } else {
             let struct_name = std::any::type_name::<Self>().split("::").last().unwrap();
             panic!(

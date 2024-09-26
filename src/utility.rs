@@ -98,7 +98,7 @@ where
     T: FromNode<'a, 'tree> + Rewrite,
 {
     let block = T::new(n);
-    block.rewrite(context, shape)
+    block.rewrite(shape, context)
 }
 
 pub fn rewrite_shape<'a, 'tree, T>(
@@ -112,5 +112,5 @@ where
 {
     let block = T::new(n);
     let cloned = &mut shape.clone_with_standalone(is_standalone);
-    block.rewrite(context, cloned)
+    block.rewrite(cloned, context)
 }
