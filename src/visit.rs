@@ -11,11 +11,11 @@ use tree_sitter::Node;
 
 #[allow(dead_code)]
 pub trait Visitor<'tree> {
-    fn visit_standalone_children<F>(&self, context: &FmtContext, shape: &Shape, f: F) -> String
+    fn apply_to_standalone_children<F>(&self, context: &FmtContext, shape: &Shape, f: F) -> String
     where
         F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String;
 
-    fn visit_children_in_same_line<F>(
+    fn apply_to_children_in_same_line<F>(
         &self,
         delimiter: &str,
         context: &FmtContext,
@@ -38,7 +38,12 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         result
     }
 
-    fn visit_standalone_children<F>(&self, context: &FmtContext, shape: &Shape, mut f: F) -> String
+    fn apply_to_standalone_children<F>(
+        &self,
+        context: &FmtContext,
+        shape: &Shape,
+        mut f: F,
+    ) -> String
     where
         F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String,
     {
@@ -62,7 +67,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         result
     }
 
-    fn visit_children_in_same_line<F>(
+    fn apply_to_children_in_same_line<F>(
         &self,
         delimiter: &str,
         context: &FmtContext,
