@@ -1905,9 +1905,14 @@ impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
             result.push_str("when else");
         } else {
             result.push_str("when ");
-            result.push_str(node.first_c().v(source_code));
+            let joined = node
+                .children_vec()
+                .iter()
+                .map(|c| c.v(source_code))
+                .collect::<Vec<_>>()
+                .join(", ");
+            result.push_str(&joined);
         }
-
         result
     }
 }
