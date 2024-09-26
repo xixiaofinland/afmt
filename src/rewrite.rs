@@ -1899,7 +1899,7 @@ impl<'a, 'tree> Rewrite for SwitchRule<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
-    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         if node.named_child_count() == 0 {
@@ -1908,16 +1908,24 @@ impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
             result.push_str("when ");
             // NOTE. use has_comma flag as I can't differentiate delimeter `,` or ` `
             let has_comma = node.all_children_vec().iter().any(|c| c.kind() == ",");
-            let join_str = if has_comma { ", " } else { " " };
+            let delimeter = if has_comma { ", " } else { " " };
 
-            let joined = node
-                .children_vec()
-                .iter()
-                .map(|c| c.v(source_code))
-                .collect::<Vec<_>>()
-                .join(join_str);
+            // FIXME: I currently don't have brain power to narrow from _visit()
+            result.push_str(&node.apply_to_children_in_same_line(
+                delimeter,
+                shape,
+                context,
+                |c, c_shape, c_context| c._visit(c_shape, c_context),
+            ));
 
-            result.push_str(&joined);
+            //let joined = node
+            //    .children_vec()
+            //    .iter()
+            //    .map(|c| c.v(source_code))
+            //    .collect::<Vec<_>>()
+            //    .join(join_str);
+            //
+            //result.push_str(&joined);
         }
         result
     }

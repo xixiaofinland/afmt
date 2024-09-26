@@ -10,8 +10,10 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "int" => |node| Box::new(Value::new(node)),
     "string_literal" => |node| Box::new(Value::new(node)),
     "type_identifier" => |node| Box::new(Value::new(node)),
+    "null_literal" => |node| Box::new(Value::new(node)),
     // --------------- split
     "annotation_argument_list" => |node| Box::new(AnnotationArgumentList::new(node)),
+    "parenthesized_expression" => |node| Box::new(ParenthesizedExpression::new(node)),
     "array_access" => |node| Box::new(ArrayAccess::new(node)),
     "array_creation_expression" => |node| Box::new(ArrayCreationExpression::new(node)),
     "array_initializer" => |node| Box::new(ArrayInitializer::new(node)),

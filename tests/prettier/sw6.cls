@@ -1,0 +1,15 @@
+public class Me {
+  {
+    switch on (x) {
+      when 1 {
+        return 1;
+      }
+      when ((2)) {
+        return 2;
+      }
+      when (3), (4) {
+        return 3;
+      }
+    }
+  }
+}
