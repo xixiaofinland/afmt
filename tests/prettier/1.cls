@@ -1,13 +1,9 @@
 public class Me {
   {
-    List<Account> accounts = [
-
-      SELECT Id
-
-        FROM Account
-
-      WHERE CreatedDate   =   LAST_N_DAYS  :  
-      60
+    [
+      SELECT Body__c
+      FROM Banner__c
+      ORDER   BY Order__c
     ];
   }
 }
