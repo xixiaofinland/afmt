@@ -1853,7 +1853,7 @@ impl<'a, 'tree> Rewrite for SwitchExpression<'a, 'tree> {
         let b = node.c_by_n("body");
         result.push_str(&rewrite_shape::<SwitchBlock>(&b, shape, false, context));
 
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -1880,12 +1880,19 @@ impl<'a, 'tree> Rewrite for SwitchBlock<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SwitchRule<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         let s = node.c_by_k("switch_label");
         result.push_str(&rewrite::<SwitchLabel>(&s, shape, context));
 
         let b = node.c_by_k("block");
-        result.push_str(&rewrite::<Block>(&b, shape, context));
+        result.push_str(&rewrite::<Block>(
+            &b,
+            &mut shape.clone_with_standalone(false),
+            context,
+        ));
+
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, context.source_code);
         result
     }
 }
@@ -1895,9 +1902,9 @@ impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         if node.named_child_count() == 0 {
-            result.push_str("WHEN ELSE ");
+            result.push_str("when else");
         } else {
-            result.push_str("WHEN ");
+            result.push_str("when ");
             result.push_str(node.first_c().v(source_code));
         }
 
