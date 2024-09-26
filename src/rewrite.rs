@@ -1848,7 +1848,8 @@ impl<'a, 'tree> Rewrite for SwitchExpression<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("switch on ");
-        result.push_str(node.cv_by_n("condition", source_code));
+        let con = node.c_by_n("condition");
+        result.push_str(&rewrite_shape::<Expression>(&con, shape, false, context));
 
         let b = node.c_by_n("body");
         result.push_str(&rewrite_shape::<SwitchBlock>(&b, shape, false, context));
