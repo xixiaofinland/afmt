@@ -98,4 +98,8 @@ def_struct!(
     SobjectReturn,
     WithDivisionExpression,
     DateLiteralWithParam,
+    SwitchExpression,
+    SwitchBlock,
+    SwitchRule,
+    SwitchLabel,
 );

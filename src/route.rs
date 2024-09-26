@@ -53,6 +53,8 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "unary_expression" => |node| Box::new(UnaryExpression::new(node)),
     "update_expression" => |node| Box::new(UpdateExpression::new(node)),
     "while_statement" => |node| Box::new(WhileStatement::new(node)),
+    "switch_expression" => |node| Box::new(SwitchExpression::new(node)),
+    "switch_rule" => |node| Box::new(SwitchRule::new(node)),
 
 };
 
@@ -89,6 +91,7 @@ pub static EXP_MAP: PhfMap = phf_map! {
     "unary_expression" => |node| Box::new(UnaryExpression::new(node)),
     "update_expression" => |node| Box::new(UpdateExpression::new(node)),
     "query_expression" => |node| Box::new(QueryExpression::new(node)),
+    "switch_block" => |node| Box::new(SwitchBlock::new(node)),
 
     // --------------- split
     //"array_initializer" => |node| Box::new(ArrayInitializer::new(node)),

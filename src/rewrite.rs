@@ -1796,3 +1796,58 @@ impl<'a, 'tree> Rewrite for UnaryExpression<'a, 'tree> {
         result
     }
 }
+
+impl<'a, 'tree> Rewrite for SwitchExpression<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result.push_str(node.cv_by_n("condition", source_code));
+
+        let b = node.c_by_n("body");
+        result.push_str(&rewrite::<Expression>(&b, shape, context));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SwitchBlock<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        let joined_c: String = node
+            .children_vec()
+            .iter()
+            .map(|c| rewrite::<SwitchRule>(c, shape, context))
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_c);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SwitchRule<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, shape: &mut Shape) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        let s = node.c_by_k("switch_label");
+        result.push_str(&rewrite::<SwitchLabel>(&s, shape, context));
+
+        let b = node.c_by_k("block");
+        result.push_str(&rewrite::<Block>(&b, shape, context));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
+    fn rewrite(&self, context: &FmtContext, _shape: &mut Shape) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        if node.named_child_count() == 0 {
+            result.push_str("WHEN ELSE ");
+        } else {
+            result.push_str("WHEN ");
+            result.push_str(node.first_c().v(source_code));
+        }
+
+        result
+    }
+}
