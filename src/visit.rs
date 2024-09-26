@@ -15,12 +15,16 @@ pub trait Visitor<'tree> {
     where
         F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String;
 
-    fn visit_children_in_same_line(
+    fn visit_children_in_same_line<F>(
         &self,
         delimiter: &str,
         context: &FmtContext,
         shape: &mut Shape,
-    ) -> String;
+        f: F,
+    ) -> String
+    where
+        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String;
+
     fn try_visit_cs_by_k(&self, kind: &str, context: &FmtContext, shape: &mut Shape)
         -> Vec<String>;
     fn try_visit_cs(&self, context: &FmtContext, shape: &mut Shape) -> Vec<String>;
@@ -58,41 +62,24 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         result
     }
 
-    //fn visit_standalone_children(&self, context: &FmtContext, shape: &Shape) -> String {
-    //    let mut result = String::new();
-    //    // FIXME: unnessary clone
-    //    let shape_base = shape.copy_with_indent_increase(context.config);
-    //
-    //    let mut cursor = self.walk();
-    //    let children = self
-    //        .named_children(&mut cursor)
-    //        .map(|child| {
-    //            let mut c_shape = shape_base.clone_with_standalone(true);
-    //            child._visit(context, &mut c_shape)
-    //        })
-    //        .collect::<Vec<_>>()
-    //        .join("\n");
-    //
-    //    if !children.is_empty() {
-    //        result.push_str(&children);
-    //        result.push('\n');
-    //    }
-    //    result
-    //}
-
-    fn visit_children_in_same_line(
+    fn visit_children_in_same_line<F>(
         &self,
         delimiter: &str,
         context: &FmtContext,
         shape: &mut Shape,
-    ) -> String {
+        mut f: F,
+    ) -> String
+    where
+        F: FnMut(&Node<'tree>, &FmtContext, &mut Shape) -> String,
+    {
         let mut result = String::new();
         let mut cursor = self.walk();
+
         let fields = self
             .named_children(&mut cursor)
             .map(|child| {
                 let mut child_shape = shape.clone_with_standalone(false);
-                child._visit(context, &mut child_shape)
+                f(&child, context, &mut child_shape)
             })
             .collect::<Vec<_>>()
             .join(delimiter);
