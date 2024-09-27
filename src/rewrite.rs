@@ -434,7 +434,6 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
             match a.kind() {
                 "block" => {
                     result.push_str(" else");
-                    let n = Block::new(&a);
                     result.push_str(&rewrite_shape::<Block>(a, shape, false, context));
                 }
                 "if_statement" => {
@@ -1385,7 +1384,7 @@ impl<'a, 'tree> Rewrite for AllRowClause<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for OrderByClause<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         result.push_str("ORDER BY ");
 
@@ -1402,7 +1401,7 @@ impl<'a, 'tree> Rewrite for OrderByClause<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for OrderExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         let joined_c: String = node
             .children_vec()
@@ -1457,7 +1456,7 @@ impl<'a, 'tree> Rewrite for StorageIdentifier<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for WhereCluase<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         result.push_str("WHERE ");
         let c = node.first_c();
@@ -1474,7 +1473,7 @@ impl<'a, 'tree> Rewrite for WhereCluase<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for AndExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         let joined_children = node
             .children_vec()
@@ -1508,7 +1507,7 @@ impl<'a, 'tree> Rewrite for LimitClause<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         let joined_children = node
             .children_vec()
@@ -1533,7 +1532,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for DateLiteralWithParam<'a, 'tree> {
-    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         let joined_c: String = node
@@ -1548,7 +1547,7 @@ impl<'a, 'tree> Rewrite for DateLiteralWithParam<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for FieldIdentifier<'a, 'tree> {
-    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         let c = node.first_c();
@@ -1569,7 +1568,7 @@ impl<'a, 'tree> Rewrite for FieldIdentifier<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for BoundApexExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _, _) = self.prepare(context);
 
         // special case:
         let after_bound_apex = node.prev_named_sibling().map_or(false, |prev_node| {
@@ -1604,7 +1603,7 @@ impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for SoslQueryBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _, _) = self.prepare(context);
 
         result.push('[');
 
@@ -1701,7 +1700,7 @@ impl<'a, 'tree> Rewrite for ReturningClause<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for InClause<'a, 'tree> {
-    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
         let (node, _, source_code, _) = self.prepare(context);
         format!("IN {} FIELDS", node.first_c().v(source_code))
     }
@@ -1747,7 +1746,7 @@ impl<'a, 'tree> Rewrite for WithClause<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for SobjectReturn<'a, 'tree> {
-    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         result.push_str(&node.first_c().v(source_code));
@@ -1844,7 +1843,7 @@ impl<'a, 'tree> Rewrite for UnaryExpression<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for SwitchExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("switch on ");
@@ -1900,7 +1899,7 @@ impl<'a, 'tree> Rewrite for SwitchRule<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         if node.named_child_count() == 0 {
             result.push_str("when else");
@@ -1910,22 +1909,13 @@ impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
             let has_comma = node.all_children_vec().iter().any(|c| c.kind() == ",");
             let delimeter = if has_comma { ", " } else { " " };
 
-            // FIXME: I currently don't have brain power to narrow from _visit()
+            // FIXME: I currently don't have brain power to narrow _visit()
             result.push_str(&node.apply_to_children_in_same_line(
                 delimeter,
                 shape,
                 context,
                 |c, c_shape, c_context| c._visit(c_shape, c_context),
             ));
-
-            //let joined = node
-            //    .children_vec()
-            //    .iter()
-            //    .map(|c| c.v(source_code))
-            //    .collect::<Vec<_>>()
-            //    .join(join_str);
-            //
-            //result.push_str(&joined);
         }
         result
     }

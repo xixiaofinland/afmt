@@ -89,8 +89,8 @@ mod tests {
 
     fn print_side_by_side_diff(against: &str, output: &str, expected: &str) {
         let diff = TextDiff::from_lines(expected, output);
-        let mut left_col = String::new();
-        let mut right_col = String::new();
+        let mut left_col;
+        let mut right_col;
         println!(
             "\x1b[38;2;255;165;0m{:<60} | {:<60}\x1b[0m",
             against, "Afmt:\n"
