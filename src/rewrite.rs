@@ -415,7 +415,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         let mut result = String::new();
         let mut node = self.node().clone();
         let config = context.config;
-        let mut updated_context =
+        let updated_context =
             update_source_code(&node, &context.source_code).map(|updated_source_code| {
                 let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
                 FmtContext::new(config, wrapped_source)

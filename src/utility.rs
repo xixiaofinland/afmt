@@ -117,14 +117,6 @@ where
     block.rewrite(cloned, context)
 }
 
-//pub fn is_block_fix_needed(node: &Node) -> bool {
-//    node.c_by_n("consequence").kind() != "block"
-//        || node
-//            .try_c_by_n("alternative")
-//            .map(|a| a.kind() != "block" && a.kind() != "if_statement")
-//            .unwrap_or(false)
-//}
-
 pub fn update_source_code<'tree>(node: &Node<'tree>, source_code: &str) -> Option<String> {
     let node_code = node.v(source_code);
     let mut is_updated = false;
@@ -152,29 +144,3 @@ pub fn update_source_code<'tree>(node: &Node<'tree>, source_code: &str) -> Optio
         None
     }
 }
-
-//fn reformat<'tree>(node_source_code: &str) -> (&Tree, &Node<'tree>, String) {
-//    let mut parser = Parser::new();
-//    parser
-//        .set_language(&language())
-//        .expect("Error loading Apex grammar when reformat if_statement.");
-//
-//    // Apex parser can't parse if_statement alone
-//    let wrapped_source = format!("class Dummy {{ {{ {} }} }}", node_source_code);
-//
-//    // Parse the wrapped source code
-//    let tree = parser
-//        .parse(&wrapped_source, None)
-//        .expect("parse updated if_statement failed in reformat()");
-//
-//    // Get the root node and its children
-//    let new_node = &tree
-//        .root_node()
-//        .first_c()
-//        .c_by_n("body")
-//        .c_by_k("block")
-//        .c_by_k("if_statement");
-//
-//    // Return the tree, the new node, and the wrapped source
-//    (&tree, new_node, wrapped_source)
-//}
