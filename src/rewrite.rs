@@ -408,50 +408,60 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
-        try_add_standalone_prefix(&mut result, shape, context);
+        let (node, mut result, source_code, _) = self.prepare(context);
+        let mut source_code = source_code.to_string();
 
-        result.push_str("if ");
-        let con = node.c_by_n("condition");
-        result.push_str(&rewrite::<ParenthesizedExpression>(&con, shape, context));
+        // opininated to fix the missing `{...}` block then reformat
+        let (tree, new_source_code) = update_node(node, &mut source_code);
+        debug!("new_: |{}|", &new_source_code);
+        let node = &tree
+            .root_node()
+            .first_c()
+            .c_by_n("body")
+            .c_by_k("block")
+            .c_by_k("if_statement");
 
-        let consequence = node.c_by_n("consequence");
-        let is_block_node = consequence.kind() == "block";
+        debug!("updated: |{}|", node.v(&new_source_code));
+        return result;
 
-        if is_block_node {
-            result.push_str(&rewrite_shape::<Block>(&consequence, shape, false, context));
-        } else {
-            result.push_str(" {\n");
-            let mut c_shape = shape
-                .copy_with_indent_increase(context.config)
-                .clone_with_standalone(true);
-            result.push_str(&rewrite::<Statement>(&consequence, &mut c_shape, context));
-            result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
-        };
-
-        // FIXME: don't auto add `{}` and move test from static to prettier;
-        if let Some(ref a) = node.try_c_by_n("alternative") {
-            match a.kind() {
-                "block" => {
-                    result.push_str(" else");
-                    result.push_str(&rewrite_shape::<Block>(a, shape, false, context));
-                }
-                "if_statement" => {
-                    result.push_str(" else ");
-                    result.push_str(&rewrite_shape::<IfStatement>(a, shape, false, context));
-                }
-                _ => {
-                    result.push_str(" else {\n");
-                    let mut c_shape = shape
-                        .copy_with_indent_increase(context.config)
-                        .clone_with_standalone(true);
-                    result.push_str(&rewrite::<Statement>(a, &mut c_shape, context));
-                    result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
-                }
-            }
-        };
-
-        result
+        //try_add_standalone_prefix(&mut result, shape, context);
+        //
+        //result.push_str("if ");
+        //let con = node.c_by_n("condition");
+        //result.push_str(&rewrite::<ParenthesizedExpression>(&con, shape, context));
+        //
+        //let consequence = node.c_by_n("consequence");
+        //let is_block_node = consequence.kind() == "block";
+        //
+        //if is_block_node {
+        //    result.push_str(&rewrite_shape::<Block>(&consequence, shape, false, context));
+        //} else {
+        //    need_reformat = true;
+        //    result.push_str(" {");
+        //    result.push_str(consequence.v(source_code));
+        //    result.push_str("}");
+        //};
+        //
+        //if let Some(ref a) = node.try_c_by_n("alternative") {
+        //    match a.kind() {
+        //        "block" => {
+        //            result.push_str(" else");
+        //            result.push_str(&rewrite_shape::<Block>(a, shape, false, context));
+        //        }
+        //        "if_statement" => {
+        //            result.push_str(" else ");
+        //            result.push_str(&rewrite_shape::<IfStatement>(a, shape, false, context));
+        //        }
+        //        _ => {
+        //            need_reformat = true;
+        //            result.push_str(" else {");
+        //            result.push_str(a.v(source_code));
+        //            result.push_str("}");
+        //        }
+        //    }
+        //};
+        //
+        //result
     }
 }
 

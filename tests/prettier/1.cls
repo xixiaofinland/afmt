@@ -1,9 +1,10 @@
 public class Me {
   {
-    switch on (x) {
-      when (2) {
-        return 2;
-      }
-    }
+    if (true)
+      Integer i = 1;
+    else if (false)
+      Integer j = 2;
+    else 
+     Integer s = 2;
   }
 }
