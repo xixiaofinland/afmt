@@ -1,4 +1,5 @@
 use crate::child::Accessor;
+use crate::context::language;
 use crate::context::FmtContext;
 use crate::match_routing;
 use crate::route::EXP_MAP;
@@ -10,6 +11,9 @@ use crate::visit::Visitor;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
+use tree_sitter::Node;
+use tree_sitter::Parser;
+use tree_sitter::Tree;
 
 pub trait Rewrite {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String;
@@ -408,41 +412,63 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
-        let mut source_code = source_code.to_string();
+        let (initial_node, mut result, initial_source_code, _) = self.prepare(context);
+        let source_code: String;
+        let tree: Tree;
+        let node: &Node;
 
-        // opininated to fix the missing `{...}` block then reformat
-        let (tree, new_source_code) = update_node(node, &mut source_code);
-        debug!("new_: |{}|", &new_source_code);
-        let node = &tree
-            .root_node()
-            .first_c()
-            .c_by_n("body")
-            .c_by_k("block")
-            .c_by_k("if_statement");
+        if let Some(updated_source_code) = update_source_code(initial_node, initial_source_code) {
+            let mut parser = Parser::new();
+            parser
+                .set_language(&language())
+                .expect("Error loading Apex grammar when reformat if_statement.");
 
-        debug!("updated: |{}|", node.v(&new_source_code));
-        return result;
+            // Apex parser can't parse if_statement alone
+            let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
+
+            tree = parser
+                .parse(&wrapped_source, None)
+                .expect("parse updated if_statement failed.");
+
+            source_code = wrapped_source;
+            node = &tree
+                .root_node()
+                .first_c()
+                .c_by_n("body")
+                .c_by_k("block")
+                .c_by_k("if_statement");
+        } else {
+            node = initial_node;
+            source_code = initial_source_code.to_string();
+        }
+        debug!("1: |{}|", source_code);
+
+        result
+        //let current_node = if is_block_fix_needed(initial_node) {
+        //    let (tree, new_source_code) = update_node(initial_node, &mut source_code);
+        //    source_code = new_source_code;
+        //    tree.root_node()
+        //        .first_c()
+        //        .c_by_n("body")
+        //        .c_by_k("block")
+        //        .c_by_k("if_statement")
+        //} else {
+        //    initial_node.clone()
+        //};
 
         //try_add_standalone_prefix(&mut result, shape, context);
         //
         //result.push_str("if ");
-        //let con = node.c_by_n("condition");
+        //let con = current_node.c_by_n("condition");
         //result.push_str(&rewrite::<ParenthesizedExpression>(&con, shape, context));
+        //debug!("result1: |{}|", result);
         //
-        //let consequence = node.c_by_n("consequence");
-        //let is_block_node = consequence.kind() == "block";
+        //let consequence = current_node.c_by_n("consequence");
+        //debug!("source_code: |{}|", &source_code);
+        //result.push_str(&rewrite_shape::<Block>(&consequence, shape, false, context));
+        //debug!("result2: |{}|", result);
         //
-        //if is_block_node {
-        //    result.push_str(&rewrite_shape::<Block>(&consequence, shape, false, context));
-        //} else {
-        //    need_reformat = true;
-        //    result.push_str(" {");
-        //    result.push_str(consequence.v(source_code));
-        //    result.push_str("}");
-        //};
-        //
-        //if let Some(ref a) = node.try_c_by_n("alternative") {
+        //if let Some(ref a) = current_node.try_c_by_n("alternative") {
         //    match a.kind() {
         //        "block" => {
         //            result.push_str(" else");
@@ -453,14 +479,12 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         //            result.push_str(&rewrite_shape::<IfStatement>(a, shape, false, context));
         //        }
         //        _ => {
-        //            need_reformat = true;
-        //            result.push_str(" else {");
-        //            result.push_str(a.v(source_code));
-        //            result.push_str("}");
+        //            unreachable!()
         //        }
         //    }
         //};
         //
+        //debug!("result: |{}|", result);
         //result
     }
 }

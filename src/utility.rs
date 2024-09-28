@@ -117,44 +117,60 @@ where
     block.rewrite(cloned, context)
 }
 
-pub fn update_node<'a, 'tree>(node: &'a Node<'tree>, source_code: &str) -> (Tree, String) {
+//pub fn is_block_fix_needed(node: &Node) -> bool {
+//    node.c_by_n("consequence").kind() != "block"
+//        || node
+//            .try_c_by_n("alternative")
+//            .map(|a| a.kind() != "block" && a.kind() != "if_statement")
+//            .unwrap_or(false)
+//}
+
+pub fn update_source_code<'tree>(node: &Node<'tree>, source_code: &str) -> Option<String> {
     let node_code = node.v(source_code);
+    let mut is_updated = false;
     let mut new_node_code = String::from(node_code);
 
     if node.c_by_n("consequence").kind() != "block" {
-        let consequence_code = node.c_by_n("consequence").v(node_code);
+        let consequence_code = node.c_by_n("consequence").v(source_code);
         new_node_code =
             new_node_code.replace(&consequence_code, &format!("{{ {} }}", consequence_code));
+        is_updated = true;
     }
 
-    if let Some(ref a) = node.try_c_by_n("alternative") {
-        if a.kind() != "block" {
+    if let Some(a) = node.try_c_by_n("alternative") {
+        if a.kind() != "block" && a.kind() != "if_statement" {
             let alternative_code = a.v(source_code);
             new_node_code =
                 new_node_code.replace(&alternative_code, &format!("{{ {} }}", alternative_code));
+            is_updated = true;
         }
     }
 
-    let start_byte = node.start_byte();
-    let end_byte = node.end_byte();
-
-    let mut new_source_code = String::from(source_code);
-    new_source_code.replace_range(start_byte..end_byte, &new_node_code);
-
-    (reformat(&new_node_code), new_source_code)
+    if is_updated {
+        Some(new_node_code)
+    } else {
+        None
+    }
 }
 
-fn reformat<'a, 'tree>(node_source_code: &str) -> Tree {
-    println!("############## reformat_if_statement ########");
-    let mut parser = Parser::new();
-    parser
-        .set_language(&language())
-        .expect("Error loading Apex grammar when reformat if_statement.");
-
-    // Apex parser can't parse if_statement alone
-    let wrapped_source = format!("class Dummy {{ {{ {} }} }}", node_source_code);
-
-    parser
-        .parse(wrapped_source, None)
-        .expect("parse updated if_statement failed in reformat().")
-}
+//fn reformat<'a, 'tree>(node_source_code: &'a str) -> (Node<'tree>, String) {
+//    let mut parser = Parser::new();
+//    parser
+//        .set_language(&language())
+//        .expect("Error loading Apex grammar when reformat if_statement.");
+//
+//    // Apex parser can't parse if_statement alone
+//    let wrapped_source = format!("class Dummy {{ {{ {} }} }}", node_source_code);
+//
+//    let tree = parser
+//        .parse(&wrapped_source, None)
+//        .expect("parse updated if_statement failed in reformat()");
+//
+//    let new_node = tree
+//        .root_node()
+//        .first_c()
+//        .c_by_n("body")
+//        .c_by_k("block")
+//        .c_by_k("if_statement");
+//    (new_node, wrapped_source)
+//}
