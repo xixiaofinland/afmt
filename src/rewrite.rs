@@ -411,16 +411,16 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
-    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, config) = self.prepare(context);
-        let mut node = node.clone();
+    fn rewrite(&self, shape: &mut Shape, initial_context: &FmtContext) -> String {
+        let (node, mut result, source_code, config) = self.prepare(initial_context);
+        let mut node = node.clone(); // lifetime challenge
 
         let updated_context = update_source_code(&node, source_code).map(|updated_source_code| {
             let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
             FmtContext::new(config, wrapped_source)
         });
 
-        let context_to_use = match &updated_context {
+        let context = match &updated_context {
             Some(c) => {
                 node = c
                     .ast_tree
@@ -431,58 +431,41 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
                     .c_by_k("if_statement");
                 c.clone()
             }
-            None => context.clone(),
+            None => initial_context.clone(), // lifetime challenge
         };
 
-        let source_code = &context_to_use.source_code;
+        let source_code = &context.source_code;
 
-        debug!("source_code: |{}|", source_code);
-
-        try_add_standalone_prefix(&mut result, shape, &context_to_use);
+        try_add_standalone_prefix(&mut result, shape, &context);
 
         result.push_str("if ");
 
         let con = node.c_by_n("condition");
-        result.push_str(&rewrite::<ParenthesizedExpression>(
-            &con,
-            shape,
-            &context_to_use,
-        ));
+        result.push_str(&rewrite::<ParenthesizedExpression>(&con, shape, &context));
 
         let consequence = node.c_by_n("consequence");
-        debug!("consequence: |{}|", consequence.v(source_code));
-        debug!("result1: |{}|", result);
         result.push_str(&rewrite_shape::<Block>(
             &consequence,
             shape,
             false,
-            &context_to_use,
+            &context,
         ));
-
-        debug!("result2: |{}|", result);
 
         if let Some(ref a) = node.try_c_by_n("alternative") {
             match a.kind() {
                 "block" => {
                     result.push_str(" else");
-                    result.push_str(&rewrite_shape::<Block>(a, shape, false, &context_to_use));
+                    result.push_str(&rewrite_shape::<Block>(a, shape, false, &context));
                 }
                 "if_statement" => {
                     result.push_str(" else ");
-                    result.push_str(&rewrite_shape::<IfStatement>(
-                        a,
-                        shape,
-                        false,
-                        &context_to_use,
-                    ));
+                    result.push_str(&rewrite_shape::<IfStatement>(a, shape, false, &context));
                 }
                 _ => {
                     unreachable!()
                 }
             }
         };
-
-        debug!("result3: |{}|", result);
         result
     }
 }
