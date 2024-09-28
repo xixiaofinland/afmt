@@ -412,31 +412,28 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let mut result = String::new();
-        let mut node = self.node().clone();
-        let config = context.config;
-        let updated_context =
-            update_source_code(&node, &context.source_code).map(|updated_source_code| {
-                let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
-                FmtContext::new(config, wrapped_source)
-            });
+        let (node, mut result, source_code, config) = self.prepare(context);
+        let mut node = node.clone();
 
-        let context_to_use: FmtContext;
+        let updated_context = update_source_code(&node, source_code).map(|updated_source_code| {
+            let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
+            FmtContext::new(config, wrapped_source)
+        });
 
-        if let Some(c) = updated_context {
-            context_to_use = c;
-            node = context_to_use
-                .ast_tree
-                .root_node()
-                .first_c()
-                .c_by_n("body")
-                .c_by_k("block")
-                .c_by_k("if_statement");
-        } else {
-            context_to_use = context.clone();
-        }
+        let context_to_use = match &updated_context {
+            Some(c) => {
+                node = c
+                    .ast_tree
+                    .root_node()
+                    .first_c()
+                    .c_by_n("body")
+                    .c_by_k("block")
+                    .c_by_k("if_statement");
+                c.clone()
+            }
+            None => context.clone(),
+        };
 
-        let node = &node;
         let source_code = &context_to_use.source_code;
 
         debug!("source_code: |{}|", source_code);
