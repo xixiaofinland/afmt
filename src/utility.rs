@@ -153,7 +153,7 @@ pub fn update_source_code<'tree>(node: &Node<'tree>, source_code: &str) -> Optio
     }
 }
 
-//fn reformat<'a, 'tree>(node_source_code: &'a str) -> (Node<'tree>, String) {
+//fn reformat<'tree>(node_source_code: &str) -> (&Tree, &Node<'tree>, String) {
 //    let mut parser = Parser::new();
 //    parser
 //        .set_language(&language())
@@ -162,15 +162,19 @@ pub fn update_source_code<'tree>(node: &Node<'tree>, source_code: &str) -> Optio
 //    // Apex parser can't parse if_statement alone
 //    let wrapped_source = format!("class Dummy {{ {{ {} }} }}", node_source_code);
 //
+//    // Parse the wrapped source code
 //    let tree = parser
 //        .parse(&wrapped_source, None)
 //        .expect("parse updated if_statement failed in reformat()");
 //
-//    let new_node = tree
+//    // Get the root node and its children
+//    let new_node = &tree
 //        .root_node()
 //        .first_c()
 //        .c_by_n("body")
 //        .c_by_k("block")
 //        .c_by_k("if_statement");
-//    (new_node, wrapped_source)
+//
+//    // Return the tree, the new node, and the wrapped source
+//    (&tree, new_node, wrapped_source)
 //}
