@@ -68,7 +68,7 @@ impl Session {
                 let source_code =
                     fs::read_to_string(Path::new(&file)).expect("Failed to read file");
 
-                let context = FmtContext::new(&config, &source_code);
+                let context = FmtContext::new(&config, source_code);
                 let result = context.format_one_file();
                 tx.send(result).expect("failed to send result in tx");
             });

@@ -18,7 +18,7 @@ macro_rules! def_struct {
                 ) -> (&'a Node<'tree>, String, &'b str, &'b Config) {
                     let node = self.node();
                     let result = String::new();
-                    let source_code = context.source_code;
+                    let source_code = &context.source_code;
                     let config = context.config;
                     (node, result, source_code, config)
                 }

@@ -7,18 +7,18 @@ use tree_sitter::{Language, Node, Parser, Tree};
 #[derive(Clone)]
 pub struct FmtContext<'a> {
     pub config: &'a Config,
-    pub source_code: &'a str,
+    pub source_code: String,
     pub ast_tree: Tree,
 }
 
 impl<'a> FmtContext<'a> {
-    pub fn new(config: &'a Config, source_code: &'a str) -> Self {
+    pub fn new(config: &'a Config, source_code: String) -> Self {
         let mut parser = Parser::new();
         parser
             .set_language(&language())
             .expect("Error loading Apex grammar");
 
-        let ast_tree = parser.parse(source_code, None).unwrap();
+        let ast_tree = parser.parse(&source_code, None).unwrap();
         let root_node = &ast_tree.root_node();
 
         if root_node.has_error() {

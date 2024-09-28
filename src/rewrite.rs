@@ -210,9 +210,9 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
             result.push_str(&rewrite::<AccessorList>(a, shape, context));
 
             // special case: it has no `;` ending with "accessor_list"
-            try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, context.source_code);
+            try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, &context.source_code);
         } else {
-            try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+            try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         }
         result
     }
@@ -249,7 +249,7 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
         result.push_str(node.v(source_code));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -318,7 +318,7 @@ impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, context);
         let c = node.first_c();
         result.push_str(&rewrite_shape::<Expression>(&c, shape, false, context));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -412,80 +412,81 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (initial_node, mut result, initial_source_code, _) = self.prepare(context);
-        let source_code: String;
-        let tree: Tree;
-        let node: &Node;
+        let mut result = String::new();
+        let mut node = self.node().clone();
+        let config = context.config;
+        let mut updated_context =
+            update_source_code(&node, &context.source_code).map(|updated_source_code| {
+                let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
+                FmtContext::new(config, wrapped_source)
+            });
 
-        if let Some(updated_source_code) = update_source_code(initial_node, initial_source_code) {
-            let mut parser = Parser::new();
-            parser
-                .set_language(&language())
-                .expect("Error loading Apex grammar when reformat if_statement.");
+        let context_to_use: FmtContext;
 
-            // Apex parser can't parse if_statement alone
-            let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
-
-            tree = parser
-                .parse(&wrapped_source, None)
-                .expect("parse updated if_statement failed.");
-
-            source_code = wrapped_source;
-            node = &tree
+        if let Some(c) = updated_context {
+            context_to_use = c;
+            node = context_to_use
+                .ast_tree
                 .root_node()
                 .first_c()
                 .c_by_n("body")
                 .c_by_k("block")
                 .c_by_k("if_statement");
         } else {
-            node = initial_node;
-            source_code = initial_source_code.to_string();
+            context_to_use = context.clone();
         }
-        debug!("1: |{}|", source_code);
 
+        let node = &node;
+        let source_code = &context_to_use.source_code;
+
+        debug!("source_code: |{}|", source_code);
+
+        try_add_standalone_prefix(&mut result, shape, &context_to_use);
+
+        result.push_str("if ");
+
+        let con = node.c_by_n("condition");
+        result.push_str(&rewrite::<ParenthesizedExpression>(
+            &con,
+            shape,
+            &context_to_use,
+        ));
+
+        let consequence = node.c_by_n("consequence");
+        debug!("consequence: |{}|", consequence.v(source_code));
+        debug!("result1: |{}|", result);
+        result.push_str(&rewrite_shape::<Block>(
+            &consequence,
+            shape,
+            false,
+            &context_to_use,
+        ));
+
+        debug!("result2: |{}|", result);
+
+        if let Some(ref a) = node.try_c_by_n("alternative") {
+            match a.kind() {
+                "block" => {
+                    result.push_str(" else");
+                    result.push_str(&rewrite_shape::<Block>(a, shape, false, &context_to_use));
+                }
+                "if_statement" => {
+                    result.push_str(" else ");
+                    result.push_str(&rewrite_shape::<IfStatement>(
+                        a,
+                        shape,
+                        false,
+                        &context_to_use,
+                    ));
+                }
+                _ => {
+                    unreachable!()
+                }
+            }
+        };
+
+        debug!("result3: |{}|", result);
         result
-        //let current_node = if is_block_fix_needed(initial_node) {
-        //    let (tree, new_source_code) = update_node(initial_node, &mut source_code);
-        //    source_code = new_source_code;
-        //    tree.root_node()
-        //        .first_c()
-        //        .c_by_n("body")
-        //        .c_by_k("block")
-        //        .c_by_k("if_statement")
-        //} else {
-        //    initial_node.clone()
-        //};
-
-        //try_add_standalone_prefix(&mut result, shape, context);
-        //
-        //result.push_str("if ");
-        //let con = current_node.c_by_n("condition");
-        //result.push_str(&rewrite::<ParenthesizedExpression>(&con, shape, context));
-        //debug!("result1: |{}|", result);
-        //
-        //let consequence = current_node.c_by_n("consequence");
-        //debug!("source_code: |{}|", &source_code);
-        //result.push_str(&rewrite_shape::<Block>(&consequence, shape, false, context));
-        //debug!("result2: |{}|", result);
-        //
-        //if let Some(ref a) = current_node.try_c_by_n("alternative") {
-        //    match a.kind() {
-        //        "block" => {
-        //            result.push_str(" else");
-        //            result.push_str(&rewrite_shape::<Block>(a, shape, false, context));
-        //        }
-        //        "if_statement" => {
-        //            result.push_str(" else ");
-        //            result.push_str(&rewrite_shape::<IfStatement>(a, shape, false, context));
-        //        }
-        //        _ => {
-        //            unreachable!()
-        //        }
-        //    }
-        //};
-        //
-        //debug!("result: |{}|", result);
-        //result
     }
 }
 
@@ -936,7 +937,7 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
         let right_value = rewrite_shape::<Expression>(&right, shape, false, context);
 
         result.push_str(&format!("{} {} {}", left_value, op, right_value));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -956,7 +957,7 @@ impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
             &condition, shape, false, context,
         ));
 
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -1035,7 +1036,7 @@ impl<'a, 'tree> Rewrite for DmlExpression<'a, 'tree> {
             context,
             |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -1281,7 +1282,7 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
 
         let arguments = node.c_by_n("arguments");
         result.push_str(&rewrite::<ArgumentList>(&arguments, shape, context));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -1818,7 +1819,7 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
         let right_v = rewrite::<Expression>(&right, shape, context);
 
         result.push_str(&format!("{} {} {}", left_v, op, right_v));
-        try_add_standalone_suffix(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -1887,7 +1888,7 @@ impl<'a, 'tree> Rewrite for SwitchExpression<'a, 'tree> {
         let b = node.c_by_n("body");
         result.push_str(&rewrite_shape::<SwitchBlock>(&b, shape, false, context));
 
-        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, &context.source_code);
         result
     }
 }
@@ -1926,7 +1927,7 @@ impl<'a, 'tree> Rewrite for SwitchRule<'a, 'tree> {
             context,
         ));
 
-        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, context.source_code);
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, &context.source_code);
         result
     }
 }
