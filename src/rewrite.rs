@@ -46,13 +46,8 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
             |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
 
-        //let result =
-        //    node.visit_standalone_children(context, shape, |child, child_context, child_shape| {
-        //        child._visit(child_context, child_shape)
-        //    });
-
         result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
-
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
         result
     }
 }
@@ -122,7 +117,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         ));
 
         result.push_str(&format!("{}}}", shape.indent.as_string(config)));
-
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
         result
     }
 }
@@ -865,6 +860,7 @@ impl<'a, 'tree> Rewrite for ConstructorDeclaration<'a, 'tree> {
             context,
         ));
 
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
         result
     }
 }
