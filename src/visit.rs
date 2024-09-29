@@ -89,8 +89,12 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         let fields = self
             .named_children(&mut cursor)
             .map(|child| {
-                let mut child_shape = shape.clone_with_standalone(false);
-                f(&child, &mut child_shape, context)
+                let mut c_shape = shape.clone_with_standalone(false);
+                match child.kind() {
+                    "line_comment" => rewrite::<LineComment>(&child, &mut c_shape, context),
+                    "block_comment" => rewrite::<BlockComment>(&child, &mut c_shape, context),
+                    _ => f(&child, &mut c_shape, context),
+                }
             })
             .collect::<Vec<_>>()
             .join(delimiter);

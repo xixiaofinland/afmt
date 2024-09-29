@@ -764,14 +764,21 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
             result.push_str(c.v(source_code));
         }
 
-        let joined_children = node
-            .try_cs_by_k("annotation_key_value")
-            .iter()
-            .map(|c| rewrite_shape::<AnnotationKeyValue>(c, shape, false, context))
-            .collect::<Vec<_>>()
-            .join(" ");
+        result.push_str(&node.apply_to_children_in_same_line(
+            " ",
+            shape,
+            context,
+            |c, c_shape, c_context| {
+                rewrite_shape::<AnnotationKeyValue>(c, c_shape, false, c_context)
+            },
+        ));
 
-        result.push_str(&joined_children);
+        //let joined_children = node
+        //    .try_cs_by_k("annotation_key_value")
+        //    .iter()
+        //    .map(|c| rewrite_shape::<AnnotationKeyValue>(c, shape, false, context))
+        //    .collect::<Vec<_>>()
+        //    .join(" ");
 
         if let Some(ref a) = node
             .try_c_by_k("modifiers")
