@@ -21,15 +21,4 @@ class topLevelClass {
   @InvocableMethod(callout=true)
   List<String> getAccountNamesWithCallout(List<ID> ids) {
   }
-
-  @InvocableMethod
-  public static List<Results> execute(List<Requests> requestList) {
-  }
-
-  @InvocableVariable(
-    label='Records for Input'
-    description='yourDescription'
-    required=true
-  )
-  public List<SObject> inputCollection;
 }

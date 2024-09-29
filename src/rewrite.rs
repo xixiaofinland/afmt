@@ -61,9 +61,10 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&rewrite::<Modifiers>(a, shape, context));
+            if let Some(_) = a.try_c_by_k("modifier") {
+                result.push(' ');
+            }
         }
-
-        result.push(' ');
 
         let type_node_value = node.cv_by_n("type", source_code);
         result.push_str(type_node_value);

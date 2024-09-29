@@ -34,7 +34,7 @@ mod tests {
     }
 
     #[test]
-    fn prettier2() {
+    fn extra() {
         println!("Running Prettier-based tests...");
         for entry in std::fs::read_dir("tests/prettier2").unwrap() {
             let entry = entry.unwrap();
