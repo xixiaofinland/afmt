@@ -33,6 +33,19 @@ mod tests {
         }
     }
 
+    #[test]
+    fn prettier2() {
+        println!("Running Prettier-based tests...");
+        for entry in std::fs::read_dir("tests/prettier2").unwrap() {
+            let entry = entry.unwrap();
+            let source = entry.path();
+            if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
+                println!("{} {:?}", "### Processing prettier2 file:".green(), source);
+                run_prettier_test_files(&source);
+            }
+        }
+    }
+
     fn run_static_test_files(source: &Path) {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source);
