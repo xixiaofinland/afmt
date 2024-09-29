@@ -92,7 +92,8 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         shape.offset = result.len() + 3; // add trailing `) {` size
 
-        if shape.offset + params_single_line.len() <= shape.width {
+        //if shape.offset + params_single_line.len() <= shape.width {
+        if shape.offset + params_single_line.len() <= 1000000 {
             result.push_str(&params_single_line);
         } else {
             let param_shape = shape.copy_with_indent_increase(config);
