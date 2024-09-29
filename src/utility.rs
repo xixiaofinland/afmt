@@ -4,7 +4,6 @@ use crate::rewrite::Rewrite;
 use crate::shape::Shape;
 use crate::struct_def::{FromNode, IfStatement};
 use crate::visit::Visitor;
-use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
 use tree_sitter::{Node, Parser, Tree};

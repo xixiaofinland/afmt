@@ -38,6 +38,12 @@ macro_rules! match_routing {
     ( $node:ident, $context:ident, $shape:ident;
       $( $kind:literal => $struct_name:ident ),* $(,)? ) => {
         match $node.kind() {
+            "line_comment" => {
+                LineComment::new(&$node).rewrite($shape, $context)
+            },
+            "block_comment" => {
+                BlockComment::new(&$node).rewrite($shape, $context)
+            },
             $(
                 $kind => {
                     $struct_name::new(&$node).rewrite($shape, $context)
