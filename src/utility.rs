@@ -108,7 +108,6 @@ fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     }
 
     let remaining_code = &source_code[index..];
-    debug!("1: |{}|", remaining_code);
     let mut bytes_iter = remaining_code.bytes();
 
     match (bytes_iter.next(), bytes_iter.next()) {
