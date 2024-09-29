@@ -1,5 +1,7 @@
-public class OuterClass {
-  // Static final variable (constant) ΓÇô outer class level only
-  private static final   Integer MY_INT  ;   // hello
+public without sharing class Me {
+  {
+          @InvocableVariable(required=true label='Old User')
 
+    public Id oldUserId;
+  }
 }

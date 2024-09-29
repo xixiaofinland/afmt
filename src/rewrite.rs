@@ -273,9 +273,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         result.push_str(&declarator_values.join(", "));
 
-        debug!("1: |{}|", result);
         try_add_standalone_suffix(node, &mut result, shape, source_code);
-        debug!("2: |{}|", result);
         result
     }
 }
@@ -754,7 +752,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        try_add_standalone_prefix(&mut result, shape, context);
+        //try_add_standalone_prefix(&mut result, shape, context);
         result.push('@');
 
         let name = node.c_by_n("name");
@@ -825,7 +823,6 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
         });
 
         result.push_str(&node.try_csv_by_k("modifier", source_code).join(" "));
-
         result
     }
 }
@@ -1587,8 +1584,6 @@ impl<'a, 'tree> Rewrite for BoundApexExpression<'a, 'tree> {
         let after_bound_apex = node.prev_named_sibling().map_or(false, |prev_node| {
             prev_node.kind() == "set_comparison_operator"
         });
-
-        debug!("{}", after_bound_apex);
 
         if after_bound_apex {
             result.push('(');
