@@ -50,7 +50,9 @@ pub fn try_add_standalone_prefix_for_comment(
     if let Some(prev) = node.prev_named_sibling() {
         let comment_line = node.start_position().row;
         let prev_line = prev.end_position().row;
-        if comment_line != prev_line {
+        if comment_line == prev_line {
+            result.push(' ');
+        } else {
             add_indent(result, shape, context);
         }
     } else {
