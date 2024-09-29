@@ -40,25 +40,47 @@ pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtCo
     add_indent(result, shape, context);
 }
 
-pub fn try_add_standalone_prefix_for_comment(
+pub fn add_prefix_for_comment(
     node: &Node,
     result: &mut String,
     shape: &Shape,
     context: &FmtContext,
 ) {
-    if let Some(prev) = node.prev_named_sibling() {
-        let comment_line = node.start_position().row;
-        let prev_line = prev.end_position().row;
-        if comment_line == prev_line {
-            result.push(' ');
-        } else {
-            result.push('\n');
-            add_indent(result, shape, context);
-        }
-    } else {
+    let needs_indent = match node.prev_named_sibling() {
+        Some(prev) => node.start_position().row != prev.end_position().row,
+        None => true,
+    };
+
+    // the preceeding number of `\n` is already proceeded by the last node
+    if needs_indent {
         add_indent(result, shape, context);
     }
 }
+
+//pub fn add_suffix_for_line_comment(node: &Node, result: &mut String, source_code: &str) {
+//    if let Some(next) = node.next_named_sibling() {
+//        // special case: let LineComment and BlockComment to handle;
+//        if next.kind() != "line_comment" && next.kind() != "block_comment" {
+//            let count_new_lines = newlines_to_add(node, source_code);
+//            result.push_str(&"\n".repeat(count_new_lines));
+//        }
+//    }
+//}
+//
+//pub fn add_suffix_for_block_comment(node: &Node, result: &mut String, source_code: &str) {
+//    if let Some(next) = node.next_named_sibling() {
+//        if next.kind() != "block_comment" && next.kind() != "line_comment" {
+//            let comment_line = node.end_position().row;
+//            let next_line = next.start_position().row;
+//            if comment_line == next_line {
+//                result.push(' ');
+//            } else {
+//                let count_new_lines = newlines_to_add(node, source_code);
+//                result.push_str(&"\n".repeat(count_new_lines));
+//            }
+//        }
+//    }
+//}
 
 pub fn try_add_standalone_suffix(
     node: &Node,
@@ -89,8 +111,12 @@ pub fn try_add_standalone_suffix_no_semicolumn(
 
 pub fn add_standalone_suffix_no_semicolumn(node: &Node, result: &mut String, source_code: &str) {
     if let Some(next) = node.next_named_sibling() {
-        // special case: let LineComment and BlockComment to handle;
-        if next.kind() != "line_comment" && next.kind() != "block_comment" {
+        let is_next_comment = next.kind() == "line_comment" || next.kind() == "block_comment";
+        let same_line = node.end_position().row == next.start_position().row;
+
+        if is_next_comment && same_line {
+            result.push(' ');
+        } else {
             let count_new_lines = newlines_to_add(node, source_code);
             result.push_str(&"\n".repeat(count_new_lines));
         }

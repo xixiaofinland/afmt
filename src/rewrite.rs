@@ -165,19 +165,28 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
         }
 
         result.push_str("{\n");
-
-        add_indent(
-            &mut result,
-            &shape.copy_with_indent_increase(context.config),
+        result.push_str(&node.apply_to_standalone_children(
+            &shape.clone_with_standalone(true),
             context,
-        );
-        result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
+            |c, c_shape, c_context| c._visit(c_shape, c_context),
+        ));
 
-        result.push('\n');
         add_indent(&mut result, shape, context);
         result.push('}');
-
         result
+
+        //add_indent(
+        //    &mut result,
+        //    &shape.copy_with_indent_increase(context.config),
+        //    context,
+        //);
+        //result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
+        //
+        //result.push_str(
+        //    &node.apply_to_children_in_same_line("", shape, context, |c, _, _| {
+        //        c.v(source_code).to_string()
+        //    }),
+        //);
     }
 }
 
@@ -590,7 +599,7 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        try_add_standalone_prefix_for_comment(node, &mut result, shape, context);
+        add_prefix_for_comment(node, &mut result, shape, context);
         result.push_str(node.v(source_code));
         add_standalone_suffix_no_semicolumn(node, &mut result, source_code);
         result
@@ -600,7 +609,7 @@ impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
 impl<'a, 'tree> Rewrite for BlockComment<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        try_add_standalone_prefix_for_comment(node, &mut result, shape, context);
+        add_prefix_for_comment(node, &mut result, shape, context);
         result.push_str(node.v(source_code));
         add_standalone_suffix_no_semicolumn(node, &mut result, source_code);
         result

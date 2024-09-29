@@ -3,9 +3,6 @@ enum DanglingCommentsInEnum {
 
   /* Block Comment */
 
-
   // Second Inline Comment
   /* Second Block Comment */
-
 }
-
