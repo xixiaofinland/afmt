@@ -1932,8 +1932,13 @@ impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
 impl<'a, 'tree> Rewrite for StaticInitializer<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _source_code, _) = self.prepare(context);
-        let c = node.first_c();
-        result.push_str(&rewrite::<Block>(&c, shape, context));
+        try_add_standalone_prefix(&mut result, shape, context);
+        result.push_str("static");
+        result.push_str(&rewrite::<Block>(
+            &node.first_c(),
+            &mut shape.clone_with_standalone(false),
+            context,
+        ));
         result
     }
 }
