@@ -3,4 +3,3 @@ public class OuterClass {
   private static final   Integer MY_INT  ;   // hello
 
 }
-

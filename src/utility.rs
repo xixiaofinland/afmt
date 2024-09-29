@@ -41,6 +41,23 @@ pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtCo
     add_indent(result, shape, context);
 }
 
+pub fn try_add_standalone_prefix_for_comment(
+    node: &Node,
+    result: &mut String,
+    shape: &Shape,
+    context: &FmtContext,
+) {
+    if let Some(prev) = node.prev_named_sibling() {
+        let comment_line = node.start_position().row;
+        let prev_line = prev.end_position().row;
+        if comment_line != prev_line {
+            add_indent(result, shape, context);
+        }
+    } else {
+        add_indent(result, shape, context);
+    }
+}
+
 pub fn try_add_standalone_suffix(
     node: &Node,
     result: &mut String,
@@ -54,10 +71,7 @@ pub fn try_add_standalone_suffix(
 
 pub fn add_standalone_suffix(node: &Node, result: &mut String, source_code: &str) {
     result.push(';');
-    if node.next_named_sibling().is_some() {
-        let count_new_lines = newlines_to_add(node, source_code);
-        result.push_str(&"\n".repeat(count_new_lines));
-    }
+    add_standalone_suffix_no_semicolumn(node, result, source_code);
 }
 
 pub fn try_add_standalone_suffix_no_semicolumn(
@@ -66,14 +80,16 @@ pub fn try_add_standalone_suffix_no_semicolumn(
     shape: &Shape,
     source_code: &str,
 ) {
-    if shape.standalone && node.next_named_sibling().is_some() {
+    if shape.standalone {
         add_standalone_suffix_no_semicolumn(node, result, source_code);
     }
 }
 
 pub fn add_standalone_suffix_no_semicolumn(node: &Node, result: &mut String, source_code: &str) {
-    let count_new_lines = newlines_to_add(node, source_code);
-    result.push_str(&"\n".repeat(count_new_lines));
+    if node.next_named_sibling().is_some() {
+        let count_new_lines = newlines_to_add(node, source_code);
+        result.push_str(&"\n".repeat(count_new_lines));
+    }
 }
 
 pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
