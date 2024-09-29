@@ -4,6 +4,8 @@ use crate::rewrite::Rewrite;
 use crate::route::COMMON_MAP;
 use crate::shape::Shape;
 use crate::static_routing;
+use crate::struct_def::{BlockComment, LineComment};
+use crate::utility::rewrite;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
@@ -55,7 +57,11 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
             .named_children(&mut cursor)
             .map(|child| {
                 let mut c_shape = shape_base.clone_with_standalone(true);
-                f(&child, &mut c_shape, context)
+                match child.kind() {
+                    "line_comment" => rewrite::<LineComment>(&child, &mut c_shape, context),
+                    "block_comment" => rewrite::<BlockComment>(&child, &mut c_shape, context),
+                    _ => f(&child, &mut c_shape, context),
+                }
             })
             .collect::<Vec<_>>()
             .join("");
