@@ -1,7 +1,3 @@
-public without sharing class Me {
-  {
-          @InvocableVariable(required=true label='Old User')
+@IsTest class TestClass
+{}
 
-    public Id oldUserId;
-  }
-}

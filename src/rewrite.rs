@@ -22,11 +22,13 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&rewrite::<Modifiers>(a, shape, context));
-            //result.push_str(&rewrite_shape::<Modifiers>(a, shape, false, context));
+
+            if let Some(_) = a.try_c_by_k("modifier") {
+                result.push(' ');
+            }
         }
 
-        result.push_str(" class ");
-
+        result.push_str("class ");
         result.push_str(node.cv_by_n("name", source_code));
 
         if let Some(ref c) = node.try_c_by_n("superclass") {
