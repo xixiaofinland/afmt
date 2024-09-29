@@ -111,17 +111,14 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             result.push_str(&shape.indent.as_string(config));
         }
 
-        result.push_str(") {\n");
+        result.push_str(")");
 
-        let body_node = node.c_by_n("body");
-        result.push_str(&body_node.apply_to_standalone_children(
-            shape,
-            context,
-            |c, c_shape, c_context| c._visit(c_shape, c_context),
-        ));
-
-        result.push_str(&format!("{}}}", shape.indent.as_string(config)));
-        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
+        if let Some(body) = node.try_c_by_n("body") {
+            result.push_str(&rewrite_shape::<Block>(&body, shape, false, context));
+            try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
+        } else {
+            try_add_standalone_suffix(node, &mut result, shape, source_code);
+        }
         result
     }
 }
@@ -585,27 +582,6 @@ impl<'a, 'tree> Rewrite for Expression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         result.push_str(&static_routing!(EXP_MAP, node, context, shape));
-        //match_routing!(node, result, context, shape;
-        //    "field_access" => FieldAccess,
-        //    "array_creation_expression" => ArrayCreationExpression,
-        //    "assignment_expression" => AssignmentExpression,
-        //    "binary_expression" => BinaryExpression,
-        //    "cast_expression" => CastExpression,
-        //    "dml_expression" => DmlExpression,
-        //    "instanceof_expression" => InstanceOfExpression,
-        //    "primary_expression" => PrimaryExpression,
-        //    "ternary_expression" => TernaryExpression,
-        //    "unary_expression" => UnaryExpression,
-        //    "update_expression" => UpdateExpression,
-        //    "local_variable_declaration" => LocalVariableDeclaration,
-        //    "map_creation_expression" => MapCreationExpression,
-        //    "object_creation_expression" => ObjectCreationExpression,
-        //    "method_invocation" => MethodInvocation,
-        //    "string_literal" => Value,
-        //    "identifier" => Value,
-        //    "int" => Value,
-        //    "boolean" => Value
-        //);
         result
     }
 }
@@ -1936,6 +1912,26 @@ impl<'a, 'tree> Rewrite for StaticInitializer<'a, 'tree> {
         result.push_str("static");
         result.push_str(&rewrite::<Block>(
             &node.first_c(),
+            &mut shape.clone_with_standalone(false),
+            context,
+        ));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for InterfaceDeclaration<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("interface ");
+
+        let n = node.c_by_n("name");
+        result.push_str(n.v(source_code));
+
+        let b = node.c_by_n("body");
+        result.push_str(&rewrite::<Block>(
+            &b,
             &mut shape.clone_with_standalone(false),
             context,
         ));

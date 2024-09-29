@@ -1,5 +1,6 @@
 class BlockMember {
-  static {
-      System.debug('Static Statement Block Member');
-    }
+    interface    InnerInterface{
+        void interfaceMethod() ;
 }
+}
+
