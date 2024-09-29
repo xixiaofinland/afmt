@@ -1,6 +1,5 @@
-class A {
-{
-  @InvocableMethod
-  public static List <Results> execute (List<Requests> requestList) {}
-}
+class BlockMember {
+  static {
+      System.debug('Static Statement Block Member');
+    }
 }

@@ -102,4 +102,5 @@ def_struct!(
     SwitchBlock,
     SwitchRule,
     SwitchLabel,
+    StaticInitializer,
 );

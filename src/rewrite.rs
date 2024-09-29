@@ -1928,3 +1928,12 @@ impl<'a, 'tree> Rewrite for SwitchLabel<'a, 'tree> {
         result
     }
 }
+
+impl<'a, 'tree> Rewrite for StaticInitializer<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _source_code, _) = self.prepare(context);
+        let c = node.first_c();
+        result.push_str(&rewrite::<Block>(&c, shape, context));
+        result
+    }
+}
