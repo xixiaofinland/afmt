@@ -53,6 +53,7 @@ pub fn try_add_standalone_prefix_for_comment(
         if comment_line == prev_line {
             result.push(' ');
         } else {
+            result.push('\n');
             add_indent(result, shape, context);
         }
     } else {
@@ -88,9 +89,12 @@ pub fn try_add_standalone_suffix_no_semicolumn(
 }
 
 pub fn add_standalone_suffix_no_semicolumn(node: &Node, result: &mut String, source_code: &str) {
-    if node.next_named_sibling().is_some() {
-        let count_new_lines = newlines_to_add(node, source_code);
-        result.push_str(&"\n".repeat(count_new_lines));
+    if let Some(next) = node.next_named_sibling() {
+        // special case: let LineComment and BlockComment to handle;
+        if next.kind() != "line_comment" && next.kind() != "block_comment" {
+            let count_new_lines = newlines_to_add(node, source_code);
+            result.push_str(&"\n".repeat(count_new_lines));
+        }
     }
 }
 
@@ -105,12 +109,13 @@ fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     }
 
     let remaining_code = &source_code[index..];
+    debug!("1: |{}|", remaining_code);
     let mut bytes_iter = remaining_code.bytes();
 
     match (bytes_iter.next(), bytes_iter.next()) {
         (Some(b'\n'), Some(b'\n')) => 2,
         (Some(b'\n'), _) => 1,
-        _ => 0,
+        _ => 1,
     }
 }
 

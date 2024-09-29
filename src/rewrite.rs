@@ -597,6 +597,16 @@ impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
     }
 }
 
+impl<'a, 'tree> Rewrite for BlockComment<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix_for_comment(node, &mut result, shape, context);
+        result.push_str(node.v(source_code));
+        add_standalone_suffix_no_semicolumn(node, &mut result, source_code);
+        result
+    }
+}
+
 impl<'a, 'tree> Rewrite for ReturnStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);

@@ -42,6 +42,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "if_statement" => |node| Box::new(IfStatement::new(node)),
     "instanceof_expression" => |node| Box::new(InstanceOfExpression::new(node)),
     "line_comment" => |node| Box::new(LineComment::new(node)),
+    "block_comment" => |node| Box::new(BlockComment::new(node)),
     "local_variable_declaration" => |node| Box::new(LocalVariableDeclaration::new(node)),
     "map_creation_expression" => |node| Box::new(MapCreationExpression::new(node)),
     "method_declaration" => |node| Box::new(MethodDeclaration::new(node)),

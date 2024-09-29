@@ -1,6 +1,3 @@
-class BlockMember {
-    interface    InnerInterface{
-        void interfaceMethod() ;
+class BlockTrailingCommentAfterClass {
+  private static String a; private static String b; //hello
 }
-}
-

@@ -37,6 +37,7 @@ def_struct!(
     ParenthesizedExpression,
     Interfaces,
     LineComment,
+    BlockComment,
     ReturnStatement,
     ArgumentList,
     TypeArguments,
