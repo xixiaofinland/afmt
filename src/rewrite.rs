@@ -738,9 +738,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        //try_add_standalone_prefix(&mut result, shape, context);
         result.push('@');
-
         let name = node.c_by_n("name");
         result.push_str(name.v(source_code));
 
@@ -760,14 +758,15 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        //if let Some(c) = node.try_c_by_n("value") {
-        //    result.push_str(c.v(source_code));
-        //}
-
         let joined = node
             .try_visit_cs(context, &mut shape.clone_with_standalone(false))
             .join(" ");
         result.push_str(&joined);
+        result
+
+        //if let Some(c) = node.try_c_by_n("value") {
+        //    result.push_str(c.v(source_code));
+        //}
 
         //let joined_children = node
         //    .try_cs_by_k("annotation_key_value")
@@ -782,8 +781,6 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         //{
         //    result.push_str(&rewrite::<Annotation>(a, shape, context));
         //}
-
-        result
     }
 }
 
