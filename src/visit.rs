@@ -58,7 +58,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
                 f(&child, &mut c_shape, context)
             })
             .collect::<Vec<_>>()
-            .join("\n");
+            .join("");
 
         if !children.is_empty() {
             result.push_str(&children);

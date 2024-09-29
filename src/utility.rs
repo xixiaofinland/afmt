@@ -22,7 +22,7 @@ pub fn visit_root(context: &FmtContext) -> String {
             child._visit(&mut child_shape, context)
         })
         .collect::<Vec<_>>()
-        .join("\n");
+        .join("");
 
     result.push_str(&children);
 
@@ -90,8 +90,9 @@ fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     let mut bytes_iter = remaining_code.bytes();
 
     match (bytes_iter.next(), bytes_iter.next()) {
-        (Some(b'\n'), Some(b'\n')) => 1, // Two consecutive newlines
-        _ => 0,                          // No or only one newline
+        (Some(b'\n'), Some(b'\n')) => 2,
+        (Some(b'\n'), _) => 1,
+        _ => 0,
     }
 }
 

@@ -257,12 +257,11 @@ impl<'a, 'tree> Rewrite for Value<'a, 'tree> {
 impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&rewrite::<Modifiers>(a, shape, context));
             result.push(' ');
-        } else {
-            try_add_standalone_prefix(&mut result, shape, context);
         }
 
         let t = node.c_by_n("type"); // _unannotated_type
@@ -278,7 +277,9 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
 
         result.push_str(&declarator_values.join(", "));
 
+        debug!("1: |{}|", result);
         try_add_standalone_suffix(node, &mut result, shape, source_code);
+        debug!("2: |{}|", result);
         result
     }
 }
@@ -573,6 +574,7 @@ impl<'a, 'tree> Rewrite for Block<'a, 'tree> {
 
         result.push_str("{\n");
 
+        // TODO: children -> statement
         result.push_str(&node.apply_to_standalone_children(
             &shape.clone_with_standalone(true),
             context,
