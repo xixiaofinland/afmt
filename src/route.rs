@@ -15,6 +15,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "interface_declaration" => |node| Box::new(InterfaceDeclaration::new(node)),
     "static_initializer" => |node| Box::new(StaticInitializer::new(node)),
     "annotation_argument_list" => |node| Box::new(AnnotationArgumentList::new(node)),
+    "annotation_key_value" => |node| Box::new(AnnotationKeyValue::new(node)),
     "parenthesized_expression" => |node| Box::new(ParenthesizedExpression::new(node)),
     "array_access" => |node| Box::new(ArrayAccess::new(node)),
     "array_creation_expression" => |node| Box::new(ArrayCreationExpression::new(node)),

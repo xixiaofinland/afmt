@@ -760,18 +760,14 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        if let Some(c) = node.try_c_by_n("value") {
-            result.push_str(c.v(source_code));
-        }
+        //if let Some(c) = node.try_c_by_n("value") {
+        //    result.push_str(c.v(source_code));
+        //}
 
-        result.push_str(&node.apply_to_children_in_same_line(
-            " ",
-            shape,
-            context,
-            |c, c_shape, c_context| {
-                rewrite_shape::<AnnotationKeyValue>(c, c_shape, false, c_context)
-            },
-        ));
+        let joined = node
+            .try_visit_cs(context, &mut shape.clone_with_standalone(false))
+            .join(" ");
+        result.push_str(&joined);
 
         //let joined_children = node
         //    .try_cs_by_k("annotation_key_value")
@@ -780,12 +776,12 @@ impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
         //    .collect::<Vec<_>>()
         //    .join(" ");
 
-        if let Some(ref a) = node
-            .try_c_by_k("modifiers")
-            .and_then(|n| n.try_c_by_k("annotation"))
-        {
-            result.push_str(&rewrite::<Annotation>(a, shape, context));
-        }
+        //if let Some(ref a) = node
+        //    .try_c_by_k("modifiers")
+        //    .and_then(|n| n.try_c_by_k("annotation"))
+        //{
+        //    result.push_str(&rewrite::<Annotation>(a, shape, context));
+        //}
 
         result
     }

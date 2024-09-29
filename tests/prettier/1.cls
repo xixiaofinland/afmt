@@ -1,6 +1,6 @@
-@isTest(
-  seeAllData=true // Class annotation inline comment 1
-  isParallel = false // Class annotation inline comment 2
-)
-class Comments {
+class topLevelClass {
+
+  @SuppressWarnings('PMD.ApexCRUDViolation, PMD.AnotherViolation')
+  void anotherMethod(){}
+
 }
