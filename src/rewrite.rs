@@ -1,5 +1,4 @@
 use crate::child::Accessor;
-use crate::context::language;
 use crate::context::FmtContext;
 use crate::match_routing;
 use crate::route::EXP_MAP;
@@ -11,9 +10,6 @@ use crate::visit::Visitor;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
-use tree_sitter::Node;
-use tree_sitter::Parser;
-use tree_sitter::Tree;
 
 pub trait Rewrite {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String;
@@ -622,7 +618,7 @@ impl<'a, 'tree> Rewrite for LineComment<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
         result.push_str(node.v(source_code));
-
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
         result
     }
 }
