@@ -1,4 +1,5 @@
-class BlockTrailingCommentAfterClass { // hellow
+class BlockTrailingCommentAfterClass {
+  // hellow
   public BlockTrailingCommentsAfterClass() {
   }
 }
