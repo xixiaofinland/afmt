@@ -97,6 +97,8 @@ pub static EXP_MAP: PhfMap = phf_map! {
     "update_expression" => |node| Box::new(UpdateExpression::new(node)),
     "query_expression" => |node| Box::new(QueryExpression::new(node)),
     "switch_block" => |node| Box::new(SwitchBlock::new(node)),
+    "line_comment" => |node| Box::new(LineComment::new(node)),
+    "block_comment" => |node| Box::new(BlockComment::new(node)),
 
     // --------------- split
     //"array_initializer" => |node| Box::new(ArrayInitializer::new(node)),
@@ -112,7 +114,6 @@ pub static EXP_MAP: PhfMap = phf_map! {
     //"field_declaration" => |node| Box::new(FieldDeclaration::new(node)),
     //"for_statement" => |node| Box::new(ForStatement::new(node)),
     //"if_statement" => |node| Box::new(IfStatement::new(node)),
-    //"line_comment" => |node| Box::new(LineComment::new(node)),
     //"local_variable_declaration" => |node| Box::new(LocalVariableDeclaration::new(node)),
     //"method_declaration" => |node| Box::new(MethodDeclaration::new(node)),
     //"return_statement" => |node| Box::new(ReturnStatement::new(node)),
