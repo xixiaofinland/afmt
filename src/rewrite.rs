@@ -130,9 +130,10 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&rewrite::<Modifiers>(a, shape, context));
+            result.push(' ');
         }
 
-        result.push_str(" enum ");
+        result.push_str("enum ");
         result.push_str(node.cv_by_n("name", source_code));
 
         let body = node.c_by_n("body");
