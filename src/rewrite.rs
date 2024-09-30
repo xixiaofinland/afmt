@@ -457,7 +457,13 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
             }
         };
 
-        try_add_standalone_suffix_no_semicolumn(&node, &mut result, shape, source_code);
+        // use original data rather than the wrapped ones
+        try_add_standalone_suffix_no_semicolumn(
+            &self.node(),
+            &mut result,
+            shape,
+            &initial_context.source_code,
+        );
         result
     }
 }

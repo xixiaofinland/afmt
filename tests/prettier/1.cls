@@ -1,5 +1,8 @@
-class BlockMember {
-  enum TestEnum {
-    ONE, TWO
-  }
+class BlockMember {{
+
+    if (a > b) c = a;
+
+    if (a == 1) a = 2; 
+
+}
 }
