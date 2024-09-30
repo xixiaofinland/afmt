@@ -414,13 +414,12 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
 impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, initial_context: &FmtContext) -> String {
         let (node, mut result, source_code, config) = self.prepare(initial_context);
-        let mut node = node.clone(); // lifetime challenge
 
+        let mut node = node.clone(); // lifetime challenge
         let updated_context = update_source_code(&node, source_code).map(|updated_source_code| {
             let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
             FmtContext::new(config, wrapped_source)
         });
-
         let context = match &updated_context {
             Some(c) => {
                 node = c
@@ -434,8 +433,9 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
             }
             None => initial_context.clone(), // lifetime challenge
         };
-
         let source_code = &context.source_code;
+
+        // possible structure fix done;
 
         try_add_standalone_prefix(&mut result, shape, &context);
 
@@ -467,6 +467,8 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
                 }
             }
         };
+
+        try_add_standalone_suffix_no_semicolumn(&node, &mut result, shape, source_code);
         result
     }
 }
