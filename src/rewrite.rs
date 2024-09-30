@@ -165,28 +165,17 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
         }
 
         result.push_str("{\n");
-        result.push_str(&node.apply_to_standalone_children(
-            &shape.clone_with_standalone(true),
+        add_indent(
+            &mut result,
+            &shape.copy_with_indent_increase(context.config),
             context,
-            |c, c_shape, c_context| c._visit(c_shape, c_context),
-        ));
+        );
+        result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
 
+        result.push('\n');
         add_indent(&mut result, shape, context);
         result.push('}');
         result
-
-        //add_indent(
-        //    &mut result,
-        //    &shape.copy_with_indent_increase(context.config),
-        //    context,
-        //);
-        //result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
-        //
-        //result.push_str(
-        //    &node.apply_to_children_in_same_line("", shape, context, |c, _, _| {
-        //        c.v(source_code).to_string()
-        //    }),
-        //);
     }
 }
 

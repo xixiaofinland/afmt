@@ -34,6 +34,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "do_statement" => |node| Box::new(DoStatement::new(node)),
     "enhanced_for_statement" => |node| Box::new(EnhancedForStatement::new(node)),
     "enum_declaration" => |node| Box::new(EnumDeclaration::new(node)),
+    "enum_constant" => |node| Box::new(EnumConstant::new(node)),
     "explicit_constructor_invocation" => |node| Box::new(ExplicitConstructorInvocation::new(node)),
     "expression_statement" => |node| Box::new(ExpressionStatement::new(node)),
     "field_access" => |node| Box::new(FieldAccess::new(node)),

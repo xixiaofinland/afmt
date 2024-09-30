@@ -1,0 +1,14 @@
+public class Me {
+  {
+    if (true) {
+      Integer i = 1;
+      } if (true){
+
+
+      Integer l = 3;
+      } else if (false){
+
+      Integer a = 3;
+      }
+  }
+}
