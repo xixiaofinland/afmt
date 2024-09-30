@@ -10,52 +10,100 @@ mod tests {
 
     #[test]
     fn manual() {
-        for entry in std::fs::read_dir("tests/static").unwrap() {
-            let entry = entry.unwrap();
-            let source = entry.path();
-            if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
-                println!("{} {:?}", "### Processing static file:".green(), source);
-                run_static_test_files(&source);
-            }
-        }
+        let (total, failed) = run_scenario("tests/static", "static");
+        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
     #[test]
     fn prettier() {
-        println!("Running Prettier-based tests...");
-        for entry in std::fs::read_dir("tests/prettier").unwrap() {
-            let entry = entry.unwrap();
-            let source = entry.path();
-            if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
-                println!("{} {:?}", "### Processing prettier file:".green(), source);
-                run_prettier_test_files(&source);
-            }
-        }
+        let (total, failed) = run_scenario("tests/prettier", "prettier");
+        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
     #[test]
     fn extra() {
-        println!("Running Prettier-based tests...");
-        for entry in std::fs::read_dir("tests/prettier2").unwrap() {
+        let (total, failed) = run_scenario("tests/prettier2", "prettier2");
+        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
+    }
+
+    #[test]
+    fn all() {
+        let scenarios = [
+            ("tests/static", "static"),
+            ("tests/prettier", "prettier"),
+            ("tests/prettier2", "prettier2"),
+        ];
+
+        let mut total_tests = 0;
+        let mut failed_tests = 0;
+
+        println!("Running all test scenarios...");
+
+        for (path, name) in scenarios.iter() {
+            let (tests, failures) = run_scenario(path, name);
+            total_tests += tests;
+            failed_tests += failures;
+        }
+
+        println!(
+            "\nTest Summary: {}/{} tests passed",
+            total_tests - failed_tests,
+            total_tests
+        );
+        assert_eq!(
+            failed_tests, 0,
+            "{} out of {} tests failed",
+            failed_tests, total_tests
+        );
+    }
+
+    fn run_scenario(dir_path: &str, scenario_name: &str) -> (u32, u32) {
+        let mut total_tests = 0;
+        let mut failed_tests = 0;
+
+        for entry in std::fs::read_dir(dir_path).unwrap() {
             let entry = entry.unwrap();
             let source = entry.path();
             if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
-                println!("{} {:?}", "### Processing prettier2 file:".green(), source);
-                run_prettier_test_files(&source);
+                println!(
+                    "{} {:?}",
+                    format!("### Processing {} file:", scenario_name).green(),
+                    source
+                );
+                total_tests += 1;
+                if !run_test_file(&source, scenario_name) {
+                    failed_tests += 1;
+                }
             }
+        }
+
+        println!(
+            "{} scenario: {}/{} tests passed",
+            scenario_name,
+            total_tests - failed_tests,
+            total_tests
+        );
+        (total_tests, failed_tests)
+    }
+
+    fn run_test_file(source: &Path, scenario_name: &str) -> bool {
+        match scenario_name {
+            "static" => run_static_test_files(source),
+            "prettier" | "prettier2" => run_prettier_test_files(source),
+            _ => panic!("Unknown scenario: {}", scenario_name),
         }
     }
 
-    fn run_static_test_files(source: &Path) {
+    fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source);
         let expected =
             std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
 
-        compare("Static:", output, expected, source);
+        compare("Static:", output, expected, source)
     }
 
-    fn run_prettier_test_files(source: &Path) {
+    fn run_prettier_test_files(source: &Path) -> bool {
         let prettier_file = source.with_extension("cls");
 
         if !prettier_file.exists() {
@@ -68,10 +116,10 @@ mod tests {
         let prettier_output =
             std::fs::read_to_string(&prettier_file).expect("Failed to read the .cls file.");
 
-        compare("Prettier:", output, prettier_output, source);
+        compare("Prettier:", output, prettier_output, source)
     }
 
-    fn compare(against: &str, output: String, expected: String, source: &Path) {
+    fn compare(against: &str, output: String, expected: String, source: &Path) -> bool {
         if output != expected {
             let source_content =
                 std::fs::read_to_string(source).expect("Failed to read the file content.");
@@ -83,7 +131,9 @@ mod tests {
             print_side_by_side_diff(against, &output, &expected);
             println!("\n-------------------------------------\n");
 
-            assert_eq!(expected, output, "Mismatch in {}", source.display());
+            false
+        } else {
+            true
         }
     }
 
