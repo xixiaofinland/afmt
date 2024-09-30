@@ -12,6 +12,9 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "type_identifier" => |node| Box::new(Value::new(node)),
     "null_literal" => |node| Box::new(Value::new(node)),
     // --------------- split
+    "continue_statement" => |node| Box::new(ContinueStatement::new(node)),
+    "break_statement" => |node| Box::new(BreakStatement::new(node)),
+    "throw_statement" => |node| Box::new(ThrowStatement::new(node)),
     "interface_declaration" => |node| Box::new(InterfaceDeclaration::new(node)),
     "static_initializer" => |node| Box::new(StaticInitializer::new(node)),
     "annotation_argument_list" => |node| Box::new(AnnotationArgumentList::new(node)),

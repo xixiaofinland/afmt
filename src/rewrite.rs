@@ -1961,3 +1961,51 @@ impl<'a, 'tree> Rewrite for InterfaceDeclaration<'a, 'tree> {
         result
     }
 }
+
+impl<'a, 'tree> Rewrite for ThrowStatement<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("throw ");
+        result.push_str(&rewrite_shape::<Expression>(
+            &node.first_c(),
+            shape,
+            false,
+            context,
+        ));
+
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for BreakStatement<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("break ");
+        if let Some(c) = node.try_c_by_k("identifier") {
+            result.push_str(&c.v(source_code));
+        }
+
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ContinueStatement<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        result.push_str("continue ");
+        if let Some(c) = node.try_c_by_k("identifier") {
+            result.push_str(&c.v(source_code));
+        }
+
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
+        result
+    }
+}

@@ -105,4 +105,7 @@ def_struct!(
     SwitchLabel,
     StaticInitializer,
     InterfaceDeclaration,
+    ThrowStatement,
+    BreakStatement,
+    ContinueStatement,
 );
