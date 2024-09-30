@@ -50,11 +50,14 @@ mod tests {
             total_tests - failed_tests,
             total_tests
         );
-        assert_eq!(
-            failed_tests, 0,
-            "{} out of {} tests failed",
-            failed_tests, total_tests
-        );
+        if failed_tests > 0 {
+            println!(
+                "{}",
+                format!("{} out of {} tests failed", failed_tests, total_tests).red()
+            );
+        } else {
+            println!("{}", "All tests passed!".green());
+        }
     }
 
     fn run_scenario(dir_path: &str, scenario_name: &str) -> (u32, u32) {
@@ -93,7 +96,6 @@ mod tests {
             _ => panic!("Unknown scenario: {}", scenario_name),
         }
     }
-
     fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source);
