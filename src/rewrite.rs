@@ -160,7 +160,6 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        eprintln!("DEBUGPRINT[19]: rewrite.rs:161: shape={:#?}", shape);
         if shape.standalone {
             add_indent(&mut result, shape, context);
         } else {
