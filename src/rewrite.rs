@@ -943,7 +943,7 @@ impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("while ");
@@ -955,6 +955,7 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         let body = node.c_by_n("body");
         result.push_str(&rewrite_shape::<Block>(&body, shape, false, context));
 
+        add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
         result
     }
 }
@@ -1964,6 +1965,8 @@ impl<'a, 'tree> Rewrite for InterfaceDeclaration<'a, 'tree> {
             &mut shape.clone_with_standalone(false),
             context,
         ));
+
+        add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
         result
     }
 }
