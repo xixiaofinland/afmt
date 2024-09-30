@@ -165,14 +165,19 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
         }
 
         result.push_str("{\n");
-        add_indent(
-            &mut result,
-            &shape.copy_with_indent_increase(context.config),
-            context,
-        );
-        result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
 
-        result.push('\n');
+        if node.named_child_count() > 0 {
+            add_indent(
+                &mut result,
+                &shape.copy_with_indent_increase(context.config),
+                context,
+            );
+        }
+        result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
+        if node.named_child_count() > 0 {
+            result.push('\n');
+        }
+
         add_indent(&mut result, shape, context);
         result.push('}');
         result
@@ -424,7 +429,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         };
         let source_code = &context.source_code;
 
-        // possible structure fix done;
+        // possible re-structure done;
 
         try_add_standalone_prefix(&mut result, shape, &context);
 
@@ -457,7 +462,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
             }
         };
 
-        // use original data rather than the wrapped ones
+        // use original node and context rather than the re-structured
         try_add_standalone_suffix_no_semicolumn(
             &self.node(),
             &mut result,
