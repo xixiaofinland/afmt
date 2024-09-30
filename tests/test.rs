@@ -96,6 +96,7 @@ mod tests {
             _ => panic!("Unknown scenario: {}", scenario_name),
         }
     }
+
     fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source);
