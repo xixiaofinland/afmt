@@ -10,15 +10,15 @@ Note: This is a project in its early phase, not ready even for proper testing ye
 
 ## Progress Overview
 
-| Feature                                         | Progress       |
-| ----------------------------------------------- | -------------- |
-| Recognize Apex nodes/tokens                     | ██████████ 90% |
-| Indent Apex nodes properly                      | ██████░░░░ 60% |
-| Reformat lines beyond `max_width`               | █░░░░░░░░░ 10% |
-| Support configuration via a config file         | █░░░░░░░░░ 10% |
-| Support SOQL                                    | ██░░░░░░░░ 20% |
-| Support SOSL                                    | █░░░░░░░░░ 10% |
-| Support comment (line comment and block comment)| █░░░░░░░░░ 10% |
+| Feature                                         | Progress       | Difficulty   |
+| ----------------------------------------------- | -------------- | ------------ |
+| Recognize Apex nodes/tokens                     | ██████████ 90% | Easy         |
+| Indent Apex nodes properly                      | ██████░░░░ 60% | Easy       |
+| Reformat lines beyond `max_width`               | █░░░░░░░░░ 10% | Challenging  |
+| Support configuration via a config file         | █░░░░░░░░░ 10% | Easy       |
+| Support SOQL                                    | ██░░░░░░░░ 20% | Medium       |
+| Support SOSL                                    | █░░░░░░░░░ 10% | Medium       |
+| Support comment (line comment and block comment)| █░░░░░░░░░ 10% | Challenging  |
 
 ## To-Do
 
