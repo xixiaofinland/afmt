@@ -4,7 +4,27 @@ Afmt is a **Salesforce Apex Code Formatter** written in **Rust**! This tool form
 
 It uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) to traverse AST nodes.
 
-Note: This is a project in its early phase.
+Note: This is a project in its early phase, not ready even for proper testing yet.
+
+# Project Progress
+
+## Progress Overview
+
+| Feature                        | Progress       |
+| -------------------------------| -------------- |
+| Recognize Apex nodes/tokens                | ██████████ 90% |
+| Indent Apex nodes properly | ████████░ 60%  |
+| Reforat lines beyond max_width| ██████░░░ 10%  |
+| Support configuration via a config file | ███░░░░░░ 10%  |
+| Support SOQL    | ██░░░░░░░ 20%  |
+| Support SOSL    | ██░░░░░░░ 10%  |
+| Support comment (line comment and block comment)    | ██░░░░░░░ 10%  |
+
+## To-Do
+
+- [ ] Better error report
+- [ ] Downloadable compiled binary across platforms (Linux/MacOS/Win)
+- [ ] Benchmark and performance test
 
 ## ✨ Features
 
