@@ -139,6 +139,8 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
         let body = node.c_by_n("body");
         result.push_str(&rewrite_shape::<EnumBody>(&body, shape, false, context));
 
+        add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
+
         result
     }
 }
@@ -158,6 +160,7 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        eprintln!("DEBUGPRINT[19]: rewrite.rs:161: shape={:#?}", shape);
         if shape.standalone {
             add_indent(&mut result, shape, context);
         } else {
@@ -320,7 +323,7 @@ impl<'a, 'tree> Rewrite for ExpressionStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for TryStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("try");
@@ -338,6 +341,7 @@ impl<'a, 'tree> Rewrite for TryStatement<'a, 'tree> {
         if let Some(ref f) = node.try_c_by_k("finally_clause") {
             result.push_str(&rewrite_shape::<FinallyClause>(&f, shape, false, context));
         }
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
 
         result
     }
@@ -475,7 +479,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("for (");
@@ -510,6 +514,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
         };
 
+        add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
         result
     }
 }
@@ -546,6 +551,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         };
 
+        add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
         result
     }
 }
@@ -1985,8 +1991,9 @@ impl<'a, 'tree> Rewrite for BreakStatement<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        result.push_str("break ");
+        result.push_str("break");
         if let Some(c) = node.try_c_by_k("identifier") {
+            result.push_str(" ");
             result.push_str(&c.v(source_code));
         }
 
@@ -2000,8 +2007,9 @@ impl<'a, 'tree> Rewrite for ContinueStatement<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        result.push_str("continue ");
+        result.push_str("continue");
         if let Some(c) = node.try_c_by_k("identifier") {
+            result.push_str(" ");
             result.push_str(&c.v(source_code));
         }
 

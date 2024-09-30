@@ -3,20 +3,6 @@ class EmptyLine {
 
   String b;
 
-  String a {
-    get {
-    }
-  }
-  String a {
-    get {
-    }
-  }
-
-  enum NUMBER {
-    ONE,
-    TWO
-  }
-
   enum NUMBER {
   }
   void blockStatement() {
@@ -167,13 +153,6 @@ class EmptyLine {
     } else {
     }
 
-    if (a == 1)
-      a = 2;
-    else if (a == 2)
-      a = 3;
-    else
-      a = 4;
-
     if (a == 1) {
     }
   }
@@ -284,12 +263,6 @@ class EmptyLine {
       }
     }
   }
-
-  void methodOne(
-    String testString,
-    String anotherTestString,
-    String yetAnotherTestString
-  );
 
   /*
    * ApexDoc 1
