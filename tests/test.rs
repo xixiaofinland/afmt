@@ -68,11 +68,11 @@ mod tests {
             let entry = entry.unwrap();
             let source = entry.path();
             if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
-                println!(
-                    "{} {:?}",
-                    format!("### Processing {} file:", scenario_name).green(),
-                    source
-                );
+                //println!(
+                //    "{} {:?}",
+                //    format!("### Processing {} file:", scenario_name).green(),
+                //    source
+                //);
                 total_tests += 1;
                 if !run_test_file(&source, scenario_name) {
                     failed_tests += 1;
