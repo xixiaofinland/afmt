@@ -2094,3 +2094,11 @@ impl<'a, 'tree> Rewrite for TypeList<'a, 'tree> {
         result
     }
 }
+
+impl<'a, 'tree> Rewrite for NullLiteral<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (_, mut result, _, _) = self.prepare(context);
+        result.push_str("null");
+        result
+    }
+}

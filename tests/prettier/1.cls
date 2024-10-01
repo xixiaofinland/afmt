@@ -1,4 +1,7 @@
-public interface OuterInterface extends ExtendedInterface {
-  void methodOne();
-  void methodTwo();
+class Literal {
+  void nullExpression() {
+    return null;
+    return NULL;
+    return Null;
+  }
 }

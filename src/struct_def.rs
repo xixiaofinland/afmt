@@ -111,4 +111,5 @@ def_struct!(
     TypeParameters,
     TypeParameter,
     TypeList,
+    NullLiteral,
 );
