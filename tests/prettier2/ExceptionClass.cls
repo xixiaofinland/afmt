@@ -4,16 +4,12 @@ class ExceptionClass {
 
     Exception e = new Exception();
     throw new CustomException('Custom Inner Exception', e);
-    throw exceptionGenerator.setExceptionType('TestException').setSeverityLevel('High').setMessage('Oh no it broke').getInstance();
   }
 
   void tryCatchTest() {
     try {
-
     } catch (Exception e) {
-
     } finally {
-
     }
 
     try {
@@ -50,7 +46,8 @@ class ExceptionClass {
     }
   }
 
-  class CustomException extends Exception {}
-  class AnotherCustomException extends Exception {}
+  class CustomException extends Exception {
+  }
+  class AnotherCustomException extends Exception {
+  }
 }
-

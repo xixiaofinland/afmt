@@ -1259,8 +1259,9 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
         let name = node.cv_by_n("name", source_code);
         result.push_str(name);
 
-        let arguments = node.c_by_n("arguments");
-        result.push_str(&rewrite::<ArgumentList>(&arguments, shape, context));
+        if let Some(a) = node.try_c_by_n("arguments") {
+            result.push_str(&rewrite::<ArgumentList>(&a, shape, context));
+        }
         try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
