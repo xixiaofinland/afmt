@@ -161,7 +161,14 @@ mod tests {
             "\x1b[38;2;255;165;0m{:<60} | {:<60}\x1b[0m",
             against, "Afmt:\n"
         );
-        for change in diff.iter_all_changes() {
+        for (idx, change) in diff.iter_all_changes().enumerate() {
+            let old_line_num = change
+                .old_index()
+                .map_or("".to_string(), |n| format!("{:>4}", n + 1));
+            let new_line_num = change
+                .new_index()
+                .map_or("".to_string(), |n| format!("{:>4}", n + 1));
+
             match change.tag() {
                 ChangeTag::Delete => {
                     left_col = format!("\x1b[91m- {:<58}\x1b[0m", change.to_string().trim_end()); // Red for deletions (left)
@@ -177,7 +184,10 @@ mod tests {
                     right_col = format!("  {:<58}", change.to_string().trim_end());
                 }
             }
-            println!("{:<60} | {:<60}", left_col, right_col);
+            println!(
+                "{:<4} {:<60} | {:<4} {:<60}",
+                old_line_num, left_col, new_line_num, right_col
+            );
         }
     }
 
