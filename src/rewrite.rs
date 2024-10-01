@@ -262,7 +262,6 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
             result.push(' ');
         }
 
-        eprintln!("gopro[5]: rewrite.rs:265: node={:#?}", node);
         let t = node.c_by_n("type"); // _unannotated_type
         result.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
 
