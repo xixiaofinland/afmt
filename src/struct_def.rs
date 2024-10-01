@@ -108,4 +108,6 @@ def_struct!(
     ThrowStatement,
     BreakStatement,
     ContinueStatement,
+    TypeParameters,
+    TypeParameter,
 );

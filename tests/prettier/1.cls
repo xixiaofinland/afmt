@@ -1,13 +1,5 @@
-public class Me {
-  class InnerClass extends ExpressionClass {
-    InnerClass() {
-      // ThisMethodCallExpression
-      this(1);
-    }
+class GenericOuterClass<T> extends AnotherClass<T> {
+  class InnerClass<K, V> {}
 
-    InnerClass(Integer i) {
-      // SuperMethodCallExpression
-      super(i);
-    }
-  }
+  interface InnerGenericInterface<K, V> {}
 }

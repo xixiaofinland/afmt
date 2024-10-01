@@ -31,6 +31,10 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
         result.push_str("class ");
         result.push_str(node.cv_by_n("name", source_code));
 
+        if let Some(ref c) = node.try_c_by_n("type_parameters") {
+            result.push_str(&rewrite_shape::<TypeParameters>(c, shape, false, context));
+        }
+
         if let Some(ref c) = node.try_c_by_n("superclass") {
             result.push_str(&rewrite_shape::<SuperClass>(c, shape, false, context));
         }
@@ -217,13 +221,11 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
-    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
         result.push_str(" extends ");
-
-        let value = node.cv_by_k("type_identifier", source_code);
-        result.push_str(value);
-
+        result.push_str(&node.first_c()._visit(shape, context));
         result
     }
 }
@@ -1973,6 +1975,10 @@ impl<'a, 'tree> Rewrite for InterfaceDeclaration<'a, 'tree> {
         let n = node.c_by_n("name");
         result.push_str(n.v(source_code));
 
+        if let Some(ref c) = node.try_c_by_n("type_parameters") {
+            result.push_str(&rewrite_shape::<TypeParameters>(c, shape, false, context));
+        }
+
         let b = node.c_by_n("body");
         result.push_str(&rewrite::<Block>(
             &b,
@@ -2031,6 +2037,32 @@ impl<'a, 'tree> Rewrite for ContinueStatement<'a, 'tree> {
         }
 
         try_add_standalone_suffix(node, &mut result, shape, source_code);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for TypeParameters<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        result.push('<');
+        let joined = node
+            .cs_by_k("type_parameter")
+            .iter()
+            .map(|c| rewrite_shape::<TypeParameter>(&c, shape, false, context))
+            .collect::<Vec<_>>()
+            .join(", ");
+        result.push_str(&joined);
+        result.push('>');
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for TypeParameter<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result.push_str(node.v(source_code));
         result
     }
 }
