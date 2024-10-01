@@ -134,12 +134,29 @@ fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     }
 
     let remaining_code = &source_code[index..];
-    let mut bytes_iter = remaining_code.bytes();
+    let mut newline_count = 0;
+    let mut found_non_whitespace = false;
 
-    match (bytes_iter.next(), bytes_iter.next()) {
-        (Some(b'\n'), Some(b'\n')) => 2,
-        (Some(b'\n'), _) => 1,
-        _ => 1,
+    for char in remaining_code.chars() {
+        match char {
+            '\n' => {
+                newline_count += 1;
+                if newline_count >= 2 {
+                    break;
+                }
+            }
+            ' ' | '\t' | '\r' => continue,
+            _ => {
+                found_non_whitespace = true;
+                break;
+            }
+        }
+    }
+
+    if found_non_whitespace && newline_count == 0 {
+        1
+    } else {
+        newline_count
     }
 }
 

@@ -1,8 +1,10 @@
 public class Me {
-     {
-          String name
-          = [      select Name FrOM Account
-                     WHERE Id = :A.Id].Name;
-     }
+    {
+                Integer[] a  = 
+                new Integer[]{1, 2, 3, 4};
+        
+        Integer[] a = 
+        new List<Integer>{ 1, 2, 3, 4 };
+    }
 }
-
+  
