@@ -550,12 +550,16 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
         if is_block_node {
             result.push_str(&rewrite_shape::<Block>(&body, shape, false, context));
         } else {
-            result.push_str(" {\n");
-            let mut c_shape = shape
-                .copy_with_indent_increase(context.config)
-                .clone_with_standalone(true);
-            result.push_str(&rewrite::<Statement>(&value, &mut c_shape, context));
-            result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
+            if body.kind() == ";" {
+                result.push(';');
+            } else {
+                result.push_str(" {\n");
+                let mut c_shape = shape
+                    .copy_with_indent_increase(context.config)
+                    .clone_with_standalone(true);
+                result.push_str(&rewrite::<Statement>(&value, &mut c_shape, context));
+                result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
+            }
         };
 
         add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
