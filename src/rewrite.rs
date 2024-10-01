@@ -1970,6 +1970,14 @@ impl<'a, 'tree> Rewrite for InterfaceDeclaration<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            result.push_str(&rewrite::<Modifiers>(a, shape, context));
+
+            if let Some(_) = a.try_c_by_k("modifier") {
+                result.push(' ');
+            }
+        }
+
         result.push_str("interface ");
 
         let n = node.c_by_n("name");
