@@ -1119,15 +1119,6 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
             _ => rewrite::<PrimaryExpression>(&o, shape, context),
         });
 
-        //if o.kind() == "super" {
-        //    result.push_str(o.v(source_code));
-        //} else if o.kind() == "array_access" {
-        //    // special case: it has `[...]`
-        //    result.push_str(&rewrite::<ArrayAccess>(&o, shape, context));
-        //} else {
-        //    result.push_str(&rewrite::<PrimaryExpression>(&o, shape, context));
-        //}
-
         // FIXME: parser updated already -> `?.` need to traverse unnamed node;
         let mut current_node = o.next_sibling();
         while let Some(cur) = current_node {
