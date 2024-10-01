@@ -908,7 +908,13 @@ impl<'a, 'tree> Rewrite for AssignmentExpression<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
-        let left_value = node.cv_by_n("left", source_code);
+        let left = node.c_by_n("left");
+        let left_value = match_routing!(left, context, shape;
+            "array_access" => ArrayAccess,
+            "field_access" => FieldAccess,
+            "identifier" => Value,
+        );
+
         let op = node.cv_by_n("operator", source_code);
 
         let right = node.c_by_n("right");

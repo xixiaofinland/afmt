@@ -117,7 +117,6 @@ class Conditional extends Object {
   }
 
   void arrayExpression() {
-    Integer[] a = new List<Integer>{ 1, 2, 3, 4 };
     Integer b;
 
     b = a[0];
