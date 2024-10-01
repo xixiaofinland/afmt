@@ -1,9 +1,13 @@
 public class Me {
-    void dottedExprMethod() {
-    a .       Field__c 
-    = 
-    null;
-    a.    Field__c = null;
+  class InnerClass extends ExpressionClass {
+    InnerClass() {
+      // ThisMethodCallExpression
+      this(1);
+    }
+
+    InnerClass(Integer i) {
+      // SuperMethodCallExpression
+      super(i);
+    }
   }
 }
-  

@@ -837,9 +837,9 @@ impl<'a, 'tree> Rewrite for ConstructorDeclaration<'a, 'tree> {
 
         if let Some(ref c) = node.try_c_by_k("modifiers") {
             result.push_str(&rewrite::<Modifiers>(c, shape, context));
+            result.push(' ');
         }
 
-        result.push(' ');
         result.push_str(node.c_by_n("name").v(source_code));
 
         result.push('(');
