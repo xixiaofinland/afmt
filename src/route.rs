@@ -76,6 +76,7 @@ pub static EXP_MAP: PhfMap = phf_map! {
     "string_literal" => |node| Box::new(Value::new(node)),
     "type_identifier" => |node| Box::new(Value::new(node)),
     "null_literal" => |node| Box::new(Value::new(node)),
+    "decimal_floating_point_literal" => |node| Box::new(Value::new(node)),
     // --------------- split
     "annotation_argument_list" => |node| Box::new(AnnotationArgumentList::new(node)),
     "annotation" => |node| Box::new(Annotation::new(node)),
