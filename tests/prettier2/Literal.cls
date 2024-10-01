@@ -39,13 +39,6 @@ class Literal {
     return false;
     return false;
   }
-  void queryNumber() {
-    a = [
-      SELECT COUNT()
-      FROM Allocation__c
-      WHERE Percent__c = 15.0
-    ];
-  }
   void queryEscapedString() {
     return [SELECT Name FROM Account WHERE Name LIKE '\_'];
     return [SELECT Name FROM Account WHERE Name LIKE '\%'];

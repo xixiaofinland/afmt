@@ -2095,10 +2095,15 @@ impl<'a, 'tree> Rewrite for TypeList<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for NullLiteral<'a, 'tree> {
-    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
-        let (_, mut result, _, _) = self.prepare(context);
-        result.push_str("null");
+impl<'a, 'tree> Rewrite for SmallCaseValue<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        let value = node.v(source_code);
+        result.push_str(&value.to_lowercase());
+
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
     }
 }

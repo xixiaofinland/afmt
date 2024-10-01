@@ -5,7 +5,7 @@ use tree_sitter::Node;
 type PhfMap = phf::Map<&'static str, for<'a, 'tree> fn(&'a Node<'tree>) -> Box<dyn Rewrite + 'a>>;
 
 pub static COMMON_MAP: PhfMap = phf_map! {
-    "boolean" => |node| Box::new(Value::new(node)),
+    "boolean" => |node| Box::new(SmallCaseValue::new(node)),
     "identifier" => |node| Box::new(Value::new(node)),
     "int" => |node| Box::new(Value::new(node)),
     "string_literal" => |node| Box::new(Value::new(node)),
@@ -70,13 +70,13 @@ pub static COMMON_MAP: PhfMap = phf_map! {
 };
 
 pub static EXP_MAP: PhfMap = phf_map! {
-    "boolean" => |node| Box::new(Value::new(node)),
+    "boolean" => |node| Box::new(SmallCaseValue::new(node)),
     "identifier" => |node| Box::new(Value::new(node)),
     "int" => |node| Box::new(Value::new(node)),
     "string_literal" => |node| Box::new(Value::new(node)),
     "type_identifier" => |node| Box::new(Value::new(node)),
-    "null_literal" => |node| Box::new(NullLiteral::new(node)),
-    "decimal_floating_point_literal" => |node| Box::new(Value::new(node)),
+    "null_literal" => |node| Box::new(SmallCaseValue::new(node)),
+    "decimal_floating_point_literal" => |node| Box::new(SmallCaseValue::new(node)),
     // --------------- split
     "annotation_argument_list" => |node| Box::new(AnnotationArgumentList::new(node)),
     "annotation" => |node| Box::new(Annotation::new(node)),

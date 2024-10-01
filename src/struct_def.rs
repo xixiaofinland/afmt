@@ -63,7 +63,6 @@ def_struct!(
     FieldAccess,
     InstanceOfExpression,
     CastExpression,
-    //Boolean,
     TernaryExpression,
     MethodInvocation,
     AccessorList,
@@ -111,5 +110,5 @@ def_struct!(
     TypeParameters,
     TypeParameter,
     TypeList,
-    NullLiteral,
+    SmallCaseValue,
 );

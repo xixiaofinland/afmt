@@ -1,7 +1,6 @@
 class Literal {
-  void nullExpression() {
-    return null;
-    return NULL;
-    return Null;
+  void decimalLiteral() {
+    return TRUE;
+    return FALSE;
   }
 }
