@@ -57,31 +57,6 @@ pub fn add_prefix_for_comment(
     }
 }
 
-//pub fn add_suffix_for_line_comment(node: &Node, result: &mut String, source_code: &str) {
-//    if let Some(next) = node.next_named_sibling() {
-//        // special case: let LineComment and BlockComment to handle;
-//        if next.kind() != "line_comment" && next.kind() != "block_comment" {
-//            let count_new_lines = newlines_to_add(node, source_code);
-//            result.push_str(&"\n".repeat(count_new_lines));
-//        }
-//    }
-//}
-//
-//pub fn add_suffix_for_block_comment(node: &Node, result: &mut String, source_code: &str) {
-//    if let Some(next) = node.next_named_sibling() {
-//        if next.kind() != "block_comment" && next.kind() != "line_comment" {
-//            let comment_line = node.end_position().row;
-//            let next_line = next.start_position().row;
-//            if comment_line == next_line {
-//                result.push(' ');
-//            } else {
-//                let count_new_lines = newlines_to_add(node, source_code);
-//                result.push_str(&"\n".repeat(count_new_lines));
-//            }
-//        }
-//    }
-//}
-
 pub fn try_add_standalone_suffix(
     node: &Node,
     result: &mut String,
