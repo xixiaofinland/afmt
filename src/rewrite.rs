@@ -1549,6 +1549,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "boolean" => Value,
                     "set_comparison_operator" => Value,
                     "null_literal" => Value,
+                    "decimal" => Value,
                     "date_literal_with_param" => DateLiteralWithParam,
                     //"storage_identifier" => StorageIdentifier,
                 )
