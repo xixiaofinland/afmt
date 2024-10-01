@@ -1,5 +1,8 @@
-class Conditional extends Object {
-  void packageVersionExpression() {
-    Package.Version.Request;
-  }
+public class Me {
+     {
+          String name
+          = [      select Name FrOM Account
+                     WHERE Id = :A.Id].Name;
+     }
 }
+

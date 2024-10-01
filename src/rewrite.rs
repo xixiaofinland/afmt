@@ -1820,8 +1820,11 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
 impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-
         result.push_str("new ");
+
+        // special case: both styles are supported.
+        // a: Integer[] a = new Integer[]{1, 2, 3, 4};
+        // b: Integer[] a = new List<Integer>{ 1, 2, 3, 4 };
         let t = node.c_by_n("type"); // _simple_type, send to Exp for simplicity for now
         result.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
 
