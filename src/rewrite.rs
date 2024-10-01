@@ -1113,19 +1113,20 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
         let o = node.c_by_n("object");
         result.push_str(&match o.kind() {
             "super" => o.v(source_code).to_string(),
+            "identifier" => o.v(source_code).to_string(),
             "field_access" => rewrite::<FieldAccess>(&o, shape, context),
             "array_access" => rewrite::<ArrayAccess>(&o, shape, context),
             _ => String::new(), // Handle other cases if needed
         });
 
-        if o.kind() == "super" {
-            result.push_str(o.v(source_code));
-        } else if o.kind() == "array_access" {
-            // special case: it has `[...]`
-            result.push_str(&rewrite::<ArrayAccess>(&o, shape, context));
-        } else {
-            result.push_str(&rewrite::<PrimaryExpression>(&o, shape, context));
-        }
+        //if o.kind() == "super" {
+        //    result.push_str(o.v(source_code));
+        //} else if o.kind() == "array_access" {
+        //    // special case: it has `[...]`
+        //    result.push_str(&rewrite::<ArrayAccess>(&o, shape, context));
+        //} else {
+        //    result.push_str(&rewrite::<PrimaryExpression>(&o, shape, context));
+        //}
 
         // FIXME: parser updated already -> `?.` need to traverse unnamed node;
         let mut current_node = o.next_sibling();
