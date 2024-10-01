@@ -288,10 +288,12 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
 
         result.push_str(&match_routing!(node, context, shape;
             "type_identifier" => Value,
+            "identifier" => Value,
             "block" => Block,
             //"break_statement"
             //"continue_statement"
             //"declaration"
+            "array_type" => ArrayType,
             "do_statement" => DoStatement,
             "enhanced_for_statement" => EnhancedForStatement,
             "expression_statement" => ExpressionStatement,
@@ -508,11 +510,15 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         if is_block_node {
             result.push_str(&rewrite_shape::<Block>(&body, shape, false, context));
         } else {
-            result.push('\n');
-            let mut c_shape = shape
-                .copy_with_indent_increase(context.config)
-                .clone_with_standalone(true);
-            result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
+            if body.kind() == ";" {
+                result.push(';');
+            } else {
+                result.push('\n');
+                let mut c_shape = shape
+                    .copy_with_indent_increase(context.config)
+                    .clone_with_standalone(true);
+                result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
+            }
         };
 
         add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
