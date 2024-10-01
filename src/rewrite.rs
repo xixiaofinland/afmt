@@ -417,10 +417,11 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         let (node, mut result, source_code, config) = self.prepare(initial_context);
 
         let mut node = node.clone(); // lifetime challenge
-        let updated_context = update_source_code(&node, source_code).map(|updated_source_code| {
-            let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
-            FmtContext::new(config, wrapped_source)
-        });
+        let updated_context =
+            update_source_code_for_if_statement(&node, source_code).map(|updated_source_code| {
+                let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
+                FmtContext::new(config, wrapped_source)
+            });
         let context = match &updated_context {
             Some(c) => {
                 node = c
@@ -513,11 +514,15 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
             if body.kind() == ";" {
                 result.push(';');
             } else {
-                result.push('\n');
+                result.push_str(" {\n");
                 let mut c_shape = shape
                     .copy_with_indent_increase(context.config)
                     .clone_with_standalone(true);
                 result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
+
+                result.push('\n');
+                add_indent(&mut result, shape, context);
+                result.push_str("}");
             }
         };
 

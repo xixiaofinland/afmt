@@ -1,11 +1,6 @@
 class LoopClass {
   void forLoop() {
-    //for (Contact a: contacts) {
-    //  System.debug(a);
-    //}
-    for (Contact a: contacts);
-    //for (;; voidCall());
-    //for (String s: stringSet);
+  for (Integer i = 0; i < 1; i++) i++ ;
+        while (i < 10) i++;
   }
-
 }

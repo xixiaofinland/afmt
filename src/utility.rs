@@ -182,7 +182,10 @@ where
     block.rewrite(cloned, context)
 }
 
-pub fn update_source_code<'tree>(node: &Node<'tree>, source_code: &str) -> Option<String> {
+pub fn update_source_code_for_if_statement<'tree>(
+    node: &Node<'tree>,
+    source_code: &str,
+) -> Option<String> {
     let node_code = node.v(source_code);
     let mut is_updated = false;
     let mut new_node_code = String::from(node_code);
