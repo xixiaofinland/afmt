@@ -510,21 +510,19 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
 
         if is_block_node {
             result.push_str(&rewrite_shape::<Block>(&body, shape, false, context));
+        } else if body.kind() == ";" {
+            result.push(';');
         } else {
-            if body.kind() == ";" {
-                result.push(';');
-            } else {
-                result.push_str(" {\n");
-                let mut c_shape = shape
-                    .copy_with_indent_increase(context.config)
-                    .clone_with_standalone(true);
-                result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
+            result.push_str(" {\n");
+            let mut c_shape = shape
+                .copy_with_indent_increase(context.config)
+                .clone_with_standalone(true);
+            result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
-                result.push('\n');
-                add_indent(&mut result, shape, context);
-                result.push_str("}");
-            }
-        };
+            result.push('\n');
+            add_indent(&mut result, shape, context);
+            result.push_str("}");
+        }
 
         add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
         result
@@ -554,18 +552,16 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
 
         if is_block_node {
             result.push_str(&rewrite_shape::<Block>(&body, shape, false, context));
+        } else if body.kind() == ";" {
+            result.push(';');
         } else {
-            if body.kind() == ";" {
-                result.push(';');
-            } else {
-                result.push_str(" {\n");
-                let mut c_shape = shape
-                    .copy_with_indent_increase(context.config)
-                    .clone_with_standalone(true);
-                result.push_str(&rewrite::<Statement>(&value, &mut c_shape, context));
-                result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
-            }
-        };
+            result.push_str(" {\n");
+            let mut c_shape = shape
+                .copy_with_indent_increase(context.config)
+                .clone_with_standalone(true);
+            result.push_str(&rewrite::<Statement>(&value, &mut c_shape, context));
+            result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
+        }
 
         add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
         result
@@ -979,21 +975,19 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
 
         if is_block_node {
             result.push_str(&rewrite_shape::<Block>(&body, shape, false, context));
+        } else if body.kind() == ";" {
+            result.push(';');
         } else {
-            if body.kind() == ";" {
-                result.push(';');
-            } else {
-                result.push_str(" {\n");
-                let mut c_shape = shape
-                    .copy_with_indent_increase(context.config)
-                    .clone_with_standalone(true);
-                result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
+            result.push_str(" {\n");
+            let mut c_shape = shape
+                .copy_with_indent_increase(context.config)
+                .clone_with_standalone(true);
+            result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
-                result.push('\n');
-                add_indent(&mut result, shape, context);
-                result.push_str("}");
-            }
-        };
+            result.push('\n');
+            add_indent(&mut result, shape, context);
+            result.push_str("}");
+        }
 
         add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
         result
