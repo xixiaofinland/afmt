@@ -1111,6 +1111,13 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         let o = node.c_by_n("object");
+        result.push_str(&match o.kind() {
+            "super" => o.v(source_code).to_string(),
+            "field_access" => rewrite::<FieldAccess>(&o, shape, context),
+            "array_access" => rewrite::<ArrayAccess>(&o, shape, context),
+            _ => String::new(), // Handle other cases if needed
+        });
+
         if o.kind() == "super" {
             result.push_str(o.v(source_code));
         } else if o.kind() == "array_access" {
