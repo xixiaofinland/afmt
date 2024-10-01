@@ -989,6 +989,10 @@ impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
         }
 
         match node.kind() {
+            "this" => {
+                result.push_str(node.v(source_code));
+                result
+            }
             "identifier" => {
                 result.push_str(node.v(source_code));
                 result
