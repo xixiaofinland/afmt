@@ -1106,16 +1106,18 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        let object = node.c_by_n("object");
-        // special case: it has `[...]`
-        if object.kind() == "array_access" {
-            result.push_str(&rewrite::<ArrayAccess>(&object, shape, context));
+        let o = node.c_by_n("object");
+        if o.kind() == "super" {
+            result.push_str(o.v(source_code));
+        } else if o.kind() == "array_access" {
+            // special case: it has `[...]`
+            result.push_str(&rewrite::<ArrayAccess>(&o, shape, context));
         } else {
-            result.push_str(&rewrite::<PrimaryExpression>(&object, shape, context));
+            result.push_str(&rewrite::<PrimaryExpression>(&o, shape, context));
         }
 
-        // `?.` need to traverse unnamed node;
-        let mut current_node = object.next_sibling();
+        // FIXME: parser updated already -> `?.` need to traverse unnamed node;
+        let mut current_node = o.next_sibling();
         while let Some(cur) = current_node {
             if cur.is_named() {
                 break;
