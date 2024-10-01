@@ -10,8 +10,6 @@ class LoopClass {
 
   void whileLoop() {
     Integer i = 0;
-    while (i < 10)
-      i++;
     while (i < 10) {
       System.debug(i);
       i++;
@@ -24,19 +22,9 @@ class LoopClass {
     while (i < 5) {
     }
 
-    while (
-      i > 5000000 &&
-      i < 34034034 &&
-      i != 384294723 &&
-      i != 47289347 &&
-      i != 43249034
-    ) {
-      System.debug(i);
-    }
     while (true) {
       break;
     }
-    while (true);
   }
 
   void doWhileLoop() {
@@ -52,13 +40,5 @@ class LoopClass {
     } while (count < 10);
     do {
     } while (count < 10);
-    do {
-    } while (
-      i > 5000000 &&
-      i < 34034034 &&
-      i != 384294723 &&
-      i != 47289347 &&
-      i != 43249034
-    );
   }
 }
