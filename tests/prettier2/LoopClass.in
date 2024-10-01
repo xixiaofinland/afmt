@@ -1,6 +1,5 @@
 class LoopClass {
   void forLoop() {
-    Contact[] contacts = new Contact[]{};
     for (Contact a: contacts) {
       System.debug(a);
     }
