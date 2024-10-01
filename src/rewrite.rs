@@ -1116,7 +1116,7 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
             "identifier" => o.v(source_code).to_string(),
             "field_access" => rewrite::<FieldAccess>(&o, shape, context),
             "array_access" => rewrite::<ArrayAccess>(&o, shape, context),
-            _ => String::new(), // Handle other cases if needed
+            _ => rewrite::<PrimaryExpression>(&o, shape, context),
         });
 
         //if o.kind() == "super" {
