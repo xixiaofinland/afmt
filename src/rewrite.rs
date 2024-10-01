@@ -1819,16 +1819,16 @@ impl<'a, 'tree> Rewrite for ArrayCreationExpression<'a, 'tree> {
         let t = node.c_by_n("type"); // _simple_type, send to Exp for simplicity for now
         result.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
 
-        if let Some(ref v) = node.try_c_by_n("value") {
-            result.push_str(&rewrite_shape::<ArrayInitializer>(v, shape, false, context));
-        }
-
         if let Some(ref v) = node.try_c_by_n("dimensions") {
             if v.kind() == "dimensions" {
                 result.push_str(v.v(source_code));
             } else {
                 result.push_str(&rewrite_shape::<Expression>(v, shape, false, context));
             }
+        }
+
+        if let Some(ref v) = node.try_c_by_n("value") {
+            result.push_str(&rewrite_shape::<ArrayInitializer>(v, shape, false, context));
         }
         result
     }
