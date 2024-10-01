@@ -1979,6 +1979,16 @@ impl<'a, 'tree> Rewrite for InterfaceDeclaration<'a, 'tree> {
             result.push_str(&rewrite_shape::<TypeParameters>(c, shape, false, context));
         }
 
+        if let Some(ref c) = node.try_c_by_k("extends_interfaces") {
+            result.push_str(" extends ");
+            result.push_str(&rewrite_shape::<TypeList>(
+                &c.first_c(),
+                shape,
+                false,
+                context,
+            ));
+        }
+
         let b = node.c_by_n("body");
         result.push_str(&rewrite::<Block>(
             &b,
@@ -2063,6 +2073,15 @@ impl<'a, 'tree> Rewrite for TypeParameter<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         result.push_str(node.v(source_code));
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for TypeList<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        result.push_str(&node.first_c()._visit(shape, context));
         result
     }
 }

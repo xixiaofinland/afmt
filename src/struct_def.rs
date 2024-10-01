@@ -110,4 +110,5 @@ def_struct!(
     ContinueStatement,
     TypeParameters,
     TypeParameter,
+    TypeList,
 );
