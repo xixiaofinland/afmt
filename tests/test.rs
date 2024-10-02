@@ -127,12 +127,14 @@ mod tests {
             let source_content =
                 std::fs::read_to_string(source).expect("Failed to read the file content.");
 
-            println!("\nFailed: {:?}:", source);
+            println!("{}", format!("\nFailed: {:?}:", source).yellow());
             println!("-------------------------------------\n");
             println!("{}", source_content);
             println!("-------------------------------------\n");
             print_side_by_side_diff(against, &output, &expected);
             println!("\n-------------------------------------\n");
+            println!("{}", format!("Failed: {:?}:", source).yellow());
+            println!("-------------------------------------\n");
 
             false
         } else {

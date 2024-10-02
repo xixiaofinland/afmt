@@ -79,14 +79,20 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push('(');
 
-        let parameters_node = node
+        let formal_parameter_nodes = node
             .try_c_by_n("parameters")
             .map(|n| n.try_cs_by_k("formal_parameter"))
             .unwrap_or_default();
 
-        let parameters_value: Vec<String> = parameters_node
+        let parameters_value: Vec<String> = formal_parameter_nodes
             .iter()
             .map(|n| {
+                if let Some(ref a) = n.try_c_by_k("modifiers") {
+                    result.push_str(&rewrite::<Modifiers>(a, shape, context));
+                    if let Some(_) = a.try_c_by_k("modifier") {
+                        result.push(' ');
+                    }
+                }
                 let type_str = n.cv_by_n("type", source_code);
                 let name_str = n.cv_by_n("name", source_code);
                 format!("{} {}", type_str, name_str)
@@ -2148,3 +2154,19 @@ impl<'a, 'tree> Rewrite for SmallCaseValue<'a, 'tree> {
         result
     }
 }
+
+//impl<'a, 'tree> Rewrite for FormalParameter<'a, 'tree> {
+//    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+//        let (node, mut result, _source_code, _) = self.prepare(context);
+//        result.push_str(&node.apply_to_children_in_same_line(
+//            " ",
+//            shape,
+//            context,
+//            |c, c_shape, c_context| c._visit(c_shape, c_context),
+//        ));
+//        result
+//        //let type_str = n.cv_by_n("type", source_code);
+//        //let name_str = n.cv_by_n("name", source_code);
+//        //format!("{} {}", type_str, name_str)
+//    }
+//}
