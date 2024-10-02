@@ -1,5 +1,5 @@
 class SafeNavigationOperator {
-  public String sayHelloWithModifier(static final String subject) {
-    return null;
+  {
+  String[] anotherStringArray = new String[]{ 'a', 'b' };
   }
 }

@@ -3,8 +3,6 @@ public class VariableDeclaration {
     String firstString, secondString;
     String a = 'aaa', b = 'bbb';
     List<UnknownClass.InnerClass> nestedList = new List<UnknownClass.InnerClass>();
-    String veryLongVariableNameThatByItselfIsAlreadyABitTooMuch = 'tada',
-      anotherVeryLongVariableNameThatByItselfIsAlreadyABitTooMuch = 'a';
     String c = 'c';
     String d = 'd';
     String e = c, d = a;
