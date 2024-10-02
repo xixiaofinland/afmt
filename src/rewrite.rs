@@ -2155,18 +2155,51 @@ impl<'a, 'tree> Rewrite for SmallCaseValue<'a, 'tree> {
     }
 }
 
-//impl<'a, 'tree> Rewrite for FormalParameter<'a, 'tree> {
-//    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-//        let (node, mut result, _source_code, _) = self.prepare(context);
-//        result.push_str(&node.apply_to_children_in_same_line(
-//            " ",
-//            shape,
-//            context,
-//            |c, c_shape, c_context| c._visit(c_shape, c_context),
-//        ));
-//        result
-//        //let type_str = n.cv_by_n("type", source_code);
-//        //let name_str = n.cv_by_n("name", source_code);
-//        //format!("{} {}", type_str, name_str)
-//    }
-//}
+impl<'a, 'tree> Rewrite for TriggerDeclaration<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result.push_str("trigger ");
+
+        let name = node.c_by_n("name");
+        result.push_str(&name.v(source_code));
+
+        result.push_str(" on ");
+
+        let object = node.c_by_n("object");
+        result.push_str(&object.v(source_code));
+
+        result.push_str("(");
+
+        let joined = node
+            .cs_by_k("trigger_event")
+            .iter()
+            .map(|c| rewrite::<TriggerEvent>(c, shape, context))
+            .collect::<Vec<_>>()
+            .join(", ");
+        result.push_str(&joined);
+
+        result.push_str(")");
+
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for TriggerEvent<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        let v = match node.first_c().kind() {
+            "before_insert" => "before insert",
+            "after_insert" => "after insert",
+            "before_update" => "before update",
+            "after_update" => "after update",
+            "before_delete" => "before delete",
+            "after_delete" => "after delete",
+            "after_undelete" => "after undelete",
+            _ => unreachable!(),
+        };
+        result.push_str(v);
+        result
+    }
+}

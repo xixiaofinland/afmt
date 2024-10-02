@@ -111,5 +111,6 @@ def_struct!(
     TypeParameter,
     TypeList,
     SmallCaseValue,
-    //FormalParameter,
+    TriggerDeclaration,
+    TriggerEvent,
 );
