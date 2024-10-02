@@ -2181,6 +2181,12 @@ impl<'a, 'tree> Rewrite for TriggerDeclaration<'a, 'tree> {
 
         result.push_str(")");
 
+        result.push_str(&rewrite::<Block>(
+            &node.c_by_n("body").first_c(),
+            &mut shape.clone_with_standalone(false),
+            context,
+        ));
+
         result
     }
 }
