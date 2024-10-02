@@ -837,7 +837,20 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
             result.push_str(&rewrite_shape::<Annotation>(c, shape, true, context));
         });
 
-        result.push_str(&node.try_csv_by_k("modifier", source_code).join(" "));
+        let joined = node
+            .try_cs_by_k("modifier")
+            .iter()
+            .map(|c| {
+                if c.first_c().kind() == "testMethod" {
+                    // old style test method
+                    "testMethod".to_string()
+                } else {
+                    c.v(source_code).to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined);
         result
     }
 }
@@ -1096,7 +1109,7 @@ impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for RunAsStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         result.push_str("System.runAs");
@@ -1108,6 +1121,7 @@ impl<'a, 'tree> Rewrite for RunAsStatement<'a, 'tree> {
         let user = &node.c_by_k("block");
         result.push_str(&rewrite_shape::<Block>(&user, shape, false, context));
 
+        try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
         result
     }
 }
