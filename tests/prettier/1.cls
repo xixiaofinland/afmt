@@ -1,8 +1,8 @@
 class SafeNavigationOperator {
   public TriggerEvent enableBeforeInsert() {
-    for (Schema.SObjectType sObjectType : m_sObjectTypes) {
-      // register the type
-      handleRegisterType(sObjectType);
-    }
+    for (SObjectField field : getSObjectFieldList())
+      queryFactory.selectField(
+        relationshipFieldPath + '.' + field.getDescribe().getName()
+      );
   }
 }

@@ -296,6 +296,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             "type_identifier" => Value,
             "identifier" => Value,
             "block" => Block,
+            "method_invocation" => MethodInvocation,
             //"break_statement"
             //"continue_statement"
             //"declaration"
@@ -566,7 +567,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
             let mut c_shape = shape
                 .copy_with_indent_increase(context.config)
                 .clone_with_standalone(true);
-            result.push_str(&rewrite::<Statement>(&value, &mut c_shape, context));
+            result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
         }
 

@@ -1,15 +1,4 @@
 ========================================
-Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-common/classes/fflib_QueryFactory.cls
-Exit code: 1
-----------------------------------------
-thread '<unnamed>' panicked at src/rewrite.rs:620:26:
-## Expression routing - unknown node: this | this || return this;
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-Result 0: Err
-Thread panicked
-[2024-10-03T16:48:44Z ERROR afmt] Error: Thread panicked
-========================================
-========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-common/classes/fflib_SObjectSelector.cls
 Exit code: 1
 ----------------------------------------
