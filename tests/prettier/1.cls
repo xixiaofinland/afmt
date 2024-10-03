@@ -1,5 +1,6 @@
 class SafeNavigationOperator {
-  {
-  String[] anotherStringArray = new String[]{ 'a', 'b' };
+  public TriggerEvent enableBeforeInsert() {
+    BeforeInsertEnabled = true;
+    return this;
   }
 }

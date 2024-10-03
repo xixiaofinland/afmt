@@ -51,7 +51,23 @@ macro_rules! match_routing {
             )*
             _ => {
                 let struct_name = std::any::type_name::<Self>().split("::").last().unwrap();
-                panic!( "## {} routing - unknown node: {} | {}", struct_name.yellow(), $node.kind().red(), $node.v(&$context.source_code).chars().take(100).collect::<String>());
+                panic!("## {} routing - unknown node: {} | {} || {}",
+                struct_name.yellow(),
+                $node.kind().red(),
+                $node
+                    .v(&$context.source_code)
+                    .chars()
+                    .take(100)
+                    .collect::<String>(),
+                $node.parent().map_or(String::new(), |parent_node| {
+                    parent_node
+                        .v(&$context.source_code)
+                        .chars()
+                        .take(100)
+                        .collect::<String>()
+                })
+            );
+
             }
         }
     };
@@ -66,14 +82,21 @@ macro_rules! static_routing {
         } else {
             let struct_name = std::any::type_name::<Self>().split("::").last().unwrap();
             panic!(
-                "## {} routing - unknown node: {} | {}",
+                "## {} routing - unknown node: {} | {} || {}",
                 struct_name.yellow(),
                 $node.kind().red(),
                 $node
                     .v(&$context.source_code)
                     .chars()
                     .take(100)
-                    .collect::<String>()
+                    .collect::<String>(),
+                $node.parent().map_or(String::new(), |parent_node| {
+                    parent_node
+                        .v(&$context.source_code)
+                        .chars()
+                        .take(100)
+                        .collect::<String>()
+                })
             );
         }
     };
