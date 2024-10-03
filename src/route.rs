@@ -81,6 +81,7 @@ pub static EXP_MAP: PhfMap = phf_map! {
     "null_literal" => |node| Box::new(SmallCaseValue::new(node)),
     "decimal_floating_point_literal" => |node| Box::new(SmallCaseValue::new(node)),
     // --------------- split
+    "class_literal" => |node| Box::new(ClassLiteral::new(node)),
     "annotation_argument_list" => |node| Box::new(AnnotationArgumentList::new(node)),
     "annotation" => |node| Box::new(Annotation::new(node)),
     "array_access" => |node| Box::new(ArrayAccess::new(node)),

@@ -1,26 +1,4 @@
 ========================================
-Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-common/classes/fflib_SObjectDomainTest.cls
-Exit code: 1
-----------------------------------------
-thread '<unnamed>' panicked at src/rewrite.rs:622:26:
-## Expression routing - unknown node: boolean_type | boolean || boolean bError = false;
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-Result 0: Err
-Thread panicked
-[2024-10-03T17:10:21Z ERROR afmt] Error: Thread panicked
-========================================
-========================================
-Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-common/classes/fflib_SObjectSelectorTest.cls
-Exit code: 1
-----------------------------------------
-thread '<unnamed>' panicked at src/child.rs:71:13:
-generic_type: missing mandatory kind child: type_identifier.
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-Result 0: Err
-Thread panicked
-[2024-10-03T17:10:21Z ERROR afmt] Error: Thread panicked
-========================================
-========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-apexmocks/classes/fflib_ApexMocksUtilsTest.cls
 Exit code: 1
 ----------------------------------------
@@ -33,7 +11,7 @@ thread '<unnamed>' panicked at src/rewrite.rs:622:26:
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:22Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:00Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-apexmocks/classes/fflib_ArgumentCaptorTest.cls
@@ -46,31 +24,20 @@ thread '<unnamed>' panicked at src/rewrite.rs:622:26:
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:22Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:00Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/main/classes/ManageLookupRollupSummariesNewController.cls
 Exit code: 1
 ----------------------------------------
-thread '<unnamed>' panicked at src/rewrite.rs:1364:17:
+thread '<unnamed>' panicked at src/rewrite.rs:1365:17:
 ## SoqlQueryBody routing - unknown node: with_clause | WITH SECURITY_ENFORCED || SELECT QualifiedApiName FROM EntityDefinition
           WHERE IsCustomSetting = false
           AND 
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:22Z ERROR afmt] Error: Thread panicked
-========================================
-========================================
-Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/main/classes/RollupService.cls
-Exit code: 1
-----------------------------------------
-thread '<unnamed>' panicked at src/rewrite.rs:622:26:
-## Expression routing - unknown node: boolean_type | boolean || boolean rollupValueChange = false;
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-Result 0: Err
-Thread panicked
-[2024-10-03T17:10:22Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:00Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/main/classes/RollupControllerTest.cls
@@ -81,7 +48,7 @@ thread '<unnamed>' panicked at src/rewrite.rs:1540:26:
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:22Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:00Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/main/classes/LookupRollupStatusCheckController.cls
@@ -92,7 +59,7 @@ thread '<unnamed>' panicked at src/rewrite.rs:1593:17:
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:22Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:00Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/System/QueueableDuplicateSignature.cls
@@ -104,7 +71,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:22Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:00Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Process/PluginDescribeResult.cls
@@ -116,7 +83,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:23Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:01Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Process/SparkPlugApi.cls
@@ -130,7 +97,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:23Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:01Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Invocable/ActionInvoker.cls
@@ -144,7 +111,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:23Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:01Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Auth/JWTBearerTokenExchange.cls
@@ -158,7 +125,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/CommerceTax/ImpositionResponse.cls
@@ -170,7 +137,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/CommerceTax/AmountDetailsResponse.cls
@@ -182,7 +149,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/CommerceTax/RuleDetailsResponse.cls
@@ -194,7 +161,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/CommerceTax/TaxDetailsResponse.cls
@@ -206,7 +173,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/CommerceTax/JurisdictionResponse.cls
@@ -218,7 +185,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/CommerceTax/AddressesResponse.cls
@@ -230,7 +197,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/CommerceTax/LineItemResponse.cls
@@ -242,7 +209,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:07Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/PinRemovedEvent.cls
@@ -256,7 +223,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesSharedPublicURLRequest.cls
@@ -268,7 +235,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/TeamBillableInfoRequest.cls
@@ -280,7 +247,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/BookmarksListRequest.cls
@@ -292,7 +259,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/WorkflowsUpdateStepRequest.cls
@@ -304,7 +271,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatScheduledMessagesListResponse.cls
@@ -316,7 +283,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/Latest.cls
@@ -328,7 +295,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsInviteRequest.cls
@@ -340,7 +307,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/RemindersInfoRequest.cls
@@ -352,7 +319,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/MessageEvent.cls
@@ -364,7 +331,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsRepliesRequest.cls
@@ -376,7 +343,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatMeMessageRequest.cls
@@ -388,7 +355,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ModalView.cls
@@ -400,7 +367,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/RemindersAddRequest.cls
@@ -412,7 +379,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/RemindersListRequest.cls
@@ -424,7 +391,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/WorkflowsStepCompletedRequest.cls
@@ -436,7 +403,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesRemoteUpdateRequest.cls
@@ -448,7 +415,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/StarsAddRequest.cls
@@ -460,7 +427,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ApiTestResponse.cls
@@ -472,7 +439,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/BotsInfoResponse.cls
@@ -484,7 +451,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsInviteSharedRequest.cls
@@ -496,7 +463,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsListRequest.cls
@@ -508,7 +475,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/StarAddedEvent.cls
@@ -522,7 +489,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndEndDndRequest.cls
@@ -534,7 +501,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/MessageRepliedEvent.cls
@@ -548,7 +515,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/RemindersCompleteRequest.cls
@@ -560,7 +527,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesRemoteInfoRequest.cls
@@ -572,7 +539,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:28Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/PinsListRequest.cls
@@ -584,7 +551,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FileUnsharedEvent.cls
@@ -596,7 +563,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/EmojiListResponse.cls
@@ -608,7 +575,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/StarsRemoveRequest.cls
@@ -620,7 +587,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AppsEventAuthorizationsListResponse.cls
@@ -632,7 +599,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/LinkSharedEvent.cls
@@ -644,7 +611,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsSetTopicRequest.cls
@@ -656,7 +623,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/Reminder.cls
@@ -668,7 +635,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/StarsListResponse.cls
@@ -682,7 +649,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesDownloadRequest.cls
@@ -694,7 +661,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndTeamInfoResponse.cls
@@ -706,7 +673,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/User.cls
@@ -720,7 +687,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesListRequest.cls
@@ -732,7 +699,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersInfoRequest.cls
@@ -744,7 +711,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersIdentityResponse.cls
@@ -758,7 +725,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/Usergroup.Prefs.cls
@@ -770,7 +737,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ViewsOpenRequest.cls
@@ -782,7 +749,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersSetPresenceRequest.cls
@@ -794,7 +761,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ImCreatedEvent.cls
@@ -806,7 +773,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionRemovedEvent.cls
@@ -818,7 +785,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AppMentionEvent.cls
@@ -830,7 +797,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatGetPermalinkRequest.cls
@@ -842,7 +809,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/GroupRenameEvent.cls
@@ -854,7 +821,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesRemoteAddRequest.cls
@@ -866,7 +833,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatUpdateRequest.cls
@@ -878,7 +845,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AuthTestRequest.cls
@@ -890,7 +857,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/TokensRevokedEvent.cls
@@ -902,7 +869,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsCreateRequest.cls
@@ -914,7 +881,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersConversationsRequest.cls
@@ -926,7 +893,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/StarsListRequest.cls
@@ -938,7 +905,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatDeleteScheduledMessageRequest.cls
@@ -950,7 +917,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/TeamProfileGetRequest.cls
@@ -962,7 +929,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChannelCreatedEvent.cls
@@ -974,7 +941,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatPostEphemeralRequest.cls
@@ -986,7 +953,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/MessageChangedEvent.cls
@@ -1000,7 +967,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsCloseRequest.cls
@@ -1012,7 +979,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/BookmarksAddRequest.cls
@@ -1024,7 +991,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilePublicEvent.cls
@@ -1036,7 +1003,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndUpdatedEvent.cls
@@ -1048,7 +1015,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/MigrationExchangeRequest.cls
@@ -1060,7 +1027,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsArchiveRequest.cls
@@ -1072,7 +1039,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatPostMessageRequest.cls
@@ -1084,7 +1051,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersListRequest.cls
@@ -1096,7 +1063,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/BookmarksEditRequest.cls
@@ -1108,7 +1075,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ViewsUpdateRequest.cls
@@ -1120,7 +1087,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionAddedEvent.cls
@@ -1132,7 +1099,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/TeamAccessLogsRequest.cls
@@ -1144,7 +1111,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersProfileSetRequest.cls
@@ -1156,7 +1123,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndInfoRequest.cls
@@ -1168,7 +1135,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/RequestContext.cls
@@ -1180,7 +1147,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/CallsEndRequest.cls
@@ -1192,7 +1159,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/BotsInfoRequest.cls
@@ -1204,7 +1171,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsListConnectInvitesRequest.cls
@@ -1216,7 +1183,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AppRequest.cls
@@ -1230,7 +1197,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ViewContext.cls
@@ -1242,7 +1209,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/InviteRequestedEvent.cls
@@ -1256,7 +1223,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersSetActiveRequest.cls
@@ -1268,7 +1235,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsRenameRequest.cls
@@ -1280,7 +1247,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionsListResponse.cls
@@ -1294,7 +1261,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionsGetRequest.cls
@@ -1306,7 +1273,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/SearchResult.cls
@@ -1318,7 +1285,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AppsEventAuthorizationsListRequest.cls
@@ -1330,7 +1297,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FileCreatedEvent.cls
@@ -1342,7 +1309,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsergroupsCreateRequest.cls
@@ -1354,7 +1321,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/CallsAddRequest.cls
@@ -1366,7 +1333,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AuthRevokeRequest.cls
@@ -1378,7 +1345,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/TeamProfileGetResponse.cls
@@ -1392,7 +1359,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ErrorReport.cls
@@ -1404,7 +1371,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsOpenRequest.cls
@@ -1416,7 +1383,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/CallsParticipantsAddRequest.cls
@@ -1428,7 +1395,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/BotProfile.cls
@@ -1440,7 +1407,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsUnarchiveRequest.cls
@@ -1452,7 +1419,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/TeamInfoRequest.cls
@@ -1464,7 +1431,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsergroupsDisableRequest.cls
@@ -1476,7 +1443,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/PinsAddRequest.cls
@@ -1488,7 +1455,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/PinsListResponse.cls
@@ -1500,7 +1467,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsergroupsUsersListRequest.cls
@@ -1512,7 +1479,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChannelRenameEvent.cls
@@ -1524,7 +1491,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsInfoRequest.cls
@@ -1536,7 +1503,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionsRemoveRequest.cls
@@ -1548,7 +1515,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/MessageDeletedEvent.cls
@@ -1562,7 +1529,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatScheduledMessagesListRequest.cls
@@ -1574,7 +1541,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndUpdatedUserEvent.cls
@@ -1586,7 +1553,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionsAddRequest.cls
@@ -1598,7 +1565,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsergroupsEnableRequest.cls
@@ -1610,7 +1577,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/RemindersDeleteRequest.cls
@@ -1622,7 +1589,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsSetPurposeRequest.cls
@@ -1634,7 +1601,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/SubteamCreatedEvent.cls
@@ -1648,7 +1615,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/StarRemovedEvent.cls
@@ -1662,7 +1629,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionsGetResponse.cls
@@ -1674,7 +1641,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ActionPayload.cls
@@ -1686,7 +1653,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsLeaveRequest.cls
@@ -1698,7 +1665,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/CallsUpdateRequest.cls
@@ -1710,7 +1677,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ViewsPushRequest.cls
@@ -1722,7 +1689,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsMembersRequest.cls
@@ -1734,7 +1701,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AuthTeamsListResponse.cls
@@ -1746,7 +1713,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/Message.cls
@@ -1760,7 +1727,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsJoinRequest.cls
@@ -1772,7 +1739,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsDeclineSharedInviteRequest.cls
@@ -1784,7 +1751,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesDeleteRequest.cls
@@ -1796,7 +1763,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ViewsPublishRequest.cls
@@ -1808,7 +1775,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersLookupByEmailRequest.cls
@@ -1820,7 +1787,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ReactionsListRequest.cls
@@ -1832,7 +1799,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/CallsInfoRequest.cls
@@ -1844,7 +1811,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersIdentityRequest.cls
@@ -1856,7 +1823,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesRevokePublicURLRequest.cls
@@ -1868,7 +1835,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/SearchFilesRequest.cls
@@ -1880,7 +1847,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesRemoteListRequest.cls
@@ -1892,7 +1859,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsKickRequest.cls
@@ -1904,7 +1871,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:08Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndEndSnoozeRequest.cls
@@ -1916,7 +1883,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsInviteResponse.cls
@@ -1928,7 +1895,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndTeamInfoRequest.cls
@@ -1940,7 +1907,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatDeleteRequest.cls
@@ -1952,7 +1919,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/PinsRemoveRequest.cls
@@ -1964,7 +1931,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ApiTestRequest.cls
@@ -1976,7 +1943,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesRemoteShareRequest.cls
@@ -1988,7 +1955,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesInfoRequest.cls
@@ -2000,7 +1967,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FileChangeEvent.cls
@@ -2012,7 +1979,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsergroupsUsersUpdateRequest.cls
@@ -2024,7 +1991,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatScheduleMessageResponse.cls
@@ -2036,7 +2003,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/Team.cls
@@ -2050,7 +2017,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsMarkRequest.cls
@@ -2062,7 +2029,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersGetPresenceRequest.cls
@@ -2074,7 +2041,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/SubteamUpdatedEvent.cls
@@ -2088,7 +2055,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsHistoryRequest.cls
@@ -2100,7 +2067,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/TeamIntegrationLogsRequest.cls
@@ -2112,7 +2079,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FilesRemoteRemoveRequest.cls
@@ -2124,7 +2091,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsergroupsListRequest.cls
@@ -2136,7 +2103,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/CallsParticipantsRemoveRequest.cls
@@ -2148,7 +2115,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AppsUninstallRequest.cls
@@ -2160,7 +2127,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ChatScheduleMessageRequest.cls
@@ -2172,7 +2139,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/EmojiListRequest.cls
@@ -2184,7 +2151,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/SearchMessagesRequest.cls
@@ -2196,7 +2163,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/SearchAllRequest.cls
@@ -2208,7 +2175,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/FileSharedEvent.cls
@@ -2220,7 +2187,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/PinAddedEvent.cls
@@ -2234,7 +2201,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersProfileGetRequest.cls
@@ -2246,7 +2213,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/DndSetSnoozeRequest.cls
@@ -2258,7 +2225,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/AuthTeamsListRequest.cls
@@ -2270,7 +2237,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/File.cls
@@ -2284,7 +2251,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/WorkflowsStepFailedRequest.cls
@@ -2296,7 +2263,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsersDeletePhotoRequest.cls
@@ -2308,7 +2275,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/BookmarksRemoveRequest.cls
@@ -2320,7 +2287,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/MessageContext.cls
@@ -2332,7 +2299,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/MatchedItem.cls
@@ -2346,7 +2313,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/UsergroupsUpdateRequest.cls
@@ -2358,7 +2325,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:29Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/SearchAllResponse.cls
@@ -2370,7 +2337,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:30Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/HomeView.cls
@@ -2382,7 +2349,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:30Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Slack/ConversationsAcceptSharedInviteRequest.cls
@@ -2394,7 +2361,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:30Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Messaging/InboundEmail.cls
@@ -2408,7 +2375,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:30Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Cache/Org.cls
@@ -2422,7 +2389,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:30Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Cache/Session.cls
@@ -2436,7 +2403,7 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:30Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================
 ========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/.sfdx/tools/250/StandardApexLibrary/Database/DMLOptions.cls
@@ -2450,5 +2417,5 @@ Parser encounters an error node in the tree.
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 Result 0: Err
 Thread panicked
-[2024-10-03T17:10:30Z ERROR afmt] Error: Thread panicked
+[2024-10-03T19:01:09Z ERROR afmt] Error: Thread panicked
 ========================================

@@ -1367,6 +1367,7 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
                 "from_clause" => FromClause,
                 "where_clause" => WhereCluase,
                 "limit_clause" => LimitClause,
+                "with_clause" => WithClause,
                 "offset_clause" => OffsetClause,
                 "all_rows_clause" => AllRowClause,
                 "order_by_clause" => OrderByClause,
@@ -1486,8 +1487,8 @@ impl<'a, 'tree> Rewrite for OrderExpression<'a, 'tree> {
             .map(|c| {
                 match_routing!(c, context, shape;
                     "field_identifier" => FieldIdentifier,
+                    "order_direction" => OrderDirection,
                     //"type": "function_expression",
-                    //"type": "order_direction",
                     //"type": "order_null_direction",
                 )
             })
@@ -1495,6 +1496,13 @@ impl<'a, 'tree> Rewrite for OrderExpression<'a, 'tree> {
             .join(" ");
         result.push_str(&joined_c);
         result
+    }
+}
+
+impl<'a, 'tree> Rewrite for OrderDirection<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, _, source_code, _) = self.prepare(context);
+        node.v(source_code).to_string()
     }
 }
 
@@ -1540,8 +1548,8 @@ impl<'a, 'tree> Rewrite for WhereCluase<'a, 'tree> {
         result.push_str(&match_routing!(c, context, shape;
             "comparison_expression" => ComparisonExpression,
             "and_expression" => AndExpression,
-            //"not_expression" => StorageIdentifier,
-            //"or_expression" => StorageIdentifier,
+            "not_expression" => NotExpression,
+            "or_expression" => OrExpression,
         ));
 
         result
@@ -1602,6 +1610,50 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "date_literal_with_param" => DateLiteralWithParam,
                     "subquery" => SubQuery,
                     //"storage_identifier" => StorageIdentifier,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_children);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for OrExpression<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _source_code, _) = self.prepare(context);
+
+        let joined_children = node
+            .children_vec()
+            .iter()
+            .map(|child| {
+                match_routing!(child, context, shape;
+                    "and_expression" => AndExpression,
+                    "comparison_expression" => ComparisonExpression,
+                    "not_expression" => NotExpression,
+                    "or_expression" => OrExpression,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" OR ");
+        result.push_str(&joined_children);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for NotExpression<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _source_code, _) = self.prepare(context);
+
+        let joined_children = node
+            .children_vec()
+            .iter()
+            .map(|child| {
+                match_routing!(child, context, shape;
+                    "and_expression" => AndExpression,
+                    "comparison_expression" => ComparisonExpression,
+                    "not_expression" => NotExpression,
+                    "or_expression" => OrExpression,
                 )
             })
             .collect::<Vec<_>>()
