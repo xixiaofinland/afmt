@@ -1,3 +1,4 @@
 target
 .direnv/
 node_modules/
+tests/battle_test/repos/
