@@ -1,8 +1,8 @@
 class SafeNavigationOperator {
-  public TriggerEvent enableBeforeInsert() {
-    for (SObjectField field : getSObjectFieldList())
-      queryFactory.selectField(
-        relationshipFieldPath + '.' + field.getDescribe().getName()
-      );
+  public List<SObject> selectSObjectsById(Set<Id> idSet) {
+    return (List<SObject>) mocks.mockNonVoidMethod(
+      new List<Type>{ Set<Id>.class },
+      new List<Object>{ idSet }
+    );
   }
 }

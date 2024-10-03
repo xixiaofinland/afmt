@@ -67,7 +67,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "while_statement" => |node| Box::new(WhileStatement::new(node)),
     "switch_expression" => |node| Box::new(SwitchExpression::new(node)),
     "switch_rule" => |node| Box::new(SwitchRule::new(node)),
-
+    "class_literal" => |node| Box::new(ClassLiteral::new(node)),
 };
 
 pub static EXP_MAP: PhfMap = phf_map! {

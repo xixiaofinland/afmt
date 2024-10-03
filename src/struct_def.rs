@@ -113,4 +113,5 @@ def_struct!(
     SmallCaseValue,
     TriggerDeclaration,
     TriggerEvent,
+    ClassLiteral,
 );

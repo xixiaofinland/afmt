@@ -2211,3 +2211,12 @@ impl<'a, 'tree> Rewrite for TriggerEvent<'a, 'tree> {
         result
     }
 }
+
+impl<'a, 'tree> Rewrite for ClassLiteral<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+        result.push_str(&rewrite::<Expression>(&node.first_c(), shape, context));
+        result.push_str(".class");
+        result
+    }
+}
