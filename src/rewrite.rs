@@ -1683,8 +1683,6 @@ impl<'a, 'tree> Rewrite for SoslQueryBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        result.push('[');
-
         let joined_c: String = node
             .children_vec()
             .iter()
@@ -1700,14 +1698,13 @@ impl<'a, 'tree> Rewrite for SoslQueryBody<'a, 'tree> {
             .collect::<Vec<_>>()
             .join(" ");
         result.push_str(&joined_c);
+        result
 
         //let f = node.c_by_k("find_clause");
         //result.push_str(&rewrite::<FindClause>(&f, shape, context));
         //
         //if let Some(r) = node.try_c_by_k("returning_clause");
         //result.push_str(&rewrite::<FindClause>(&f, shape, context));
-        result.push(']');
-        result
 
         //"type": "find_clause",
         //"type": "in_clause",
