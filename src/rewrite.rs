@@ -299,6 +299,7 @@ impl<'a, 'tree> Rewrite for Statement<'a, 'tree> {
             //"break_statement"
             //"continue_statement"
             //"declaration"
+            "scoped_type_identifier" => ScopedTypeIdentifier,
             "array_type" => ArrayType,
             "do_statement" => DoStatement,
             "enhanced_for_statement" => EnhancedForStatement,

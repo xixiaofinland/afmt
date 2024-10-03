@@ -1,6 +1,8 @@
 class SafeNavigationOperator {
   public TriggerEvent enableBeforeInsert() {
-    BeforeInsertEnabled = true;
-    return this;
+    for (Schema.SObjectType sObjectType : m_sObjectTypes) {
+      // register the type
+      handleRegisterType(sObjectType);
+    }
   }
 }
