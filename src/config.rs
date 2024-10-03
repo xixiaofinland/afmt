@@ -65,12 +65,18 @@ impl Session {
             let file = file.clone();
 
             thread::spawn(move || {
-                let source_code =
-                    fs::read_to_string(Path::new(&file)).expect("Failed to read file");
-
-                let context = FmtContext::new(&config, source_code);
-                let result = context.format_one_file();
-                tx.send(result).expect("failed to send result in tx");
+                let result = std::panic::catch_unwind(|| {
+                    let source_code =
+                        fs::read_to_string(Path::new(&file)).expect("Failed to read file");
+                    let context = FmtContext::new(&config, source_code);
+                    context.format_one_file()
+                });
+                match result {
+                    Ok(result) => tx.send(result).expect("failed to send result in tx"),
+                    Err(_) => tx
+                        .send(Err(anyhow::anyhow!("Thread panicked")))
+                        .expect("failed to send error in tx"),
+                }
             });
         }
 

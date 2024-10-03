@@ -1,9 +1,12 @@
 ========================================
 Error while formatting file: repos/sample.cls
-Exit code: 2
+Exit code: 1
 ----------------------------------------
 Error in node kind: ;, at byte range: 39-39, snippet: 
-[2024-10-03T04:44:44Z ERROR afmt] Panic occurred in file 'src/context.rs' at line 35
-[2024-10-03T04:44:44Z ERROR afmt] Panic info: PanicHookInfo { payload: Any { .. }, location: Location { file: "src/context.rs", line: 35, col: 13 }, can_unwind: true, force_no_backtrace: false }
-[2024-10-03T04:44:44Z ERROR afmt] Program panicked
+thread '<unnamed>' panicked at src/context.rs:35:13:
+Parser encounters an error node in the tree.
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Result 0: Err
+Thread panicked
+[2024-10-03T16:18:43Z ERROR afmt] Error: Thread panicked
 ========================================
