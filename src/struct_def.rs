@@ -71,6 +71,7 @@ def_struct!(
     SoqlQuery,
     SoqlQueryBody,
     SoslQuery,
+    SubQuery,
     SoslQueryBody,
     BinaryExpression,
     UnaryExpression,

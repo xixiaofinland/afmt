@@ -1,15 +1,4 @@
 ========================================
-Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-common/classes/fflib_SObjectMocks.cls
-Exit code: 1
-----------------------------------------
-thread '<unnamed>' panicked at src/visit.rs:39:26:
-## Node routing - unknown node: class_literal | Set<Id>.class || { Set<Id>.class }
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-Result 0: Err
-Thread panicked
-[2024-10-03T17:10:21Z ERROR afmt] Error: Thread panicked
-========================================
-========================================
 Error while formatting file: repos/declarative-lookup-rollup-summaries/dlrs/libs/fflib-common/classes/fflib_QueryFactoryTest.cls
 Exit code: 1
 ----------------------------------------

@@ -1172,6 +1172,7 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
             "super" => o.v(source_code).to_string(),
             "identifier" => o.v(source_code).to_string(),
             "field_access" => rewrite::<FieldAccess>(&o, shape, context),
+            "query_expression" => rewrite::<QueryExpression>(&o, shape, context),
             "array_access" => rewrite::<ArrayAccess>(&o, shape, context),
             _ => rewrite::<PrimaryExpression>(&o, shape, context),
         });
@@ -1334,10 +1335,12 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         let c = node.first_c().first_c(); // skip SoslQuery and SoqlQuery container node;
+        result.push_str("[");
         result.push_str(&match_routing!(c, context, shape;
             "sosl_query_body" => SoslQueryBody,
             "soql_query_body" => SoqlQueryBody,
         ));
+        result.push_str("]");
         result
     }
 }
@@ -1354,8 +1357,6 @@ impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
 impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
-
-        result.push_str("[");
 
         let joined_children = node
             .children_vec()
@@ -1374,7 +1375,6 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
             .collect::<Vec<_>>()
             .join(" ");
         result.push_str(&joined_children);
-        result.push_str("]");
         result
 
         //all_rows_clause
@@ -1600,6 +1600,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "null_literal" => Value,
                     "decimal" => Value,
                     "date_literal_with_param" => DateLiteralWithParam,
+                    "subquery" => SubQuery,
                     //"storage_identifier" => StorageIdentifier,
                 )
             })
@@ -2217,6 +2218,16 @@ impl<'a, 'tree> Rewrite for ClassLiteral<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
         result.push_str(&rewrite::<Expression>(&node.first_c(), shape, context));
         result.push_str(".class");
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for SubQuery<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+        result.push_str("(");
+        result.push_str(&rewrite::<SoqlQueryBody>(&node.first_c(), shape, context));
+        result.push_str(")");
         result
     }
 }
