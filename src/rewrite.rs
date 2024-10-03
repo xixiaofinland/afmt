@@ -666,8 +666,9 @@ impl<'a, 'tree> Rewrite for GenericType<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        let name = node.c_by_k("type_identifier");
-        result.push_str(name.v(source_code));
+        if let Some(name) = node.try_c_by_k("type_identifier") {
+            result.push_str(name.v(source_code));
+        }
 
         let arguments = node.c_by_k("type_arguments");
         result.push_str(&rewrite::<TypeArguments>(&arguments, shape, context));
