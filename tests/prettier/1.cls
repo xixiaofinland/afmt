@@ -1,5 +1,5 @@
 class SafeNavigationOperator {
   public List<SObject> selectSObjectsById(Set<Id> idSet) {
-    List<List<SObject>> res = [FIND 'hello' RETURNING Account];
+    boolean bError = false;
   }
 }

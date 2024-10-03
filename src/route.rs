@@ -72,6 +72,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
 
 pub static EXP_MAP: PhfMap = phf_map! {
     "boolean" => |node| Box::new(SmallCaseValue::new(node)),
+    "boolean_type" => |node| Box::new(SmallCaseValue::new(node)),
     "identifier" => |node| Box::new(Value::new(node)),
     "this" => |node| Box::new(Value::new(node)),
     "int" => |node| Box::new(Value::new(node)),
