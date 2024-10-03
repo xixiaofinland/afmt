@@ -1608,6 +1608,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "null_literal" => Value,
                     "decimal" => Value,
                     "date_literal_with_param" => DateLiteralWithParam,
+                    "date_literal" => DateLiteral,
                     "subquery" => SubQuery,
                     //"storage_identifier" => StorageIdentifier,
                 )
@@ -1675,6 +1676,13 @@ impl<'a, 'tree> Rewrite for DateLiteralWithParam<'a, 'tree> {
             .join(":");
         result.push_str(&joined_c);
         result
+    }
+}
+
+impl<'a, 'tree> Rewrite for DateLiteral<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, _, source_code, _) = self.prepare(context);
+        node.v(source_code).to_uppercase()
     }
 }
 
@@ -2201,6 +2209,19 @@ impl<'a, 'tree> Rewrite for SmallCaseValue<'a, 'tree> {
 
         let value = node.v(source_code);
         result.push_str(&value.to_lowercase());
+
+        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for CapitalValue<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+
+        let value = node.v(source_code);
+        result.push_str(&value.to_uppercase());
 
         try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
