@@ -1764,12 +1764,13 @@ impl<'a, 'tree> Rewrite for BoundApexExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        let c = node.first_c();
+
         // special case: brackets are needed when it's after `INCLUDES`
         let is_after_includes = node.prev_named_sibling().map_or(false, |prev_node| {
             prev_node.v(source_code).to_uppercase() == "INCLUDES"
         });
 
-        let c = node.first_c();
         let formatted = if is_after_includes {
             format!("(:{})", &rewrite::<Expression>(&c, shape, context))
         } else {
