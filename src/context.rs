@@ -29,8 +29,18 @@ impl<'a> FmtContext<'a> {
                     error_node.kind().yellow(),
                     error_node.start_byte(),
                     error_node.end_byte(),
-                    error_snippet
+                    error_snippet,
                 );
+                if let Some(p) = error_node.parent() {
+                    let parent_snippet = &source_code[p.start_byte()..p.end_byte()];
+                    println!(
+                        "Parent node kind: {}, at byte range: {}-{}, snippet: {}",
+                        error_node.kind().yellow(),
+                        error_node.start_byte(),
+                        error_node.end_byte(),
+                        parent_snippet,
+                    );
+                }
             }
             panic!("{}", "Parser encounters an error node in the tree.".red());
         }
