@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# File containing list of repositories
-REPO_LIST="repos.txt"
-TARGET_DIR="repos"
+# Get the absolute path of the current script's directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+REPO_LIST="$SCRIPT_DIR/repos.txt"
+TARGET_DIR="$SCRIPT_DIR/repos"
+
 
 # Create target directory if it doesn't exist
 mkdir -p $TARGET_DIR
