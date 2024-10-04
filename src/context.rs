@@ -35,9 +35,9 @@ impl<'a> FmtContext<'a> {
                     let parent_snippet = &source_code[p.start_byte()..p.end_byte()];
                     println!(
                         "Parent node kind: {}, at byte range: {}-{}, snippet: {}",
-                        error_node.kind().yellow(),
-                        error_node.start_byte(),
-                        error_node.end_byte(),
+                        p.kind().yellow(),
+                        p.start_byte(),
+                        p.end_byte(),
                         parent_snippet,
                     );
                 }
