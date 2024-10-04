@@ -1660,7 +1660,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "date_literal_with_param" => DateLiteralWithParam,
                     "date_literal" => DateLiteral,
                     "subquery" => SubQuery,
-                    //"storage_identifier" => StorageIdentifier,
+                    "function_expression" => FunctionExpression,
                 )
             })
             .collect::<Vec<_>>()
@@ -2357,6 +2357,27 @@ impl<'a, 'tree> Rewrite for SubQuery<'a, 'tree> {
         result.push_str("(");
         result.push_str(&rewrite::<SoqlQueryBody>(&node.first_c(), shape, context));
         result.push_str(")");
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for FunctionExpression<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        let f_name = node.c_by_n("function_name");
+        result.push_str(f_name.v(source_code));
+
+        let joined = node
+            .children_vec()
+            .iter()
+            .skip(1)
+            .map(|c| c.v(source_code))
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        let formatted = format!("({})", joined);
+        result.push_str(&formatted);
         result
     }
 }

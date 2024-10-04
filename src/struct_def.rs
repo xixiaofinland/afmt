@@ -122,4 +122,5 @@ def_struct!(
     TriggerDeclaration,
     TriggerEvent,
     ClassLiteral,
+    FunctionExpression,
 );
