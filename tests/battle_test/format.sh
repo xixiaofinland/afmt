@@ -29,6 +29,8 @@ format_files() {
             :  # No operation, skip logging
         elif echo "$OUTPUT" | grep -q "%%%"; then
             :  # Skip logging for %% cases with any number of percent signs
+        elif echo "$OUTPUT" | grep -q "Error in node kind: ;"; then
+           :
         else
             {
                 echo "========================================"
