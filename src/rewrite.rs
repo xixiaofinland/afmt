@@ -1853,7 +1853,7 @@ impl<'a, 'tree> Rewrite for FindClause<'a, 'tree> {
 impl<'a, 'tree> Rewrite for WithDivisionExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        result.push_str("WITH DIVISION = ");
+        result.push_str("DIVISION = ");
 
         let c = node.first_c();
         if c.kind() == "bound_apex_expression" {
@@ -1909,25 +1909,30 @@ impl<'a, 'tree> Rewrite for WithClause<'a, 'tree> {
         //"with_record_visibility_expression"
         //"with_user_id_type" //c: string_literal
 
+        result.push_str("WITH ");
+
         let with_type = node.first_c();
-        let joined: String = with_type
-            .children_vec()
-            .iter()
-            .map(|c| match c.kind() {
-                // NOTE: use Cow to avoid converting?
-                "with_highlight" => c.v(source_code).to_string(),
-                "with_snippet_expression" => c.v(source_code).to_string(),
-                "with_pricebook_expression" => c.first_c().v(source_code).to_string(),
-                "with_spell_correction_expression" => c.first_c().v(source_code).to_string(),
-                "with_user_id_type" => c.first_c().v(source_code).to_string(),
-                _ => {
-                    match_routing!(c, context, shape;
-                        "with_division_expression" => WithDivisionExpression,
-                    )
-                }
-            })
-            .collect::<Vec<_>>()
-            .join(" ");
+
+        let joined: String = if with_type.children_vec().is_empty() {
+            with_type.v(source_code).to_string()
+        } else {
+            with_type
+                .children_vec()
+                .iter()
+                .map(|c| match c.kind() {
+                    "with_highlight" => c.v(source_code).to_string(),
+                    "with_snippet_expression" => c.v(source_code).to_string(),
+                    "with_pricebook_expression" => c.first_c().v(source_code).to_string(),
+                    "with_spell_correction_expression" => c.first_c().v(source_code).to_string(),
+                    "with_user_id_type" => c.first_c().v(source_code).to_string(),
+                    "with_division_expression" => {
+                        rewrite::<WithDivisionExpression>(&c, shape, context)
+                    }
+                    _ => unreachable!(),
+                })
+                .collect::<Vec<_>>()
+                .join(" ")
+        };
         result.push_str(&joined);
         result
     }
