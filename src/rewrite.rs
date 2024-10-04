@@ -1529,6 +1529,7 @@ impl<'a, 'tree> Rewrite for OrderExpression<'a, 'tree> {
                 match_routing!(c, context, shape;
                     "field_identifier" => FieldIdentifier,
                     "order_direction" => OrderDirection,
+                    "order_null_direction" => CapitalValue,
                     //"type": "function_expression",
                     //"type": "order_null_direction",
                 )
