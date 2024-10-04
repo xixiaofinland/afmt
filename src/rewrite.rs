@@ -1606,6 +1606,7 @@ impl<'a, 'tree> Rewrite for AndExpression<'a, 'tree> {
             .iter()
             .map(|c| {
                 match_routing!(c, context, shape;
+                    "and_expression" => AndExpression,
                     "comparison_expression" => ComparisonExpression,
                     "or_expression" => OrExpression,
                 )
@@ -1761,24 +1762,21 @@ impl<'a, 'tree> Rewrite for FieldIdentifier<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for BoundApexExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, source_code, _) = self.prepare(context);
 
-        // special case:
-        let after_bound_apex = node.prev_named_sibling().map_or(false, |prev_node| {
-            prev_node.kind() == "set_comparison_operator"
+        // special case: brackets are needed when it's after `INCLUDES`
+        let is_after_includes = node.prev_named_sibling().map_or(false, |prev_node| {
+            prev_node.v(source_code).to_uppercase() == "INCLUDES"
         });
 
-        if after_bound_apex {
-            result.push('(');
-        }
-
-        result.push(':');
         let c = node.first_c();
-        result.push_str(&rewrite::<Expression>(&c, shape, context));
+        let formatted = if is_after_includes {
+            format!("(:{})", &rewrite::<Expression>(&c, shape, context))
+        } else {
+            format!(":{}", &rewrite::<Expression>(&c, shape, context))
+        };
 
-        if after_bound_apex {
-            result.push(')');
-        }
+        result.push_str(&formatted);
         result
     }
 }
