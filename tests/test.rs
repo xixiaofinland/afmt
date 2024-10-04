@@ -178,9 +178,29 @@ mod tests {
                     println!("...");
                 }
 
+                // Also print raw diff lines for easy visual comparison
+                println!("\n--- Raw diff ---");
+                for k in start..end {
+                    print_raw_diff(&changes[k]);
+                }
+
                 i = j;
             } else {
                 i += 1;
+            }
+        }
+    }
+
+    fn print_raw_diff(change: &similar::Change<&str>) {
+        match change.tag() {
+            ChangeTag::Delete => {
+                println!("- {}", change.to_string().replace("\n", "\\n"));
+            }
+            ChangeTag::Insert => {
+                println!("+ {}", change.to_string().replace("\n", "\\n"));
+            }
+            ChangeTag::Equal => {
+                // Skip unchanged lines for raw diff
             }
         }
     }

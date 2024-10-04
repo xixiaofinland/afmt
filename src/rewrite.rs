@@ -1607,11 +1607,17 @@ impl<'a, 'tree> Rewrite for AndExpression<'a, 'tree> {
             .map(|c| {
                 match_routing!(c, context, shape;
                     "comparison_expression" => ComparisonExpression,
+                    "or_expression" => OrExpression,
                 )
             })
             .collect::<Vec<_>>()
             .join(" AND ");
-        result.push_str(&joined_children);
+
+        if is_parent_where_clause(node) {
+            result.push_str(&joined_children)
+        } else {
+            result.push_str(&format!("({})", joined_children));
+        }
         result
     }
 }
@@ -1678,7 +1684,13 @@ impl<'a, 'tree> Rewrite for OrExpression<'a, 'tree> {
             })
             .collect::<Vec<_>>()
             .join(" OR ");
-        result.push_str(&joined_children);
+
+        if is_parent_where_clause(node) {
+            result.push_str(&joined_children)
+        } else {
+            result.push_str(&format!("({})", joined_children));
+        }
+        eprintln!("gopro[1]: rewrite.rs:1694: result={:#?}", result);
         result
     }
 }

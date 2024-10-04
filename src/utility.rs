@@ -187,3 +187,12 @@ pub fn update_source_code_for_if_statement<'tree>(
         None
     }
 }
+
+pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
+    if let Some(p) = node.parent() {
+        if p.kind() == "where_clause" {
+            return true;
+        }
+    }
+    return false;
+}
