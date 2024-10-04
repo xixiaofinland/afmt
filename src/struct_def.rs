@@ -62,6 +62,7 @@ def_struct!(
     CatchClause,
     GroupByClause,
     HavingClause,
+    HavingComparisonExpression,
     CatchFormalParameter,
     FinallyClause,
     FieldAccess,

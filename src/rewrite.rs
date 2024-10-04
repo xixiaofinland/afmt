@@ -1483,14 +1483,50 @@ impl<'a, 'tree> Rewrite for HavingClause<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
+        result.push_str("HAVING ");
         let c = node.first_c();
         result.push_str(&match_routing!(c, context, shape;
           //"having_and_expression" => Test
-          //"having_comparison_expression",=> Test
+          "having_comparison_expression" => HavingComparisonExpression,
           //"having_not_expression",=> Test
           //"having_or_expression",=> Test
         ));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for HavingComparisonExpression<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        let joined: String = node
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                    "function_expression" => FunctionExpression,
+                    "boolean" => Value,
+                    "bound_apex_expression" => BoundApexExpression,
+                    "currency_literal" => Value,
+                    "date" => Value,
+                    "date_literal" => Value,
+                    "date_literal_with_param" => Value,
+                    "date_time" => Value,
+                    "decimal" => Value,
+                    "function_expression" => FunctionExpression,
+                    "int" => Value,
+                    "null_literal" => Value,
+                    "set_comparison_operator" => Value,
+                    "string_literal" => Value,
+                    "value_comparison_operator" => Value,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        eprintln!("gopro[3]: rewrite.rs:1536: joined={:#?}", joined);
+        result.push_str(&joined);
         result
     }
 }
