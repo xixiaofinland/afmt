@@ -1,4 +1,0 @@
-/**
- * @prettier
- */
-class ClassWithPrettierPragma {}

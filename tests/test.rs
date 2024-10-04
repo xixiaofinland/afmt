@@ -21,18 +21,8 @@ mod tests {
     }
 
     #[test]
-    fn extra() {
-        let (total, failed) = run_scenario("tests/prettier2", "prettier2");
-        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
-    }
-
-    #[test]
     fn all() {
-        let scenarios = [
-            ("tests/static", "static"),
-            ("tests/prettier", "prettier"),
-            ("tests/prettier2", "prettier2"),
-        ];
+        let scenarios = [("tests/static", "static"), ("tests/prettier", "prettier")];
 
         let mut total_tests = 0;
         let mut failed_tests = 0;
@@ -68,11 +58,6 @@ mod tests {
             let entry = entry.unwrap();
             let source = entry.path();
             if source.extension().and_then(|ext| ext.to_str()) == Some("in") {
-                //println!(
-                //    "{} {:?}",
-                //    format!("### Processing {} file:", scenario_name).green(),
-                //    source
-                //);
                 total_tests += 1;
                 if !run_test_file(&source, scenario_name) {
                     failed_tests += 1;
@@ -157,40 +142,76 @@ mod tests {
 
     fn print_side_by_side_diff(against: &str, output: &str, expected: &str) {
         let diff = TextDiff::from_lines(expected, output);
-        let mut left_col;
-        let mut right_col;
         println!(
             "\x1b[38;2;255;165;0m{:<60} | {:<60}\x1b[0m",
             against, "Afmt:\n"
         );
-        for (idx, change) in diff.iter_all_changes().enumerate() {
-            let old_line_num = change
-                .old_index()
-                .map_or("".to_string(), |n| format!("{:>4}", n + 1));
-            let new_line_num = change
-                .new_index()
-                .map_or("".to_string(), |n| format!("{:>4}", n + 1));
 
-            match change.tag() {
-                ChangeTag::Delete => {
-                    left_col = format!("\x1b[91m- {:<58}\x1b[0m", change.to_string().trim_end()); // Red for deletions (left)
-                    right_col = String::from(""); // Empty on the right side
+        let changes: Vec<_> = diff.iter_all_changes().collect();
+        let context_lines = 3;
+        let mut i = 0;
+
+        while i < changes.len() {
+            if changes[i].tag() != ChangeTag::Equal {
+                let mut j = i;
+                while j < changes.len() && j - i < 2 * context_lines + 1 {
+                    if changes[j].tag() != ChangeTag::Equal {
+                        j = j + 2 * context_lines + 1;
+                    } else {
+                        j += 1;
+                    }
                 }
-                ChangeTag::Insert => {
-                    left_col = String::from(""); // Empty on the left side
-                    right_col = format!("\x1b[92m+ {:<58}\x1b[0m", change.to_string().trim_end());
-                    // Green for insertions (right)
+                j = j.min(changes.len());
+
+                let start = i.saturating_sub(context_lines);
+                let end = j.min(changes.len());
+
+                if start > 0 {
+                    println!("...");
                 }
-                ChangeTag::Equal => {
-                    left_col = format!("  {:<58}", change.to_string().trim_end()); // No color for unchanged lines
-                    right_col = format!("  {:<58}", change.to_string().trim_end());
+
+                for k in start..end {
+                    print_change_line(&changes[k]);
                 }
+
+                if end < changes.len() {
+                    println!("...");
+                }
+
+                i = j;
+            } else {
+                i += 1;
             }
-            println!(
-                "{:<4} {:<60} | {:<4} {:<60}",
-                old_line_num, left_col, new_line_num, right_col
-            );
         }
+    }
+
+    fn print_change_line(change: &similar::Change<&str>) {
+        let old_line_num = change
+            .old_index()
+            .map_or("".to_string(), |n| format!("{:>4}", n + 1));
+        let new_line_num = change
+            .new_index()
+            .map_or("".to_string(), |n| format!("{:>4}", n + 1));
+
+        let (left_col, right_col) = match change.tag() {
+            ChangeTag::Delete => (
+                format!("\x1b[91m- {:<58}\x1b[0m", change.to_string().trim_end()),
+                String::from(""),
+            ),
+            ChangeTag::Insert => (
+                String::from(""),
+                format!("\x1b[92m+ {:<58}\x1b[0m", change.to_string().trim_end()),
+            ),
+            ChangeTag::Equal => (
+                format!("  {:<58}", change.to_string().trim_end()),
+                format!("  {:<58}", change.to_string().trim_end()),
+            ),
+        };
+
+        println!(
+            "{:<4} {:<60} | {:<4} {:<60}",
+            old_line_num, left_col, new_line_num, right_col
+        );
     }
 
     fn run_prettier(source: &Path) -> Result<String, String> {

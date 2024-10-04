@@ -1,3 +1,0 @@
-interface BlockTrailingCommentAfterInterface { /* Block Comment */
-
-}

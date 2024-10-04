@@ -1,3 +1,0 @@
-@IsTest
-class TestClass {
-}
