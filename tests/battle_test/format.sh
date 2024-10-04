@@ -18,17 +18,24 @@ format_files() {
     OUTPUT=$($FORMATTER_BINARY -f "$FILE_PATH" 2>&1)
     EXIT_CODE=$?
     
-    # Check if an error occurred (non-zero exit code)
     if [ $EXIT_CODE -ne 0 ]; then
-        {
-            echo "========================================"
-            echo "Error while formatting file: $FILE_PATH"
-            echo "Exit code: $EXIT_CODE"
-            echo "----------------------------------------"
-            echo "$OUTPUT"
-            echo "========================================"
-        } | tee -a "$LOG_FILE"
-        return 1
+        # Check if the error contains "snippet: %%" or "snippet: %%%" and skip logging if true
+        # Managed package code has this templating code `%%%Name_space%%%`, which has nothing to do with Apex
+        if echo "$OUTPUT" | grep -qE "snippet: %%{2,3}"; then
+        :  # No operation, skip logging
+        elif echo "$OUTPUT" | grep -q "%%%"; then
+        :  # Skip logging for %% cases with any number of percent signs aroundelse
+        else
+            {
+                echo "========================================"
+                echo "Error while formatting file: $FILE_PATH"
+                echo "Exit code: $EXIT_CODE"
+                echo "----------------------------------------"
+                echo "$OUTPUT"
+                echo "========================================"
+            } | tee -a "$LOG_FILE"
+            return 1
+        fi
     fi
 }
 
@@ -36,7 +43,7 @@ format_files() {
 for REPO_DIR in "$TARGET_DIR"/*; do
     echo "Processing repository: $REPO_DIR"
     # Find all .cls and .trigger files
-    find "$REPO_DIR" -type f \( -name "*.cls" -o -name "*.trigger" \) | while read -r FILE; do
+    find "$REPO_DIR" -path "$REPO_DIR/.sfdx" -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print | while read -r FILE; do
         format_files "$FILE"
     done
 done
