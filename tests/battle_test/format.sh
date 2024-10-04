@@ -1,8 +1,12 @@
 #!/bin/bash
 
-TARGET_DIR="repos"
-FORMATTER_BINARY="../../target/debug/afmt"  # Assuming the formatter is a binary
-LOG_FILE="format_errors.log"            # Log file for errors
+# Get the absolute path of the current script's directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Set TARGET_DIR relative to the script's directory
+TARGET_DIR="$SCRIPT_DIR/repos"  # Adjust this path if needed
+FORMATTER_BINARY="$SCRIPT_DIR/../../target/debug/afmt"  # Adjust this path if needed
+LOG_FILE="$SCRIPT_DIR/format_errors.log"  # Log file for errors
 
 # Clear the log file at the start
 > "$LOG_FILE"
@@ -22,9 +26,9 @@ format_files() {
         # Check if the error contains "snippet: %%" or "snippet: %%%" and skip logging if true
         # Managed package code has this templating code `%%%Name_space%%%`, which has nothing to do with Apex
         if echo "$OUTPUT" | grep -qE "snippet: %%{2,3}"; then
-        :  # No operation, skip logging
+            :  # No operation, skip logging
         elif echo "$OUTPUT" | grep -q "%%%"; then
-        :  # Skip logging for %% cases with any number of percent signs aroundelse
+            :  # Skip logging for %% cases with any number of percent signs
         else
             {
                 echo "========================================"
