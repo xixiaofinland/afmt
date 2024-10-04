@@ -1444,7 +1444,7 @@ impl<'a, 'tree> Rewrite for FromClause<'a, 'tree> {
 impl<'a, 'tree> Rewrite for GroupByClause<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
-        result.push_str("FROM ");
+        result.push_str("GROUP BY ");
 
         let joined_children = node
             .children_vec()
@@ -1530,6 +1530,7 @@ impl<'a, 'tree> Rewrite for OrderExpression<'a, 'tree> {
                     "field_identifier" => FieldIdentifier,
                     "order_direction" => OrderDirection,
                     "order_null_direction" => CapitalValue,
+                    "function_expression" => FunctionExpression,
                     //"type": "function_expression",
                     //"type": "order_null_direction",
                 )
@@ -1693,7 +1694,6 @@ impl<'a, 'tree> Rewrite for OrExpression<'a, 'tree> {
         } else {
             result.push_str(&format!("({})", joined_children));
         }
-        eprintln!("gopro[1]: rewrite.rs:1694: result={:#?}", result);
         result
     }
 }
