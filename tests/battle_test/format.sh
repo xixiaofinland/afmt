@@ -11,6 +11,9 @@ LOG_FILE="format_errors.log"            # Log file for errors
 format_files() {
     local FILE_PATH="$1"
     
+    # Print the file path being processed
+    echo "Processing file: $FILE_PATH"
+    
     # Run the formatter and capture both stdout and stderr
     OUTPUT=$($FORMATTER_BINARY -f "$FILE_PATH" 2>&1)
     EXIT_CODE=$?
@@ -44,3 +47,4 @@ if [ -s "$LOG_FILE" ]; then
 else
     echo "All files processed successfully."
 fi
+

@@ -2,3 +2,4 @@ target
 .direnv/
 node_modules/
 tests/battle_test/repos/
+tests/battle_test/format_errors.log
