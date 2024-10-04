@@ -17,7 +17,7 @@ trigger myAccountTrigger on Account(before insert) {
         for (Account a : Trigger.new) {
           System.debug('New');
         }
-    } else {
+      } else {
         if (Trigger.isInsert) {
           List<Contact> contacts = new List<Contact>();
           for (Account a : Trigger.new) {
