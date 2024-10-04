@@ -65,6 +65,7 @@ def_struct!(
     HavingComparisonExpression,
     CatchFormalParameter,
     FinallyClause,
+    ForClause,
     FieldAccess,
     InstanceOfExpression,
     CastExpression,

@@ -1364,15 +1364,16 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
             .iter()
             .map(|c| {
                 match_routing!(c, context, shape;
-                "select_clause" => SelectClause,
-                "from_clause" => FromClause,
-                "where_clause" => WhereCluase,
-                "limit_clause" => LimitClause,
-                "with_clause" => WithClause,
-                "offset_clause" => OffsetClause,
-                "all_rows_clause" => AllRowClause,
-                "order_by_clause" => OrderByClause,
-                "group_by_clause" => GroupByClause,
+                    "select_clause" => SelectClause,
+                    "from_clause" => FromClause,
+                    "where_clause" => WhereCluase,
+                    "limit_clause" => LimitClause,
+                    "with_clause" => WithClause,
+                    "offset_clause" => OffsetClause,
+                    "all_rows_clause" => AllRowClause,
+                    "order_by_clause" => OrderByClause,
+                    "group_by_clause" => GroupByClause,
+                    "for_clause" => ForClause,
                 )
             })
             .collect::<Vec<_>>()
@@ -1928,6 +1929,23 @@ impl<'a, 'tree> Rewrite for InClause<'a, 'tree> {
     fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
         let (node, _, source_code, _) = self.prepare(context);
         format!("IN {} FIELDS", node.first_c().v(source_code))
+    }
+}
+
+impl<'a, 'tree> Rewrite for ForClause<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+
+        result.push_str("FOR ");
+
+        let joined_c = node
+            .children_vec()
+            .iter()
+            .map(|c| c.v(source_code))
+            .collect::<Vec<_>>()
+            .join(", ");
+        result.push_str(&joined_c);
+        result
     }
 }
 
