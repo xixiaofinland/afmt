@@ -1695,6 +1695,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "set_comparison_operator" => Value,
                     "null_literal" => Value,
                     "decimal" => Value,
+                    "date" => Value,
                     "date_literal_with_param" => DateLiteralWithParam,
                     "date_literal" => DateLiteral,
                     "subquery" => SubQuery,
