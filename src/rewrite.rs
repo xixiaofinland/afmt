@@ -1648,6 +1648,7 @@ impl<'a, 'tree> Rewrite for AndExpression<'a, 'tree> {
                     "and_expression" => AndExpression,
                     "comparison_expression" => ComparisonExpression,
                     "or_expression" => OrExpression,
+                    "not_expression" => NotExpression,
                 )
             })
             .collect::<Vec<_>>()
@@ -1753,7 +1754,13 @@ impl<'a, 'tree> Rewrite for NotExpression<'a, 'tree> {
             })
             .collect::<Vec<_>>()
             .join(" ");
-        result.push_str(&joined_children);
+
+        if is_parent_where_clause(node) {
+            result.push_str("NOT ");
+            result.push_str(&joined_children)
+        } else {
+            result.push_str(&format!("(NOT {})", joined_children));
+        }
         result
     }
 }
