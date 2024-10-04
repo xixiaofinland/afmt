@@ -1,5 +1,9 @@
 class SafeNavigationOperator {
-  public List<SObject> selectSObjectsById(Set<Id> idSet) {
-    System.Iterator<SObject> iteratorResult = result.iterator();
+  public void t() {
+    String s = [
+      SELECT COUNT(Id), ApexClass.Name className, JobType jobType
+      FROM AsyncApexJob
+      GROUP BY ApexClass.Name, JobType
+    ];
   }
 }

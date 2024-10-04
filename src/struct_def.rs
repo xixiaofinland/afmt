@@ -60,6 +60,8 @@ def_struct!(
     ObjectCreationExpression,
     TryStatement,
     CatchClause,
+    GroupByClause,
+    HavingClause,
     CatchFormalParameter,
     FinallyClause,
     FieldAccess,

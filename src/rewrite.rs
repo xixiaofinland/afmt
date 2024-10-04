@@ -1372,6 +1372,7 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
                 "offset_clause" => OffsetClause,
                 "all_rows_clause" => AllRowClause,
                 "order_by_clause" => OrderByClause,
+                "group_by_clause" => GroupByClause,
                 )
             })
             .collect::<Vec<_>>()
@@ -1440,6 +1441,29 @@ impl<'a, 'tree> Rewrite for FromClause<'a, 'tree> {
     }
 }
 
+impl<'a, 'tree> Rewrite for GroupByClause<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+        result.push_str("FROM ");
+
+        let joined_children = node
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                "field_identifier" => FieldIdentifier,
+                "function_expression" => Value,
+                "having_clause" => HavingClause,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+        result.push_str(&joined_children);
+
+        result
+    }
+}
+
 impl<'a, 'tree> Rewrite for OffsetClause<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
@@ -1451,6 +1475,22 @@ impl<'a, 'tree> Rewrite for OffsetClause<'a, 'tree> {
         } else {
             result.push_str(c.v(source_code));
         }
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for HavingClause<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        let c = node.first_c();
+        result.push_str(&match_routing!(c, context, shape;
+          //"having_and_expression" => Test
+          //"having_comparison_expression",=> Test
+          //"having_not_expression",=> Test
+          //"having_or_expression",=> Test
+        ));
+
         result
     }
 }
