@@ -6,6 +6,7 @@ type PhfMap = phf::Map<&'static str, for<'a, 'tree> fn(&'a Node<'tree>) -> Box<d
 
 pub static COMMON_MAP: PhfMap = phf_map! {
     "boolean" => |node| Box::new(SmallCaseValue::new(node)),
+    "boolean_type" => |node| Box::new(SmallCaseValue::new(node)),
     "identifier" => |node| Box::new(Value::new(node)),
     "int" => |node| Box::new(Value::new(node)),
     "string_literal" => |node| Box::new(Value::new(node)),
