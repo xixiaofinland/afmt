@@ -1653,6 +1653,7 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "value_comparison_operator" => Value,
                     "string_literal" => Value,
                     "boolean" => Value,
+                    "int" => Value,
                     "set_comparison_operator" => Value,
                     "null_literal" => Value,
                     "decimal" => Value,
