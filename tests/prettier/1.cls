@@ -1,9 +1,5 @@
-class UTIL_SortContact_TEST {
+class HelloWorld {
   {
-    [SELECT Name
-            FROM ApexClass 
-            WHERE Name LIKE :addrLikeClause 
-            AND (NOT Name LIKE :testLikeClause) 
-            AND (NOT Name IN :validatorExclussions)];
+    VOId.class;
   }
 }
