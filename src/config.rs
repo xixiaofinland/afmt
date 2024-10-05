@@ -5,7 +5,7 @@ use std::sync::{mpsc, Arc};
 use std::thread;
 use std::{fs, path::Path};
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     pub max_width: usize,
     pub indent_size: usize,
