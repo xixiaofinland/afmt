@@ -64,6 +64,17 @@ impl Session {
         &self.config
     }
 
+    pub fn create_session_from_config(
+        config_path: &str,
+        source_files: Vec<String>,
+    ) -> Result<Session> {
+        let config = Config::from_file(config_path).unwrap_or_else(|_| {
+            println!("Config file not found or invalid, using default configuration.");
+            Config::default()
+        });
+        Ok(Session::new(config, source_files))
+    }
+
     pub fn format(&self) -> Vec<Result<String>> {
         let (tx, rx) = mpsc::channel();
         let config = Arc::new(self.config.clone());

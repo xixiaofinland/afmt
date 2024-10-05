@@ -30,13 +30,7 @@ fn main() {
 }
 
 fn run(args: Args) -> Result<()> {
-    let config = Config::from_file(&args.config).unwrap_or_else(|_| {
-        println!("Config file not found or invalid, using default configuration.");
-        Config::default()
-    });
-
-    eprintln!("gopro[1]: main.rs:38: config={:#?}", config);
-    let session = Session::new(config, vec![args.path]);
+    let session = Session::create_session_from_config(&args.config, vec![args.path])?;
     let results = format(session);
 
     for (index, result) in results.iter().enumerate() {

@@ -84,7 +84,7 @@ mod tests {
 
     fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
-        let output = format_with_afmt(source);
+        let output = format_with_afmt(source, None);
         let expected =
             std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
 
@@ -100,7 +100,7 @@ mod tests {
             save_prettier_output(&prettier_file, &prettier_output);
         }
 
-        let output = format_with_afmt(source);
+        let output = format_with_afmt(source, None);
         let prettier_output =
             std::fs::read_to_string(&prettier_file).expect("Failed to read the .cls file.");
 
@@ -127,12 +127,20 @@ mod tests {
         }
     }
 
-    fn format_with_afmt(source: &Path) -> String {
+    fn format_with_afmt(source: &Path, config_path: Option<&str>) -> String {
         let file_path = source
             .to_str()
             .expect("PathBuf to String failed.")
             .to_string();
-        let session = Session::new(Config::default(), vec![file_path.clone()]);
+
+        let session = match config_path {
+            Some(config_path) => {
+                Session::create_session_from_config(config_path, vec![file_path.clone()])
+                    .expect("Failed to create session from config")
+            }
+            None => Session::new(Config::default(), vec![file_path.clone()]),
+        };
+
         let vec = session.format();
         vec.into_iter()
             .next()

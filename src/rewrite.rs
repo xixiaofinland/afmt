@@ -1526,7 +1526,6 @@ impl<'a, 'tree> Rewrite for HavingComparisonExpression<'a, 'tree> {
             .collect::<Vec<_>>()
             .join(" ");
 
-        eprintln!("gopro[3]: rewrite.rs:1536: joined={:#?}", joined);
         result.push_str(&joined);
         result
     }
