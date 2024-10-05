@@ -1,4 +1,5 @@
 use afmt::args::{get_args, Args};
+use afmt::config::{Config, Session};
 use afmt::format;
 use anyhow::Result;
 use colored::Colorize;
@@ -29,7 +30,15 @@ fn main() {
 }
 
 fn run(args: Args) -> Result<()> {
-    let results = format(args);
+    // Try to load the configuration file
+    let config = Config::from_file(&args.config).unwrap_or_else(|_| {
+        println!("Using default configuration.");
+        Config::default()
+    });
+
+    let session = Session::new(config, vec![args.path]);
+    let results = format(session);
+
     for (index, result) in results.iter().enumerate() {
         match result {
             Ok(value) => {

@@ -11,12 +11,8 @@ mod utility;
 mod visit;
 
 use anyhow::Result;
-use args::Args;
-use config::{Config, Session};
+use config::Session;
 
-pub fn format(args: Args) -> Vec<Result<String>> {
-    let config = Config::default();
-    let source_files = vec![args.path];
-    let session = Session::new(config, source_files);
+pub fn format(session: Session) -> Vec<Result<String>> {
     session.format()
 }

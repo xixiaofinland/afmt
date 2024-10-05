@@ -1,10 +1,11 @@
 use crate::context::FmtContext;
 use anyhow::Result;
+use serde::Deserialize;
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::{fs, path::Path};
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 pub struct Config {
     pub max_width: usize,
     pub indent_size: usize,
@@ -25,6 +26,14 @@ impl Config {
             max_width,
             indent_size: 2,
         }
+    }
+
+    pub fn from_file(path: &str) -> Result<Self> {
+        let content = fs::read_to_string(path)
+            .map_err(|e| anyhow::anyhow!("Failed to read config file: {}", e))?;
+        let config: Config = toml::from_str(&content)
+            .map_err(|e| anyhow::anyhow!("Failed to parse config file: {}", e))?;
+        Ok(config)
     }
 
     pub fn max_width(&self) -> usize {
