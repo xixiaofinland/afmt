@@ -84,7 +84,7 @@ mod tests {
 
     fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
-        let output = format_with_afmt(source, None);
+        let output = format_with_afmt(source, Some(".afmt.toml"));
         let expected =
             std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
 
@@ -100,7 +100,7 @@ mod tests {
             save_prettier_output(&prettier_file, &prettier_output);
         }
 
-        let output = format_with_afmt(source, None);
+        let output = format_with_afmt(source, Some(".afmt.toml"));
         let prettier_output =
             std::fs::read_to_string(&prettier_file).expect("Failed to read the .cls file.");
 
