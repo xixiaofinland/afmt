@@ -1,5 +1,5 @@
 use crate::context::FmtContext;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use serde::Deserialize;
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -29,10 +29,10 @@ impl Config {
     }
 
     pub fn from_file(path: &str) -> Result<Self> {
-        let content = fs::read_to_string(path)
-            .map_err(|e| anyhow::anyhow!("Failed to read config file: {}", e))?;
-        let config: Config = toml::from_str(&content)
-            .map_err(|e| anyhow::anyhow!("Failed to parse config file: {}", e))?;
+        let content =
+            fs::read_to_string(path).map_err(|e| anyhow!("Failed to read config file: {}", e))?;
+        let config: Config =
+            toml::from_str(&content).map_err(|e| anyhow!("Failed to parse config file: {}", e))?;
         Ok(config)
     }
 
@@ -83,7 +83,7 @@ impl Session {
                 match result {
                     Ok(result) => tx.send(result).expect("failed to send result in tx"),
                     Err(_) => tx
-                        .send(Err(anyhow::anyhow!("Thread panicked")))
+                        .send(Err(anyhow!("Thread panicked")))
                         .expect("failed to send error in tx"),
                 }
             });

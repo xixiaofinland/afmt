@@ -1,7 +1,7 @@
 use afmt::args::{get_args, Args};
 use afmt::config::{Config, Session};
 use afmt::format;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use colored::Colorize;
 use log::error;
 use log::info;
@@ -17,7 +17,7 @@ fn main() {
 
     match result {
         Ok(_) => {
-            println!("Program completed successfully.");
+            println!("Afmt completed successfully.");
             let duration = start.elapsed();
             println!("\n{} {:?}", "Execution time:".green(), duration);
             process::exit(0);
@@ -32,7 +32,7 @@ fn main() {
 fn run(args: Args) -> Result<()> {
     // Try to load the configuration file
     let config = Config::from_file(&args.config).unwrap_or_else(|_| {
-        println!("Using default configuration.");
+        println!("Config file not found or invalid, using default configuration.");
         Config::default()
     });
 
@@ -43,11 +43,11 @@ fn run(args: Args) -> Result<()> {
         match result {
             Ok(value) => {
                 println!("Result {}: Ok\n{}", index, value);
-                println!("{}", value.replace('\n', "\\n"));
+                println!("{:?}", value)
             }
             Err(e) => {
                 println!("Result {}: Err\n{}", index, e);
-                return Err(anyhow::anyhow!("{}", e));
+                return Err(anyhow!("{}", e));
             }
         }
     }
