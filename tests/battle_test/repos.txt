@@ -38,7 +38,6 @@ https://github.com/jamessimone/apex-dml-mocking.git
 https://github.com/jamessimone/apex-mocks-stress-test.git
 https://github.com/jamessimone/apex-rollup.git
 https://github.com/jamessimone/salesforce-round-robin.git
-
 https://github.com/jongpie/ApexUUID.git
 https://github.com/jongpie/NebulaLogger.git
 https://github.com/kevinohara80/sfdc-trigger-framework.git
@@ -48,3 +47,6 @@ https://github.com/pdalcol/Zippex.git
 https://github.com/rsoesemann/visualforce-table-grid.git
 https://github.com/trailheadapps/apex-recipes.git
 https://github.com/twilio/twilio-salesforce.git
+https://github.com/rsoesemann/apex-domainbuilder.git
+https://github.com/rsoesemann/apex-unified-logging.git
+https://github.com/rsoesemann/unhappy-soup.git
