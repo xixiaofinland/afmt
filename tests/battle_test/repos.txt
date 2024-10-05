@@ -11,7 +11,6 @@ https://github.com/SalesforceFoundation/Volunteers-for-Salesforce.git
 https://github.com/SalesforceFoundation/kanban-board-rpt.git
 https://github.com/SalesforceLabs/EnhancedLightningGrid.git
 https://github.com/SalesforceLabs/Milestones-PM.git
-https://github.com/SalesforceSFDC/Apex-Integration-Services.git
 https://github.com/afawcett/apex-toolingapi.git
 https://github.com/afawcett/declarative-lookup-rollup-summaries.git
 https://github.com/afawcett/force-di.git
