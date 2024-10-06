@@ -16,7 +16,7 @@ pub fn get_args() -> Args {
                 .long("file")
                 .value_name("FILE")
                 .help("The relative path to the file to parse")
-                .default_value("tests/prettier/1.cls"),
+                .default_value("tests/1.cls"),
         )
         .arg(
             ClapArg::new("config")

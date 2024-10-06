@@ -98,6 +98,7 @@ impl Session {
             let tx = tx.clone();
             let config = Arc::clone(&config);
             let file = file.clone();
+            eprintln!("gopro[1]: config.rs:100: file={:#?}", file);
 
             thread::spawn(move || {
                 let result = std::panic::catch_unwind(|| {
