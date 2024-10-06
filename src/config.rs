@@ -8,15 +8,26 @@ use std::{fs, path::Path};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
+    #[serde(default = "default_max_width")]
     pub max_width: usize,
+
+    #[serde(default = "default_indent_size")]
     pub indent_size: usize,
+}
+
+fn default_max_width() -> usize {
+    80
+}
+
+fn default_indent_size() -> usize {
+    2
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            max_width: 80,
-            indent_size: 2,
+            max_width: default_max_width(),
+            indent_size: default_indent_size(),
         }
     }
 }

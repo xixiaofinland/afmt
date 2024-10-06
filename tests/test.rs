@@ -16,13 +16,13 @@ mod tests {
 
     #[test]
     fn prettier() {
-        let (total, failed) = run_scenario("tests/prettier", "prettier");
+        let (total, failed) = run_scenario("tests/prettier", "prettier80");
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
     #[test]
     fn all() {
-        let scenarios = [("tests/static", "static"), ("tests/prettier", "prettier")];
+        let scenarios = [("tests/static", "static"), ("tests/prettier", "prettier80")];
 
         let mut total_tests = 0;
         let mut failed_tests = 0;
@@ -77,33 +77,47 @@ mod tests {
     fn run_test_file(source: &Path, scenario_name: &str) -> bool {
         match scenario_name {
             "static" => run_static_test_files(source),
-            "prettier" | "prettier2" => run_prettier_test_files(source),
+            "prettier80" => run_prettier_test_files(source, "p80"),
+            "prettier10000" => run_prettier_test_files(source, "p10000"),
             _ => panic!("Unknown scenario: {}", scenario_name),
         }
     }
 
     fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
-        let output = format_with_afmt(source, Some("tests/configs/.afmt.toml"));
+        let output = format_with_afmt(source, Some("tests/configs/.afmt_static.toml"));
         let expected =
             std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
 
         compare("Static:", output, expected, source)
     }
 
-    fn run_prettier_test_files(source: &Path) -> bool {
-        let prettier_file = source.with_extension("cls");
+    fn run_prettier_test_files(source: &Path, config_name: &str) -> bool {
+        let prettier_file = source.with_extension(config_name);
 
         if !prettier_file.exists() {
-            println!("{}", "### .cls file not found, generating...".yellow());
-            let prettier_output = run_prettier(source, Some("tests/configs/.prettierrc120.toml"))
-                .expect("Failed to run Prettier");
+            println!(
+                "{} {} {}",
+                "### ",
+                config_name.yellow(),
+                " file not found, generating..."
+            );
+
+            let prettier_output = run_prettier(
+                source,
+                Some(&format!("tests/configs/.prettierrc_{}.toml", config_name)),
+            )
+            .expect("Failed to run Prettier");
             save_prettier_output(&prettier_file, &prettier_output);
         }
 
-        let output = format_with_afmt(source, Some("tests/configs/.afmt.toml"));
-        let prettier_output =
-            std::fs::read_to_string(&prettier_file).expect("Failed to read the .cls file.");
+        let output = format_with_afmt(
+            source,
+            Some(&format!("tests/configs/.afmt_{}.toml", config_name)),
+        );
+
+        let prettier_output = std::fs::read_to_string(&prettier_file)
+            .expect("Failed to read the prettier formatted file.");
 
         compare("Prettier:", output, prettier_output, source)
     }

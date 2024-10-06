@@ -1,0 +1,7 @@
+# .afmt.toml - Configuration for afmt
+
+# Maximum line width
+max_width = 70
+
+# Indentation size in spaces
+indent_size = 2

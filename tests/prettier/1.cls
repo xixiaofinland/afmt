@@ -1,5 +1,0 @@
-class HelloWorld {
-  {
-    VOId.class;
-  }
-}
