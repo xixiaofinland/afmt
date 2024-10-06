@@ -794,7 +794,7 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for AnnotationArgumentList<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _source_code, _) = self.prepare(context);
 
         let joined = node
             .try_visit_cs(context, &mut shape.clone_with_standalone(false))
@@ -1103,15 +1103,17 @@ impl<'a, 'tree> Rewrite for UpdateExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        // Needs to travsers un-named children
-        // AST can't tell `i++` v.s. `++i` OR `i++` v.s. `i--`
-        node.all_children_vec().iter().for_each(|c| {
-            if c.is_named() {
-                result.push_str(&rewrite::<Expression>(&c, shape, context));
-            } else {
-                result.push_str(c.v(source_code));
-            }
-        });
+        let joined = node
+            .children_vec()
+            .iter()
+            .map(|c| match c.kind() {
+                "update_operator" => c.v(source_code).to_string(),
+                _ => rewrite::<Expression>(c, shape, context),
+            })
+            .collect::<Vec<_>>()
+            .join("");
+
+        result.push_str(&joined);
         result
     }
 }
@@ -1178,18 +1180,16 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
             _ => rewrite::<PrimaryExpression>(&o, shape, context),
         });
 
-        // FIXME: parser updated already -> `?.` need to traverse unnamed node;
-        let mut current_node = o.next_sibling();
-        while let Some(cur) = current_node {
-            if cur.is_named() {
-                break;
-            } else {
+        let current_node = o.next_named_sibling();
+        if let Some(cur) = current_node {
+            if cur.kind() == "safe_navigaion_operator" {
                 result.push_str(cur.v(source_code));
-                current_node = cur.next_sibling();
+            } else {
+                result.push('.');
             }
         }
-
         result.push_str(node.cv_by_n("field", source_code));
+
         result
     }
 }
@@ -1308,6 +1308,15 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
         if let Some(c) = node.try_c_by_n("object") {
             result.push_str(c.v(source_code));
 
+            //let mut current_node = c.next_sibling();
+            //while let Some(cur) = current_node {
+            //    if cur.kind() == "safe_navigaion_operator" {
+            //        result.push_str(cur.v(source_code));
+            //        current_node = cur.next_sibling();
+            //    } else {
+            //        break;
+            //    }
+            //}
             // `?.` need to traverse unnamed node;
             let mut current_node = c.next_sibling();
             while let Some(cur) = current_node {
@@ -1335,7 +1344,7 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        let c = node.first_c().first_c(); // skip SoslQuery and SoqlQuery container node;
+        let c = node.first_c();
         result.push_str("[");
         result.push_str(&match_routing!(c, context, shape;
             "sosl_query_body" => SoslQueryBody,
@@ -2032,14 +2041,49 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
         let left_v = rewrite::<Expression>(&left, shape, context);
 
         // `operator`is a hidden/un-named node, but has field_name so `cv_by_n()` works
-        let op = node.cv_by_n("operator", source_code);
+        let op = node.c_by_n("operator");
+        let op_v = rewrite::<Operator>(&op, shape, context);
 
         let right = node.c_by_n("right");
         let right_v = rewrite::<Expression>(&right, shape, context);
 
-        result.push_str(&format!("{} {} {}", left_v, op, right_v));
+        result.push_str(&format!("{} {} {}", left_v, op_v, right_v));
         try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         result
+    }
+}
+
+impl<'a, 'tree> Rewrite for Operator<'a, 'tree> {
+    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, ..) = self.prepare(context);
+
+        let v = match node.kind() {
+            "!=" => "!=",
+            "!==" => "!==",
+            "%" => "%",
+            "&" => "&",
+            "&&" => "&&",
+            "*" => "*",
+            "+" => "+",
+            "-" => "-",
+            "/" => "/",
+            "<" => "<",
+            "<<" => "<<",
+            "<=" => "<=",
+            "<>" => "<>",
+            "==" => "==",
+            "===" => "===",
+            ">" => ">",
+            ">=" => ">=",
+            ">>" => ">>",
+            ">>>" => ">>>",
+            "??" => "??",
+            "^" => "^",
+            "|" => "|",
+            "||" => "||",
+            _ => unreachable!(),
+        };
+        v.to_string()
     }
 }
 

@@ -104,6 +104,7 @@ def_struct!(
     WithClause,
     OrderByClause,
     OrderExpression,
+    Operator,
     OrderDirection,
     SobjectReturn,
     WithDivisionExpression,

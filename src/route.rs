@@ -79,6 +79,7 @@ pub static EXP_MAP: PhfMap = phf_map! {
     "this" => |node| Box::new(Value::new(node)),
     "int" => |node| Box::new(Value::new(node)),
     "string_literal" => |node| Box::new(Value::new(node)),
+    "version_expression" => |node| Box::new(Value::new(node)),
     "type_identifier" => |node| Box::new(Value::new(node)),
     "null_literal" => |node| Box::new(SmallCaseValue::new(node)),
     "void_type" => |node| Box::new(SmallCaseValue::new(node)),
