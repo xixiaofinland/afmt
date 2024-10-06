@@ -1,5 +1,6 @@
 use crate::context::FmtContext;
 use anyhow::{anyhow, Result};
+use colored::Colorize;
 use serde::Deserialize;
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -68,11 +69,14 @@ impl Session {
         config_path: &str,
         source_files: Vec<String>,
     ) -> Result<Session> {
-        let config = Config::from_file(config_path).unwrap_or_else(|_| {
-            println!("Config file not found or invalid, using default configuration.");
-            Config::default()
-        });
-        Ok(Session::new(config, source_files))
+        match Config::from_file(config_path) {
+            Ok(config) => Ok(Session::new(config, source_files)),
+            Err(e) => Err(anyhow!(format!(
+                "{}: {}",
+                e.to_string().yellow(),
+                config_path
+            ))),
+        }
     }
 
     pub fn format(&self) -> Vec<Result<String>> {

@@ -84,7 +84,7 @@ mod tests {
 
     fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
-        let output = format_with_afmt(source, Some(".afmt.toml"));
+        let output = format_with_afmt(source, Some("tests/configs/.afmt.toml"));
         let expected =
             std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
 
@@ -96,11 +96,12 @@ mod tests {
 
         if !prettier_file.exists() {
             println!("{}", "### .cls file not found, generating...".yellow());
-            let prettier_output = run_prettier(source).expect("Failed to run Prettier");
+            let prettier_output = run_prettier(source, Some("tests/configs/.prettierrc120.toml"))
+                .expect("Failed to run Prettier");
             save_prettier_output(&prettier_file, &prettier_output);
         }
 
-        let output = format_with_afmt(source, Some(".afmt.toml"));
+        let output = format_with_afmt(source, Some("tests/configs/.afmt.toml"));
         let prettier_output =
             std::fs::read_to_string(&prettier_file).expect("Failed to read the .cls file.");
 
@@ -136,7 +137,7 @@ mod tests {
         let session = match config_path {
             Some(config_path) => {
                 Session::create_session_from_config(config_path, vec![file_path.clone()])
-                    .expect("Failed to create session from config")
+                    .expect("format_with_afmt() failed")
             }
             None => Session::new(Config::default(), vec![file_path.clone()]),
         };
@@ -242,14 +243,18 @@ mod tests {
         );
     }
 
-    fn run_prettier(source: &Path) -> Result<String, String> {
-        let output = Command::new("npx")
-            .arg("prettier")
+    fn run_prettier(source: &Path, config_path: Option<&str>) -> Result<String, String> {
+        let mut cmd = Command::new("npx");
+        cmd.arg("prettier")
             .arg("--plugin=prettier-plugin-apex")
             .arg("--parser=apex")
-            .arg(source.to_str().unwrap())
-            .output()
-            .expect("Failed to execute Prettier");
+            .arg(source.to_str().unwrap());
+
+        if let Some(config) = config_path {
+            cmd.arg("--config").arg(config);
+        }
+
+        let output = cmd.output().expect("Failed to execute Prettier");
 
         if output.status.success() {
             let formatted_code =
