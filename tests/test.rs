@@ -16,7 +16,13 @@ mod tests {
 
     #[test]
     fn prettier() {
-        let (total, failed) = run_scenario("tests/prettier", "prettier80");
+        let (total, failed) = run_scenario("tests/prettier80", "prettier80");
+        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
+    }
+
+    #[test]
+    fn extra() {
+        let (total, failed) = run_scenario("tests/prettier10000", "prettier10000");
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
@@ -24,7 +30,7 @@ mod tests {
     fn all() {
         let scenarios = [
             ("tests/static", "static"),
-            ("tests/prettier", "prettier80"),
+            ("tests/prettier80", "prettier80"),
             ("tests/prettier10000", "prettier10000"),
         ];
 
