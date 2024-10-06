@@ -128,21 +128,21 @@ mod tests {
 
     fn compare(against: &str, output: String, expected: String, source: &Path) -> bool {
         if output != expected {
-            //let source_content =
-            //    std::fs::read_to_string(source).expect("Failed to read the file content.");
-            //
-            //println!("{}", format!("\nFailed: {:?}:", source).yellow());
-            //println!("-------------------------------------\n");
-            //println!("{}", source_content);
-            //println!("-------------------------------------\n");
-            //print_side_by_side_diff(against, &output, &expected);
-            //println!("\n-------------------------------------\n");
-            //println!("{}", format!("Failed: {:?}:", source).yellow());
-            //println!("-------------------------------------\n");
+            let source_content =
+                std::fs::read_to_string(source).expect("Failed to read the file content.");
+
+            println!("{}", format!("\nFailed: {:?}:", source).yellow());
+            println!("-------------------------------------\n");
+            println!("{}", source_content);
+            println!("-------------------------------------\n");
+            print_side_by_side_diff(against, &output, &expected);
+            println!("\n-------------------------------------\n");
+            println!("{}", format!("Failed: {:?}:", source).yellow());
+            println!("-------------------------------------\n");
 
             false
         } else {
-            println!("{}", format!("{:?} success", source).green());
+            //println!("{}", format!("{:?} success", source).green());
             true
         }
     }
