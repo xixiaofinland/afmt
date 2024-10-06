@@ -1515,7 +1515,6 @@ impl<'a, 'tree> Rewrite for HavingComparisonExpression<'a, 'tree> {
                     "date_literal_with_param" => Value,
                     "date_time" => Value,
                     "decimal" => Value,
-                    "function_expression" => FunctionExpression,
                     "int" => Value,
                     "null_literal" => Value,
                     "set_comparison_operator" => Value,
