@@ -1316,16 +1316,6 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
                     result.push('.');
                 }
             }
-            //let mut current_node = c.next_sibling();
-            //while let Some(cur) = current_node {
-            //    if cur.kind() == "safe_navigaion_operator" {
-            //        result.push_str(cur.v(source_code));
-            //        current_node = cur.next_sibling();
-            //    } else {
-            //        break;
-            //    }
-            //}
-            // `?.` need to traverse unnamed node;
         };
 
         let name = node.cv_by_n("name", source_code);
