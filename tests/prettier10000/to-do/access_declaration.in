@@ -1,0 +1,10 @@
+public class Me {
+  public integer prop {
+    get {
+      return prop;
+    }
+    set {
+      prop = value;
+    }
+  }
+}

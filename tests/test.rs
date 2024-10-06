@@ -22,7 +22,11 @@ mod tests {
 
     #[test]
     fn all() {
-        let scenarios = [("tests/static", "static"), ("tests/prettier", "prettier80")];
+        let scenarios = [
+            ("tests/static", "static"),
+            ("tests/prettier", "prettier80"),
+            ("tests/prettier10000", "prettier10000"),
+        ];
 
         let mut total_tests = 0;
         let mut failed_tests = 0;
@@ -124,20 +128,21 @@ mod tests {
 
     fn compare(against: &str, output: String, expected: String, source: &Path) -> bool {
         if output != expected {
-            let source_content =
-                std::fs::read_to_string(source).expect("Failed to read the file content.");
-
-            println!("{}", format!("\nFailed: {:?}:", source).yellow());
-            println!("-------------------------------------\n");
-            println!("{}", source_content);
-            println!("-------------------------------------\n");
-            print_side_by_side_diff(against, &output, &expected);
-            println!("\n-------------------------------------\n");
-            println!("{}", format!("Failed: {:?}:", source).yellow());
-            println!("-------------------------------------\n");
+            //let source_content =
+            //    std::fs::read_to_string(source).expect("Failed to read the file content.");
+            //
+            //println!("{}", format!("\nFailed: {:?}:", source).yellow());
+            //println!("-------------------------------------\n");
+            //println!("{}", source_content);
+            //println!("-------------------------------------\n");
+            //print_side_by_side_diff(against, &output, &expected);
+            //println!("\n-------------------------------------\n");
+            //println!("{}", format!("Failed: {:?}:", source).yellow());
+            //println!("-------------------------------------\n");
 
             false
         } else {
+            println!("{}", format!("{:?} success", source).green());
             true
         }
     }
