@@ -1308,6 +1308,14 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
         if let Some(c) = node.try_c_by_n("object") {
             result.push_str(c.v(source_code));
 
+            let current_node = c.next_named_sibling();
+            if let Some(cur) = current_node {
+                if cur.kind() == "safe_navigaion_operator" {
+                    result.push_str(cur.v(source_code));
+                } else {
+                    result.push('.');
+                }
+            }
             //let mut current_node = c.next_sibling();
             //while let Some(cur) = current_node {
             //    if cur.kind() == "safe_navigaion_operator" {
@@ -1318,15 +1326,6 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
             //    }
             //}
             // `?.` need to traverse unnamed node;
-            let mut current_node = c.next_sibling();
-            while let Some(cur) = current_node {
-                if cur.is_named() {
-                    break;
-                } else {
-                    result.push_str(cur.v(source_code));
-                    current_node = cur.next_sibling();
-                }
-            }
         };
 
         let name = node.cv_by_n("name", source_code);
