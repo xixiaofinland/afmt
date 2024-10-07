@@ -20,6 +20,11 @@ Note: This is a project in its early phase, not ready even for proper manual tes
 | Reformat lines beyond `max_width`               | █░░░░░░░░░ 10%  | Challenging  |
 | Support comment (line comment and block comment)| █░░░░░░░░░ 10%  | Challenging  |
 
+## Technical parts
+
+[Doc](technical.md)
+
+
 ## ✨ Features
 
 ```bash
