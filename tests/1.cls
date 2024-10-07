@@ -1,8 +1,6 @@
-    for(Account a: new List<Account>() ){
-        if(a.ParentId==null){
-            //
-        }
-        else{
-            //
-        }
-    }
+public class S {
+  {
+    RecurringDonationSchedules__r    ?.    get
+    (   0   )  ?.nextDonationDate;
+  }
+}

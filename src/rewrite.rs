@@ -1176,6 +1176,7 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
             "identifier" => o.v(source_code).to_string(),
             "field_access" => rewrite::<FieldAccess>(&o, shape, context),
             "query_expression" => rewrite::<QueryExpression>(&o, shape, context),
+            "method_invocation" => rewrite::<MethodInvocation>(&o, shape, context),
             "array_access" => rewrite::<ArrayAccess>(&o, shape, context),
             _ => rewrite::<PrimaryExpression>(&o, shape, context),
         });

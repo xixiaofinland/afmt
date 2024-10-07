@@ -13,6 +13,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "type_identifier" => |node| Box::new(Value::new(node)),
     "null_literal" => |node| Box::new(Value::new(node)),
     "decimal_floating_point_literal" => |node| Box::new(Value::new(node)),
+    "safe_navigaion_operator" => |node| Box::new(Value::new(node)),
     // --------------- split
     "trigger_declaration" => |node| Box::new(TriggerDeclaration::new(node)),
     "argument_list" => |node| Box::new(ArgumentList::new(node)),
