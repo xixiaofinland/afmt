@@ -1,7 +1,5 @@
-@IsTest()
-public class Java {
-  @IsTest()
-  public void testJavaVariable() {
-    
-  }
+public class Me {
+  public integer prop { get; set {
+    prop = value;
+  } }
 }

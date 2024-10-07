@@ -4,6 +4,7 @@ use clap::{Arg as ClapArg, Command};
 pub struct Args {
     pub path: String,
     pub config: String,
+    pub write: bool,
 }
 
 pub fn get_args() -> Args {
@@ -26,6 +27,13 @@ pub fn get_args() -> Args {
                 .help("Path to the .afmt.toml configuration file")
                 .default_value(".afmt.toml"),
         )
+        .arg(
+            ClapArg::new("write")
+                .short('w')
+                .long("write")
+                .help("Write the formatted result back to the file")
+                .action(clap::ArgAction::SetTrue),
+        )
         .get_matches();
 
     Args {
@@ -37,5 +45,6 @@ pub fn get_args() -> Args {
             .get_one::<String>("config")
             .expect("Config path is required")
             .to_string(),
+        write: matches.contains_id("write"),
     }
 }

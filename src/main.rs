@@ -5,8 +5,8 @@ use anyhow::{anyhow, Result};
 use colored::Colorize;
 use log::error;
 use log::info;
-use std::process;
 use std::time::Instant;
+use std::{fs, process};
 
 fn main() {
     let start = Instant::now();
@@ -30,14 +30,19 @@ fn main() {
 }
 
 fn run(args: Args) -> Result<()> {
-    let session = Session::create_session_from_config(&args.config, vec![args.path])?;
+    let session = Session::create_session_from_config(&args.config, vec![args.path.clone()])?;
     let results = format(session);
 
     for (index, result) in results.iter().enumerate() {
         match result {
             Ok(value) => {
                 println!("Result {}: Ok\n{}", index, value);
-                println!("{:?}", value)
+                if args.write {
+                    fs::write(&args.path, value)?;
+                    println!("Formatted content written back to: {}\n", args.path);
+                } else {
+                    println!("{:?}", value)
+                }
             }
             Err(e) => {
                 println!("Result {}: Err\n{}", index, e);
