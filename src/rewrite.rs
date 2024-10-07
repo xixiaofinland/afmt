@@ -1267,35 +1267,17 @@ impl<'a, 'tree> Rewrite for AccessorDeclaration<'a, 'tree> {
             result.push(' ');
         }
 
-        // it travsers un-named children
-        node.all_children_vec().iter().for_each(|c| {
-            if !c.is_named() {
-                result.push_str(c.v(source_code));
-            }
-        });
+        let accessor = node.c_by_n("accessor");
+        result.push_str(accessor.v(source_code));
 
-        // FIXME: implements max-width logic
         if let Some(ref b) = node.try_c_by_k("block") {
             result.push_str(&rewrite_shape::<Block>(&b, shape, false, context));
-            result.push(' ');
+        } else {
+            result.push(';');
         }
         result
     }
 }
-
-//impl<'a, 'tree> Rewrite for Boolean<'a, 'tree> {
-//    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-//        let (node, mut result, source_code, _) = self.prepare(context);
-//
-//        result.push('(');
-//        result.push_str(node.cv_by_n("type", source_code));
-//        result.push_str(") ");
-//
-//        let value = node.c_by_n("value");
-//        result.push_str(&rewrite::<Expression>(&value, shape, context));
-//        result
-//    }
-//}
 
 impl<'a, 'tree> Rewrite for TernaryExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
