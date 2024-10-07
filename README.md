@@ -20,7 +20,7 @@ Note: This is a project in its early phase, not ready even for proper manual tes
 | Reformat lines beyond `max_width`               | █░░░░░░░░░ 10%  | Challenging  |
 | Support comment (line comment and block comment)| █░░░░░░░░░ 10%  | Challenging  |
 
-## Technical parts
+## 📡 Technical parts
 
 [Doc](doc/Technical.md)
 
@@ -74,6 +74,6 @@ Options:
 ```bash
 RUST_BACKTRACE=1 ./target/release/afmt --file path/to/your_apex_file.cls
 ```
-## ✨ Configurations
+## 🔧 Configurations
 
 [Doc](doc/Settings.md)
