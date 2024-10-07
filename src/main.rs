@@ -30,7 +30,6 @@ fn main() {
 }
 
 fn run(args: Args) -> Result<()> {
-    eprintln!("gopro[5]: main.rs:32: args={:#?}", args);
     let session =
         Session::create_session_from_config(args.config.as_deref(), vec![args.path.clone()])?;
     let results = format(session);
