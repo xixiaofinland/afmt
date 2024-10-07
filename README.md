@@ -35,18 +35,29 @@ Options:
 ```
 » afmt
 Result 0: Ok
-public class Me {
-  public integer prop { get; set {
-    prop = value;
-  } }
+public class S {
+  {
+    rd.RecurringDonationSchedules__r?.get(0)?.nextDonationDate;
+  }
+}
+
+"public class S {\n  {\n    rd.RecurringDonationSchedules__r?.get(0)?.nextDonationDate;\n  }\n}\n"
+Afmt completed successfully.
+
+Execution time: 585.1┬╡s
+```
+```
+» afmt -w
+Result 0: Ok
+public Date getExpectedDonationDate(RD2_ScheduleService scheduleService) {
+  return rd.RecurringDonationSchedules__r?.get(0)?.nextDonationDate;
 }
 
 Formatted content written back to: test.cls
 
 Afmt completed successfully.
 
-Execution time: 995.869┬╡s
-
+Execution time: 724.826┬╡s
 ```
 <br>
 

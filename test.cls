@@ -1,5 +1,3 @@
-public class Me {
-  public integer prop { get; set {
-    prop = value;
-  } }
+public Date getExpectedDonationDate(RD2_ScheduleService scheduleService) {
+  return rd.RecurringDonationSchedules__r?.get(0)?.nextDonationDate;
 }
