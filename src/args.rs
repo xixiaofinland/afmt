@@ -43,6 +43,6 @@ pub fn get_args() -> Args {
             .expect("File path is required")
             .to_string(),
         config: matches.get_one::<String>("config").map(|s| s.to_string()),
-        write: matches.contains_id("write"),
+        write: matches.get_flag("write"),
     }
 }
