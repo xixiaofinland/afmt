@@ -8,9 +8,11 @@ pub struct Args {
 }
 
 pub fn get_args() -> Args {
+    const VERSION: &str = "v0.0.6";
+
     let matches = Command::new("afmt")
-        .version("0.1")
-        .about("Format Apex file")
+        .version(VERSION)
+        .about(format!("Format Apex file {}", VERSION))
         .arg(
             ClapArg::new("file")
                 .short('f')
