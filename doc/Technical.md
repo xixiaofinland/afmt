@@ -6,10 +6,13 @@
 
 ### Update parser version
 
-1. have `tree-sitter` and `node-js` installed locally.
-2. Download the parser repo locally, go to its path.
-3. Run `tree-sitter gen ./apex/grammar.js` to generate `./src`.
-4. Copy `parser.c` and `tree-sitter` sub folder into `afmt/dep` to replace
+Check `dep/update_parser_version.sh`. Steps can be also done manually as:
+
+1. have `tree-sitter` and `node-js` installed locally
+2. Download the parser repo to `dep/` folder, go to its path
+3. Run `tree-sitter gen ./apex/grammar.js` to generate `./src`
+4. Copy `parser.c` and `tree-sitter` sub folder into `/dep` to replace
+5. Remove the parser repo downloaded in #2
 
 ## Test
 
