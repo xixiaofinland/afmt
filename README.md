@@ -22,7 +22,7 @@ Note: This is a project in its early phase, not ready even for proper manual tes
 
 ## Technical parts
 
-[Doc](technical.md)
+[Doc](doc/technical.md)
 
 
 ## ✨ Features
@@ -74,3 +74,6 @@ Options:
 ```bash
 RUST_BACKTRACE=1 ./target/release/afmt --file path/to/your_apex_file.cls
 ```
+## ✨ Configurations
+
+[Doc](doc/settings.md)
