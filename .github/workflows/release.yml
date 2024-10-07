@@ -3,7 +3,7 @@ name: Binary_release
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - 'v*'
 
 permissions:
   contents: write
