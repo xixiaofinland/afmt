@@ -7,6 +7,7 @@ It uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) 
 Note: This is a project in its early phase, not ready even for proper manual testing yet.
 
 <br>
+
 # 📟 Project Progress
 
 | Feature                                         | Progress       | Difficulty   |
@@ -20,11 +21,13 @@ Note: This is a project in its early phase, not ready even for proper manual tes
 | Support comment (line comment and block comment)| █░░░░░░░░░ 10%  | Challenging  |
 
 <br>
+
 # 📡 Technical parts
 
 [Doc](doc/Technical.md)
 
 <br>
+
 # ✨ Features
 
 ```bash
@@ -75,6 +78,7 @@ Options:
 RUST_BACKTRACE=1 ./target/release/afmt --file path/to/your_apex_file.cls
 ```
 <br>
+
 # 🔧 Configurations
 
 [Doc](doc/Settings.md)
