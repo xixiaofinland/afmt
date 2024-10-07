@@ -781,9 +781,11 @@ impl<'a, 'tree> Rewrite for Annotation<'a, 'tree> {
         result.push_str(name.v(source_code));
 
         if let Some(a) = node.try_c_by_n("arguments") {
-            result.push('(');
-            result.push_str(&rewrite::<AnnotationArgumentList>(&a, shape, context));
-            result.push(')');
+            if a.named_child_count() != 0 {
+                result.push('(');
+                result.push_str(&rewrite::<AnnotationArgumentList>(&a, shape, context));
+                result.push(')');
+            }
         }
 
         result.push('\n');

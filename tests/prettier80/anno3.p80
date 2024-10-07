@@ -1,7 +1,6 @@
-@IsTest()
+@IsTest
 public class Java {
-  @IsTest()
+  @IsTest
   public void testJavaVariable() {
-    
   }
 }
