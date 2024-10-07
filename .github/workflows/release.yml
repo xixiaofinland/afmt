@@ -15,7 +15,6 @@ jobs:
 
     strategy:
       matrix:
-        # You can add more, for any target you'd like!
         include:
           - build: linux
             os: ubuntu-latest
@@ -25,20 +24,21 @@ jobs:
             os: macos-latest
             target: x86_64-apple-darwin
 
+          - build: windows
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get the release version from the tag
         shell: bash
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Install Rust
-        # Or @nightly if you want
         uses: dtolnay/rust-toolchain@stable
-        # Arguments to pass in
         with:
-          # Make Rust compile to our target (defined in the matrix)
           targets: ${{ matrix.target }}
 
       - name: Build
@@ -51,7 +51,6 @@ jobs:
       - name: Build archive
         shell: bash
         run: |
-          # Replace with the name of your binary
           binary_name="afmt"
 
           dirname="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
