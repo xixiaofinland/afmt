@@ -12,19 +12,13 @@ Note: This is a project in its early phase, not ready even for proper manual tes
 
 | Feature                                         | Progress       | Difficulty   |
 | ----------------------------------------------- | -------------- | ------------ |
-| Recognize Apex nodes/tokens                     | ██████████ 90% | Easy         |
-| Support configuration via a config file         | ██████████ 100% | Easy         |
-| Indent Apex nodes properly                      | ██████░░░░ 60% | Easy         |
-| Support SOQL                                    | ████████░░ 80% | Medium       |
-| Support SOSL                                    | ██░░░░░░░░ 20% | Medium       |
-| Reformat lines beyond `max_width`               | █░░░░░░░░░ 10% | Challenging  |
-| Support comment (line comment and block comment)| █░░░░░░░░░ 10% | Challenging  |
-
-## To-Do
-
-- [ ] Better error report
-- [ ] Downloadable compiled binary across platforms (Linux/MacOS/Win)
-- [ ] Benchmark and performance test
+| Recognize Apex nodes/tokens                     | ████████████ 100% | Easy         |
+| Support configuration via a config file         | ████████████ 100% | Easy         |
+| Indent Apex nodes properly                      | ████████░░░ 80%  | Easy         |
+| Support SOQL                                    | ████████████ 100% | Medium       |
+| Support SOSL                                    | ██████░░░░░ 50%  | Medium       |
+| Reformat lines beyond `max_width`               | █░░░░░░░░░ 10%  | Challenging  |
+| Support comment (line comment and block comment)| █░░░░░░░░░ 10%  | Challenging  |
 
 ## ✨ Features
 
