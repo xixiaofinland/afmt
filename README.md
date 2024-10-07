@@ -12,7 +12,7 @@ Note: This is a project in its early phase, not ready even for proper manual tes
 
 | Feature                                         | Progress       | Difficulty   |
 | ----------------------------------------------- | -------------- | ------------ |
-| Recognize Apex nodes/tokens                     | ████████████ 100% | Easy         |
+| Recognize Apex nodes| ████████████ 100% | Easy         |
 | Support configuration via a config file         | ████████████ 100% | Easy         |
 | Indent Apex nodes properly                      | ████████░░░ 80%  | Easy         |
 | Support SOQL                                    | ████████████ 100% | Medium       |
