@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # This triggers the workflow only when you push a tag starting with 'v'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        platform: [x86_64-unknown-linux-gnu, x86_64-pc-windows-msvc, x86_64-apple-darwin]
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: rust-lang/setup-rust@v1
+        with:
+          rust-version: stable
+          target: ${{ matrix.platform }}
+
+      - name: Install Dependencies (Linux only)
+        if: matrix.platform == 'x86_64-unknown-linux-gnu'
+        run: sudo apt-get install -y musl-tools
+
+      - name: Build for ${{ matrix.platform }}
+        run: cargo build --release --target ${{ matrix.platform }}
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: afmt-${{ matrix.platform }}
+          path: target/${{ matrix.platform }}/release/afmt
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: afmt-x86_64-unknown-linux-gnu
+          path: ./afmt-linux
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: afmt-x86_64-pc-windows-msvc
+          path: ./afmt-windows.exe
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: afmt-x86_64-apple-darwin
+          path: ./afmt-macos
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+
