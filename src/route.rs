@@ -71,6 +71,7 @@ pub static COMMON_MAP: PhfMap = phf_map! {
     "switch_expression" => |node| Box::new(SwitchExpression::new(node)),
     "switch_rule" => |node| Box::new(SwitchRule::new(node)),
     "class_literal" => |node| Box::new(ClassLiteral::new(node)),
+    "java_field_access" => |node| Box::new(JavaFieldAccess::new(node)),
 };
 
 pub static EXP_MAP: PhfMap = phf_map! {
@@ -86,6 +87,7 @@ pub static EXP_MAP: PhfMap = phf_map! {
     "void_type" => |node| Box::new(SmallCaseValue::new(node)),
     "decimal_floating_point_literal" => |node| Box::new(SmallCaseValue::new(node)),
     // --------------- split
+    "java_type" => |node| Box::new(JavaType::new(node)),
     "class_literal" => |node| Box::new(ClassLiteral::new(node)),
     "annotation_argument_list" => |node| Box::new(AnnotationArgumentList::new(node)),
     "annotation" => |node| Box::new(Annotation::new(node)),

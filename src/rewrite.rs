@@ -1035,6 +1035,11 @@ impl<'a, 'tree> Rewrite for PrimaryExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
+        if node.kind() == "java_field_access" {
+            result.push_str(&rewrite::<JavaFieldAccess>(&node, shape, context));
+            return result;
+        }
+
         if node.named_child_count() != 0 {
             result.push_str(&node.apply_to_children_in_same_line(
                 " ",
@@ -1191,6 +1196,17 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
         }
         result.push_str(node.cv_by_n("field", source_code));
 
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for JavaFieldAccess<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        result.push_str("java:");
+        let c = node.first_c();
+        result.push_str(&rewrite::<FieldAccess>(&c, shape, context));
         result
     }
 }
@@ -2472,6 +2488,17 @@ impl<'a, 'tree> Rewrite for FunctionExpression<'a, 'tree> {
 
         let formatted = format!("({})", joined);
         result.push_str(&formatted);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for JavaType<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        result.push_str("java:");
+        let c = node.first_c();
+        result.push_str(&rewrite::<ScopedTypeIdentifier>(&c, shape, context));
         result
     }
 }

@@ -126,4 +126,6 @@ def_struct!(
     TriggerEvent,
     ClassLiteral,
     FunctionExpression,
+    JavaType,
+    JavaFieldAccess,
 );
