@@ -26,8 +26,7 @@ pub fn get_args() -> Args {
                 .short('c')
                 .long("config")
                 .value_name("CONFIG")
-                .help("Path to the .afmt.toml configuration file")
-                .default_value(".afmt.toml"),
+                .help("Path to the .afmt.toml configuration file"),
         )
         .arg(
             ClapArg::new("write")

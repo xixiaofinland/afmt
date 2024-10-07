@@ -5,7 +5,7 @@ Afmt is a **Salesforce Apex Code Formatter** written in **Rust**! This tool form
 Note: This is a project in its early phase, don't expect to use it in production code yet. 
 Project Project can be found in this section.
 
-# Usage
+# 🔧 Usage
 
 Download the binary from the [release page](https://github.com/xixiaofinland/afmt/releases). It
 supports Linux, MacOS, and Linux.
