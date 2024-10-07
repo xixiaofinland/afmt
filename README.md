@@ -20,7 +20,7 @@ This is a project in its early phase, don't expect to use it in production code 
 
 <br>
 
-# 🔧 Usage
+# 🔧 How to use
 
 Download the binary from the [release page](https://github.com/xixiaofinland/afmt/releases). It
 supports Linux, MacOS, and Linux.
