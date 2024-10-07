@@ -1,10 +1,24 @@
 # 🚀 A Blazingly Fast Salesforce Apex Formatter
 
-Afmt is written in **Rust** 🦀.
-It uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) to traverse AST nodes.
+Afmt is written in **Rust** 🦀. It uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) to traverse AST nodes.
 
-Note: This is a project in its early phase, don't expect to use it in production code yet.
-Project progress can be found below.
+This is a project in its early phase, don't expect to use it in production code yet.
+
+<br>
+
+# 📟 Project Progress
+
+| Feature                                         | Progress       | Difficulty   |
+| ----------------------------------------------- | -------------- | ------------ |
+| Recognize Apex nodes| ████████████ 100% | Easy         |
+| Support `.afmt.toml` for configuration | ████████████ 100% | Easy         |
+| Proper indentation | ████████░░░ 80%  | Easy         |
+| Support SOQL                                    | ████████████ 100% | Medium       |
+| Support SOSL                                    | ██████░░░░░ 50%  | Medium       |
+| Reformat lines beyond `max_width`               | █░░░░░░░░░ 10%  | Challenging  |
+| Support comment (line comment and block comment)| █░░░░░░░░░ 10%  | Challenging  |
+
+<br>
 
 # 🔧 Usage
 
@@ -61,19 +75,6 @@ Execution time: 724.826┬╡s
 ```
 <br>
 
-# 📟 Project Progress
-
-| Feature                                         | Progress       | Difficulty   |
-| ----------------------------------------------- | -------------- | ------------ |
-| Recognize Apex nodes| ████████████ 100% | Easy         |
-| Support `.afmt.toml` for configuration | ████████████ 100% | Easy         |
-| Proper indentation | ████████░░░ 80%  | Easy         |
-| Support SOQL                                    | ████████████ 100% | Medium       |
-| Support SOSL                                    | ██████░░░░░ 50%  | Medium       |
-| Reformat lines beyond `max_width`               | █░░░░░░░░░ 10%  | Challenging  |
-| Support comment (line comment and block comment)| █░░░░░░░░░ 10%  | Challenging  |
-
-<br>
 
 # 📡 Technical parts
 
