@@ -77,17 +77,15 @@ impl Session {
     }
 
     pub fn create_session_from_config(
-        config_path: &str,
+        config_path: Option<&str>,
         source_files: Vec<String>,
     ) -> Result<Session> {
-        match Config::from_file(config_path) {
-            Ok(config) => Ok(Session::new(config, source_files)),
-            Err(e) => Err(anyhow!(format!(
-                "{}: {}",
-                e.to_string().yellow(),
-                config_path
-            ))),
-        }
+        let config = match config_path {
+            Some(path) => Config::from_file(path)
+                .map_err(|e| anyhow!(format!("{}: {}", e.to_string().yellow(), path)))?,
+            None => Config::default(),
+        };
+        Ok(Session::new(config, source_files))
     }
 
     pub fn format(&self) -> Vec<Result<String>> {

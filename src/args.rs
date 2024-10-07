@@ -3,7 +3,7 @@ use clap::{Arg as ClapArg, Command};
 #[derive(Debug)]
 pub struct Args {
     pub path: String,
-    pub config: String,
+    pub config: Option<String>,
     pub write: bool,
 }
 
@@ -17,7 +17,7 @@ pub fn get_args() -> Args {
                 .long("file")
                 .value_name("FILE")
                 .help("The relative path to the file to parse")
-                .default_value("tests/1.cls"),
+                .default_value("test.cls"),
         )
         .arg(
             ClapArg::new("config")
@@ -41,10 +41,7 @@ pub fn get_args() -> Args {
             .get_one::<String>("file")
             .expect("File path is required")
             .to_string(),
-        config: matches
-            .get_one::<String>("config")
-            .expect("Config path is required")
-            .to_string(),
+        config: matches.get_one::<String>("config").map(|s| s.to_string()),
         write: matches.contains_id("write"),
     }
 }
