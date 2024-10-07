@@ -28,3 +28,43 @@ Download the lists of Apex repo and format them.
 
 `sh tests/battle_test/download.sh`
 `sh tests/battle_test/format.sh`
+
+# Extra Info (might outdated)
+
+## 📦 Installation
+
+### Prerequisites
+
+- [Rust](https://www.rust-lang.org/tools/install) must be installed.
+
+### Steps
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/xixiaofinland/afmt.git
+   cd afmt
+   ```
+
+2. Build the project:
+   ```bash
+   cargo build --release
+   ```
+
+## 🚀 Running the Formatter
+
+### Get help:
+```bash
+./target/release/afmt --help
+```
+
+### Format a file:
+```bash
+./target/release/afmt --file path/to/your_apex_file.cls
+```
+
+### Run with enabled backtrace:
+```bash
+RUST_BACKTRACE=1 ./target/release/afmt --file path/to/your_apex_file.cls
+```
+<br>
+
