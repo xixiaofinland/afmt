@@ -71,3 +71,11 @@ Note that no wrapping will happen if:
 - **Default value**: `false`
 - **Possible values**: `true`, `false`
 - **Stable**: No
+
+## `empty_item_single_line`
+
+Put empty-body functions and impls on a single line
+
+- **Default value**: `true`
+- **Possible values**: `true`, `false`
+- **Stable**: No
