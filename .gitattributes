@@ -1,4 +1,5 @@
 dep/* linguist-vendored
+tests/* linguist-vendored
 *.c linguist-vendored
 *.h linguist-vendored
 *.cpp linguist-vendored
