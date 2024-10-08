@@ -24,6 +24,13 @@ Maximum width of the args of a function call before falling back to vertical for
 - **Possible values**: any positive integer that is less than or equal to the value specified for [`max_width`](#max_width)
 - **Stable**: No
 
+## `indent_size`
+Each indent level size.
+
+- **Default value**: `2`
+- **Possible values**: any positive integer
+- **Stable**: No
+
 ## `indent_style`
 
 Indent on expressions or items.
