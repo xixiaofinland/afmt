@@ -4,10 +4,6 @@ Afmt is written in **Rust** 🦀. It uses [tree-sitter apex parser](https://gith
 
 This is a project in its early phase, don't expect to use it in production code yet.
 
-Wrapping long lines that exceed `max_with` and keep comments intact are two most to-be-developed
-features.
-More progress info below.
-
 <br>
 
 # 📟 Project Progress
