@@ -33,21 +33,26 @@ jobs:
         echo "" >> docs/results.md
         echo "## Benchmark Summary" >> docs/results.md
         echo "" >> docs/results.md
-        cat hyperfine_results.json | jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.time.mean) seconds\n\n"' >> docs/results.md
+        jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.mean) ± \(.stddev) seconds\n\nMin: \(.min) seconds\nMax: \(.max) seconds\n\n"' hyperfine_results.json >> docs/results.md
     
+    # mdBook steps
     - name: Install mdBook
       run: cargo install mdbook
     - name: Setup mdBook project
       run: |
         cd docs
-        mdbook init
+        mdbook init --force
         echo '[output.html]' >> book.toml
         echo 'site-url = "/afmt/"' >> book.toml
+        echo '# Summary' > SUMMARY.md
+        echo '' >> SUMMARY.md
+        echo '- [Benchmark Results](results.md)' >> SUMMARY.md
     - name: Build mdBook
       run: |
         cd docs
         mdbook build
     
+    # Upload artifact for deployment job
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
