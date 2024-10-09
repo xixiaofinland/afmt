@@ -1,43 +1,32 @@
-name: Hyperfine Benchmark
-
+name: Hyperfine Benchmark and mdBook Deploy
 on:
   push:
     branches:
       - main
-
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
-
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
-
     - name: Build Release
       run: cargo build --release
-
     - name: Install hyperfine
       run: sudo apt-get install hyperfine
-
     - name: Download MetadataService.cls
       run: |
         wget https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/refs/heads/main/dlrs/libs/metadataservice/classes/MetadataService.cls -O m1.cls
-
     - name: Download Additional MetadataService.cls
       run: |
         wget https://raw.githubusercontent.com/certinia/apex-mdapi/refs/heads/master/apex-mdapi/src/classes/MetadataService.cls -O m2.cls
-
     - name: Run hyperfine benchmark
       run: |
         hyperfine --export-json hyperfine_results.json \
           './target/release/afmt -f m1.cls' \
           './target/release/afmt -f m2.cls'
-
     - name: Create docs directory
       run: mkdir -p docs
-
     - name: Generate Markdown Report
       run: |
         echo "# Benchmark Results" > docs/results.md
@@ -45,27 +34,41 @@ jobs:
         echo "## Benchmark Summary" >> docs/results.md
         echo "" >> docs/results.md
         cat hyperfine_results.json | jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.time.mean) seconds\n\n"' >> docs/results.md
-
-    - name: Commit Results to Same Repo
+    
+    - name: Install mdBook
+      run: cargo install mdbook
+    - name: Setup mdBook project
+      run: |
+        cd docs
+        mdbook init
+        echo '[output.html]' >> book.toml
+        echo 'site-url = "/afmt/"' >> book.toml
+    - name: Build mdBook
+      run: |
+        cd docs
+        mdbook build
+    
+    # Commit and push changes
+    - name: Commit and Push Changes
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use the default GITHUB_TOKEN
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Action"
-        git add docs/results.md
-        git commit -m "Add benchmark results" || echo "No changes to commit."
+        git add docs
+        git commit -m "Update benchmark results and build mdBook" || echo "No changes to commit"
         git push origin main
 
-    # - name: Push Changes
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GH_ACTION_TO_AFMT }}
-    #   run: |
-    #     git remote set-url origin https://xixiaofinland:${GITHUB_TOKEN}@github.com/xixiaofinland/afmt.git
-    #     git push origin HEAD:main
-
-    # - name: Upload benchmark result
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: hyperfine-results
-    #     path: hyperfine_results.json
-    #
+  deploy:
+    needs: benchmark
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
