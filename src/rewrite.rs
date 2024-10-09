@@ -211,8 +211,12 @@ impl<'a, 'tree> Rewrite for FieldDeclaration<'a, 'tree> {
 
         result.push(' ');
 
-        let v = node.c_by_k("variable_declarator");
-        result.push_str(&rewrite::<VariableDeclarator>(&v, shape, context));
+        let declarator_nodes = node.cs_by_n("declarator");
+        let declarator_values: Vec<String> = declarator_nodes
+            .iter()
+            .map(|d| rewrite::<VariableDeclarator>(d, shape, context))
+            .collect();
+        result.push_str(&declarator_values.join(", "));
 
         if let Some(ref a) = node.try_c_by_k("accessor_list") {
             result.push_str(&rewrite::<AccessorList>(a, shape, context));
