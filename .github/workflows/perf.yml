@@ -48,6 +48,11 @@ jobs:
         cd docs
         mdbook build
     
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./docs/book
+
     # Commit and push changes
     - name: Commit and Push Changes
       env:
