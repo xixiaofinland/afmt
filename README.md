@@ -78,7 +78,8 @@ Execution time: 724.826┬╡s
 
 # 📡 Technical parts
 
-[Technical Doc](doc/Technical.md)
+[Performance site](https://xixiaofinland.github.io/afmt/)
 
+[Technical Doc](doc/Technical.md)
 
 [Config Doc](doc/Settings.md)
