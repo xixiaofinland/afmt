@@ -50,7 +50,7 @@ jobs:
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Action"
-        git add results.md
+        git add docs/results.md
         git commit -m "Add benchmark results"
 
     - name: Upload benchmark result
