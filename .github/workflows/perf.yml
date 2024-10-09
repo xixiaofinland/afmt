@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for all branches and tags
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Build Release
@@ -35,7 +37,6 @@ jobs:
         echo "" >> docs/src/results.md
         jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.mean) ± \(.stddev) seconds\n\nMin: \(.min) seconds\nMax: \(.max) seconds\n\n"' hyperfine_results.json >> docs/src/results.md
 
-    # mdBook steps
     - name: Install mdBook
       run: cargo install mdbook
     - name: Setup mdBook project
@@ -55,12 +56,10 @@ jobs:
       run: |
         cd docs
         mdbook build
-
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: ./docs/book
-
     # Commit and push changes
     - name: Commit and Push Changes
       env:
@@ -70,8 +69,7 @@ jobs:
         git config --local user.name "GitHub Action"
         git add docs
         git commit -m "Update benchmark results and build mdBook" || echo "No changes to commit"
-        git push origin main
-
+        git push origin HEAD:main
   deploy:
     needs: benchmark
     runs-on: ubuntu-latest
