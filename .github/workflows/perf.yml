@@ -23,14 +23,35 @@ jobs:
 
     - name: Download MetadataService.cls
       run: |
-        wget https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/refs/heads/main/dlrs/libs/metadataservice/classes/MetadataService.cls
+        wget https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/refs/heads/main/dlrs/libs/metadataservice/classes/MetadataService.cls -O m1.cls
+
+    - name: Download Additional MetadataService.cls
+      run: |
+        wget https://raw.githubusercontent.com/certinia/apex-mdapi/refs/heads/master/apex-mdapi/src/classes/MetadataService.cls -O m2.cls
 
     - name: Run hyperfine benchmark
       run: |
-        hyperfine --export-json hyperfine_results.json './target/release/afmt -f MetadataService.cls'
+        hyperfine --export-json hyperfine_results.json \
+          './target/release/afmt -f m1.cls' \
+          './target/release/afmt -f m2.cls'
+
+    - name: Generate Markdown Report
+      run: |
+        echo "# Benchmark Results" > docs/results.md
+        echo "" >> docs/results.md
+        echo "## Benchmark Summary" >> docs/results.md
+        echo "" >> docs/results.md
+        cat hyperfine_results.json | jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.time.mean) seconds\n\n"' >> docs/results.md
+
+    - name: Commit Results
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Action"
+        git add results.md
+        git commit -m "Add benchmark results"
 
     - name: Upload benchmark result
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: hyperfine-results
         path: hyperfine_results.json
