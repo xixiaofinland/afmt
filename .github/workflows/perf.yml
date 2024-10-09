@@ -3,6 +3,8 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:  # This allows manual triggering
+
 jobs:
   benchmark:
     runs-on: ubuntu-latest
