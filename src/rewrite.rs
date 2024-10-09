@@ -1199,6 +1199,7 @@ impl<'a, 'tree> Rewrite for FieldAccess<'a, 'tree> {
             "query_expression" => rewrite::<QueryExpression>(&o, shape, context),
             "method_invocation" => rewrite::<MethodInvocation>(&o, shape, context),
             "array_access" => rewrite::<ArrayAccess>(&o, shape, context),
+            "parenthesized_expression" => rewrite::<ParenthesizedExpression>(&o, shape, context),
             _ => rewrite::<PrimaryExpression>(&o, shape, context),
         });
 
