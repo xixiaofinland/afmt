@@ -1,0 +1,39 @@
+name: Hyperfine Benchmark
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Build Release
+      run: cargo build --release
+
+    - name: Install hyperfine
+      run: sudo apt-get install hyperfine
+
+    - name: Download MetadataService.cls
+      run: |
+        wget https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/refs/heads/main/dlrs/libs/metadataservice/classes/MetadataService.cls
+
+    - name: Run hyperfine benchmark
+      run: |
+        hyperfine --export-json hyperfine_results.json './target/release/afmt MetadataService.cls'
+
+    - name: Upload benchmark result
+      uses: actions/upload-artifact@v3
+      with:
+        name: hyperfine-results
+        path: hyperfine_results.json
+
