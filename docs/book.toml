@@ -1,7 +1,7 @@
 [book]
-authors = []
-language = "en"
-multilingual = false
+title = "AFMT Benchmark Results"
+authors = ["GitHub Actions"]
 src = "src"
+
 [output.html]
 site-url = "/afmt/"
