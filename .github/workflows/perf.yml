@@ -35,6 +35,9 @@ jobs:
           './target/release/afmt -f m1.cls' \
           './target/release/afmt -f m2.cls'
 
+    - name: Create docs directory
+      run: mkdir -p docs
+
     - name: Generate Markdown Report
       run: |
         echo "# Benchmark Results" > docs/results.md
