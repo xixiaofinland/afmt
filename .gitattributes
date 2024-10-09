@@ -6,7 +6,3 @@ dep/* linguist-vendored
 *.cpp linguist-vendored
 *.hpp linguist-vendored
 *.cc linguist-vendored
-*.in linguist-vendored
-*.cls linguist-vendored
-*.p80 linguist-vendored
-*.p10000 linguist-vendored
