@@ -26,33 +26,36 @@ jobs:
           './target/release/afmt -f m1.cls' \
           './target/release/afmt -f m2.cls'
     - name: Create docs directory
-      run: mkdir -p docs
+      run: mkdir -p docs/src
     - name: Generate Markdown Report
       run: |
-        echo "# Benchmark Results" > docs/results.md
-        echo "" >> docs/results.md
-        echo "## Benchmark Summary" >> docs/results.md
-        echo "" >> docs/results.md
-        jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.mean) ± \(.stddev) seconds\n\nMin: \(.min) seconds\nMax: \(.max) seconds\n\n"' hyperfine_results.json >> docs/results.md
-    
+        echo "# Benchmark Results" > docs/src/results.md
+        echo "" >> docs/src/results.md
+        echo "## Benchmark Summary" >> docs/src/results.md
+        echo "" >> docs/src/results.md
+        jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.mean) ± \(.stddev) seconds\n\nMin: \(.min) seconds\nMax: \(.max) seconds\n\n"' hyperfine_results.json >> docs/src/results.md
+
     # mdBook steps
     - name: Install mdBook
       run: cargo install mdbook
     - name: Setup mdBook project
       run: |
         cd docs
-        mdbook init --force
+        echo '[book]' > book.toml
+        echo 'title = "AFMT Benchmark Results"' >> book.toml
+        echo 'authors = ["GitHub Actions"]' >> book.toml
+        echo 'src = "src"' >> book.toml
+        echo '' >> book.toml
         echo '[output.html]' >> book.toml
         echo 'site-url = "/afmt/"' >> book.toml
-        echo '# Summary' > SUMMARY.md
-        echo '' >> SUMMARY.md
-        echo '- [Benchmark Results](results.md)' >> SUMMARY.md
+        echo '# Summary' > src/SUMMARY.md
+        echo '' >> src/SUMMARY.md
+        echo '- [Benchmark Results](results.md)' >> src/SUMMARY.md
     - name: Build mdBook
       run: |
         cd docs
         mdbook build
-    
-    # Upload artifact for deployment job
+
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
