@@ -159,13 +159,7 @@ mod tests {
             .expect("PathBuf to String failed.")
             .to_string();
 
-        let session = match config_path {
-            Some(config_path) => {
-                Session::create_session_from_config(config_path, vec![file_path.clone()])
-                    .expect("format_with_afmt() failed")
-            }
-            None => Session::new(Config::default(), vec![file_path.clone()]),
-        };
+        let session = Session::create_session_from_config(config_path, vec![file_path.clone()]);
 
         let vec = session.format();
         vec.into_iter()
