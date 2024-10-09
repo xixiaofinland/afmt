@@ -253,6 +253,7 @@ impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
                 match_routing!(c, context, shape;
                     "scoped_type_identifier" => ScopedTypeIdentifier,
                     "type_identifier" => Value,
+                    "generic_type" => GenericType,
                 )
             })
             .collect::<Vec<_>>()
@@ -682,6 +683,10 @@ impl<'a, 'tree> Rewrite for GenericType<'a, 'tree> {
 
         if let Some(name) = node.try_c_by_k("type_identifier") {
             result.push_str(name.v(source_code));
+        }
+
+        if let Some(s) = node.try_c_by_k("scoped_type_identifier") {
+            result.push_str(&rewrite::<ScopedTypeIdentifier>(&s, shape, context));
         }
 
         let arguments = node.c_by_k("type_arguments");
