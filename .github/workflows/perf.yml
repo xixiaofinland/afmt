@@ -37,7 +37,10 @@ jobs:
         echo "" >> docs/src/results.md
         echo "## Benchmark Summary" >> docs/src/results.md
         echo "" >> docs/src/results.md
-        jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.mean) ± \(.stddev) seconds\n\nMin: \(.min) seconds\nMax: \(.max) seconds\n\n"' hyperfine_results.json >> docs/src/results.md
+        # Use jq to round the results to 3 decimal places for better readability
+        jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.mean | round(3)) ±
+        \(.stddev | round(3)) seconds\n\nMin: \(.min | round(3)) seconds\nMax: \(.max | round(3))
+        seconds\n\n"' hyperfine_results.json >> docs/src/results.md
 
     - name: Install mdBook
       run: cargo install mdbook
