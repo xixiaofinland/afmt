@@ -46,19 +46,22 @@ jobs:
         echo "" >> docs/results.md
         cat hyperfine_results.json | jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.time.mean) seconds\n\n"' >> docs/results.md
 
-    - name: Commit Results
+    - name: Commit Results to Same Repo
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use the default GITHUB_TOKEN
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Action"
         git add docs/results.md
-        git commit -m "Add benchmark results"
+        git commit -m "Add benchmark results" || echo "No changes to commit."
+        git push origin main
 
-    - name: Push Changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_ACTION_TO_AFMT }}
-      run: |
-        git remote set-url origin https://xixiaofinland:${GITHUB_TOKEN}@github.com/xixiaofinland/afmt.git
-        git push origin HEAD:main
+    # - name: Push Changes
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GH_ACTION_TO_AFMT }}
+    #   run: |
+    #     git remote set-url origin https://xixiaofinland:${GITHUB_TOKEN}@github.com/xixiaofinland/afmt.git
+    #     git push origin HEAD:main
 
     # - name: Upload benchmark result
     #   uses: actions/upload-artifact@v4
