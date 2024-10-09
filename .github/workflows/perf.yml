@@ -1,8 +1,8 @@
 name: Hyperfine Benchmark and mdBook Deploy
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 jobs:
   benchmark:
     runs-on: ubuntu-latest

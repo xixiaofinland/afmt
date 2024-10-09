@@ -237,14 +237,24 @@ impl<'a, 'tree> Rewrite for SuperClass<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rewrite for Interfaces<'a, 'tree> {
-    fn rewrite(&self, _shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
         result.push_str(" implements ");
 
         let type_list = node.c_by_k("type_list");
+        let joined = type_list
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                    "scoped_type_identifier" => ScopedTypeIdentifier,
+                    "type_identifier" => Value,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(", ");
 
-        let type_lists = type_list.try_csv_by_k("type_identifier", source_code);
-        result.push_str(&type_lists.join(", "));
+        result.push_str(&joined);
 
         result
     }
