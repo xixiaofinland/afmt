@@ -29,7 +29,7 @@ jobs:
 
     - name: Run hyperfine benchmark
       run: |
-        hyperfine --export-json hyperfine_results.json './target/release/afmt MetadataService.cls'
+        hyperfine --export-json hyperfine_results.json './target/release/afmt -f MetadataService.cls'
 
     - name: Upload benchmark result
       uses: actions/upload-artifact@v3
