@@ -18,28 +18,16 @@ jobs:
       run: cargo build --release
     - name: Install hyperfine
       run: sudo apt-get install hyperfine
-    - name: Download MetadataService.cls
+    - name: Download MetadataService.cls files
       run: |
         wget https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/refs/heads/main/dlrs/libs/metadataservice/classes/MetadataService.cls -O m1.cls
-    - name: Download Additional MetadataService.cls
-      run: |
         wget https://raw.githubusercontent.com/certinia/apex-mdapi/refs/heads/master/apex-mdapi/src/classes/MetadataService.cls -O m2.cls
     - name: Run hyperfine benchmark
       run: |
-        hyperfine --export-json hyperfine_results.json \
+        mkdir -p docs/src
+        hyperfine --export-markdown docs/src/results.md \
           './target/release/afmt -f m1.cls' \
           './target/release/afmt -f m2.cls'
-    - name: Create docs directory
-      run: mkdir -p docs/src
-    - name: Generate Markdown Report
-      run: |
-        echo "# Benchmark Results" > docs/src/results.md
-        echo "" >> docs/src/results.md
-        echo "## Benchmark Summary" >> docs/src/results.md
-        echo "" >> docs/src/results.md
-        # Use jq to round the results to 3 decimal places for better readability
-        jq -r '.results[] | "### Command: \(.command)\n\nExecution Time: \(.mean | round(3)) ± \(.stddev | round(3)) seconds\n\nMin: \(.min | round(3)) seconds\nMax: \(.max | round(3)) seconds\n\n"' hyperfine_results.json >> docs/src/results.md
-
     - name: Install mdBook
       run: cargo install mdbook
     - name: Setup mdBook project
@@ -73,6 +61,7 @@ jobs:
         git add docs
         git commit -m "Update benchmark results and build mdBook" || echo "No changes to commit"
         git push origin HEAD:main
+
   deploy:
     needs: benchmark
     runs-on: ubuntu-latest
