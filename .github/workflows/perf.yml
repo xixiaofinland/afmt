@@ -21,14 +21,15 @@ jobs:
     - name: Download large Apex files
       run: |
         git clone https://github.com/xixiaofinland/large_apex_files
-        cd large_apex_files/files
     - name: Run hyperfine benchmark
       run: |
         mkdir -p docs/src
-        cd large_apex_files/files
-        for file in $(ls -S); do
-          hyperfine --runs 50 "../../target/release/afmt -f $file" > temp_results.md
-          cat temp_results.md >> ../../docs/src/results.md
+        for file in $(ls -S large_apex_files/files); do
+          echo "## Benchmark for $file" >> ../../docs/src/results.md
+          hyperfine --runs 50 --min-runs 100 --warmup 10 -i \
+            "../../target/release/afmt -f $file" --export-markdown temp_results.md
+          tail -n +4 temp_results.md >> ../../docs/src/results.md
+          echo "" >> ../../docs/src/results.md
         done
     - name: Install mdBook
       run: cargo install mdbook
