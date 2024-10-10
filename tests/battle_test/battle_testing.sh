@@ -1,17 +1,24 @@
 #!/bin/bash
 
-# Record the start time
-START_TIME=$(date +%s)
-
 # Get the absolute path of the current script's directory
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_LIST="$SCRIPT_DIR/repos.txt"
 TARGET_DIR="$SCRIPT_DIR/repos"
-FORMATTER_BINARY="$SCRIPT_DIR/../../target/debug/afmt"
+FORMATTER_BINARY="$SCRIPT_DIR/../../target/release/afmt"
 LOG_FILE="$SCRIPT_DIR/format_errors.log"  # Log file for errors
 
 # Create target directory if it doesn't exist
 mkdir -p $TARGET_DIR
+
+# Check if the formatter binary exists, if not, run cargo build --release
+if [ ! -f "$FORMATTER_BINARY" ]; then
+    echo "Formatter binary not found, building it with cargo..."
+    (cd "$SCRIPT_DIR/../.." && cargo build --release)
+    if [ $? -ne 0 ]; then
+        echo "Cargo build failed, exiting."
+        exit 1
+    fi
+fi
 
 while IFS= read -r REPO_URL; do
     REPO_NAME=$(basename -s .git "$REPO_URL")
@@ -35,9 +42,9 @@ format_files() {
         if echo "$OUTPUT" | grep -qE "snippet: %%{2,3}"; then
             :  # Skip logging for %% cases as they are from managed package templating
         elif echo "$OUTPUT" | grep -q "%%%"; then
-            :  # Saome as above
+            :  # Same as above
         elif echo "$OUTPUT" | grep -q "Error in node kind: ;"; then
-           :
+            :
         else
             {
                 echo "========================================"
@@ -56,6 +63,9 @@ export -f format_files
 export FORMATTER_BINARY
 export LOG_FILE
 
+# Record the start time
+START_TIME=$(date +%s)
+
 # Find all .cls and .trigger files and process them in parallel
 find "$TARGET_DIR" -path "$TARGET_DIR/.sfdx" -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
     parallel -0 -j+0 format_files
@@ -73,4 +83,3 @@ ELAPSED_TIME=$((END_TIME - START_TIME))
 
 # Print the time taken
 echo "Script execution time: $ELAPSED_TIME seconds"
-
