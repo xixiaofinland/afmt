@@ -27,13 +27,21 @@ jobs:
     - name: Run hyperfine benchmark
       run: |
         mkdir -p docs/src
-        echo "" > docs/src/results.md
+        echo "| File | Mean [ms] | Min [ms] | Max [ms] | Relative |" >> docs/src/results.md
+        echo "|------|-----------|----------|----------|----------|" >> docs/src/results.md
         for file in $(ls -S large_apex_files/files); do
-          echo "## Benchmark for $file" >> docs/src/results.md
-          hyperfine --runs 50 --warmup 3 -i \
+          file_name=$(basename "$file" .cls)  # Get the file name without extension
+          hyperfine --runs 100 --warmup 5 -i \
             "./target/release/afmt -f large_apex_files/files/$file" --export-markdown temp_results.md
-          cat temp_results.md >> docs/src/results.md
-          echo "" >> docs/src/results.md
+
+          # Extract the timing data and format it into a table row
+          mean=$(awk '/^Mean/ {print $2}' temp_results.md)
+          min=$(awk '/^Min/ {print $2}' temp_results.md)
+          max=$(awk '/^Max/ {print $2}' temp_results.md)
+          relative=$(awk '/^Relative/ {print $2}' temp_results.md)
+
+          # Write the result in a concise table format
+          echo "| $file_name | $mean | $min | $max | $relative |" >> docs/src/results.md
         done
     - name: Install mdBook
       run: cargo install mdbook
