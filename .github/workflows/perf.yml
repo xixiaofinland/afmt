@@ -26,7 +26,7 @@ jobs:
         mkdir -p docs/src
         for file in $(ls -S large_apex_files/files); do
           echo "## Benchmark for $file" >> docs/src/results.md
-          hyperfine --runs 50 --min-runs 100 --warmup 10 -i \
+          hyperfine --runs 50 -i \
             "./target/release/afmt -f large_apex_files/files/$file" --export-markdown temp_results.md
           tail -n +4 temp_results.md >> docs/src/results.md
           echo "" >> docs/src/results.md
