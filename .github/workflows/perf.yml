@@ -18,7 +18,7 @@ jobs:
       run: cargo build --release
     - name: Install hyperfine
       run: sudo apt-get install hyperfine
-    - name: Download MetadataService.cls files
+    - name: Download large Apex files
       run: |
         git clone https://github.com/xixiaofinland/large_apex_files
         cd large_apex_files/files
@@ -27,8 +27,8 @@ jobs:
         mkdir -p docs/src
         cd large_apex_files/files
         for file in $(ls -S); do
-          hyperfine --runs 50 --export-markdown ../../docs/src/results.md \
-            "../../target/release/afmt -f $file" --append
+          hyperfine --runs 50 "../../target/release/afmt -f $file" > temp_results.md
+          cat temp_results.md >> ../../docs/src/results.md
         done
     - name: Install mdBook
       run: cargo install mdbook
