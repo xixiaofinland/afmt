@@ -12,6 +12,9 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Fetch all history for all branches and tags
+    - name: Clean previous docs folder
+      run: |
+        rm -rf docs  # Clean up existing docs to start fresh
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Build Release
@@ -24,11 +27,12 @@ jobs:
     - name: Run hyperfine benchmark
       run: |
         mkdir -p docs/src
+        echo "" > docs/src/results.md
         for file in $(ls -S large_apex_files/files); do
           echo "## Benchmark for $file" >> docs/src/results.md
-          hyperfine --runs 50 -i \
+          hyperfine --runs 50 --warmup 3 -i \
             "./target/release/afmt -f large_apex_files/files/$file" --export-markdown temp_results.md
-          tail -n +4 temp_results.md >> docs/src/results.md
+          cat temp_results.md >> docs/src/results.md
           echo "" >> docs/src/results.md
         done
     - name: Install mdBook
