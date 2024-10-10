@@ -13,17 +13,14 @@ LOG_FILE="$SCRIPT_DIR/format_errors.log"  # Log file for errors
 # Create target directory if it doesn't exist
 mkdir -p $TARGET_DIR
 
-# Clone repositories (unchanged)
 while IFS= read -r REPO_URL; do
     REPO_NAME=$(basename -s .git "$REPO_URL")
     echo "Cloning $REPO_URL into $TARGET_DIR/$REPO_NAME"
     git clone "$REPO_URL" "$TARGET_DIR/$REPO_NAME"
 done < "$REPO_LIST"
 
-# Clear the log file at the start
 > "$LOG_FILE"
 
-# Function to format files and log errors with clear info
 format_files() {
     local FILE_PATH="$1"
 
@@ -34,9 +31,7 @@ format_files() {
 
     if [ $EXIT_CODE -ne 0 ]; then
         if echo "$OUTPUT" | grep -qE "snippet: %%{2,3}"; then
-            :  # No operation, skip logging
-        elif echo "$OUTPUT" | grep -q "%%%"; then
-            :  # Skip logging for %% cases with any number of percent signs
+            :  # managed package code can have `%%` `%%%` as templating code. Skip logging them
         elif echo "$OUTPUT" | grep -q "Error in node kind: ;"; then
            :
         else
