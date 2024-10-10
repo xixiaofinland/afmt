@@ -20,14 +20,16 @@ jobs:
       run: sudo apt-get install hyperfine
     - name: Download MetadataService.cls files
       run: |
-        wget https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/refs/heads/main/dlrs/libs/metadataservice/classes/MetadataService.cls -O m1.cls
-        wget https://raw.githubusercontent.com/certinia/apex-mdapi/refs/heads/master/apex-mdapi/src/classes/MetadataService.cls -O m2.cls
+        git clone https://github.com/xixiaofinland/large_apex_files
+        cd large_apex_files/files
     - name: Run hyperfine benchmark
       run: |
         mkdir -p docs/src
-        hyperfine --export-markdown docs/src/results.md \
-          './target/release/afmt -f m1.cls' \
-          './target/release/afmt -f m2.cls'
+        cd large_apex_files/files
+        for file in $(ls -S); do
+          hyperfine --runs 50 --export-markdown ../../docs/src/results.md \
+            "../../target/release/afmt -f $file" --append
+        done
     - name: Install mdBook
       run: cargo install mdbook
     - name: Setup mdBook project
@@ -75,3 +77,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
