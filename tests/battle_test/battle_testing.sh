@@ -19,8 +19,10 @@ while IFS= read -r REPO_URL; do
     git clone "$REPO_URL" "$TARGET_DIR/$REPO_NAME"
 done < "$REPO_LIST"
 
+# Clear the log file at the start
 > "$LOG_FILE"
 
+# Function to format files and log errors with clear info
 format_files() {
     local FILE_PATH="$1"
 
@@ -31,7 +33,9 @@ format_files() {
 
     if [ $EXIT_CODE -ne 0 ]; then
         if echo "$OUTPUT" | grep -qE "snippet: %%{2,3}"; then
-            :  # managed package code can have `%%` `%%%` as templating code. Skip logging them
+            :  # Skip logging for %% cases as they are from managed package templating
+        elif echo "$OUTPUT" | grep -q "%%%"; then
+            :  # Saome as above
         elif echo "$OUTPUT" | grep -q "Error in node kind: ;"; then
            :
         else
