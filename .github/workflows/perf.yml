@@ -33,22 +33,26 @@ jobs:
     - name: Run hyperfine benchmark
       run: |
         mkdir -p docs/src
-        echo "| File | Mean [ms] | Min [ms] | Max [ms] |" > docs/src/results.md
-        echo "|------|-----------|----------|----------|" >> docs/src/results.md
+        echo "| File | Line num | Mean [ms] | Min [ms] | Max [ms] |" > docs/src/results.md
+        echo "|------|----------|-----------|----------|----------|" >> docs/src/results.md
         for file in $(ls -S large_apex_files/files); do
           file_name=$(basename "$file" .cls)
-          hyperfine --runs 100 --warmup 5 -i \
-            "./target/release/afmt -f large_apex_files/files/$file" --export-markdown temp_results.md
+          file_path="large_apex_files/files/$file"
+          line_count=$(wc -l < "$file_path")
+          
+          file_url="https://github.com/xixiaofinland/large_apex_files/blob/main/files/$file"
+          file_link="[$file_name]($file_url)"
 
-          # Extract the timing data
+          hyperfine --runs 100 --warmup 5 -i "./target/release/afmt -f $file_path" --export-markdown temp_results.md
+
           mean=$(grep -oP '(?<=\| )[0-9.]+(?= ±)' temp_results.md | head -1)
           min=$(grep -oP '(?<=\| )[0-9.]+(?= )' temp_results.md | head -2 | tail -1)
           max=$(grep -oP '(?<=\| )[0-9.]+(?= )' temp_results.md | head -3 | tail -1)
 
           if [ -n "$mean" ]; then
-            echo "| $file_name | $mean | $min | $max |" >> docs/src/results.md
+            echo "| $file_link | $line_count | $mean | $min | $max |" >> docs/src/results.md
           else
-            echo "| $file_name | N/A | N/A | N/A |" >> docs/src/results.md
+            echo "| $file_link | $line_count | N/A | N/A | N/A |" >> docs/src/results.md
           fi
         done
 
