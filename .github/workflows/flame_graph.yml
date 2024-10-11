@@ -1,8 +1,8 @@
-name: Flamegraph Benchmark and mdBook Deploy
+name: Flamegraph Benchmark and Deploy
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Fetch all history
+        fetch-depth: 0  # Fetch all history for tags
 
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
@@ -22,32 +22,28 @@ jobs:
     - name: Install Flamegraph.rs
       run: cargo install flamegraph
 
-    - name: Install Perf (for Flamegraph)
-      run: sudo apt-get install linux-tools-common linux-tools-generic linux-tools-`uname -r`
-
-    - name: Download large Apex file
-      run: |
-        git clone https://github.com/xixiaofinland/large_apex_files
-        ls large_apex_files/files
-
-    - name: Generate Flamegraph
-      run: |
-        sudo perf record --call-graph=dwarf ./target/release/afmt -f large_apex_files/files/MetadataService2.cls
-        sudo perf script | flamegraph > flamegraph.svg
-
-    - name: Create mdBook for Flamegraph
+    - name: Run Flamegraph
       run: |
         mkdir -p docs/src
-        cp flamegraph.svg docs/src/
-        echo '# Flamegraph Results' > docs/src/flamegraph.md
-        echo '![Flamegraph](flamegraph.svg)' >> docs/src/flamegraph.md
+        # Generate flamegraph for the file MetadataService2.cls
+        flamegraph --output docs/src/flamegraph.svg ./target/release/afmt -f large_apex_files/files/MetadataService2.cls
+
+    - name: Setup mdBook for Flamegraph
+      run: |
+        mkdir -p docs/src
         echo '[book]' > docs/book.toml
-        echo 'title = "AFMT Flamegraph Results"' >> docs/book.toml
-        echo 'src = "src"' >> docs/book.toml
+        echo 'title = "AFMT Benchmark and Profiling Results"' >> docs/book.toml
         echo '[output.html]' >> docs/book.toml
         echo 'site-url = "/afmt/"' >> docs/book.toml
         echo '# Summary' > docs/src/SUMMARY.md
-        echo '- [Flamegraph](flamegraph.md)' >> docs/src/SUMMARY.md
+        echo '- [Flamegraph Results](flamegraph.md)' >> docs/src/SUMMARY.md
+
+    - name: Embed Flamegraph in GitHub Pages
+      run: |
+        echo '<img src="flamegraph.svg" alt="Flamegraph" />' > docs/src/flamegraph.md
+
+    - name: Install mdBook
+      run: cargo install mdbook
 
     - name: Build mdBook
       run: |
@@ -66,7 +62,7 @@ jobs:
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Action"
         git add docs
-        git commit -m "Add Flamegraph results" || echo "No changes to commit"
+        git commit -m "Update flamegraph and build mdBook" || echo "No changes to commit"
         git push origin HEAD:main
 
   deploy:
@@ -77,7 +73,6 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
