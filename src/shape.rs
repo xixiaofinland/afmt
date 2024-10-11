@@ -26,7 +26,7 @@ impl Shape {
             width: config.max_width(),
             offset: 0,
             standalone: true,
-            single_only: true,
+            single_only: false,
         }
     }
 
