@@ -1,1 +1,1 @@
-# Benchmark Section
+# Benchmarks
