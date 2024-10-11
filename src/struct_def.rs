@@ -11,6 +11,7 @@ def_struct!(
     ClassDeclaration,
     FieldDeclaration,
     MethodDeclaration,
+    FormalParameter,
     EnumDeclaration,
     EnumConstant,
     EnumBody,

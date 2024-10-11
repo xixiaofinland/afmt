@@ -88,21 +88,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         let parameters_value: Vec<String> = formal_parameters_node
             .try_cs_by_k("formal_parameter")
             .iter()
-            .map(|c| {
-                let type_str = c.cv_by_n("type", source_code);
-                let name_str = c.cv_by_n("name", source_code);
-
-                if let Some(ref a) = c.try_c_by_k("modifiers") {
-                    format!(
-                        "{} {} {}",
-                        rewrite::<Modifiers>(a, shape, context),
-                        type_str,
-                        name_str
-                    )
-                } else {
-                    format!("{} {}", type_str, name_str)
-                }
-            })
+            .map(|c| rewrite_shape::<FormalParameter>(&c, shape, false, context))
             .collect();
 
         let params_single_line = parameters_value.join(", ");
@@ -133,6 +119,26 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             try_add_standalone_suffix(node, &mut result, shape, source_code);
         }
         result
+    }
+}
+
+impl<'a, 'tree> Rewrite for FormalParameter<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, _, source_code, _) = self.prepare(context);
+
+        let type_str = node.cv_by_n("type", source_code);
+        let name_str = node.cv_by_n("name", source_code);
+
+        if let Some(ref a) = node.try_c_by_k("modifiers") {
+            format!(
+                "{} {} {}",
+                rewrite::<Modifiers>(a, shape, context),
+                type_str,
+                name_str
+            )
+        } else {
+            format!("{} {}", type_str, name_str)
+        }
     }
 }
 
