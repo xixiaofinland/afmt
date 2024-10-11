@@ -82,6 +82,6 @@ Execution time: 724.826┬╡s
 
 # 📡 Technical parts
 
-[Technical Doc](doc/Technical.md)
+[Technical Doc](md/Technical.md)
 
-[Config Doc](doc/Settings.md)
+[Config Doc](md/Settings.md)
