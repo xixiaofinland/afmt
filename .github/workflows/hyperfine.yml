@@ -63,16 +63,16 @@ jobs:
     # Criterion Benchmark
     - name: Run Criterion benchmark
       run: |
-        mkdir -p docs/src/criterion_reports
+        mkdir -p docs/src/
         cargo bench --bench afmt_benchmark
-        cp -r target/criterion ./docs/src/criterion_reports
+        cp -r target/criterion ./docs/src/
 
     # Create Criterion results in mdBook using iframe
     - name: Generate Criterion report
       run: |
         mkdir -p docs/src
         echo "# Criterion Benchmark Results" > docs/src/criterion.md
-        echo '<iframe src="criterion_reports/criterion/report/index.html" width="100%" height="600px" frameborder="0"></iframe>' >> docs/src/criterion.md
+        echo '<iframe src="criterion/format_apex/report/index.html" width="100%" height="600px" frameborder="0"></iframe>' >> docs/src/criterion.md
 
     # Install and run mdBook
     - name: Install mdBook
