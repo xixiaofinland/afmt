@@ -5,6 +5,11 @@ edition = "2021"
 
 [dev-dependencies]
 similar = "2.6.0"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "afmt_benchmark"
+harness = false
 
 [dependencies]
 anyhow = "1.0.86"

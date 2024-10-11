@@ -57,6 +57,7 @@ impl Config {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Session {
     config: Config,
     source_files: Vec<String>,
