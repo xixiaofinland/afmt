@@ -79,7 +79,8 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push('(');
 
-        let left = &result.rsplit('\n').next().unwrap_or(&result); // @annotation has its own line;
+        // @annotation has its own line;
+        let left = &result.rsplit('\n').next().unwrap_or(&result).trim_start();
         let right_size: usize = 3; // trailing `) {` size
         shape.offset = left.len() + right_size;
 
@@ -106,13 +107,13 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let params_single_line = parameters_value.join(", ");
 
-        if shape.offset + params_single_line.len() <= shape.width {
+        if shape.offset + params_single_line.len() <= shape.width || !shape.can_split {
             result.push_str(&params_single_line);
         } else {
-            let param_shape = shape.copy_with_indent_increase(config);
+            let m_shape = shape.copy_with_indent_increase(config);
             result.push('\n');
             for (i, param) in parameters_value.iter().enumerate() {
-                result.push_str(&param_shape.indent.as_string(config));
+                result.push_str(&m_shape.indent.as_string(config));
                 result.push_str(param);
 
                 if i < parameters_value.len() - 1 {

@@ -26,7 +26,7 @@ impl Shape {
             width: config.max_width(),
             offset: 0,
             standalone: true,
-            can_split: false,
+            can_split: true,
         }
     }
 
