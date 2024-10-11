@@ -1477,19 +1477,21 @@ impl<'a, 'tree> Rewrite for GroupByClause<'a, 'tree> {
         result.push_str("GROUP BY ");
 
         let joined_children = node
-            .children_vec()
+            .all_children_vec() // can't join all nodes with a comma so we preserve existing commas
             .iter()
-            .map(|c| {
-                match_routing!(c, context, shape;
-                "field_identifier" => FieldIdentifier,
-                "function_expression" => Value,
-                "having_clause" => HavingClause,
-                )
+            .filter(|c| c.is_named() || c.kind() == ",")
+            .map(|c| match c.kind() {
+                "," => ", ".into(),
+                _ => match_routing!(c, context, shape;
+                    "having_clause" => HavingClause,
+                    "field_identifier" => FieldIdentifier,
+                    "function_expression" => Value,
+                    ),
             })
             .collect::<Vec<_>>()
-            .join(" ");
-        result.push_str(&joined_children);
+            .join("");
 
+        result.push_str(&joined_children);
         result
     }
 }
@@ -1513,7 +1515,7 @@ impl<'a, 'tree> Rewrite for HavingClause<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
 
-        result.push_str("HAVING ");
+        result.push_str(" HAVING ");
         let c = node.first_c();
         result.push_str(&match_routing!(c, context, shape;
           //"having_and_expression" => Test
