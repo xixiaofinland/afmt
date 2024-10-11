@@ -6,7 +6,7 @@ pub struct Shape {
     pub width: usize,  // width = max_width - indent_width;
     pub offset: usize, // space already taken in the line;
     pub standalone: bool,
-    pub can_split: bool, // is it possible to switch to multi-line mode;
+    pub single_only: bool, // is it possible to switch to multi-line mode;
 }
 
 impl Shape {
@@ -16,7 +16,7 @@ impl Shape {
             width: self.width,
             offset: self.offset,
             standalone: stand_alone,
-            can_split: self.can_split,
+            single_only: self.single_only,
         }
     }
 
@@ -26,7 +26,7 @@ impl Shape {
             width: config.max_width(),
             offset: 0,
             standalone: true,
-            can_split: true,
+            single_only: true,
         }
     }
 
@@ -35,14 +35,14 @@ impl Shape {
         let offset = indent.block_indent * config.indent_size();
         let width = config.max_width().saturating_sub(offset);
         let standalone = self.standalone;
-        let can_split = self.can_split;
+        let can_split = self.single_only;
 
         Self {
             indent,
             width,
             offset,
             standalone,
-            can_split,
+            single_only: can_split,
         }
     }
 }

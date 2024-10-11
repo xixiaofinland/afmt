@@ -93,7 +93,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let params_single_line = parameters_value.join(", ");
 
-        if shape.offset + params_single_line.len() <= shape.width || !shape.can_split {
+        if shape.offset + params_single_line.len() <= shape.width || shape.single_only {
             result.push_str(&params_single_line);
         } else {
             let m_shape = shape.copy_with_indent_increase(config);
