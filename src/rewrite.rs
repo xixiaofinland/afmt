@@ -1576,7 +1576,7 @@ impl<'a, 'tree> Rewrite for OrderByClause<'a, 'tree> {
             .iter()
             .map(|c| rewrite::<OrderExpression>(c, shape, context))
             .collect::<Vec<_>>()
-            .join(" ");
+            .join(", ");
         result.push_str(&joined_c);
         result
     }
