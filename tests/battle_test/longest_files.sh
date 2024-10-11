@@ -13,7 +13,7 @@ mkdir -p "$output_dir"
 
 # Find all *.cls and *.trigger files, count lines, and sort them by line count
 find . -type f \( -name "*.cls" -o -name "*.trigger" \) \
-  -exec wc -l {} + | sort -nr | head -n 15 | while read -r line; do
+  -exec wc -l {} + | sort -nr | head -n 17 | while read -r line; do
     # Extract the line count and file path
     line_count=$(echo "$line" | awk '{print $1}')
     file_path=$(echo "$line" | awk '{$1=""; print $0}' | xargs) # Remove line count to get file path
