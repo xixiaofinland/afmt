@@ -26,7 +26,7 @@ jobs:
       run: |
         mkdir -p docs/src
         # Generate flamegraph for the file MetadataService2.cls
-        flamegraph --output docs/src/flamegraph.svg -- ./target/release/afmt -f large_apex_files/files/MetadataService2.cls
+        cargo flamegraph --output docs/src/flamegraph.svg -- ./target/release/afmt -f large_apex_files/files/MetadataService2.cls
 
     - name: Setup mdBook for Flamegraph
       run: |

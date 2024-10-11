@@ -1,4 +1,4 @@
-name: Hyperfine Benchmark and mdBook Deploy
+name: Hyperfine
 on:
   push:
     tags:
