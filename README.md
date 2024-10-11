@@ -2,7 +2,11 @@
 
 Afmt is written in **Rust** 🦀. It uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) to traverse AST nodes.
 
-This is a project in its early phase, don't expect to use it in production code yet.
+Note. this is a project in its early phase, don't expect to use it in production code yet.
+
+# Highlights
+
+Blazingly fast - parsing speed of largest open-source Apex files [report](https://xixiaofinland.github.io/afmt/results.html)
 
 <br>
 
