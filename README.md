@@ -6,7 +6,7 @@ Note. this is a project in its early phase, don't expect to use it in production
 
 # ✨ Highlights
 
-Blazingly fast - parsing speed of largest open-source Apex files [report](https://xixiaofinland.github.io/afmt/results.html)
+Blazingly fast - parsing speed of largest open-source Apex files [report](https://xixiaofinland.github.io/afmt/hyperfine.html)
 
 <br>
 
