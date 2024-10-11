@@ -13,5 +13,15 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, criterion_benchmark);
+fn criterion_config() -> Criterion {
+    Criterion::default()
+        .sample_size(20)
+        .measurement_time(std::time::Duration::new(20, 0))
+}
+
+criterion_group! {
+    name = benches;
+    config = criterion_config();
+    targets = criterion_benchmark
+}
 criterion_main!(benches);
