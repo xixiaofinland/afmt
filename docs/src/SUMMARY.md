@@ -1,6 +1,6 @@
 # Summary
 
-- [Introduction](intro.md)
+- [Intro](intro.md)
 - [Benchmarks](benchmark.md)
     - [hyperfine](hyperfine.md)
     - [criterion](criterion.md)
