@@ -1,4 +1,4 @@
-name: Flamegraph Benchmark and Deploy
+name: Flamegraph
 on:
   push:
     tags:
