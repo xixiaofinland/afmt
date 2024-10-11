@@ -10,17 +10,6 @@ pub struct Shape {
 }
 
 impl Shape {
-    //pub fn new(indent: Indent, config: &Config) -> Self {
-    //    Self {
-    //        indent,
-    //        width: config
-    //            .max_width()
-    //            .saturating_sub(indent.block_indent * config.indent_size()),
-    //        offset: 0,
-    //        standalone: false,
-    //    }
-    //}
-
     pub fn clone_with_standalone(&self, stand_alone: bool) -> Self {
         Self {
             indent: self.indent,
@@ -40,10 +29,6 @@ impl Shape {
             can_split: true,
         }
     }
-
-    //pub fn stand_alone(&mut self, flag: bool) {
-    //    self.standalone = flag;
-    //}
 
     pub fn copy_with_indent_increase(&self, config: &Config) -> Self {
         let indent = self.indent.copy_with_increased_block_indent();
