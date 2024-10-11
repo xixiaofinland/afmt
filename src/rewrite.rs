@@ -773,29 +773,33 @@ impl<'a, 'tree> Rewrite for MapInitializer<'a, 'tree> {
         let children = node
             .children_vec()
             .iter()
-            .map(|c| rewrite::<Expression>(c, shape, context))
+            .map(|c| match_routing!(c, context, shape;
+                "map_key_initializer" => MapKeyInitializer,
+            ))
             .collect::<Vec<String>>();
 
         let children_value = if children.is_empty() {
             "{}".to_string()
         } else {
-            // Example: ["'hello'", "1", "'world'", "2"] becomes 'hello' => 1, 'world' => 2
-            let joined_children = children
-                .chunks(2)
-                .map(|chunk| {
-                    if chunk.len() == 2 {
-                        format!("{} => {}", chunk[0], chunk[1])
-                    } else {
-                        chunk[0].to_string()
-                    }
-                })
-                .collect::<Vec<String>>()
-                .join(", ");
-
-            format!("{{ {} }}", joined_children)
+            format!("{{ {} }}", children.join(", "))
         };
 
         result.push_str(&children_value);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for MapKeyInitializer<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
+
+        let children = node
+            .children_vec()
+            .iter()
+            .map(|c| rewrite::<Expression>(c, shape, context))
+            .collect::<Vec<String>>().join(" => ");
+
+        result.push_str(&children);
         result
     }
 }
@@ -1728,11 +1732,42 @@ impl<'a, 'tree> Rewrite for ComparisonExpression<'a, 'tree> {
                     "date_literal" => DateLiteral,
                     "subquery" => SubQuery,
                     "function_expression" => FunctionExpression,
+                    "comparable_list" => ComparableList
                 )
             })
             .collect::<Vec<_>>()
             .join(" ");
         result.push_str(&joined_children);
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for ComparableList<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _source_code, _) = self.prepare(context);
+
+        let children = node
+        .children_vec()
+        .iter()
+        .map(|c| match_routing!(c, context, shape;
+                "field_identifier" => FieldIdentifier,
+                "bound_apex_expression" => BoundApexExpression,
+                "value_comparison_operator" => Value,
+                "string_literal" => Value,
+                "boolean" => Value,
+                "int" => Value,
+                "set_comparison_operator" => Value,
+                "null_literal" => Value,
+                "decimal" => Value,
+                "date" => Value,
+                "date_literal_with_param" => DateLiteralWithParam,
+                "date_literal" => DateLiteral,
+                "subquery" => SubQuery,
+                "function_expression" => FunctionExpression,
+        ))
+        .collect::<Vec<String>>().join(", ");
+
+        result.push_str(&format!("({})", children));
         result
     }
 }
