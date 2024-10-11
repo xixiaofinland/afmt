@@ -1,6 +1,6 @@
 [book]
-title = "AFMT Benchmark Results"
-authors = ["GitHub Actions"]
+title = "afmt site"
+authors = ["Xi Xiao"]
 src = "src"
 
 [output.html]

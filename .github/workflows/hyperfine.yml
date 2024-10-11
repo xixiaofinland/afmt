@@ -15,7 +15,8 @@ jobs:
 
     - name: Clean previous docs folder
       run: |
-        rm -rf docs  # Clean up existing docs to start fresh
+        rm -rf docs/src/hyperfine.md
+        # rm -rf docs/src/criterion.md
 
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
@@ -29,8 +30,8 @@ jobs:
     - name: Run hyperfine benchmark
       run: |
         mkdir -p docs/src
-        echo "| File | Line num | Mean [ms] | Min [ms] | Max [ms] |" > docs/src/results.md
-        echo "|------|----------|-----------|----------|----------|" >> docs/src/results.md
+        echo "| File | Line num | Mean [ms] | Min [ms] | Max [ms] |" > docs/src/hyperfine.md
+        echo "|------|----------|-----------|----------|----------|" >> docs/src/hyperfine.md
         for file in $(ls -S samples); do
           file_name=$(basename "$file" .cls)
           file_path="samples/$file"
@@ -46,28 +47,14 @@ jobs:
           max=$(grep -oP '(?<=\| )[0-9.]+(?= )' temp_results.md | head -3 | tail -1)
 
           if [ -n "$mean" ]; then
-            echo "| $file_link | $line_count | $mean | $min | $max |" >> docs/src/results.md
+            echo "| $file_link | $line_count | $mean | $min | $max |" >> docs/src/hyperfine.md
           else
-            echo "| $file_link | $line_count | N/A | N/A | N/A |" >> docs/src/results.md
+            echo "| $file_link | $line_count | N/A | N/A | N/A |" >> docs/src/hyperfine.md
           fi
         done
 
     - name: Install mdBook
       run: cargo install mdbook
-
-    - name: Setup mdBook project
-      run: |
-        cd docs
-        echo '[book]' > book.toml
-        echo 'title = "AFMT Benchmark Results"' >> book.toml
-        echo 'authors = ["GitHub Actions"]' >> book.toml
-        echo 'src = "src"' >> book.toml
-        echo '' >> book.toml
-        echo '[output.html]' >> book.toml
-        echo 'site-url = "/afmt/"' >> book.toml
-        echo '# Summary' > src/SUMMARY.md
-        echo '' >> src/SUMMARY.md
-        echo '- [Benchmark Results](results.md)' >> src/SUMMARY.md
 
     - name: Build mdBook
       run: |
