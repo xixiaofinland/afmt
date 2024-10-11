@@ -4,7 +4,7 @@ Afmt is written in **Rust** 🦀. It uses [tree-sitter apex parser](https://gith
 
 Note. this is a project in its early phase, don't expect to use it in production code yet.
 
-# Highlights
+# ✨ Highlights
 
 Blazingly fast - parsing speed of largest open-source Apex files [report](https://xixiaofinland.github.io/afmt/results.html)
 
