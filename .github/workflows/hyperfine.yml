@@ -26,21 +26,17 @@ jobs:
     - name: Install hyperfine
       run: sudo apt-get install hyperfine
 
-    - name: Download large Apex files
-      run: |
-        git clone https://github.com/xixiaofinland/large_apex_files
-
     - name: Run hyperfine benchmark
       run: |
         mkdir -p docs/src
         echo "| File | Line num | Mean [ms] | Min [ms] | Max [ms] |" > docs/src/results.md
         echo "|------|----------|-----------|----------|----------|" >> docs/src/results.md
-        for file in $(ls -S large_apex_files/files); do
+        for file in $(ls -S samples); do
           file_name=$(basename "$file" .cls)
-          file_path="large_apex_files/files/$file"
+          file_path="samples/$file"
           line_count=$(wc -l < "$file_path")
-          
-          file_url="https://github.com/xixiaofinland/large_apex_files/blob/main/files/$file"
+
+          file_url="https://github.com/${{ github.repository }}/blob/main/samples/$file"
           file_link="[$file_name]($file_url)"
 
           hyperfine --runs 100 --warmup 5 -i "./target/release/afmt -f $file_path" --export-markdown temp_results.md
@@ -77,6 +73,7 @@ jobs:
       run: |
         cd docs
         mdbook build
+
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
