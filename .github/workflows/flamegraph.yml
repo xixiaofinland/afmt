@@ -2,7 +2,7 @@ name: Flamegraph
 on:
   push:
     tags:
-      - 'v*'
+      - 'v100'
   workflow_dispatch:
 
 jobs:
