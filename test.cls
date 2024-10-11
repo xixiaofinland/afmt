@@ -1,6 +1,3 @@
-class TestClass {
-  {
-    List<SObject> records = [SELECT Id FROM Account WHERE Name IN ('test1', 'test2')];
-    records = [SELECT Id FROM Account WHERE Name IN :records];
-  }
-}
+@IsTest(SeeAllData=true) class AnnotedTrueParamClass
+{}
+

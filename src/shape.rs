@@ -3,8 +3,8 @@ use crate::config::Config;
 #[derive(Clone, Debug)]
 pub struct Shape {
     pub indent: Indent,
-    pub width: usize, // width = max_width - indent_width;
-    pub offset: usize,
+    pub width: usize,  // width = max_width - indent_width;
+    pub offset: usize, // space already taken in the line;
     pub standalone: bool,
     pub can_split: bool, // is it possible to switch to multi-line mode;
 }
@@ -26,7 +26,7 @@ impl Shape {
             width: config.max_width(),
             offset: 0,
             standalone: true,
-            can_split: true,
+            can_split: false,
         }
     }
 

@@ -79,32 +79,34 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push('(');
 
-        let formal_parameter_nodes = node
-            .try_c_by_n("parameters")
-            .map(|n| n.try_cs_by_k("formal_parameter"))
-            .unwrap_or_default();
+        let left = &result.rsplit('\n').next().unwrap_or(&result); // @annotation has its own line;
+        let right_size: usize = 3; // trailing `) {` size
+        shape.offset = left.len() + right_size;
 
-        let parameters_value: Vec<String> = formal_parameter_nodes
+        let formal_parameters_node = node.c_by_n("parameters");
+        let parameters_value: Vec<String> = formal_parameters_node
+            .try_cs_by_k("formal_parameter")
             .iter()
-            .map(|n| {
-                if let Some(ref a) = n.try_c_by_k("modifiers") {
-                    result.push_str(&rewrite::<Modifiers>(a, shape, context));
-                    if let Some(_) = a.try_c_by_k("modifier") {
-                        result.push(' ');
-                    }
+            .map(|c| {
+                let type_str = c.cv_by_n("type", source_code);
+                let name_str = c.cv_by_n("name", source_code);
+
+                if let Some(ref a) = c.try_c_by_k("modifiers") {
+                    format!(
+                        "{} {} {}",
+                        rewrite::<Modifiers>(a, shape, context),
+                        type_str,
+                        name_str
+                    )
+                } else {
+                    format!("{} {}", type_str, name_str)
                 }
-                let type_str = n.cv_by_n("type", source_code);
-                let name_str = n.cv_by_n("name", source_code);
-                format!("{} {}", type_str, name_str)
             })
             .collect();
 
         let params_single_line = parameters_value.join(", ");
 
-        shape.offset = result.len() + 3; // add trailing `) {` size
-
-        //if shape.offset + params_single_line.len() <= shape.width {
-        if shape.offset + params_single_line.len() <= 1000000 {
+        if shape.offset + params_single_line.len() <= shape.width {
             result.push_str(&params_single_line);
         } else {
             let param_shape = shape.copy_with_indent_increase(config);
@@ -880,6 +882,7 @@ impl<'a, 'tree> Rewrite for Modifiers<'a, 'tree> {
             })
             .collect::<Vec<_>>()
             .join(" ");
+
         result.push_str(&joined);
         result
     }
