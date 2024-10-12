@@ -82,7 +82,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         // rsplit() as @annotation has its own line;
         let left = &result.rsplit('\n').next().unwrap_or(&result).trim_start();
         let right_size: usize = 3; // trailing `) {` size
-        shape.offset = left.len() + right_size;
+        shape.offset += left.len() + right_size;
 
         let formal_parameters_node = node.c_by_n("parameters");
         let parameters_value: Vec<String> = formal_parameters_node
@@ -93,7 +93,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let params_single_line = parameters_value.join(", ");
 
-        if shape.single_line_only || shape.offset + params_single_line.len() <= shape.width {
+        if shape.single_line_only || shape.offset + params_single_line.len() <= config.max_width {
             result.push_str(&params_single_line);
         } else {
             let mut m_shape = shape
@@ -2109,7 +2109,7 @@ impl<'a, 'tree> Rewrite for SobjectReturn<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, _, _) = self.prepare(context);
         try_add_standalone_prefix(&mut result, shape, context);
 
         let left = node.c_by_n("left");

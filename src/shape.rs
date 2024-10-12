@@ -3,7 +3,7 @@ use crate::config::Config;
 #[derive(Clone, Debug)]
 pub struct Shape {
     pub indent: Indent,
-    pub width: usize,  // width = max_width - indent_width;
+    //pub width: usize,  // width = max_width - indent_width;
     pub offset: usize, // space already taken in the line;
     pub standalone: bool,
     pub single_line_only: bool, // is it possible to switch to multi-line mode;
@@ -13,7 +13,7 @@ impl Shape {
     pub fn clone_with_standalone(&self, stand_alone: bool) -> Self {
         Self {
             indent: self.indent,
-            width: self.width,
+            //width: self.width,
             offset: self.offset,
             standalone: stand_alone,
             single_line_only: self.single_line_only,
@@ -23,7 +23,7 @@ impl Shape {
     pub fn empty(config: &Config) -> Self {
         Self {
             indent: Indent::default(),
-            width: config.max_width(),
+            //width: config.max_width(),
             offset: 0,
             standalone: true,
             single_line_only: false,
@@ -39,7 +39,7 @@ impl Shape {
 
         Self {
             indent,
-            width,
+            //width,
             offset,
             standalone,
             single_line_only: can_split,
