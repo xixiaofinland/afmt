@@ -105,7 +105,13 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             let m_joined = formal_parameters_node
                 .try_cs_by_k("formal_parameter")
                 .iter()
-                .map(|c| rewrite::<FormalParameter>(&c, &mut m_shape, context))
+                .map(|c| {
+                    format!(
+                        "{}{}",
+                        &m_shape.indent.as_string(config),
+                        rewrite::<FormalParameter>(&c, &mut m_shape, context)
+                    )
+                })
                 .collect::<Vec<String>>()
                 .join(",\n");
 
@@ -2134,6 +2140,7 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
                 .single_line_only(true);
 
             result.push('\n');
+            add_prefix(&mut result, &mut m_shape, context);
 
             let left = node.c_by_n("left");
             let left_v = rewrite::<Expression>(&left, &mut m_shape, context);
@@ -2144,9 +2151,13 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
             let right = node.c_by_n("right");
             let right_v = rewrite::<Expression>(&right, &mut m_shape, context);
 
-            let multi_line_value = format!("{} {}\n{}", left_v, op_v, right_v);
+            let left_op = format!("{} {}", left_v, op_v);
+            result.push_str(&left_op);
 
-            result.push_str(&multi_line_value);
+            result.push('\n');
+            add_prefix(&mut result, &mut m_shape, context);
+
+            result.push_str(&right_v);
         }
 
         result
