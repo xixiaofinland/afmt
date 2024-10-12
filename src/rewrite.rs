@@ -2162,6 +2162,7 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
             result.push_str(&right_v);
 
             result.push('\n');
+            // FIXME: add decrease indent API?
             add_prefix(&mut result, shape, context);
         }
 
