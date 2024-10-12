@@ -93,20 +93,33 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let params_single_line = parameters_value.join(", ");
 
-        if shape.single_only || shape.offset + params_single_line.len() <= shape.width {
+        if shape.single_line_only || shape.offset + params_single_line.len() <= shape.width {
             result.push_str(&params_single_line);
         } else {
-            let m_shape = shape.clone_with_indent_increase(config);
+            let mut m_shape = shape
+                .clone_with_indent_increase(config)
+                .standalone(false)
+                .single_line_only(true);
             result.push('\n');
-            for (i, param) in parameters_value.iter().enumerate() {
-                result.push_str(&m_shape.indent.as_string(config));
-                result.push_str(param);
 
-                if i < parameters_value.len() - 1 {
-                    result.push(',');
-                }
-                result.push('\n');
-            }
+            let m_joined = formal_parameters_node
+                .try_cs_by_k("formal_parameter")
+                .iter()
+                .map(|c| rewrite::<FormalParameter>(&c, &mut m_shape, context))
+                .collect::<Vec<String>>()
+                .join(",\n");
+
+            //for (i, param) in parameters_value.iter().enumerate() {
+            //    result.push_str(&m_shape.indent.as_string(config));
+            //    result.push_str(param);
+            //
+            //    if i < parameters_value.len() - 1 {
+            //        result.push(',');
+            //    }
+            //    result.push('\n');
+            //}
+            result.push_str(&m_joined);
+            result.push('\n');
             result.push_str(&shape.indent.as_string(config));
         }
 
