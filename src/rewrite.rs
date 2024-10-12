@@ -105,13 +105,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             let m_joined = formal_parameters_node
                 .try_cs_by_k("formal_parameter")
                 .iter()
-                .map(|c| {
-                    format!(
-                        "{}",
-                        //&m_shape.indent.as_string(config),
-                        rewrite::<FormalParameter>(&c, &mut m_shape, context)
-                    )
-                })
+                .map(|c| rewrite::<FormalParameter>(&c, &mut m_shape, context))
                 .collect::<Vec<String>>()
                 .join(",\n");
 
