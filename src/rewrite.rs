@@ -2132,7 +2132,21 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
                 .clone_with_indent_increase()
                 .standalone(false)
                 .single_line_only(true);
+
             result.push('\n');
+
+            let left = node.c_by_n("left");
+            let left_v = rewrite::<Expression>(&left, &mut m_shape, context);
+
+            let op = node.c_by_n("operator");
+            let op_v = rewrite::<Operator>(&op, &mut m_shape, context);
+
+            let right = node.c_by_n("right");
+            let right_v = rewrite::<Expression>(&right, &mut m_shape, context);
+
+            let multi_line_value = format!("{} {}\n{}", left_v, op_v, right_v);
+
+            result.push_str(&multi_line_value);
         }
 
         result
