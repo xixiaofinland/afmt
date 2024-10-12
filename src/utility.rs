@@ -11,7 +11,7 @@ use tree_sitter::{Node, Parser, Tree};
 
 pub fn visit_root(context: &FmtContext) -> String {
     let mut result = String::new();
-    let shape = Shape::empty(context.config);
+    let shape = Shape::empty();
     let root = &context.ast_tree.root_node();
 
     let mut cursor = root.walk();
@@ -198,8 +198,13 @@ pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
     return false;
 }
 
-pub fn block_format<'tree>(nodes: Vec<&Node<'tree>>, shape: &Shape, config: &Config) -> String {
-    let mut result = String::new();
+//pub fn block_format<'tree>(nodes: Vec<&Node<'tree>>, shape: &Shape, config: &Config) -> String {
+//    let mut result = String::new();
+//
+//    result
+//}
 
-    result
+pub fn append_and_update_offset(s: &str, result: &mut String, shape: &mut Shape) {
+    result.push_str(s);
+    shape.offset += s.len();
 }

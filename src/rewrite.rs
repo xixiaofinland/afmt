@@ -460,7 +460,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, initial_context: &FmtContext) -> String {
         let (node, mut result, source_code, config) = self.prepare(initial_context);
 
-        let mut node = node.clone(); // lifetime challenge
+        let mut node = node.clone(); // clone() due to lifetime challenge;
         let updated_context =
             update_source_code_for_if_statement(&node, source_code).map(|updated_source_code| {
                 let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
@@ -486,6 +486,8 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         try_add_standalone_prefix(&mut result, shape, &context);
 
         result.push_str("if ");
+        shape.offset += 3; // `if `
+        shape.offset += 2; // ` {`
 
         let con = node.c_by_n("condition");
         result.push_str(&rewrite::<ParenthesizedExpression>(&con, shape, &context));
@@ -614,15 +616,19 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        format!(
-            "({})",
-            &self.node().apply_to_children_in_same_line(
-                ", ",
-                shape,
-                context,
-                |c, c_shape, c_context| c._visit(c_shape, c_context),
-            )
-        )
+        let (node, mut result, _, _) = self.prepare(context);
+        result.push('(');
+        shape.offset += 2; // `(` and `)`
+
+        result.push_str(&rewrite_shape::<Expression>(
+            &node.first_c(),
+            shape,
+            false,
+            context,
+        ));
+
+        result.push(')');
+        result
     }
 }
 
@@ -2123,7 +2129,9 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
         let right_v = rewrite::<Expression>(&right, shape, context);
 
         result.push_str(&format!("{} {} {}", left_v, op_v, right_v));
+
         try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
+
         result
     }
 }

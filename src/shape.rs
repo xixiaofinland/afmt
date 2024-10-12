@@ -5,7 +5,7 @@ pub struct Shape {
     pub indent: Indent,
     pub offset: usize, // space already taken in the line;
     pub standalone: bool,
-    pub single_line_only: bool, // is it possible to switch to multi-line mode;
+    pub single_line_only: bool, // no need to do multi-line split check anymore;
                                 //pub width: usize,  // width = max_width - indent_width;
 }
 
@@ -20,7 +20,7 @@ impl Shape {
         }
     }
 
-    pub fn empty(config: &Config) -> Self {
+    pub fn empty() -> Self {
         Self {
             indent: Indent::default(),
             offset: 0,
