@@ -31,14 +31,15 @@ pub fn visit_root(context: &FmtContext) -> String {
     result
 }
 
-pub fn try_add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
+pub fn try_add_standalone_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
     if shape.standalone {
         add_standalone_prefix(result, shape, context);
     }
 }
 
-pub fn add_standalone_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
+pub fn add_standalone_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
     add_indent(result, shape, context);
+    shape.offset = shape.indent.block_indent * context.config.indent_size();
 }
 
 pub fn add_prefix_for_comment(

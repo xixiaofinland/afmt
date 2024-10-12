@@ -97,7 +97,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             result.push_str(&params_single_line);
         } else {
             let mut m_shape = shape
-                .clone_with_indent_increase(config)
+                .clone_with_indent_increase()
                 .standalone(false)
                 .single_line_only(true);
             result.push('\n');
@@ -189,11 +189,7 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
         result.push_str("{\n");
 
         if node.named_child_count() > 0 {
-            add_indent(
-                &mut result,
-                &shape.clone_with_indent_increase(context.config),
-                context,
-            );
+            add_indent(&mut result, &shape.clone_with_indent_increase(), context);
         }
         result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
         if node.named_child_count() > 0 {
@@ -561,7 +557,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .clone_with_indent_increase(context.config)
+                .clone_with_indent_increase()
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
@@ -603,7 +599,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .clone_with_indent_increase(context.config)
+                .clone_with_indent_increase()
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
@@ -1058,7 +1054,7 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .clone_with_indent_increase(context.config)
+                .clone_with_indent_increase()
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
