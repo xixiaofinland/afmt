@@ -10,6 +10,7 @@ use crate::visit::Visitor;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
+use tree_sitter::Node;
 
 pub trait Rewrite {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String;
@@ -2137,30 +2138,68 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
             let mut m_shape = shape
                 .clone_with_indent_increase()
                 .standalone(false)
-                .single_line_only(true);
+                .single_line_only(false);
 
             result.push('\n');
             add_prefix(&mut result, &mut m_shape, context);
 
             let left = node.c_by_n("left");
-            let left_v = rewrite::<Expression>(&left, &mut m_shape, context);
+            result.push_str(&BinaryExpression::split_and_rewrite_directly(
+                &left,
+                &mut m_shape,
+                context,
+            ));
 
             let op = node.c_by_n("operator");
             let op_v = rewrite::<Operator>(&op, &mut m_shape, context);
-
-            let right = node.c_by_n("right");
-            let right_v = rewrite::<Expression>(&right, &mut m_shape, context);
-
-            let left_op = format!("{} {}", left_v, op_v);
-            result.push_str(&left_op);
+            result.push_str(&format!(" {}", &op_v));
 
             result.push('\n');
             add_prefix(&mut result, &mut m_shape, context);
 
+            let right = node.c_by_n("right");
+            let right_v = rewrite::<Expression>(&right, &mut m_shape, context);
             result.push_str(&right_v);
+
+            result.push('\n');
+            add_prefix(&mut result, shape, context);
         }
 
         result
+    }
+}
+
+impl<'a, 'tree> BinaryExpression<'a, 'tree> {
+    fn split_and_rewrite_directly(
+        node: &'a Node<'tree>,
+        shape: &mut Shape,
+        context: &FmtContext,
+    ) -> String {
+        if node.kind() == "binary_expression" {
+            // Directly split nested binary expressions without checking the width
+            let left = node.c_by_n("left");
+            let op = node.c_by_n("operator");
+            let right = node.c_by_n("right");
+
+            let mut result = String::new();
+
+            let left_v = BinaryExpression::split_and_rewrite_directly(&left, shape, context);
+            let op_v = rewrite::<Operator>(&op, shape, context);
+            let right_v = BinaryExpression::split_and_rewrite_directly(&right, shape, context);
+
+            result.push_str(&left_v);
+            result.push_str(&format!(" {}", &op_v));
+
+            result.push('\n');
+            add_prefix(&mut result, shape, context);
+
+            result.push_str(&right_v);
+
+            result
+        } else {
+            // For non-binary expressions (like method_invocation), just rewrite normally
+            rewrite::<Expression>(node, shape, context)
+        }
     }
 }
 
