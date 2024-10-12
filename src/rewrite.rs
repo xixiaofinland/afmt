@@ -179,7 +179,6 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
 impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
-        shape.standalone = false;
 
         if shape.standalone {
             add_indent(&mut result, shape, context);
