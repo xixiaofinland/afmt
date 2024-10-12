@@ -165,6 +165,10 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
         result.push_str("enum ");
         result.push_str(node.cv_by_n("name", source_code));
 
+        let left = &result;
+        let right_size: usize = 3; // trailing `) {` size
+        shape.offset = left.len() + right_size;
+
         let body = node.c_by_n("body");
         result.push_str(&rewrite_shape::<EnumBody>(&body, shape, false, context));
 
@@ -174,20 +178,10 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for EnumConstant<'a, 'tree> {
-    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
-        try_add_standalone_prefix(&mut result, shape, context);
-        result.push_str(node.v(source_code));
-        try_add_standalone_suffix(node, &mut result, shape, source_code);
-
-        result
-    }
-}
-
 impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
+        shape.standalone = false;
 
         if shape.standalone {
             add_indent(&mut result, shape, context);
@@ -211,6 +205,17 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
 
         add_indent(&mut result, shape, context);
         result.push('}');
+        result
+    }
+}
+
+impl<'a, 'tree> Rewrite for EnumConstant<'a, 'tree> {
+    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, source_code, _) = self.prepare(context);
+        try_add_standalone_prefix(&mut result, shape, context);
+        result.push_str(node.v(source_code));
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
+
         result
     }
 }
