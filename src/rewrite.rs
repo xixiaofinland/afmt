@@ -115,15 +115,6 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
                 .collect::<Vec<String>>()
                 .join(",\n");
 
-            //for (i, param) in parameters_value.iter().enumerate() {
-            //    result.push_str(&m_shape.indent.as_string(config));
-            //    result.push_str(param);
-            //
-            //    if i < parameters_value.len() - 1 {
-            //        result.push(',');
-            //    }
-            //    result.push('\n');
-            //}
             result.push_str(&m_joined);
             result.push('\n');
             result.push_str(&shape.indent.as_string(config));
