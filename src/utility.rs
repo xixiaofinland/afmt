@@ -1,4 +1,5 @@
 use crate::child::Accessor;
+use crate::config::Config;
 use crate::context::{language, FmtContext};
 use crate::rewrite::Rewrite;
 use crate::shape::Shape;
@@ -195,4 +196,10 @@ pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
         }
     }
     return false;
+}
+
+pub fn block_format<'tree>(nodes: Vec<&Node<'tree>>, shape: &Shape, config: &Config) -> String {
+    let mut result = String::new();
+
+    result
 }

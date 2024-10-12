@@ -30,7 +30,7 @@ impl Shape {
         }
     }
 
-    pub fn copy_with_indent_increase(&self, config: &Config) -> Self {
+    pub fn clone_with_indent_increase(&self, config: &Config) -> Self {
         let indent = self.indent.copy_with_increased_block_indent();
         let offset = indent.block_indent * config.indent_size();
         let width = config.max_width().saturating_sub(offset);

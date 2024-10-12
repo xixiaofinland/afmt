@@ -79,7 +79,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         result.push('(');
 
-        // @annotation has its own line;
+        // rsplit() as @annotation has its own line;
         let left = &result.rsplit('\n').next().unwrap_or(&result).trim_start();
         let right_size: usize = 3; // trailing `) {` size
         shape.offset = left.len() + right_size;
@@ -93,10 +93,10 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let params_single_line = parameters_value.join(", ");
 
-        if shape.offset + params_single_line.len() <= shape.width || shape.single_only {
+        if shape.single_only || shape.offset + params_single_line.len() <= shape.width {
             result.push_str(&params_single_line);
         } else {
-            let m_shape = shape.copy_with_indent_increase(config);
+            let m_shape = shape.clone_with_indent_increase(config);
             result.push('\n');
             for (i, param) in parameters_value.iter().enumerate() {
                 result.push_str(&m_shape.indent.as_string(config));
@@ -190,7 +190,7 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
         if node.named_child_count() > 0 {
             add_indent(
                 &mut result,
-                &shape.copy_with_indent_increase(context.config),
+                &shape.clone_with_indent_increase(context.config),
                 context,
             );
         }
@@ -547,7 +547,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .copy_with_indent_increase(context.config)
+                .clone_with_indent_increase(context.config)
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
@@ -589,7 +589,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .copy_with_indent_increase(context.config)
+                .clone_with_indent_increase(context.config)
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
@@ -773,9 +773,11 @@ impl<'a, 'tree> Rewrite for MapInitializer<'a, 'tree> {
         let children = node
             .children_vec()
             .iter()
-            .map(|c| match_routing!(c, context, shape;
-                "map_key_initializer" => MapKeyInitializer,
-            ))
+            .map(|c| {
+                match_routing!(c, context, shape;
+                    "map_key_initializer" => MapKeyInitializer,
+                )
+            })
             .collect::<Vec<String>>();
 
         let children_value = if children.is_empty() {
@@ -797,7 +799,8 @@ impl<'a, 'tree> Rewrite for MapKeyInitializer<'a, 'tree> {
             .children_vec()
             .iter()
             .map(|c| rewrite::<Expression>(c, shape, context))
-            .collect::<Vec<String>>().join(" => ");
+            .collect::<Vec<String>>()
+            .join(" => ");
 
         result.push_str(&children);
         result
@@ -1037,7 +1040,7 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .copy_with_indent_increase(context.config)
+                .clone_with_indent_increase(context.config)
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
@@ -1487,10 +1490,10 @@ impl<'a, 'tree> Rewrite for GroupByClause<'a, 'tree> {
             .map(|c| match c.kind() {
                 "," => ", ".into(),
                 _ => match_routing!(c, context, shape;
-                    "having_clause" => HavingClause,
-                    "field_identifier" => FieldIdentifier,
-                    "function_expression" => Value,
-                    ),
+                "having_clause" => HavingClause,
+                "field_identifier" => FieldIdentifier,
+                "function_expression" => Value,
+                ),
             })
             .collect::<Vec<_>>()
             .join("");
@@ -1749,25 +1752,28 @@ impl<'a, 'tree> Rewrite for ComparableList<'a, 'tree> {
         let (node, mut result, _source_code, _) = self.prepare(context);
 
         let children = node
-        .children_vec()
-        .iter()
-        .map(|c| match_routing!(c, context, shape;
-                "field_identifier" => FieldIdentifier,
-                "bound_apex_expression" => BoundApexExpression,
-                "value_comparison_operator" => Value,
-                "string_literal" => Value,
-                "boolean" => Value,
-                "int" => Value,
-                "set_comparison_operator" => Value,
-                "null_literal" => Value,
-                "decimal" => Value,
-                "date" => Value,
-                "date_literal_with_param" => DateLiteralWithParam,
-                "date_literal" => DateLiteral,
-                "subquery" => SubQuery,
-                "function_expression" => FunctionExpression,
-        ))
-        .collect::<Vec<String>>().join(", ");
+            .children_vec()
+            .iter()
+            .map(|c| {
+                match_routing!(c, context, shape;
+                        "field_identifier" => FieldIdentifier,
+                        "bound_apex_expression" => BoundApexExpression,
+                        "value_comparison_operator" => Value,
+                        "string_literal" => Value,
+                        "boolean" => Value,
+                        "int" => Value,
+                        "set_comparison_operator" => Value,
+                        "null_literal" => Value,
+                        "decimal" => Value,
+                        "date" => Value,
+                        "date_literal_with_param" => DateLiteralWithParam,
+                        "date_literal" => DateLiteral,
+                        "subquery" => SubQuery,
+                        "function_expression" => FunctionExpression,
+                )
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
 
         result.push_str(&format!("({})", children));
         result

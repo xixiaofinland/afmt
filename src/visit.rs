@@ -50,7 +50,7 @@ impl<'tree> Visitor<'tree> for Node<'tree> {
         F: FnMut(&Node<'tree>, &mut Shape, &FmtContext) -> String,
     {
         let mut result = String::new();
-        let shape_base = shape.copy_with_indent_increase(context.config);
+        let shape_base = shape.clone_with_indent_increase(context.config);
         let mut cursor = self.walk();
 
         let children = self
