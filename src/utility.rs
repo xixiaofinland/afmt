@@ -31,8 +31,8 @@ pub fn visit_root(context: &FmtContext) -> String {
     result
 }
 
-pub fn try_add_standalone_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
-    if shape.standalone {
+pub fn try_add_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
+    if shape.standalone || shape.single_line_only {
         add_standalone_prefix(result, shape, context);
     }
 }
@@ -205,7 +205,6 @@ pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
 //    result
 //}
 
-pub fn append_and_update_offset(s: &str, result: &mut String, shape: &mut Shape) {
-    result.push_str(s);
+pub fn update_offset(shape: &mut Shape, s: &str) {
     shape.offset += s.len();
 }
