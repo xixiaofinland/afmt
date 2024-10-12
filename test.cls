@@ -1,5 +1,3 @@
 public class Me {
-  public enum Season {
-    WINTER, SPRING, SUMMER, FALL
-  }
+  public enum Season { WINTER, SPRING, SUMMER, FALL }
 }

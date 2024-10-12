@@ -165,9 +165,7 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
         result.push_str("enum ");
         result.push_str(node.cv_by_n("name", source_code));
 
-        let left = &result;
-        let right_size: usize = 3; // trailing `) {` size
-        shape.offset = left.len() + right_size;
+        shape.offset = result.len();
 
         let body = node.c_by_n("body");
         result.push_str(&rewrite_shape::<EnumBody>(&body, shape, false, context));
