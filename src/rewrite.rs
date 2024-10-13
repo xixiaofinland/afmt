@@ -10,7 +10,6 @@ use crate::visit::Visitor;
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
-use tree_sitter::Node;
 
 pub trait Rewrite {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String;
@@ -94,7 +93,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let params_single_line = parameters_value.join(", ");
 
-        if shape.single_line_only || shape.offset + params_single_line.len() <= config.max_width {
+        if shape.single_line_only || shape.offset + params_single_line.len() <= shape.width {
             result.push_str(&params_single_line);
         } else {
             let mut m_shape = shape
@@ -305,18 +304,18 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_prefix(&mut result, shape, context);
 
-        let mut collector = String::new();
+        let mut buff = String::new();
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
-            collector.push_str(&rewrite::<Modifiers>(a, shape, context));
-            collector.push(' ');
+            buff.push_str(&rewrite::<Modifiers>(a, shape, context));
+            buff.push(' ');
         }
 
         let t = node.c_by_n("type"); // _unannotated_type
-        collector.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
-        collector.push(' ');
+        buff.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
+        buff.push(' ');
 
-        flush(&mut result, shape, collector);
+        flush(&mut result, shape, buff);
 
         let declarator_nodes = node.cs_by_n("declarator");
         let declarator_values: Vec<String> = declarator_nodes

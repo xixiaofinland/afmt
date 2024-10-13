@@ -3,10 +3,10 @@ use crate::config::Config;
 #[derive(Clone, Debug)]
 pub struct Shape {
     pub indent: Indent,
-    pub offset: usize, // space already taken in the line;
+    pub offset: usize, // space already taken by code (no indent consideration)
     pub standalone: bool,
     pub single_line_only: bool, // no need to do multi-line split check anymore;
-                                //pub width: usize,  // width = max_width - indent_width;
+    pub width: usize,           // width = max_width - indent_width;
 }
 
 impl Shape {
@@ -16,33 +16,35 @@ impl Shape {
             offset: self.offset,
             standalone: stand_alone,
             single_line_only: self.single_line_only,
-            //width: self.width,
+            width: self.width,
         }
     }
 
-    pub fn empty() -> Self {
+    pub fn empty(config: &Config) -> Self {
         Self {
             indent: Indent::default(),
             offset: 0,
             standalone: true,
             single_line_only: false,
-            //width: config.max_width(),
+            width: config.max_width(),
         }
     }
 
     pub fn clone_with_indent_increase(&self, config: &Config) -> Self {
         let indent = self.indent.copy_with_increased_block_indent();
-        let offset = indent.block_indent * config.indent_size();
+        let offset = 0;
         let standalone = self.standalone;
         let can_split = self.single_line_only;
-        //let width = config.max_width().saturating_sub(offset);
+        let width = config
+            .max_width()
+            .saturating_sub(indent.block_indent * config.indent_size());
 
         Self {
             indent,
             offset,
             standalone,
             single_line_only: can_split,
-            //width,
+            width,
         }
     }
 

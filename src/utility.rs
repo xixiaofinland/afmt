@@ -10,7 +10,7 @@ use tree_sitter::Node;
 
 pub fn visit_root(context: &FmtContext) -> String {
     let mut result = String::new();
-    let shape = Shape::empty();
+    let shape = Shape::empty(context.config);
     let root = &context.ast_tree.root_node();
 
     let mut cursor = root.walk();
@@ -38,7 +38,7 @@ pub fn try_add_prefix(result: &mut String, shape: &mut Shape, context: &FmtConte
 
 pub fn add_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
     add_indent(result, shape, context);
-    shape.offset = shape.indent_len(context.config);
+    //shape.offset = shape.indent_len(context.config);
 }
 
 pub fn add_prefix_for_comment(
