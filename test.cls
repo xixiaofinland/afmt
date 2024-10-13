@@ -1,7 +1,6 @@
-class Conditional {
+class TestClass {
   {
-    if ( isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBBB() || isC()) {
-      System.debug('true');
-    }
+    List<SObject> records = [SELECT Id FROM Account WHERE Name IN ('test1', 'test2')];
+    records = [SELECT Id FROM Account WHERE Name IN :records];
   }
 }
