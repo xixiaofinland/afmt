@@ -301,15 +301,18 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
         try_add_prefix(&mut result, shape, context);
 
+        let mut collector = String::new();
+
         if let Some(ref a) = node.try_c_by_k("modifiers") {
-            result.push_str(&rewrite::<Modifiers>(a, shape, context));
-            result.push(' ');
+            collector.push_str(&rewrite::<Modifiers>(a, shape, context));
+            collector.push(' ');
         }
 
         let t = node.c_by_n("type"); // _unannotated_type
-        result.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
+        collector.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
+        collector.push(' ');
 
-        result.push(' ');
+        flush(&mut result, shape, collector);
 
         let declarator_nodes = node.cs_by_n("declarator");
         let declarator_values: Vec<String> = declarator_nodes
