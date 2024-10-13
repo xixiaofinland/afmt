@@ -1370,25 +1370,26 @@ impl<'a, 'tree> Rewrite for MethodInvocation<'a, 'tree> {
         try_add_pref_and_offset(&mut result, shape, context);
 
         if let Some(c) = node.try_c_by_n("object") {
-            result.push_str(c.v(source_code));
+            result.fmt_push(c.v(source_code), shape);
 
             let current_node = c.next_named_sibling();
             if let Some(cur) = current_node {
                 if cur.kind() == "safe_navigaion_operator" {
-                    result.push_str(cur.v(source_code));
+                    result.fmt_push(cur.v(source_code), shape);
                 } else {
-                    result.push('.');
+                    result.fmt_push('.', shape);
                 }
             }
         };
 
         let name = node.cv_by_n("name", source_code);
-        result.push_str(name);
+        result.fmt_push(name, shape);
 
         if let Some(a) = node.try_c_by_n("arguments") {
             result.push_str(&rewrite::<ArgumentList>(&a, shape, context));
         }
-        try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
+
+        try_add_standalone_suffix(node, &mut result, shape, source_code);
 
         result
     }
