@@ -81,10 +81,10 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         // rsplit() as @annotation has its own line;
         let left = &result.rsplit('\n').next().unwrap_or(&result).trim_start();
-        update_offset_with(&left, shape);
+        shape.update_offset_with(&left);
 
         let right_size: usize = 3; // trailing `) {` size
-        update_offset(right_size, shape);
+        shape.update_offset(right_size);
 
         let formal_parameters_node = node.c_by_n("parameters");
         let parameters_value: Vec<String> = formal_parameters_node
@@ -315,7 +315,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         result.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
         result.push(' ');
 
-        update_offset_with(&mut result, shape);
+        shape.update_offset_with(&result);
 
         let declarator_nodes = node.cs_by_n("declarator");
         let declarator_values: Vec<String> = declarator_nodes

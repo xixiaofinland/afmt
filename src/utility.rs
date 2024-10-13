@@ -204,14 +204,6 @@ pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
 //    result
 //}
 
-pub fn update_offset(n: usize, shape: &mut Shape) {
-    shape.offset += n;
-}
-
-pub fn update_offset_with(s: &str, shape: &mut Shape) {
-    shape.offset += s.len();
-}
-
 pub fn split_and_rewrite_directly<'a, 'tree>(
     node: &'a Node<'tree>,
     shape: &mut Shape,

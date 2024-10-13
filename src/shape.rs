@@ -61,6 +61,14 @@ impl Shape {
     pub fn indent_len(&self, config: &Config) -> usize {
         self.indent.block_indent * config.indent_size()
     }
+
+    pub fn update_offset(&mut self, n: usize) {
+        self.offset += n;
+    }
+
+    pub fn update_offset_with(&mut self, s: &str) {
+        self.offset += s.len();
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
