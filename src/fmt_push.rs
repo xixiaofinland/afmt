@@ -21,6 +21,15 @@ impl Pushable for char {
     }
 }
 
+impl Pushable for &String {
+    #[inline]
+    fn push_to_string(self, s: &mut String) -> usize {
+        let len = self.len();
+        s.push_str(self);
+        len
+    }
+}
+
 pub trait FmtPush {
     fn fmt_push<P: Pushable>(&mut self, item: P, shape: &mut Shape);
 }

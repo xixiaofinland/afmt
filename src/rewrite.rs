@@ -1,5 +1,6 @@
 use crate::child::Accessor;
 use crate::context::FmtContext;
+use crate::fmt_push::FmtPush;
 use crate::match_routing;
 use crate::route::EXP_MAP;
 use crate::shape::Shape;
@@ -307,15 +308,16 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
         try_add_prefix(&mut result, shape, context);
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
-            result.push_str(&rewrite::<Modifiers>(a, shape, context));
-            result.push(' ');
+            result.fmt_push(&rewrite::<Modifiers>(a, shape, context), shape);
+            result.fmt_push(' ', shape);
         }
 
         let t = node.c_by_n("type"); // _unannotated_type
-        result.push_str(&rewrite_shape::<Expression>(&t, shape, false, context));
-        result.push(' ');
-
-        shape.update_offset_with(&result);
+        result.fmt_push(
+            &rewrite_shape::<Expression>(&t, shape, false, context),
+            shape,
+        );
+        result.fmt_push(' ', shape);
 
         let declarator_nodes = node.cs_by_n("declarator");
         let declarator_values: Vec<String> = declarator_nodes
@@ -323,7 +325,7 @@ impl<'a, 'tree> Rewrite for LocalVariableDeclaration<'a, 'tree> {
             .map(|d| rewrite::<VariableDeclarator>(d, shape, context))
             .collect();
 
-        result.push_str(&declarator_values.join(", "));
+        result.fmt_push(&declarator_values.join(", "), shape);
 
         try_add_standalone_suffix(node, &mut result, shape, source_code);
         result
