@@ -1459,7 +1459,7 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
                 .iter()
                 .map(|c| {
                     let mut m_shape = m_shape_base.clone();
-                    let m_shape_ref: &mut _ = &mut m_shape;
+                    let m_shape_ref = &mut m_shape;
 
                     match_routing!(c, context, m_shape_ref;
                         "select_clause" => SelectClause,
