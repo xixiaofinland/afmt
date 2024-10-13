@@ -204,9 +204,8 @@ pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
 //    result
 //}
 
-pub fn flush(result: &mut String, shape: &mut Shape, collector: String) {
-    result.push_str(&collector);
-    shape.offset += collector.len();
+pub fn update_offset(s: &mut String, shape: &mut Shape) {
+    shape.offset += s.len();
 }
 
 pub fn split_and_rewrite_directly<'a, 'tree>(
