@@ -1,5 +1,5 @@
-class TestClass {
+class T {
   {
-    List<SObject> records = [SELECT Id FROM Account WHERE Name = 'test12345678'];
+    [SELECT Id FROM Account ORDER BY Name DESC NULLS LAST, Phone ASC, Id NULLS LAST, Owner.Name DESC];
   }
 }
