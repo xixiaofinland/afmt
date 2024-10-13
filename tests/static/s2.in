@@ -1,4 +1,4 @@
-public class Me {
+public class M {
      {
           List<Account> accs 
         = [   SELECT 
