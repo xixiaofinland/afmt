@@ -33,7 +33,7 @@ pub fn visit_root(context: &FmtContext) -> String {
 pub fn try_add_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
     if shape.standalone {
         add_prefix(result, shape, context);
-        shape.add_offset(1); // the line trailing `;` is taken into consideration;
+        shape.add_offset(1); // the possible line trailing `;`
     }
 }
 
