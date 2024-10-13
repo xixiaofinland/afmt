@@ -1,5 +1,11 @@
-class T {
-  {
-    [SELECT Id FROM Account ORDER BY Name DESC NULLS LAST, Phone ASC, Id NULLS LAST, Owner.Name DESC];
-  }
+public class Me {
+     {
+          List<Account> accs 
+        = [   SELECT 
+        Id     FROM     Account
+     WHERE  
+               
+               Name   = : ('x'   + 'xx'  )   ]
+      ;
+     }
 }
