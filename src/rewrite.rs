@@ -98,7 +98,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
             result.push_str(&params_single_line);
         } else {
             let mut m_shape = shape
-                .clone_with_indent_increase()
+                .clone_with_indent_increase(config)
                 .standalone(false)
                 .single_line_only(true);
             result.push('\n');
@@ -182,7 +182,7 @@ impl<'a, 'tree> Rewrite for EnumDeclaration<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, source_code, config) = self.prepare(context);
 
         if shape.standalone {
             add_indent(&mut result, shape, context);
@@ -193,7 +193,11 @@ impl<'a, 'tree> Rewrite for EnumBody<'a, 'tree> {
         result.push_str("{\n");
 
         if node.named_child_count() > 0 {
-            add_indent(&mut result, &shape.clone_with_indent_increase(), context);
+            add_indent(
+                &mut result,
+                &shape.clone_with_indent_increase(config),
+                context,
+            );
         }
         result.push_str(&node.try_csv_by_k("enum_constant", source_code).join(", "));
         if node.named_child_count() > 0 {
@@ -532,7 +536,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, source_code, config) = self.prepare(context);
         try_add_prefix(&mut result, shape, context);
 
         result.push_str("for (");
@@ -564,7 +568,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .clone_with_indent_increase()
+                .clone_with_indent_increase(config)
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
@@ -580,7 +584,7 @@ impl<'a, 'tree> Rewrite for ForStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, source_code, config) = self.prepare(context);
         try_add_prefix(&mut result, shape, context);
 
         result.push_str("for (");
@@ -606,7 +610,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .clone_with_indent_increase()
+                .clone_with_indent_increase(config)
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
             result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
@@ -1042,7 +1046,7 @@ impl<'a, 'tree> Rewrite for DoStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+        let (node, mut result, source_code, config) = self.prepare(context);
         try_add_prefix(&mut result, shape, context);
 
         result.push_str("while ");
@@ -1061,7 +1065,7 @@ impl<'a, 'tree> Rewrite for WhileStatement<'a, 'tree> {
         } else {
             result.push_str(" {\n");
             let mut c_shape = shape
-                .clone_with_indent_increase()
+                .clone_with_indent_increase(config)
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
 
@@ -2139,7 +2143,7 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
             try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         } else {
             let mut m_shape = shape
-                .clone_with_indent_increase()
+                .clone_with_indent_increase(config)
                 .standalone(false)
                 .single_line_only(false);
 
