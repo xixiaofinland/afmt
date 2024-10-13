@@ -56,6 +56,10 @@ impl Shape {
         self.standalone = flag;
         self
     }
+
+    pub fn indent_len(&self, config: &Config) -> usize {
+        self.indent.block_indent * config.indent_size()
+    }
 }
 
 #[derive(Copy, Clone, Debug)]

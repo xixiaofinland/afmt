@@ -38,7 +38,7 @@ pub fn try_add_prefix(result: &mut String, shape: &mut Shape, context: &FmtConte
 
 pub fn add_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
     add_indent(result, shape, context);
-    shape.offset = shape.indent.block_indent * context.config.indent_size();
+    shape.offset = shape.indent_len(context.config);
 }
 
 pub fn add_prefix_for_comment(
