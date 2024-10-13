@@ -214,10 +214,7 @@ pub fn split_and_rewrite_directly<'a, 'tree>(
     context: &FmtContext,
 ) -> String {
     match node.kind() {
-        "binary_expression" => {
-            let b_exp = BinaryExpression::new(node);
-            b_exp.rewrite_multi_line(shape, context)
-        }
+        "binary_expression" => BinaryExpression::new(node).rewrite_multi_line(shape, context),
         _ => rewrite::<Expression>(node, shape, context),
     }
 }
