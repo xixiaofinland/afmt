@@ -1,5 +1,6 @@
-class TestClass {
-  {
-    List<SObject> records = [SELECT Id FROM Account WHERE Name = 'test12345678'];
+class LongParam {
+  public static String sayHelloWithModifier(String helloStringA, Integer inte) {
+    return null;
   }
 }
+

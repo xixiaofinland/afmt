@@ -63,6 +63,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, source_code, config) = self.prepare(context);
         try_add_prefix(&mut result, shape, context);
+        shape.sub_offset(1); // special case: it has no line ending `;`
 
         if let Some(ref a) = node.try_c_by_k("modifiers") {
             result.push_str(&rewrite::<Modifiers>(a, shape, context));
@@ -1403,7 +1404,6 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
 
         let suf_size: usize = 1; // `]`
         shape.add_offset(suf_size);
-        eprintln!("gopro[31]: rewrite.rs:1405: shape={:#?}", shape);
 
         result.fmt_push(
             &match_routing!(c, context, shape;
@@ -1419,14 +1419,14 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     }
 }
 
-impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
-    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
-        let c = node.first_c();
-        result.push_str(&rewrite::<SoqlQueryBody>(&c, shape, context));
-        result
-    }
-}
+//impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
+//    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
+//        let (node, mut result, _, _) = self.prepare(context);
+//        let c = node.first_c();
+//        result.push_str(&rewrite::<SoqlQueryBody>(&c, shape, context));
+//        result
+//    }
+//}
 
 impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
@@ -1940,7 +1940,7 @@ impl<'a, 'tree> Rewrite for SoslQuery<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);
         let c = node.first_c();
-        result.push_str(&rewrite::<SoqlQuery>(&c, shape, context));
+        result.push_str(&rewrite::<SoqlQueryBody>(&c, shape, context));
         result
     }
 }
