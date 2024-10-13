@@ -2,6 +2,7 @@ pub mod args;
 mod child;
 pub mod config;
 mod context;
+mod fmt_push;
 mod macros;
 mod rewrite;
 mod route;
