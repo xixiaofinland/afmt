@@ -1,13 +1,12 @@
 use crate::child::Accessor;
-use crate::config::Config;
-use crate::context::{language, FmtContext};
+use crate::context::FmtContext;
 use crate::rewrite::Rewrite;
 use crate::shape::Shape;
-use crate::struct_def::{FromNode, IfStatement};
+use crate::struct_def::{BinaryExpression, Expression, FromNode};
 use crate::visit::Visitor;
 #[allow(unused_imports)]
 use log::debug;
-use tree_sitter::{Node, Parser, Tree};
+use tree_sitter::Node;
 
 pub fn visit_root(context: &FmtContext) -> String {
     let mut result = String::new();
@@ -207,4 +206,18 @@ pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
 
 pub fn update_offset(shape: &mut Shape, s: &str) {
     shape.offset += s.len();
+}
+
+pub fn split_and_rewrite_directly<'a, 'tree>(
+    node: &'a Node<'tree>,
+    shape: &mut Shape,
+    context: &FmtContext,
+) -> String {
+    match node.kind() {
+        "binary_expression" => {
+            let b_exp = BinaryExpression::new(node);
+            b_exp.rewrite_multi_line(shape, context)
+        }
+        _ => rewrite::<Expression>(node, shape, context),
+    }
 }

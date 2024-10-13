@@ -2142,27 +2142,8 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
 
             result.push('\n');
             add_prefix(&mut result, &mut m_shape, context);
-
-            let left = node.c_by_n("left");
-            result.push_str(&BinaryExpression::split_and_rewrite_directly(
-                &left,
-                &mut m_shape,
-                context,
-            ));
-
-            let op = node.c_by_n("operator");
-            let op_v = rewrite::<Operator>(&op, &mut m_shape, context);
-            result.push_str(&format!(" {}", &op_v));
-
+            result.push_str(&self.rewrite_multi_line(&mut m_shape, context));
             result.push('\n');
-            add_prefix(&mut result, &mut m_shape, context);
-
-            let right = node.c_by_n("right");
-            let right_v = rewrite::<Expression>(&right, &mut m_shape, context);
-            result.push_str(&right_v);
-
-            result.push('\n');
-            // FIXME: add decrease indent API?
             add_prefix(&mut result, shape, context);
         }
 
@@ -2171,36 +2152,29 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
 }
 
 impl<'a, 'tree> BinaryExpression<'a, 'tree> {
-    fn split_and_rewrite_directly(
-        node: &'a Node<'tree>,
-        shape: &mut Shape,
-        context: &FmtContext,
-    ) -> String {
-        if node.kind() == "binary_expression" {
-            // Directly split nested binary expressions without checking the width
-            let left = node.c_by_n("left");
-            let op = node.c_by_n("operator");
-            let right = node.c_by_n("right");
+    pub fn rewrite_multi_line(&self, shape: &mut Shape, context: &FmtContext) -> String {
+        let (node, mut result, _, _) = self.prepare(context);
 
-            let mut result = String::new();
+        let left = node.c_by_n("left");
+        result.push_str(&split_and_rewrite_directly(
+            &left,
+            &mut shape.clone(),
+            context,
+        ));
 
-            let left_v = BinaryExpression::split_and_rewrite_directly(&left, shape, context);
-            let op_v = rewrite::<Operator>(&op, shape, context);
-            let right_v = BinaryExpression::split_and_rewrite_directly(&right, shape, context);
+        let op = node.c_by_n("operator");
+        let op_v = rewrite::<Operator>(&op, shape, context);
+        result.push_str(&format!(" {}", &op_v));
 
-            result.push_str(&left_v);
-            result.push_str(&format!(" {}", &op_v));
+        result.push('\n');
+        add_prefix(&mut result, shape, context);
 
-            result.push('\n');
-            add_prefix(&mut result, shape, context);
+        let right = node.c_by_n("right");
+        result.push_str(&split_and_rewrite_directly(&right, shape, context));
+        //let right_v = rewrite::<Expression>(&right, &mut m_shape, context);
+        //result.push_str(&right_v);
 
-            result.push_str(&right_v);
-
-            result
-        } else {
-            // For non-binary expressions (like method_invocation), just rewrite normally
-            rewrite::<Expression>(node, shape, context)
-        }
+        result
     }
 }
 
