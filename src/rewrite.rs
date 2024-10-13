@@ -1418,15 +1418,6 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
     }
 }
 
-//impl<'a, 'tree> Rewrite for SoqlQuery<'a, 'tree> {
-//    fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-//        let (node, mut result, _, _) = self.prepare(context);
-//        let c = node.first_c();
-//        result.push_str(&rewrite::<SoqlQueryBody>(&c, shape, context));
-//        result
-//    }
-//}
-
 impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
         let (node, mut result, _, _) = self.prepare(context);

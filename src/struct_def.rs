@@ -76,7 +76,6 @@ def_struct!(
     AccessorList,
     AccessorDeclaration,
     QueryExpression,
-    SoqlQuery,
     SoqlQueryBody,
     SoslQuery,
     SubQuery,
