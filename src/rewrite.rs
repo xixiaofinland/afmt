@@ -1420,9 +1420,9 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
+        let (node, mut result, _, config) = self.prepare(context);
 
-        let joined_children = node
+        let single_line_soql = node
             .children_vec()
             .iter()
             .map(|c| {
@@ -1441,17 +1441,48 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
             })
             .collect::<Vec<_>>()
             .join(" ");
-        result.push_str(&joined_children);
-        result
 
-        //all_rows_clause
-        //for_clause
-        //group_by_clause
-        //limit_clause
-        //order_by_clause
-        //update_clause
-        //using_clause
-        //with_clause
+        if shape.single_line_only || shape.offset + single_line_soql.len() <= shape.width {
+            result.fmt_push(&single_line_soql, shape);
+        } else {
+            let m_shape_base = shape
+                .clone_with_indent_increase(config)
+                .standalone(false)
+                .single_line_only(false);
+            let m_indent = m_shape_base.indent.as_string(config);
+
+            result.push('\n');
+            add_prefix(&mut result, &m_shape_base, context);
+
+            let multi_line_soql = node
+                .children_vec()
+                .iter()
+                .map(|c| {
+                    let mut m_shape = m_shape_base.clone();
+                    let m_shape_ref: &mut _ = &mut m_shape;
+
+                    match_routing!(c, context, m_shape_ref;
+                        "select_clause" => SelectClause,
+                        "from_clause" => FromClause,
+                        "where_clause" => WhereCluase,
+                        "limit_clause" => LimitClause,
+                        "with_clause" => WithClause,
+                        "offset_clause" => OffsetClause,
+                        "all_rows_clause" => AllRowClause,
+                        "order_by_clause" => OrderByClause,
+                        "group_by_clause" => GroupByClause,
+                        "for_clause" => ForClause,
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join(&format!("\n{}", m_indent));
+
+            result.fmt_push(&multi_line_soql, shape);
+
+            result.push('\n');
+            add_prefix(&mut result, shape, context);
+        }
+        result
     }
 }
 

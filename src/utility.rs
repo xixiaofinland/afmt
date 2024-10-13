@@ -43,7 +43,7 @@ pub fn try_add_pref_and_offset(result: &mut String, shape: &mut Shape, context: 
     }
 }
 
-pub fn add_prefix(result: &mut String, shape: &mut Shape, context: &FmtContext) {
+pub fn add_prefix(result: &mut String, shape: &Shape, context: &FmtContext) {
     add_indent(result, shape, context);
     //shape.offset = shape.indent_len(context.config);
 }
