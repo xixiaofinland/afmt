@@ -2171,8 +2171,6 @@ impl<'a, 'tree> BinaryExpression<'a, 'tree> {
 
         let right = node.c_by_n("right");
         result.push_str(&split_and_rewrite_directly(&right, shape, context));
-        //let right_v = rewrite::<Expression>(&right, &mut m_shape, context);
-        //result.push_str(&right_v);
 
         result
     }
