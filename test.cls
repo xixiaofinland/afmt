@@ -1,5 +1,7 @@
-class S {
+class Conditional {
   {
-    System.debug('Matches count: ' + city?.countMatches('San Francisco') ?? 100000000);
+    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBBBB()) {
+      System.debug('true');
+    }
   }
 }

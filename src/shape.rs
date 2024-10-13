@@ -6,7 +6,7 @@ pub struct Shape {
     pub offset: usize, // space already taken by code (no indent consideration)
     pub standalone: bool,
     pub single_line_only: bool, // no need to do multi-line split check anymore;
-    pub width: usize,           // width = max_width - indent_width;
+                                //pub width: usize,           // width = max_width - indent_width;
 }
 
 impl Shape {
@@ -16,7 +16,7 @@ impl Shape {
             offset: self.offset,
             standalone: stand_alone,
             single_line_only: self.single_line_only,
-            width: self.width,
+            //width: self.width,
         }
     }
 
@@ -26,8 +26,13 @@ impl Shape {
             offset: 0,
             standalone: true,
             single_line_only: false,
-            width: config.max_width(),
+            //width: config.max_width(),
         }
+    }
+    pub fn width(&self, config: &Config) -> usize {
+        config
+            .max_width()
+            .saturating_sub(self.indent.block_indent * config.indent_size())
     }
 
     pub fn clone_with_indent_increase(&self, config: &Config) -> Self {
@@ -35,16 +40,16 @@ impl Shape {
         let offset = 0;
         let standalone = self.standalone;
         let can_split = self.single_line_only;
-        let width = config
-            .max_width()
-            .saturating_sub(indent.block_indent * config.indent_size());
+        //let width = config
+        //    .max_width()
+        //    .saturating_sub(indent.block_indent * config.indent_size());
 
         Self {
             indent,
             offset,
             standalone,
             single_line_only: can_split,
-            width,
+            //width,
         }
     }
 

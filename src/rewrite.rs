@@ -96,7 +96,8 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
 
         let params_single_line = parameters_value.join(", ");
 
-        if shape.single_line_only || shape.offset + params_single_line.len() <= shape.width {
+        if shape.single_line_only || shape.offset + params_single_line.len() <= shape.width(config)
+        {
             result.push_str(&params_single_line);
         } else {
             let mut m_shape = shape
@@ -491,11 +492,10 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
 
         // possible re-structure done;
 
-        try_add_pref_and_offset(&mut result, shape, &context);
+        try_add_pref(&mut result, shape, &context);
 
-        result.push_str("if ");
-        shape.offset += 3; // `if `
-        shape.offset += 2; // ` {`
+        result.fmt_push("if ", shape);
+        shape.add_offset(2); // ` {`
 
         let con = node.c_by_n("condition");
         result.push_str(&rewrite::<ParenthesizedExpression>(&con, shape, &context));
@@ -624,9 +624,10 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
 
 impl<'a, 'tree> Rewrite for ParenthesizedExpression<'a, 'tree> {
     fn rewrite(&self, shape: &mut Shape, context: &FmtContext) -> String {
-        let (node, mut result, _, _) = self.prepare(context);
-        result.push('(');
-        shape.offset += 2; // `(` and `)`
+        let (node, mut result, _, config) = self.prepare(context);
+
+        result.fmt_push('(', shape);
+        shape.add_offset(1); // `)`
 
         result.push_str(&rewrite_shape::<Expression>(
             &node.first_c(),
@@ -1443,7 +1444,7 @@ impl<'a, 'tree> Rewrite for SoqlQueryBody<'a, 'tree> {
             .collect::<Vec<_>>()
             .join(" ");
 
-        if shape.single_line_only || shape.offset + single_line_soql.len() <= shape.width {
+        if shape.single_line_only || shape.offset + single_line_soql.len() <= shape.width(config) {
             result.fmt_push(&single_line_soql, shape);
         } else {
             let m_shape_base = shape
@@ -2160,18 +2161,18 @@ impl<'a, 'tree> Rewrite for BinaryExpression<'a, 'tree> {
         try_add_pref_and_offset(&mut result, shape, context);
 
         let left = node.c_by_n("left");
-        let left_v = rewrite::<Expression>(&left, shape, context);
+        let left_v = rewrite::<Expression>(&left, &mut shape.clone(), context);
 
         // `operator`is a hidden/un-named node, but has field_name so `cv_by_n()` works
         let op = node.c_by_n("operator");
-        let op_v = rewrite::<Operator>(&op, shape, context);
+        let op_v = rewrite::<Operator>(&op, &mut shape.clone(), context);
 
         let right = node.c_by_n("right");
-        let right_v = rewrite::<Expression>(&right, shape, context);
+        let right_v = rewrite::<Expression>(&right, &mut shape.clone(), context);
 
         let single_line_value = format!("{} {} {}", left_v, op_v, right_v);
 
-        if shape.single_line_only || shape.offset + single_line_value.len() <= config.max_width {
+        if shape.single_line_only || shape.offset + single_line_value.len() <= shape.width(config) {
             result.push_str(&single_line_value);
             try_add_standalone_suffix(node, &mut result, shape, &context.source_code);
         } else {
