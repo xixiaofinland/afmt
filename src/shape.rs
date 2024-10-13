@@ -62,8 +62,12 @@ impl Shape {
         self.indent.block_indent * config.indent_size()
     }
 
-    pub fn update_offset(&mut self, n: usize) {
+    pub fn add_offset(&mut self, n: usize) {
         self.offset += n;
+    }
+
+    pub fn sub_offset(&mut self, n: usize) {
+        self.offset = self.offset.saturating_sub(n);
     }
 
     pub fn update_offset_with(&mut self, s: &str) {

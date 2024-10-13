@@ -85,7 +85,7 @@ impl<'a, 'tree> Rewrite for MethodDeclaration<'a, 'tree> {
         shape.update_offset_with(&left);
 
         let right_size: usize = 3; // trailing `) {` size
-        shape.update_offset(right_size);
+        shape.add_offset(right_size);
 
         let formal_parameters_node = node.c_by_n("parameters");
         let parameters_value: Vec<String> = formal_parameters_node
@@ -449,10 +449,10 @@ impl<'a, 'tree> Rewrite for VariableDeclarator<'a, 'tree> {
         let (node, mut result, source_code, _) = self.prepare(context);
 
         let name = node.cv_by_n("name", source_code);
-        result.push_str(name);
+        result.fmt_push(name, shape);
 
         if let Some(v) = node.try_c_by_n("value") {
-            result.push_str(" = ");
+            result.fmt_push(" = ", shape);
             let mut c_shape = shape.clone_with_standalone(false);
             if v.kind() == "array_initializer" {
                 result.push_str(&rewrite::<ArrayInitializer>(&v, &mut c_shape, context));
@@ -1399,12 +1399,22 @@ impl<'a, 'tree> Rewrite for QueryExpression<'a, 'tree> {
         let (node, mut result, _, _) = self.prepare(context);
 
         let c = node.first_c();
-        result.push_str("[");
-        result.push_str(&match_routing!(c, context, shape;
-            "sosl_query_body" => SoslQueryBody,
-            "soql_query_body" => SoqlQueryBody,
-        ));
-        result.push_str("]");
+        result.fmt_push('[', shape);
+
+        let suf_size: usize = 1; // `]`
+        shape.add_offset(suf_size);
+        eprintln!("gopro[31]: rewrite.rs:1405: shape={:#?}", shape);
+
+        result.fmt_push(
+            &match_routing!(c, context, shape;
+                "sosl_query_body" => SoslQueryBody,
+                "soql_query_body" => SoqlQueryBody,
+            ),
+            shape,
+        );
+        shape.sub_offset(suf_size);
+        result.fmt_push("]", shape);
+
         result
     }
 }
