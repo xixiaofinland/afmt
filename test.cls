@@ -1,7 +1,9 @@
-class Conditional {
-  {
-    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBBBB()) {
-      System.debug('true');
-    }
-  }
-}
+public class A{{
+
+interface B // Comment
+{ }
+
+interface  // Comment
+B { }
+
+}}
