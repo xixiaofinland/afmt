@@ -1,9 +1,4 @@
-public class A{{
-
-interface B // Comment
-{ }
-
-interface  // Comment
-B { }
-
-}}
+public interface OuterInterface extends ExtendedInterface {
+  void methodOne();
+  void methodTwo();
+}
