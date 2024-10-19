@@ -1,13 +1,23 @@
 use std::fmt::Debug;
 use tree_sitter::Node;
 
-use crate::{child::Accessor, config::Config};
+use crate::{child::Accessor, config::Config, utility::is_processed};
 
-trait Rich: Debug {
+pub trait RichNode: Debug {
     fn enrich(&mut self, shape: &EShape, context: &EContext, comments: &mut Vec<Comment>);
     //fn enrich_comments(&mut self);
     //fn enrich_data(&mut self);
     //fn rewrite(&mut self) -> String;
+}
+
+#[derive(Debug)]
+pub struct ClassNode<'a, 'tree> {
+    pub inner: &'a Node<'tree>,
+    pub field_name: Option<String>, // Stores the field_name from ts-apex API
+    pub rewritten: String,          // The raw printed result without wrapping
+    pub comments: CommentBuckets,
+    pub children: Vec<Box<dyn RichNode>>,
+    pub format_info: FormatInfo,
 }
 
 #[derive(Debug, Default)]
@@ -16,29 +26,33 @@ struct FormatInfo {
     pub indent_level: usize,
     pub force_break_before: bool,
     pub force_break_after: bool,
-    pub offset: usize,
+    //pub offset: usize,
 }
 
 #[derive(Debug, Default)]
 struct CommentBuckets {
     pub pre_comments: Vec<Comment>,
-    pub inline_comments: Vec<Comment>,
+    //pub inline_comments: Vec<Comment>,
     pub post_comments: Vec<Comment>,
 }
 
 #[derive(Debug)]
 pub struct Comment {
-    //pub content: String,
-    pub is_processed: bool,
+    pub id: usize,
+    pub content: String,
     pub comment_type: CommentType,
+    pub is_processed: bool,
 }
 
 impl Comment {
-    pub fn from_node(node: &Node) -> Self {
-        Comment {
-            //content: node,
+    pub fn from_node(inner: &Node, context: &EContext) -> Self {
+        let id = inner.id();
+        let content = inner.v(&context.source_code).to_string();
+        Self {
+            id,
+            content,
             is_processed: false,
-            comment_type: match node.kind() {
+            comment_type: match inner.kind() {
                 "line_comment" => CommentType::Line,
                 "block_comment" => CommentType::Block,
                 _ => panic!("Unexpected comment type"),
@@ -81,59 +95,51 @@ impl EContext {
     }
 }
 
-#[derive(Debug)]
-pub struct ClassNode<'a, 'tree> {
-    pub inner: &'a Node<'tree>,
-    pub content: String,
-    pub comments: CommentBuckets,
-    pub children: Vec<Box<dyn Rich>>,
-    pub field_name: Option<String>,
-    pub formatting_info: FormatInfo,
-}
-
 impl<'a, 'tree> ClassNode<'a, 'tree> {
     pub fn new(inner: &'a Node<'tree>) -> Self {
         Self {
             inner,
-            content: String::new(),
+            rewritten: String::new(),
             comments: CommentBuckets::default(),
             children: Vec::new(),
             field_name: None,
-            formatting_info: FormatInfo::default(),
+            format_info: FormatInfo::default(),
         }
     }
 }
 
-impl<'a, 'tree> Rich for ClassNode<'a, 'tree> {
+impl<'a, 'tree> RichNode for ClassNode<'a, 'tree> {
     fn enrich(&mut self, shape: &EShape, context: &EContext, comments: &mut Vec<Comment>) {
-        self.enrich_comments(comments);
-        self.enrich_data(shape, context);
+        self.enrich_comments(comments, context);
+        //self.enrich_data(shape, context);
     }
 }
 
 impl<'a, 'tree> ClassNode<'a, 'tree> {
-    fn enrich_comments(&mut self, comments: &mut Vec<Comment>) {
-        // Check previous siblings for pre-comments
+    fn enrich_comments(&mut self, comments: &mut Vec<Comment>, context: &EContext) {
         let mut prev_sibling = self.inner.prev_sibling();
         while let Some(node) = prev_sibling {
-            if node.is_comment() {
-                self.comments.pre_comments.push(Comment::from_node(&node));
+            if node.is_comment() && !is_processed(node.id(), comments) {
+                self.comments
+                    .pre_comments
+                    .push(Comment::from_node(&node, context));
             }
             prev_sibling = node.prev_sibling();
         }
 
-        // Check next siblings for post-comments
         let mut next_sibling = self.inner.next_sibling();
         while let Some(node) = next_sibling {
-            if node.is_comment() {
-                self.comments.post_comments.push(Comment::from_node(&node));
+            if node.is_comment() && !is_processed(node.id(), comments) {
+                self.comments
+                    .post_comments
+                    .push(Comment::from_node(&node, context));
             }
             next_sibling = node.next_sibling();
         }
     }
 
     fn enrich_data(&mut self, shape: &EShape, context: &EContext) {
-        self.formatting_info = match self.inner.kind() {
+        self.format_info = match self.inner.kind() {
             "class_declaration" => FormatInfo {
                 ..Default::default()
             },

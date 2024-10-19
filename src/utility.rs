@@ -1,6 +1,6 @@
 use crate::child::Accessor;
 use crate::context::FmtContext;
-use crate::enrich::{ClassNode, Comment, EContext, EShape};
+use crate::enrich::{ClassNode, Comment, EContext, EShape, RichNode};
 use crate::rewrite::Rewrite;
 use crate::shape::Shape;
 use crate::struct_def::{BinaryExpression, Expression, FromNode};
@@ -12,23 +12,32 @@ use tree_sitter::Node;
 pub fn enrich_root(con: &FmtContext) {
     let root = &con.ast_tree.root_node();
 
-    let mut global_comments = Vec::new();
-    collect_comments(&root, &mut global_comments);
-
-    let top_node = root.first_c();
-    let classN = ClassNode::new(&top_node);
-
-    let shape = EShape::empty();
     let context = EContext::new(con.config, &con.source_code);
+    let shape = EShape::empty();
+
+    let mut comments = Vec::new();
+    collect_comments(&root, &mut comments, &context);
+
+    let c = root.c_by_k("class_declaration");
+    let mut class_node = ClassNode::new(&c);
+    class_node.enrich(&shape, &context, &mut comments);
+    eprintln!("gopro[4]: utility.rs:23: class_node={:#?}", class_node);
 }
 
-fn collect_comments(root: &Node, comments: &mut Vec<Comment>) {
+fn collect_comments(root: &Node, comments: &mut Vec<Comment>, context: &EContext) {
     for c in root.children_vec() {
         if c.is_comment() {
-            comments.push(Comment::from_node(&c));
+            comments.push(Comment::from_node(&c, context));
         }
-        collect_comments(&c, comments);
+        collect_comments(&c, comments, context);
     }
+}
+
+pub fn is_processed(id: usize, comments: &mut Vec<Comment>) -> bool {
+    comments
+        .iter()
+        .find(|comment| comment.id == id)
+        .map_or(true, |comment| comment.is_processed)
 }
 
 pub fn visit_root(context: &FmtContext) -> String {

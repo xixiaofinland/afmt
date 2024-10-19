@@ -1,10 +1,11 @@
-// hello
-public interface OuterInterface extends ExtendedInterface {
-// hello
+// c1
+public class A{
+
+// c2
   void methodOne();
   void methodTwo();
-// hello
+// c3
 }
 
 
-/* hello */
+/* c4 */
