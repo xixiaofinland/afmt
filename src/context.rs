@@ -62,6 +62,16 @@ impl<'a> FmtContext<'a> {
         Ok(result)
     }
 
+    pub fn enrich_one_file(&self) -> Result<String> {
+        let mut result = String::new();
+        result.push_str(&visit_root(self));
+
+        // add file ending new line;
+        result.push('\n');
+
+        Ok(result)
+    }
+
     fn find_last_error_node<'tree>(node: &Node<'tree>) -> Option<Node<'tree>> {
         if !node.has_error() {
             return None; // If the current node has no error, return None
