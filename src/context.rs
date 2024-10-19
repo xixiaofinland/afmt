@@ -1,5 +1,5 @@
 use crate::child::Accessor;
-use crate::enrich::ClassDNode;
+use crate::enrich::ClassNode;
 use crate::utility::visit_root;
 use crate::{config::Config, enrich::EContext};
 use anyhow::Result;
@@ -59,7 +59,7 @@ impl<'a> FmtContext<'a> {
         let root_node = &self.ast_tree.root_node();
 
         let top_node = root_node.first_c();
-        let class_struct = ClassDNode::new(&top_node);
+        let class_struct = ClassNode::new(&top_node);
         eprintln!("gopro[1]: context.rs:62: class_struct={:#?}", class_struct);
 
         // add file ending new line;
@@ -70,11 +70,7 @@ impl<'a> FmtContext<'a> {
 
     pub fn enrich_one_file(&self) -> Result<String> {
         let mut result = String::new();
-        result.push_str(&visit_root(self));
-
-        // add file ending new line;
-        result.push('\n');
-
+        enrich_root(self);
         Ok(result)
     }
 

@@ -27,6 +27,8 @@ pub trait Accessor<'tree> {
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'tree>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'tree>>;
+
+    fn is_comment<'a>(&self) -> bool;
 }
 
 impl<'tree> Accessor<'tree> for Node<'tree> {
@@ -141,6 +143,10 @@ impl<'tree> Accessor<'tree> for Node<'tree> {
 
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_c_by_k(kind).map(|child| child.v(source_code))
+    }
+
+    fn is_comment(&self) -> bool {
+        matches!(self.kind(), "line_comment" | "block_comment")
     }
 }
 
