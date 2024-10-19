@@ -13,14 +13,14 @@ pub fn enrich_root(con: &FmtContext) {
     let root = &con.ast_tree.root_node();
 
     let context = EContext::new(con.config, &con.source_code);
-    let shape = EShape::empty();
+    let mut shape = EShape::empty();
 
     let mut comments = Vec::new();
     collect_comments(&root, &mut comments, &context);
 
     let c = root.c_by_k("class_declaration");
     let mut class_node = ClassNode::new(&c);
-    class_node.enrich(&shape, &context, &mut comments);
+    class_node.enrich(&mut shape, &context, &mut comments);
     eprintln!("gopro[4]: utility.rs:23: class_node={:#?}", class_node);
 }
 
