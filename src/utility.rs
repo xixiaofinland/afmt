@@ -10,11 +10,13 @@ use log::debug;
 use tree_sitter::Node;
 
 pub fn enrich_root(con: &FmtContext) {
+    let root = &con.ast_tree.root_node();
+
     let mut global_comments = Vec::new();
     collect_comments(&root, &mut global_comments);
 
-    let top_node = &con.ast_tree.root_node().first_c();
-    let class_node = ClassNode::new(&top_node);
+    let top_node = root.first_c();
+    let classN = ClassNode::new(&top_node);
 
     let shape = EShape::empty();
     let context = EContext::new(con.config, &con.source_code);
