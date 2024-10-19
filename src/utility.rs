@@ -40,6 +40,12 @@ pub fn is_processed(id: usize, comments: &mut Vec<Comment>) -> bool {
         .map_or(true, |comment| comment.is_processed)
 }
 
+pub fn get_length_before_brace(s: &str) -> usize {
+    s.find('{')
+        .map(|i| s[..i].trim_end().len())
+        .unwrap_or(s.len())
+}
+
 pub fn visit_root(context: &FmtContext) -> String {
     let mut result = String::new();
     let shape = Shape::empty(context.config);

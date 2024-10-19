@@ -1,98 +1,13 @@
 use std::fmt::Debug;
 use tree_sitter::Node;
 
-use crate::{
-    child::Accessor,
-    config::Config,
-    utility::{get_length_before_brace, is_processed},
-};
-
-pub trait RichNode: Debug {
-    fn enrich(&mut self, shape: &mut EShape, context: &EContext, comments: &mut Vec<Comment>);
-    //fn enrich_comments(&mut self);
-    //fn enrich_data(&mut self);
-    //fn rewrite(&mut self) -> String;
-}
-
-#[derive(Debug, Default)]
-pub struct FormatInfo {
-    pub rewritten: String, // The raw printed result without wrapping
-    pub length: usize,     // Used in complex nodes (like Class, Method) to decide wrapping
-    pub wrappable: bool,
-    pub indent_level: usize,
-    //pub force_break_before: bool,
-    pub force_break_after: bool,   // should add `\n` at the end;
-    pub has_new_line_before: bool, // whether the prevous source line is an empty `\n`;
-}
-
-#[derive(Debug, Default)]
-pub struct CommentBuckets {
-    pub pre_comments: Vec<Comment>,
-    //pub inline_comments: Vec<Comment>,
-    pub post_comments: Vec<Comment>,
-}
+use crate::child::Accessor;
+use crate::config::Config;
+use crate::enrich::*;
+use crate::utility::*;
 
 #[derive(Debug)]
-pub struct Comment {
-    pub id: usize,
-    pub content: String,
-    pub comment_type: CommentType,
-    pub is_processed: bool,
-}
-
-impl Comment {
-    pub fn from_node(inner: &Node, context: &EContext) -> Self {
-        let id = inner.id();
-        let content = inner.v(&context.source_code).to_string();
-        Self {
-            id,
-            content,
-            is_processed: false,
-            comment_type: match inner.kind() {
-                "line_comment" => CommentType::Line,
-                "block_comment" => CommentType::Block,
-                _ => panic!("Unexpected comment type"),
-            },
-        }
-    }
-}
-
-#[derive(Debug)]
-enum CommentType {
-    Line,
-    Block,
-}
-
-#[derive(Debug)]
-pub struct EShape {
-    pub indent_level: usize,
-}
-
-impl EShape {
-    pub fn empty() -> Self {
-        Self { indent_level: 0 }
-    }
-}
-
-#[derive(Debug)]
-pub struct EContext {
-    pub config: Config,
-    pub source_code: String,
-}
-
-impl EContext {
-    pub fn new(config: &Config, source_code: &str) -> Self {
-        let config = config.clone();
-        let source_code = String::from(source_code);
-        Self {
-            config,
-            source_code,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct ClassNode<'a, 'tree> {
+pub struct Modifiers<'a, 'tree> {
     pub inner: &'a Node<'tree>,
     pub comments: CommentBuckets,
     pub children: Vec<Box<dyn RichNode>>,
@@ -100,14 +15,14 @@ pub struct ClassNode<'a, 'tree> {
     //pub field_name: Option<String>, // Stores the field_name from ts-apex API
 }
 
-impl<'a, 'tree> RichNode for ClassNode<'a, 'tree> {
+impl<'a, 'tree> RichNode for Modifiers<'a, 'tree> {
     fn enrich(&mut self, shape: &mut EShape, context: &EContext, comments: &mut Vec<Comment>) {
         self.enrich_comments(comments, context);
         self.enrich_data(shape, context);
     }
 }
 
-impl<'a, 'tree> ClassNode<'a, 'tree> {
+impl<'a, 'tree> Modifiers<'a, 'tree> {
     pub fn new(inner: &'a Node<'tree>) -> Self {
         Self {
             inner,
@@ -147,10 +62,10 @@ impl<'a, 'tree> ClassNode<'a, 'tree> {
         self.format_info = FormatInfo {
             rewritten,
             length,
-            wrappable: true,
+            wrappable: false,
             indent_level: shape.indent_level,
             //force_break_before: false,
-            force_break_after: true,
+            force_break_after: false,
             has_new_line_before: false,
         };
     }

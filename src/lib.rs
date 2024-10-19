@@ -3,6 +3,7 @@ mod child;
 pub mod config;
 mod context;
 mod enrich;
+mod enrich_nodes;
 mod fmt_push;
 mod macros;
 mod rewrite;

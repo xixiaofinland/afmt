@@ -1,5 +1,7 @@
 // c1
-public class A{
+@IsTest
+public class Me  {
+//public class Me implements namespace.InterfaceName {
 
 // c2
   void methodOne();
