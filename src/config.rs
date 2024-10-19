@@ -102,6 +102,6 @@ impl Session {
             .unwrap();
 
         let context = FmtContext::new(&self.config, source_code);
-        context.format_one_file();
+        context.enrich_one_file();
     }
 }

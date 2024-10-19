@@ -1,6 +1,6 @@
 use crate::child::Accessor;
 use crate::enrich::ClassNode;
-use crate::utility::visit_root;
+use crate::utility::{enrich_root, visit_root};
 use crate::{config::Config, enrich::EContext};
 use anyhow::Result;
 use colored::Colorize;
@@ -60,7 +60,6 @@ impl<'a> FmtContext<'a> {
 
         let top_node = root_node.first_c();
         let class_struct = ClassNode::new(&top_node);
-        eprintln!("gopro[1]: context.rs:62: class_struct={:#?}", class_struct);
 
         // add file ending new line;
         //result.push('\n');

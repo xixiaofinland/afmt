@@ -13,6 +13,10 @@ pub fn enrich_root(con: &FmtContext) {
     let root = &con.ast_tree.root_node();
     let mut global_comments = Vec::new();
     collect_comments(&root, &mut global_comments);
+    eprintln!(
+        "gopro[2]: utility.rs:14: global_comments={:#?}",
+        global_comments
+    );
 
     let shape = EShape::empty();
     let context = EContext::new(con.config, &con.source_code);
