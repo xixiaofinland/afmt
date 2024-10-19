@@ -12,9 +12,8 @@ mod struct_def;
 mod utility;
 mod visit;
 
-use anyhow::Result;
 use config::Session;
 
-pub fn format(session: Session) -> Vec<Result<String>> {
-    session.format()
+pub fn format(session: Session) {
+    session.format();
 }

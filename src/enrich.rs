@@ -1,6 +1,8 @@
 use std::fmt::Debug;
 use tree_sitter::Node;
 
+use crate::config::Config;
+
 trait RichNode: Debug {
     fn enrich(&mut self);
     //fn enrich_comments(&mut self);
@@ -37,7 +39,24 @@ enum CommentType {
 }
 
 #[derive(Debug)]
-struct ClassDNode<'a, 'tree> {
+pub struct EContext {
+    pub config: Config,
+    pub source_code: String,
+}
+
+impl EContext {
+    pub fn new(config: &Config, source_code: &str) -> Self {
+        let config = config.clone();
+        let source_code = String::from(source_code);
+        Self {
+            config,
+            source_code,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ClassDNode<'a, 'tree> {
     pub inner: &'a Node<'tree>,
     pub content: String,
     pub comments: CommentBuckets,

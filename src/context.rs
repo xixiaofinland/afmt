@@ -1,5 +1,7 @@
-use crate::config::Config;
+use crate::child::Accessor;
+use crate::enrich::ClassDNode;
 use crate::utility::visit_root;
+use crate::{config::Config, enrich::EContext};
 use anyhow::Result;
 use colored::Colorize;
 use tree_sitter::{Language, Node, Parser, Tree};
@@ -52,14 +54,18 @@ impl<'a> FmtContext<'a> {
         }
     }
 
-    pub fn format_one_file(&self) -> Result<String> {
-        let mut result = String::new();
-        result.push_str(&visit_root(self));
+    pub fn format_one_file(&self) {
+        let context = EContext::new(&self.config, &self.source_code);
+        let root_node = &self.ast_tree.root_node();
+
+        let top_node = root_node.first_c();
+        let class_struct = ClassDNode::new(&top_node);
+        eprintln!("gopro[1]: context.rs:62: class_struct={:#?}", class_struct);
 
         // add file ending new line;
-        result.push('\n');
+        //result.push('\n');
 
-        Ok(result)
+        //Ok(result)
     }
 
     pub fn enrich_one_file(&self) -> Result<String> {

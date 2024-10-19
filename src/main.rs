@@ -32,24 +32,24 @@ fn main() {
 fn run(args: Args) -> Result<()> {
     let session =
         Session::create_session_from_config(args.config.as_deref(), vec![args.path.clone()])?;
-    let results = format(session);
+    format(session);
 
-    for (index, result) in results.iter().enumerate() {
-        match result {
-            Ok(value) => {
-                println!("Result {}: Ok\n{}", index, value);
-                if args.write {
-                    fs::write(&args.path, value)?;
-                    println!("Formatted content written back to: {}\n", args.path);
-                } else {
-                    println!("{:?}", value)
-                }
-            }
-            Err(e) => {
-                println!("Result {}: Err\n{}", index, e);
-                return Err(anyhow!("{}", e));
-            }
-        }
-    }
+    //for (index, result) in results.iter().enumerate() {
+    //    match result {
+    //        Ok(value) => {
+    //            println!("Result {}: Ok\n{}", index, value);
+    //            if args.write {
+    //                fs::write(&args.path, value)?;
+    //                println!("Formatted content written back to: {}\n", args.path);
+    //            } else {
+    //                println!("{:?}", value)
+    //            }
+    //        }
+    //        Err(e) => {
+    //            println!("Result {}: Err\n{}", index, e);
+    //            return Err(anyhow!("{}", e));
+    //        }
+    //    }
+    //}
     Ok(())
 }
