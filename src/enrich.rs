@@ -180,7 +180,6 @@ impl<'a, 'tree> ClassNode<'a, 'tree> {
         //    |c, c_shape, c_context| c._visit(c_shape, c_context),
         //));
 
-        //result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
         result
     }
 
