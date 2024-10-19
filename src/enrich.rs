@@ -4,7 +4,7 @@ use tree_sitter::Node;
 use crate::{child::Accessor, config::Config};
 
 trait Rich: Debug {
-    fn enrich(&mut self, shape: &EShape, context: &EContext);
+    fn enrich(&mut self, shape: &EShape, context: &EContext, comments: &mut Vec<Comment>);
     //fn enrich_comments(&mut self);
     //fn enrich_data(&mut self);
     //fn rewrite(&mut self) -> String;
@@ -105,11 +105,14 @@ impl<'a, 'tree> ClassNode<'a, 'tree> {
 }
 
 impl<'a, 'tree> Rich for ClassNode<'a, 'tree> {
-    fn enrich(&mut self, shape: &EShape, context: &EContext) {}
+    fn enrich(&mut self, shape: &EShape, context: &EContext, comments: &mut Vec<Comment>) {
+        self.enrich_comments(comments);
+        self.enrich_data(shape, context);
+    }
 }
 
 impl<'a, 'tree> ClassNode<'a, 'tree> {
-    fn enrich_comments(&mut self) {
+    fn enrich_comments(&mut self, comments: &mut Vec<Comment>) {
         // Check previous siblings for pre-comments
         let mut prev_sibling = self.inner.prev_sibling();
         while let Some(node) = prev_sibling {
@@ -129,7 +132,7 @@ impl<'a, 'tree> ClassNode<'a, 'tree> {
         }
     }
 
-    fn enrich_data(&mut self) {
+    fn enrich_data(&mut self, shape: &EShape, context: &EContext) {
         self.formatting_info = match self.inner.kind() {
             "class_declaration" => FormatInfo {
                 ..Default::default()
