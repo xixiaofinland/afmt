@@ -1,6 +1,6 @@
 // c1
 @IsTest
-public class Me  {
+public /* inner */ class Me  {
 //public class Me implements namespace.InterfaceName {
 
 // c2
