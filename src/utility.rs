@@ -1,6 +1,6 @@
 use crate::child::Accessor;
 use crate::context::FmtContext;
-use crate::enrich::{ClassNode, Comment, EContext, EShape, RichNode};
+use crate::enrich_def::*;
 use crate::rewrite::Rewrite;
 use crate::shape::Shape;
 use crate::struct_def::{BinaryExpression, Expression, FromNode};
@@ -17,7 +17,7 @@ pub fn enrich_root(con: &FmtContext) {
     collect_comments(&root, &mut shape.comments, &context);
 
     let c = root.c_by_k("class_declaration");
-    let mut class_node = ClassNode::new(c);
+    let mut class_node = ClassNode::build(c, &mut shape, &context);
     class_node.enrich(&mut shape, &context);
     eprintln!("gopro[4]: utility.rs:23: class_node={:#?}", class_node);
 }

@@ -1,7 +1,7 @@
 use crate::child::Accessor;
-use crate::enrich::ClassNode;
+use crate::config::Config;
+use crate::enrich_def::*;
 use crate::utility::{enrich_root, visit_root};
-use crate::{config::Config, enrich::EContext};
 use anyhow::Result;
 use colored::Colorize;
 use tree_sitter::{Language, Node, Parser, Tree};
@@ -59,7 +59,6 @@ impl<'a> FmtContext<'a> {
         let root_node = &self.ast_tree.root_node();
 
         let top_node = root_node.first_c();
-        let class_struct = ClassNode::new(top_node);
 
         // add file ending new line;
         //result.push('\n');
