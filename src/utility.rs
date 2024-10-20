@@ -194,10 +194,7 @@ where
     block.rewrite(cloned, context)
 }
 
-pub fn update_source_code_for_if_statement<'t>(
-    node: &Node<'t>,
-    source_code: &str,
-) -> Option<String> {
+pub fn update_source_code_for_if_statement(node: &Node, source_code: &str) -> Option<String> {
     let node_code = node.v(source_code);
     let mut is_updated = false;
     let mut new_node_code = String::from(node_code);
@@ -240,11 +237,7 @@ pub fn is_parent_where_clause(node: &Node<'_>) -> bool {
 //    result
 //}
 
-pub fn split_and_rewrite_directly<'a, 't>(
-    node: &'a Node<'t>,
-    shape: &mut Shape,
-    context: &FmtContext,
-) -> String {
+pub fn split_and_rewrite_directly(node: &Node, shape: &mut Shape, context: &FmtContext) -> String {
     match node.kind() {
         "binary_expression" => BinaryExpression::new(node).rewrite_multi_line(shape, context),
         _ => rewrite::<Expression>(node, shape, context),

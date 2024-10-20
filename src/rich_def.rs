@@ -49,7 +49,7 @@ impl Comment {
 }
 
 #[derive(Debug)]
-enum CommentType {
+pub enum CommentType {
     Line,
     Block,
 }

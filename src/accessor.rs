@@ -28,7 +28,7 @@ pub trait Accessor<'t> {
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
-    fn is_comment<'a>(&self) -> bool;
+    fn is_comment(&self) -> bool;
 }
 
 impl<'t> Accessor<'t> for Node<'t> {

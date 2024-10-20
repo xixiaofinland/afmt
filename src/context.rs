@@ -58,7 +58,7 @@ impl<'a> FmtContext<'a> {
         let context = EContext::new(self.config, &self.source_code);
         let root_node = &self.ast_tree.root_node();
 
-        let top_node = root_node.first_c();
+        let _top_node = root_node.first_c();
 
         // add file ending new line;
         //result.push('\n');
