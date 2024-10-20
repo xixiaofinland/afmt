@@ -7,10 +7,17 @@ use crate::enrich::*;
 use crate::utility::*;
 
 #[derive(Debug)]
+pub enum ASTNode<'t> {
+    ClassNode(ClassNode<'t>),
+    Modifiers(Modifiers<'t>),
+}
+
+#[derive(Debug)]
 pub struct Modifiers<'t> {
     pub inner: Node<'t>,
+    pub content: String, // The raw printed result without wrapping
     pub buckets: CommentBuckets,
-    pub children: Vec<Box<dyn RichNode>>,
+    pub children: Vec<ASTNode<'t>>,
     pub format_info: FormatInfo,
 }
 
@@ -22,13 +29,16 @@ impl<'t> RichNode for Modifiers<'t> {
 }
 
 impl<'t> Modifiers<'t> {
-    pub fn new(inner: Node<'t>) -> Self {
-        Self {
+    pub fn build(inner: Node<'t>, shape: &mut EShape, context: &EContext) -> Self {
+        let mut n = Self {
             inner,
+            content: String::new(),
             buckets: CommentBuckets::default(),
             children: Vec::new(),
             format_info: FormatInfo::default(),
-        }
+        };
+        n.enrich(shape, context);
+        n
     }
 
     fn enrich_comments(&mut self, shape: &mut EShape, context: &EContext) {
@@ -74,12 +84,11 @@ impl<'t> Modifiers<'t> {
     }
 
     fn enrich_data(&mut self, shape: &mut EShape, context: &EContext) {
-        let rewritten = self.rewrite(shape, context);
-        let length = get_length_before_brace(&rewritten);
+        self.content = self.rewrite(shape, context);
+        let length = get_length_before_brace(&self.content);
 
         self.format_info = FormatInfo {
-            rewritten,
-            length,
+            offset: length,
             wrappable: false,
             indent_level: shape.indent_level,
             //force_break_before: false,
@@ -88,24 +97,25 @@ impl<'t> Modifiers<'t> {
         };
     }
 
-    fn rewrite(&self, shape: &mut EShape, context: &EContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
-
-        if let Some(a) = node.try_c_by_k("modifiers") {
-            //result.push_str(&rewrite::<Modifiers>(a, shape, context));
-
-            if let Some(_) = a.try_c_by_k("modifier") {
-                result.push(' ');
-            }
-        }
+    fn rewrite(&mut self, shape: &mut EShape, context: &EContext) -> String {
+        let (node, mut result, source_code, config, children) = self.prepare(context);
         result
     }
 
-    pub fn prepare<'b>(&self, context: &'b EContext) -> (&Node<'t>, String, &'b str, &'b Config) {
+    pub fn prepare<'a>(
+        &mut self,
+        context: &'a EContext,
+    ) -> (
+        &Node<'t>,
+        String,
+        &'a str,
+        &'a Config,
+        &mut Vec<ASTNode<'t>>,
+    ) {
         let node = &self.inner;
         let result = String::new();
         let source_code = context.source_code.as_str();
         let config = &context.config;
-        (node, result, source_code, config)
+        (node, result, source_code, config, &mut self.children)
     }
 }

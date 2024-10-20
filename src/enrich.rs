@@ -1,3 +1,4 @@
+use crate::enrich_nodes::ASTNode;
 use std::fmt::Debug;
 use tree_sitter::Node;
 
@@ -9,27 +10,18 @@ pub trait RichNode: Debug {
     fn enrich(&mut self, shape: &mut EShape, context: &EContext);
 }
 
-#[derive(Debug)]
-pub enum ASTNode<'t> {
-    ClassNode(ClassNode<'t>),
-    Modifiers(Modifiers<'t>),
-}
-
 #[derive(Debug, Default)]
 pub struct FormatInfo {
-    pub rewritten: String, // The raw printed result without wrapping
-    pub length: usize,     // Used in complex nodes (like Class, Method) to decide wrapping
+    pub offset: usize, // Used in complex nodes (like Class, Method) to decide wrapping
     pub wrappable: bool,
     pub indent_level: usize,
-    //pub force_break_before: bool,
-    pub force_break_after: bool,   // should add `\n` at the end;
-    pub has_new_line_before: bool, // whether the prevous source line is an empty `\n`;
+    pub force_break_after: bool,
+    pub has_new_line_before: bool,
 }
 
 #[derive(Debug, Default)]
 pub struct CommentBuckets {
     pub pre_comments: Vec<Comment>,
-    //pub inline_comments: Vec<Comment>,
     pub post_comments: Vec<Comment>,
 }
 
@@ -90,6 +82,7 @@ impl EContext {
 #[derive(Debug)]
 pub struct ClassNode<'t> {
     pub inner: Node<'t>,
+    pub content: String, // The raw printed result without wrapping
     pub buckets: CommentBuckets,
     pub children: Vec<ASTNode<'t>>,
     pub format_info: FormatInfo,
@@ -106,6 +99,7 @@ impl<'t> ClassNode<'t> {
     pub fn new(inner: Node<'t>) -> Self {
         Self {
             inner,
+            content: String::new(),
             buckets: CommentBuckets::default(),
             children: Vec::new(),
             format_info: FormatInfo::default(),
@@ -155,12 +149,11 @@ impl<'t> ClassNode<'t> {
     }
 
     fn enrich_data(&mut self, shape: &mut EShape, context: &EContext) {
-        let rewritten = self.rewrite(shape, context);
-        let length = get_length_before_brace(&rewritten);
+        self.content = self.rewrite(shape, context);
+        let length = get_length_before_brace(&self.content);
 
         self.format_info = FormatInfo {
-            rewritten,
-            length,
+            offset: length,
             wrappable: true,
             indent_level: shape.indent_level,
             //force_break_before: false,
@@ -173,9 +166,8 @@ impl<'t> ClassNode<'t> {
         let (node, mut result, source_code, config, children) = self.prepare(context);
 
         if let Some(c) = node.try_c_by_k("modifiers") {
-            let mut modifiers = Modifiers::new(c);
-            modifiers.enrich(shape, context);
-            result.push_str(&modifiers.format_info.rewritten);
+            let modifiers = Modifiers::build(c, shape, context);
+            result.push_str(&modifiers.content);
             children.push(ASTNode::Modifiers(modifiers));
         }
 
