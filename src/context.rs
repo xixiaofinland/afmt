@@ -59,7 +59,7 @@ impl<'a> FmtContext<'a> {
         let root_node = &self.ast_tree.root_node();
 
         let top_node = root_node.first_c();
-        let class_struct = ClassNode::new(&top_node);
+        let class_struct = ClassNode::new(top_node);
 
         // add file ending new line;
         //result.push('\n');

@@ -13,14 +13,12 @@ pub fn enrich_root(con: &FmtContext) {
     let root = &con.ast_tree.root_node();
 
     let context = EContext::new(con.config, &con.source_code);
-    let mut shape = EShape::empty();
-
-    let mut comments = Vec::new();
-    collect_comments(&root, &mut comments, &context);
+    let mut shape = EShape::default();
+    collect_comments(&root, &mut shape.comments, &context);
 
     let c = root.c_by_k("class_declaration");
-    let mut class_node = ClassNode::new(&c);
-    class_node.enrich(&mut shape, &context, &mut comments);
+    let mut class_node = ClassNode::new(c);
+    class_node.enrich(&mut shape, &context);
     eprintln!("gopro[4]: utility.rs:23: class_node={:#?}", class_node);
 }
 
@@ -31,13 +29,6 @@ fn collect_comments(root: &Node, comments: &mut Vec<Comment>, context: &EContext
         }
         collect_comments(&c, comments, context);
     }
-}
-
-pub fn is_processed(id: usize, comments: &mut Vec<Comment>) -> bool {
-    comments
-        .iter()
-        .find(|comment| comment.id == id)
-        .map_or(true, |comment| comment.is_processed)
 }
 
 pub fn get_length_before_brace(s: &str) -> usize {

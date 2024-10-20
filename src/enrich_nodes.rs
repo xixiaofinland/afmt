@@ -7,49 +7,67 @@ use crate::enrich::*;
 use crate::utility::*;
 
 #[derive(Debug)]
-pub struct Modifiers<'a, 'tree> {
-    pub inner: &'a Node<'tree>,
-    pub comments: CommentBuckets,
+pub struct Modifiers<'t> {
+    pub inner: Node<'t>,
+    pub buckets: CommentBuckets,
     pub children: Vec<Box<dyn RichNode>>,
     pub format_info: FormatInfo,
-    //pub field_name: Option<String>, // Stores the field_name from ts-apex API
 }
 
-impl<'a, 'tree> RichNode for Modifiers<'a, 'tree> {
-    fn enrich(&mut self, shape: &mut EShape, context: &EContext, comments: &mut Vec<Comment>) {
-        self.enrich_comments(comments, context);
+impl<'t> RichNode for Modifiers<'t> {
+    fn enrich(&mut self, shape: &mut EShape, context: &EContext) {
+        self.enrich_comments(shape, context);
         self.enrich_data(shape, context);
     }
 }
 
-impl<'a, 'tree> Modifiers<'a, 'tree> {
-    pub fn new(inner: &'a Node<'tree>) -> Self {
+impl<'t> Modifiers<'t> {
+    pub fn new(inner: Node<'t>) -> Self {
         Self {
             inner,
-            comments: CommentBuckets::default(),
+            buckets: CommentBuckets::default(),
             children: Vec::new(),
             format_info: FormatInfo::default(),
-            //field_name: None,
         }
     }
 
-    fn enrich_comments(&mut self, comments: &mut Vec<Comment>, context: &EContext) {
+    fn enrich_comments(&mut self, shape: &mut EShape, context: &EContext) {
         let mut prev_sibling = self.inner.prev_sibling();
         while let Some(node) = prev_sibling {
-            if node.is_comment() && !is_processed(node.id(), comments) {
-                self.comments
-                    .pre_comments
-                    .push(Comment::from_node(&node, context));
+            if node.is_comment() {
+                let comment_id = node.id();
+                if let Some(comment) = shape.comments.iter_mut().find(|c| c.id == comment_id) {
+                    if !comment.is_processed {
+                        self.buckets
+                            .pre_comments
+                            .push(Comment::from_node(&node, context));
+                        comment.is_processed = true;
+                    }
+                } else {
+                    self.buckets
+                        .pre_comments
+                        .push(Comment::from_node(&node, context));
+                }
             }
             prev_sibling = node.prev_sibling();
         }
 
         let mut next_sibling = self.inner.next_sibling();
         while let Some(node) = next_sibling {
-            if node.is_comment() && !is_processed(node.id(), comments) {
-                self.comments
-                    .post_comments
-                    .push(Comment::from_node(&node, context));
+            if node.is_comment() {
+                let comment_id = node.id();
+                if let Some(comment) = shape.comments.iter_mut().find(|c| c.id == comment_id) {
+                    if !comment.is_processed {
+                        self.buckets
+                            .post_comments
+                            .push(Comment::from_node(&node, context));
+                        comment.is_processed = true;
+                    }
+                } else {
+                    self.buckets
+                        .post_comments
+                        .push(Comment::from_node(&node, context));
+                }
             }
             next_sibling = node.next_sibling();
         }
@@ -73,48 +91,20 @@ impl<'a, 'tree> Modifiers<'a, 'tree> {
     fn rewrite(&self, shape: &mut EShape, context: &EContext) -> String {
         let (node, mut result, source_code, _) = self.prepare(context);
 
-        if let Some(ref a) = node.try_c_by_k("modifiers") {
+        if let Some(a) = node.try_c_by_k("modifiers") {
             //result.push_str(&rewrite::<Modifiers>(a, shape, context));
 
             if let Some(_) = a.try_c_by_k("modifier") {
                 result.push(' ');
             }
         }
-
-        result.push_str("class ");
-        result.push_str(node.cv_by_n("name", source_code));
-
-        //if let Some(ref c) = node.try_c_by_n("type_parameters") {
-        //    //result.push_str(&rewrite_shape::<TypeParameters>(c, shape, false, context));
-        //}
-
-        //if let Some(ref c) = node.try_c_by_n("superclass") {
-        //    //result.push_str(&rewrite_shape::<SuperClass>(c, shape, false, context));
-        //}
-
-        if let Some(ref c) = node.try_c_by_n("interfaces") {
-            //result.push_str(&rewrite_shape::<Interfaces>(c, shape, false, context));
-        }
-
-        result.push_str(" {\n");
-
-        let body_node = node.c_by_n("body");
-        //result.push_str(&body_node.apply_to_standalone_children(
-        //    shape,
-        //    context,
-        //    |c, c_shape, c_context| c._visit(c_shape, c_context),
-        //));
-
         result
     }
 
-    pub fn prepare<'b>(
-        &self,
-        context: &'b EContext,
-    ) -> (&'a Node<'tree>, String, &'b str, &'b Config) {
-        let node = self.inner;
+    pub fn prepare<'b>(&self, context: &'b EContext) -> (&Node<'t>, String, &'b str, &'b Config) {
+        let node = &self.inner;
         let result = String::new();
-        let source_code = &context.source_code;
+        let source_code = context.source_code.as_str();
         let config = &context.config;
         (node, result, source_code, config)
     }

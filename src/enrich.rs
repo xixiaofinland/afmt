@@ -2,16 +2,17 @@ use std::fmt::Debug;
 use tree_sitter::Node;
 
 use crate::{
-    child::Accessor,
-    config::Config,
-    utility::{get_length_before_brace, is_processed},
+    child::Accessor, config::Config, enrich_nodes::Modifiers, utility::get_length_before_brace,
 };
 
 pub trait RichNode: Debug {
-    fn enrich(&mut self, shape: &mut EShape, context: &EContext, comments: &mut Vec<Comment>);
-    //fn enrich_comments(&mut self);
-    //fn enrich_data(&mut self);
-    //fn rewrite(&mut self) -> String;
+    fn enrich(&mut self, shape: &mut EShape, context: &EContext);
+}
+
+#[derive(Debug)]
+pub enum ASTNode<'t> {
+    ClassNode(ClassNode<'t>),
+    Modifiers(Modifiers<'t>),
 }
 
 #[derive(Debug, Default)]
@@ -63,15 +64,10 @@ enum CommentType {
     Block,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct EShape {
     pub indent_level: usize,
-}
-
-impl EShape {
-    pub fn empty() -> Self {
-        Self { indent_level: 0 }
-    }
+    pub comments: Vec<Comment>,
 }
 
 #[derive(Debug)]
@@ -92,49 +88,67 @@ impl EContext {
 }
 
 #[derive(Debug)]
-pub struct ClassNode<'a, 'tree> {
-    pub inner: &'a Node<'tree>,
-    pub comments: CommentBuckets,
-    pub children: Vec<Box<dyn RichNode>>,
+pub struct ClassNode<'t> {
+    pub inner: Node<'t>,
+    pub buckets: CommentBuckets,
+    pub children: Vec<ASTNode<'t>>,
     pub format_info: FormatInfo,
-    //pub field_name: Option<String>, // Stores the field_name from ts-apex API
 }
 
-impl<'a, 'tree> RichNode for ClassNode<'a, 'tree> {
-    fn enrich(&mut self, shape: &mut EShape, context: &EContext, comments: &mut Vec<Comment>) {
-        self.enrich_comments(comments, context);
+impl<'t> RichNode for ClassNode<'t> {
+    fn enrich(&mut self, shape: &mut EShape, context: &EContext) {
+        self.enrich_comments(shape, context);
         self.enrich_data(shape, context);
     }
 }
 
-impl<'a, 'tree> ClassNode<'a, 'tree> {
-    pub fn new(inner: &'a Node<'tree>) -> Self {
+impl<'t> ClassNode<'t> {
+    pub fn new(inner: Node<'t>) -> Self {
         Self {
             inner,
-            comments: CommentBuckets::default(),
+            buckets: CommentBuckets::default(),
             children: Vec::new(),
             format_info: FormatInfo::default(),
-            //field_name: None,
         }
     }
 
-    fn enrich_comments(&mut self, comments: &mut Vec<Comment>, context: &EContext) {
+    fn enrich_comments(&mut self, shape: &mut EShape, context: &EContext) {
         let mut prev_sibling = self.inner.prev_sibling();
         while let Some(node) = prev_sibling {
-            if node.is_comment() && !is_processed(node.id(), comments) {
-                self.comments
-                    .pre_comments
-                    .push(Comment::from_node(&node, context));
+            if node.is_comment() {
+                let comment_id = node.id();
+                if let Some(comment) = shape.comments.iter_mut().find(|c| c.id == comment_id) {
+                    if !comment.is_processed {
+                        self.buckets
+                            .pre_comments
+                            .push(Comment::from_node(&node, context));
+                        comment.is_processed = true;
+                    }
+                } else {
+                    self.buckets
+                        .pre_comments
+                        .push(Comment::from_node(&node, context));
+                }
             }
             prev_sibling = node.prev_sibling();
         }
 
         let mut next_sibling = self.inner.next_sibling();
         while let Some(node) = next_sibling {
-            if node.is_comment() && !is_processed(node.id(), comments) {
-                self.comments
-                    .post_comments
-                    .push(Comment::from_node(&node, context));
+            if node.is_comment() {
+                let comment_id = node.id();
+                if let Some(comment) = shape.comments.iter_mut().find(|c| c.id == comment_id) {
+                    if !comment.is_processed {
+                        self.buckets
+                            .post_comments
+                            .push(Comment::from_node(&node, context));
+                        comment.is_processed = true;
+                    }
+                } else {
+                    self.buckets
+                        .post_comments
+                        .push(Comment::from_node(&node, context));
+                }
             }
             next_sibling = node.next_sibling();
         }
@@ -155,15 +169,14 @@ impl<'a, 'tree> ClassNode<'a, 'tree> {
         };
     }
 
-    fn rewrite(&self, shape: &mut EShape, context: &EContext) -> String {
-        let (node, mut result, source_code, _) = self.prepare(context);
+    fn rewrite(&mut self, shape: &mut EShape, context: &EContext) -> String {
+        let (node, mut result, source_code, config, children) = self.prepare(context);
 
-        if let Some(ref a) = node.try_c_by_k("modifiers") {
-            //result.push_str(&rewrite::<Modifiers>(a, shape, context));
-
-            if let Some(_) = a.try_c_by_k("modifier") {
-                result.push(' ');
-            }
+        if let Some(c) = node.try_c_by_k("modifiers") {
+            let mut modifiers = Modifiers::new(c);
+            modifiers.enrich(shape, context);
+            result.push_str(&modifiers.format_info.rewritten);
+            children.push(ASTNode::Modifiers(modifiers));
         }
 
         result.push_str("class ");
@@ -193,14 +206,20 @@ impl<'a, 'tree> ClassNode<'a, 'tree> {
         result
     }
 
-    pub fn prepare<'b>(
-        &self,
-        context: &'b EContext,
-    ) -> (&'a Node<'tree>, String, &'b str, &'b Config) {
-        let node = self.inner;
+    pub fn prepare<'a>(
+        &mut self,
+        context: &'a EContext,
+    ) -> (
+        &Node<'t>,
+        String,
+        &'a str,
+        &'a Config,
+        &mut Vec<ASTNode<'t>>,
+    ) {
+        let node = &self.inner;
         let result = String::new();
-        let source_code = &context.source_code;
+        let source_code = context.source_code.as_str();
         let config = &context.config;
-        (node, result, source_code, config)
+        (node, result, source_code, config, &mut self.children)
     }
 }
