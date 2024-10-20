@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+
 use crate::accessor::Accessor;
 use crate::context::FmtContext;
 use crate::fmt_push::FmtPush;

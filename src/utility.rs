@@ -14,7 +14,7 @@ pub fn enrich_root(con: &FmtContext) {
 
     let context = EContext::new(con.config, &con.source_code);
     let mut shape = EShape::default();
-    collect_comments(&root, &mut shape.comments, &context);
+    collect_comments(root, &mut shape.comments, &context);
 
     let c = root.c_by_k("class_declaration");
     let mut class_node = ClassNode::build(c, &mut shape, &context);
@@ -172,30 +172,30 @@ fn newlines_to_add(node: &Node, source_code: &str) -> usize {
     }
 }
 
-pub fn rewrite<'a, 'tree, T>(n: &'a Node<'tree>, shape: &mut Shape, context: &FmtContext) -> String
+pub fn rewrite<'a, 't, T>(n: &'a Node<'t>, shape: &mut Shape, context: &FmtContext) -> String
 where
-    T: FromNode<'a, 'tree> + Rewrite,
+    T: FromNode<'a, 't> + Rewrite,
 {
     let block = T::new(n);
     block.rewrite(shape, context)
 }
 
-pub fn rewrite_shape<'a, 'tree, T>(
-    n: &'a Node<'tree>,
+pub fn rewrite_shape<'a, 't, T>(
+    n: &'a Node<'t>,
     shape: &mut Shape,
     is_standalone: bool,
     context: &FmtContext,
 ) -> String
 where
-    T: FromNode<'a, 'tree> + Rewrite,
+    T: FromNode<'a, 't> + Rewrite,
 {
     let block = T::new(n);
     let cloned = &mut shape.clone_with_standalone(is_standalone);
     block.rewrite(cloned, context)
 }
 
-pub fn update_source_code_for_if_statement<'tree>(
-    node: &Node<'tree>,
+pub fn update_source_code_for_if_statement<'t>(
+    node: &Node<'t>,
     source_code: &str,
 ) -> Option<String> {
     let node_code = node.v(source_code);
@@ -205,7 +205,7 @@ pub fn update_source_code_for_if_statement<'tree>(
     if node.c_by_n("consequence").kind() != "block" {
         let consequence_code = node.c_by_n("consequence").v(source_code);
         new_node_code =
-            new_node_code.replace(&consequence_code, &format!("{{ {} }}", consequence_code));
+            new_node_code.replace(consequence_code, &format!("{{ {} }}", consequence_code));
         is_updated = true;
     }
 
@@ -213,7 +213,7 @@ pub fn update_source_code_for_if_statement<'tree>(
         if a.kind() != "block" && a.kind() != "if_statement" {
             let alternative_code = a.v(source_code);
             new_node_code =
-                new_node_code.replace(&alternative_code, &format!("{{ {} }}", alternative_code));
+                new_node_code.replace(alternative_code, &format!("{{ {} }}", alternative_code));
             is_updated = true;
         }
     }
@@ -225,23 +225,23 @@ pub fn update_source_code_for_if_statement<'tree>(
     }
 }
 
-pub fn is_parent_where_clause<'tree>(node: &Node<'tree>) -> bool {
+pub fn is_parent_where_clause(node: &Node<'_>) -> bool {
     if let Some(p) = node.parent() {
         if p.kind() == "where_clause" {
             return true;
         }
     }
-    return false;
+    false
 }
 
-//pub fn block_format<'tree>(nodes: Vec<&Node<'tree>>, shape: &Shape, config: &Config) -> String {
+//pub fn block_format<'t>(nodes: Vec<&Node<'t>>, shape: &Shape, config: &Config) -> String {
 //    let mut result = String::new();
 //
 //    result
 //}
 
-pub fn split_and_rewrite_directly<'a, 'tree>(
-    node: &'a Node<'tree>,
+pub fn split_and_rewrite_directly<'a, 't>(
+    node: &'a Node<'t>,
     shape: &mut Shape,
     context: &FmtContext,
 ) -> String {

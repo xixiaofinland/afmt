@@ -55,7 +55,7 @@ impl<'a> FmtContext<'a> {
     }
 
     pub fn format_one_file(&self) {
-        let context = EContext::new(&self.config, &self.source_code);
+        let context = EContext::new(self.config, &self.source_code);
         let root_node = &self.ast_tree.root_node();
 
         let top_node = root_node.first_c();
