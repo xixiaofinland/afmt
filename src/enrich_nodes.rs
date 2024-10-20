@@ -85,10 +85,10 @@ impl<'t> Modifiers<'t> {
 
     fn enrich_data(&mut self, shape: &mut EShape, context: &EContext) {
         self.content = self.rewrite(shape, context);
-        let length = get_length_before_brace(&self.content);
+        let offset = get_length_before_brace(&self.content);
 
         self.format_info = FormatInfo {
-            offset: length,
+            offset,
             wrappable: false,
             indent_level: shape.indent_level,
             //force_break_before: false,
