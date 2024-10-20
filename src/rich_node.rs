@@ -1,9 +1,6 @@
-use tree_sitter::Node;
-
-use crate::child::Accessor;
-use crate::config::Config;
-use crate::enrich_def::*;
-use crate::utility::get_length_before_brace;
+use crate::accessor::Accessor;
+use crate::rich_def::*;
+use crate::utility::*;
 
 impl<'t> ClassNode<'t> {
     pub fn enrich_data(&mut self, shape: &mut EShape, context: &EContext) {

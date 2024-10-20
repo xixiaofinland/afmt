@@ -1,5 +1,5 @@
 use colored::Colorize;
-use tree_sitter::{Node, TreeCursor};
+use tree_sitter::Node;
 
 // `c` => child
 // `cv` => child value
@@ -150,19 +150,19 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 }
 
-pub struct NamedChildren<'t> {
-    cursor: TreeCursor<'t>,
-    node: Node<'t>,
-}
-
-impl<'t> Iterator for NamedChildren<'t> {
-    type Item = Node<'t>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.cursor.goto_first_child() {
-            Some(self.node)
-        } else {
-            None
-        }
-    }
-}
+//pub struct NamedChildren<'t> {
+//    cursor: TreeCursor<'t>,
+//    node: Node<'t>,
+//}
+//
+//impl<'t> Iterator for NamedChildren<'t> {
+//    type Item = Node<'t>;
+//
+//    fn next(&mut self) -> Option<Self::Item> {
+//        if self.cursor.goto_first_child() {
+//            Some(self.node)
+//        } else {
+//            None
+//        }
+//    }
+//}

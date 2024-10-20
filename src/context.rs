@@ -1,6 +1,6 @@
-use crate::child::Accessor;
+use crate::accessor::Accessor;
 use crate::config::Config;
-use crate::enrich_def::*;
+use crate::rich_def::*;
 use crate::utility::{enrich_root, visit_root};
 use anyhow::Result;
 use colored::Colorize;

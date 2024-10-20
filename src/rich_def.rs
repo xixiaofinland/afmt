@@ -1,4 +1,4 @@
-use crate::child::Accessor;
+use crate::accessor::Accessor;
 use crate::config::Config;
 use crate::rich_struct;
 use std::fmt::Debug;

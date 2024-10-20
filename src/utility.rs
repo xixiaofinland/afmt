@@ -1,7 +1,7 @@
-use crate::child::Accessor;
+use crate::accessor::Accessor;
 use crate::context::FmtContext;
-use crate::enrich_def::*;
 use crate::rewrite::Rewrite;
+use crate::rich_def::*;
 use crate::shape::Shape;
 use crate::struct_def::{BinaryExpression, Expression, FromNode};
 use crate::visit::Visitor;
