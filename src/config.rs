@@ -1,4 +1,5 @@
 use crate::context::FmtContext;
+use crate::utility::{collect_comments, enrich};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use serde::Deserialize;
@@ -77,7 +78,7 @@ impl Session {
         &self.config
     }
 
-    pub fn create_session_from_config(
+    pub fn create_from_config(
         config_path: Option<&str>,
         source_files: Vec<String>,
     ) -> Result<Session> {
@@ -102,7 +103,17 @@ impl Session {
             .unwrap();
 
         let context = FmtContext::new(&self.config, source_code);
-        let _ = context.enrich_one_file();
+
+        // traverse the tree to collect all comment nodes
+        let mut cursor = context.ast_tree.walk();
+        let mut comments = Vec::new();
+        collect_comments(&mut cursor, &mut comments, &context);
+
+        // traverse the tree to build enriched data
+
+        // traverse enriched data and create combinators to print result
+
+        let _ = enrich(&context);
 
         //let (tx, rx) = mpsc::channel();
         //let config = Arc::new(self.config.clone());

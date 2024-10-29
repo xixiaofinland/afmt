@@ -1,7 +1,7 @@
 use crate::accessor::Accessor;
 use crate::config::Config;
 use crate::rich_def::*;
-use crate::utility::{enrich_root, visit_root};
+use crate::utility::{enrich, visit_root};
 use anyhow::Result;
 use colored::Colorize;
 use tree_sitter::{Language, Node, Parser, Tree};
@@ -68,7 +68,7 @@ impl<'a> FmtContext<'a> {
 
     pub fn enrich_one_file(&self) -> Result<String> {
         let mut result = String::new();
-        enrich_root(self);
+        enrich(self);
         Ok(result)
     }
 

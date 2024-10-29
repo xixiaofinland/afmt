@@ -159,7 +159,7 @@ mod tests {
             .expect("PathBuf to String failed.")
             .to_string();
 
-        let session = Session::create_session_from_config(config_path, vec![file_path.clone()])
+        let session = Session::create_from_config(config_path, vec![file_path.clone()])
             .expect("Create session failed.");
 
         let vec = session.format();

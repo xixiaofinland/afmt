@@ -7,27 +7,40 @@ use crate::struct_def::{BinaryExpression, Expression, FromNode};
 use crate::visit::Visitor;
 #[allow(unused_imports)]
 use log::debug;
-use tree_sitter::Node;
+use tree_sitter::{Node, TreeCursor};
 
-pub fn enrich_root(con: &FmtContext) {
-    let root = &con.ast_tree.root_node();
-
-    let context = EContext::new(con.config, &con.source_code);
-    let mut shape = EShape::default();
-    collect_comments(root, &mut shape.comments, &context);
-
-    let c = root.c_by_k("class_declaration");
-    let mut class_node = ClassNode::build(c, &mut shape, &context);
-    class_node.enrich(&mut shape, &context);
-    eprintln!("gopro[4]: utility.rs:23: class_node={:#?}", class_node);
+pub fn enrich(con: &FmtContext) {
+    //let root = &con.ast_tree.root_node();
+    //
+    //let context = EContext::new(con.config, &con.source_code);
+    //let mut shape = EShape::default();
+    //collect_comments(root, &mut shape.comments, &context);
+    //
+    //let c = root.c_by_k("class_declaration");
+    //let mut class_node = ClassNode::build(c, &mut shape, &context);
+    //class_node.enrich(&mut shape, &context);
+    //eprintln!("gopro[4]: utility.rs:23: class_node={:#?}", class_node);
 }
 
-fn collect_comments(root: &Node, comments: &mut Vec<Comment>, context: &EContext) {
-    for c in root.children_vec() {
-        if c.is_comment() {
-            comments.push(Comment::from_node(&c, context));
+pub fn collect_comments(
+    cursor: &mut TreeCursor,
+    comments: &mut Vec<Comment>,
+    context: &FmtContext,
+) {
+    loop {
+        let node = cursor.node();
+        if node.is_comment() {
+            comments.push(Comment::from_node(node, context));
         }
-        collect_comments(&c, comments, context);
+
+        if cursor.goto_first_child() {
+            collect_comments(cursor, comments, context);
+            cursor.goto_parent();
+        }
+
+        if !cursor.goto_next_sibling() {
+            break;
+        }
     }
 }
 

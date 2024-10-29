@@ -4,6 +4,8 @@ pub mod config;
 mod context;
 mod fmt_push;
 mod macros;
+mod notation;
+mod print;
 mod rewrite;
 mod rich_def;
 mod rich_macro;

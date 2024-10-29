@@ -30,8 +30,7 @@ fn main() {
 }
 
 fn run(args: Args) -> Result<()> {
-    let session =
-        Session::create_session_from_config(args.config.as_deref(), vec![args.path.clone()])?;
+    let session = Session::create_from_config(args.config.as_deref(), vec![args.path.clone()])?;
     format(session);
 
     //for (index, result) in results.iter().enumerate() {

@@ -1,6 +1,7 @@
 use crate::accessor::Accessor;
 use crate::config::Config;
-use crate::rich_struct;
+use crate::context::FmtContext;
+//use crate::rich_struct;
 use std::fmt::Debug;
 use tree_sitter::Node;
 
@@ -32,7 +33,7 @@ pub struct Comment {
 }
 
 impl Comment {
-    pub fn from_node(inner: &Node, context: &EContext) -> Self {
+    pub fn from_node(inner: Node, context: &FmtContext) -> Self {
         let id = inner.id();
         let content = inner.v(&context.source_code).to_string();
         Self {
@@ -77,10 +78,10 @@ impl EContext {
     }
 }
 
-rich_struct!(ClassNode, Modifiers);
+//rich_struct!(ClassNode, Modifiers);
 
-#[derive(Debug)]
-pub enum ASTNode<'t> {
-    ClassNode(ClassNode<'t>),
-    Modifiers(Modifiers<'t>),
-}
+//#[derive(Debug)]
+//pub enum ASTNode<'t> {
+//    ClassNode(ClassNode<'t>),
+//    Modifiers(Modifiers<'t>),
+//}
