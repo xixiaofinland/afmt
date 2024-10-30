@@ -34,8 +34,8 @@ pub fn collect_comments(
 pub fn enrich(context: &FmtContext) {
     let root = context.ast_tree.root_node();
     let c = root.c_by_k("class_declaration");
-    //let mut class_node = ClassNode::build(c, &mut shape, &context);
-    //class_node.enrich(&mut shape, &context);
+    let class_node = ClassDeclaration::from_node(c, &context.source_code);
+    eprintln!("gopro[1]: utility.rs:37: class_node={:#?}", class_node);
 }
 
 pub fn get_length_before_brace(s: &str) -> usize {

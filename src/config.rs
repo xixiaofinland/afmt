@@ -110,6 +110,7 @@ impl Session {
         collect_comments(&mut cursor, &mut comments, &context);
 
         // traverse the tree to build enriched data
+        enrich(&context);
 
         // traverse enriched data and create combinators to print result
 

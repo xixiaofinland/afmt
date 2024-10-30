@@ -15,7 +15,7 @@ pub struct ClassDeclaration<'t> {
 }
 
 impl<'t> ClassDeclaration<'t> {
-    fn from_node(node: Node<'t>, source_code: &'t str) -> Self {
+    pub fn from_node(node: Node<'t>, source_code: &'t str) -> Self {
         let modifiers = if let Some(m) = node.try_c_by_k("modifiers") {
             Some(Modifiers {
                 node: m,
@@ -47,7 +47,7 @@ pub struct Modifiers<'t> {
 }
 
 impl<'t> Modifiers<'t> {
-    fn from_node(node: &Node, source_code: &'t str) -> Self {
+    fn from_node(node: Node<'t>, source_code: &'t str) -> Self {
         Self { node, source_code }
     }
 }
