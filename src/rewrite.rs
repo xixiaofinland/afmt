@@ -480,7 +480,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         let context = match &updated_context {
             Some(c) => {
                 node = c
-                    .ast_tree
+                    .ast
                     .root_node()
                     .first_c()
                     .c_by_n("body")

@@ -9,19 +9,6 @@ use crate::visit::Visitor;
 use log::debug;
 use tree_sitter::{Node, TreeCursor};
 
-pub fn enrich(con: &FmtContext) {
-    //let root = &con.ast_tree.root_node();
-    //
-    //let context = EContext::new(con.config, &con.source_code);
-    //let mut shape = EShape::default();
-    //collect_comments(root, &mut shape.comments, &context);
-    //
-    //let c = root.c_by_k("class_declaration");
-    //let mut class_node = ClassNode::build(c, &mut shape, &context);
-    //class_node.enrich(&mut shape, &context);
-    //eprintln!("gopro[4]: utility.rs:23: class_node={:#?}", class_node);
-}
-
 pub fn collect_comments(
     cursor: &mut TreeCursor,
     comments: &mut Vec<Comment>,
@@ -29,7 +16,7 @@ pub fn collect_comments(
 ) {
     loop {
         let node = cursor.node();
-        if node.is_comment() {
+        if node.is_named() && node.is_comment() {
             comments.push(Comment::from_node(node, context));
         }
 
@@ -42,6 +29,13 @@ pub fn collect_comments(
             break;
         }
     }
+}
+
+pub fn enrich(context: &FmtContext) {
+    let root = context.ast_tree.root_node();
+    let c = root.c_by_k("class_declaration");
+    //let mut class_node = ClassNode::build(c, &mut shape, &context);
+    //class_node.enrich(&mut shape, &context);
 }
 
 pub fn get_length_before_brace(s: &str) -> usize {

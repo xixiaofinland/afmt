@@ -3,6 +3,7 @@ pub mod args;
 pub mod config;
 mod fmt_push;
 mod macros;
+mod node_structs;
 mod notation;
 mod print;
 mod rewrite;

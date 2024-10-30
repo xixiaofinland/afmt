@@ -8,14 +8,14 @@ use tree_sitter::Node;
 //    fn enrich(&mut self, shape: &mut EShape, context: &EContext);
 //}
 
-#[derive(Debug, Default)]
-pub struct FormatInfo {
-    pub offset: usize, // Used in complex nodes (like Class, Method) to decide wrapping
-    pub wrappable: bool,
-    pub indent_level: usize,
-    pub force_break_after: bool,
-    pub has_new_line_before: bool,
-}
+//#[derive(Debug, Default)]
+//pub struct FormatInfo {
+//    pub offset: usize, // Used in complex nodes (like Class, Method) to decide wrapping
+//    pub wrappable: bool,
+//    pub indent_level: usize,
+//    pub force_break_after: bool,
+//    pub has_new_line_before: bool,
+//}
 
 #[derive(Debug, Default)]
 pub struct CommentBuckets {
@@ -52,29 +52,6 @@ impl Comment {
 pub enum CommentType {
     Line,
     Block,
-}
-
-#[derive(Debug, Default)]
-pub struct EShape {
-    pub indent_level: usize,
-    pub comments: Vec<Comment>,
-}
-
-#[derive(Debug)]
-pub struct EContext {
-    pub config: Config,
-    pub source_code: String,
-}
-
-impl EContext {
-    pub fn new(config: &Config, source_code: &str) -> Self {
-        let config = config.clone();
-        let source_code = String::from(source_code);
-        Self {
-            config,
-            source_code,
-        }
-    }
 }
 
 //rich_struct!(ClassNode, Modifiers);
