@@ -1,14 +1,88 @@
 use crate::accessor::Accessor;
 use crate::config::FmtContext;
-use crate::doc::Doc;
 use std::fmt::Debug;
 use tree_sitter::Node;
 
+#[derive(Debug)]
 pub struct ClassDeclaration<'t> {
     pub node: Node<'t>,
     pub source_code: &'t str,
     pub buckets: CommentBuckets,
+    //annotation: Annotation,
+    modifiers: Option<Modifiers<'t>>,
+    name: &'t str,
+    //body: ClassBody<'t>,
 }
+
+impl<'t> ClassDeclaration<'t> {
+    fn from_node(node: Node<'t>, source_code: &'t str) -> Self {
+        let modifiers = if let Some(m) = node.try_c_by_k("modifiers") {
+            Some(Modifiers {
+                node: m,
+                source_code,
+            })
+        } else {
+            None
+        };
+
+        let buckets = CommentBuckets::default();
+        let name = node.cv_by_n("name", source_code);
+
+        Self {
+            node,
+            source_code,
+            buckets,
+            modifiers,
+            name,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Modifiers<'t> {
+    pub node: Node<'t>,
+    pub source_code: &'t str,
+    //pub buckets: CommentBuckets,
+    //modifiers: Vec<Modifier<'t>>,
+}
+
+impl<'t> Modifiers<'t> {
+    fn from_node(node: &Node, source_code: &'t str) -> Self {
+        Self { node, source_code }
+    }
+}
+
+//impl<'t> Modifiers<'t> {
+//    fn from_node(node: &Node, source_code: &'t str) -> Self {
+//        if let Some(m) = node.try_c_by_k("modifier") {
+//
+//            let superclass = if node.child_by_field_name("superclass").is_some() {
+//            Some(Superclass {
+//                extends_keyword: "extends".to_string(),
+//                superclass_type: Type::from_node(node.child_by_field_name("_type").unwrap()),
+//            })
+//        } else {
+//            None
+//        };
+//
+//            result.push_str(&rewrite::<Modifiers>(a, shape, context));
+//
+//            if let Some(_) = a.try_c_by_k("modifier") {
+//                result.push(' ');
+//            }
+//        }
+//
+//        Self {}
+//    }
+//}
+
+pub struct Modifier<'t> {
+    pub node: Node<'t>,
+    pub name: &'t str,
+    pub buckets: CommentBuckets,
+}
+
+impl<'t> Modifier<'t> {}
 
 //pub trait RichNode: Debug {
 //    fn enrich(&mut self, shape: &mut EShape, context: &EContext);
