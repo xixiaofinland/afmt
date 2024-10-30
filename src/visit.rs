@@ -1,5 +1,5 @@
 use crate::accessor::Accessor;
-use crate::context::FmtContext;
+use crate::config::FmtContext;
 use crate::rewrite::Rewrite;
 use crate::route::COMMON_MAP;
 use crate::shape::Shape;

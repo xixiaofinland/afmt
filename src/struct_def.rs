@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::context::FmtContext;
+use crate::config::FmtContext;
 use crate::def_struct;
 use tree_sitter::Node;
 

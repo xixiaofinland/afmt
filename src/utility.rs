@@ -1,5 +1,5 @@
 use crate::accessor::Accessor;
-use crate::context::FmtContext;
+use crate::config::FmtContext;
 use crate::rewrite::Rewrite;
 use crate::rich_def::*;
 use crate::shape::Shape;

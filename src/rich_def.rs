@@ -1,13 +1,12 @@
 use crate::accessor::Accessor;
-use crate::config::Config;
-use crate::context::FmtContext;
+use crate::config::{Config, FmtContext};
 //use crate::rich_struct;
 use std::fmt::Debug;
 use tree_sitter::Node;
 
-pub trait RichNode: Debug {
-    fn enrich(&mut self, shape: &mut EShape, context: &EContext);
-}
+//pub trait RichNode: Debug {
+//    fn enrich(&mut self, shape: &mut EShape, context: &EContext);
+//}
 
 #[derive(Debug, Default)]
 pub struct FormatInfo {

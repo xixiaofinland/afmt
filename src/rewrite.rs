@@ -1,7 +1,7 @@
 #![allow(clippy::all)]
 
 use crate::accessor::Accessor;
-use crate::context::FmtContext;
+use crate::config::FmtContext;
 use crate::fmt_push::FmtPush;
 use crate::match_routing;
 use crate::route::EXP_MAP;

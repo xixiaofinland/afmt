@@ -1,7 +1,6 @@
 mod accessor;
 pub mod args;
 pub mod config;
-mod context;
 mod fmt_push;
 mod macros;
 mod notation;
