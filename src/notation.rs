@@ -1,49 +1,49 @@
 use typed_arena::Arena;
 
-pub type NRef<'a> = &'a N<'a>;
+pub type DocRef<'a> = &'a Doc<'a>;
 
 // `Notation`, equals the `Doc` in Wadler's Printer
 #[derive(Debug)]
-pub enum N<'a> {
+pub enum Doc<'a> {
     Newline,
     Text(String, u32), // The given text should not contain line breaks
-    Flat(NRef<'a>),
-    Indent(u32, NRef<'a>),
-    Concat(Vec<NRef<'a>>),
-    Choice(NRef<'a>, NRef<'a>),
+    Flat(DocRef<'a>),
+    Indent(u32, DocRef<'a>),
+    Concat(Vec<DocRef<'a>>),
+    Choice(DocRef<'a>, DocRef<'a>),
 }
 
-pub struct NBuilder<'a>(Arena<N<'a>>);
+pub struct DocBuilder<'a>(Arena<Doc<'a>>);
 
-impl<'a> NBuilder<'a> {
-    pub fn new() -> NBuilder<'a> {
-        NBuilder(Arena::new())
+impl<'a> DocBuilder<'a> {
+    pub fn new() -> DocBuilder<'a> {
+        DocBuilder(Arena::new())
     }
 
-    pub fn nl(&'a self) -> NRef<'a> {
-        self.0.alloc(N::Newline)
+    pub fn nl(&'a self) -> DocRef<'a> {
+        self.0.alloc(Doc::Newline)
     }
 
-    pub fn txt(&'a self, text: impl ToString) -> NRef<'a> {
+    pub fn txt(&'a self, text: impl ToString) -> DocRef<'a> {
         let string = text.to_string();
         let width = string.len() as u32;
-        self.0.alloc(N::Text(string, width))
+        self.0.alloc(Doc::Text(string, width))
     }
 
-    pub fn flat(&'a self, n_ref: NRef<'a>) -> NRef<'a> {
-        self.0.alloc(N::Flat(n_ref))
+    pub fn flat(&'a self, n_ref: DocRef<'a>) -> DocRef<'a> {
+        self.0.alloc(Doc::Flat(n_ref))
     }
 
-    pub fn indent(&'a self, indent: u32, n_ref: NRef<'a>) -> NRef<'a> {
-        self.0.alloc(N::Indent(indent, n_ref))
+    pub fn indent(&'a self, indent: u32, n_ref: DocRef<'a>) -> DocRef<'a> {
+        self.0.alloc(Doc::Indent(indent, n_ref))
     }
 
-    pub fn concat(&'a self, n_refs: impl IntoIterator<Item = NRef<'a>>) -> NRef<'a> {
+    pub fn concat(&'a self, n_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
         let n_vec = n_refs.into_iter().collect::<Vec<_>>();
-        self.0.alloc(N::Concat(n_vec))
+        self.0.alloc(Doc::Concat(n_vec))
     }
 
-    pub fn choice(&'a self, first: NRef<'a>, second: NRef<'a>) -> NRef<'a> {
-        self.0.alloc(N::Choice(first, second))
+    pub fn choice(&'a self, first: DocRef<'a>, second: DocRef<'a>) -> DocRef<'a> {
+        self.0.alloc(Doc::Choice(first, second))
     }
 }

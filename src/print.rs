@@ -1,6 +1,6 @@
-use crate::notation::{NRef, N};
+use crate::notation::{Doc, DocRef};
 
-pub fn pretty_print(n_ref: NRef, max_width: u32) -> String {
+pub fn pretty_print(n_ref: DocRef, max_width: u32) -> String {
     let mut printer = PrettyPrinter::new(n_ref, max_width);
     printer.print()
 }
@@ -13,13 +13,13 @@ struct PrettyPrinter<'a> {
 
 #[derive(Debug, Clone, Copy)]
 struct Chunk<'a> {
-    n_ref: NRef<'a>,
+    n_ref: DocRef<'a>,
     indent: u32,
     flat: bool,
 }
 
 impl<'a> Chunk<'a> {
-    fn with_n(self, n_ref: NRef<'a>) -> Self {
+    fn with_n(self, n_ref: DocRef<'a>) -> Self {
         Chunk {
             n_ref,
             indent: self.indent,
@@ -27,7 +27,7 @@ impl<'a> Chunk<'a> {
         }
     }
 
-    fn indented(self, indent: u32, n_ref: NRef<'a>) -> Self {
+    fn indented(self, indent: u32, n_ref: DocRef<'a>) -> Self {
         Chunk {
             n_ref,
             indent: self.indent + indent,
@@ -35,7 +35,7 @@ impl<'a> Chunk<'a> {
         }
     }
 
-    fn flat(self, n_ref: NRef<'a>) -> Self {
+    fn flat(self, n_ref: DocRef<'a>) -> Self {
         Chunk {
             n_ref,
             indent: self.indent,
@@ -45,7 +45,7 @@ impl<'a> Chunk<'a> {
 }
 
 impl<'a> PrettyPrinter<'a> {
-    fn new(n_ref: NRef<'a>, width: u32) -> Self {
+    fn new(n_ref: DocRef<'a>, width: u32) -> Self {
         let chunk = Chunk {
             n_ref,
             indent: 0,
@@ -64,25 +64,25 @@ impl<'a> PrettyPrinter<'a> {
 
         while let Some(chunk) = self.chunks.pop() {
             match chunk.n_ref {
-                N::Newline => {
+                Doc::Newline => {
                     result.push('\n');
                     for _ in 0..chunk.indent {
                         result.push(' ');
                     }
                     self.col = chunk.indent;
                 }
-                N::Text(text, width) => {
+                Doc::Text(text, width) => {
                     result.push_str(text);
                     self.col += width;
                 }
-                N::Flat(x) => self.chunks.push(chunk.flat(x)),
-                N::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
-                N::Concat(seq) => {
+                Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
+                Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
+                Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         self.chunks.push(chunk.with_n(n));
                     }
                 }
-                N::Choice(x, y) => {
+                Doc::Choice(x, y) => {
                     if chunk.flat || self.fits(chunk.with_n(x)) {
                         self.chunks.push(chunk.with_n(x));
                     } else {
@@ -110,22 +110,22 @@ impl<'a> PrettyPrinter<'a> {
             };
 
             match chunk.n_ref {
-                N::Newline => return true,
-                N::Text(_, text_width) => {
+                Doc::Newline => return true,
+                Doc::Text(_, text_width) => {
                     if *text_width <= remaining_width {
                         remaining_width -= text_width;
                     } else {
                         return false;
                     }
                 }
-                N::Flat(x) => stack.push(chunk.flat(x)),
-                N::Indent(i, x) => stack.push(chunk.indented(*i, x)),
-                N::Concat(seq) => {
+                Doc::Flat(x) => stack.push(chunk.flat(x)),
+                Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
+                Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         stack.push(chunk.with_n(n));
                     }
                 }
-                N::Choice(x, y) => {
+                Doc::Choice(x, y) => {
                     if chunk.flat {
                         stack.push(chunk.with_n(x));
                     } else {

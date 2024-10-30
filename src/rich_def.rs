@@ -1,8 +1,14 @@
 use crate::accessor::Accessor;
-use crate::config::{Config, FmtContext};
-//use crate::rich_struct;
+use crate::config::FmtContext;
+use crate::notation::Doc;
 use std::fmt::Debug;
 use tree_sitter::Node;
+
+pub struct ClassDeclaration<'a, 't> {
+    pub node: Node<'t>,
+    pub buckets: CommentBuckets,
+    pub notations: Vec<Doc<'a>>,
+}
 
 //pub trait RichNode: Debug {
 //    fn enrich(&mut self, shape: &mut EShape, context: &EContext);

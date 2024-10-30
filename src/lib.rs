@@ -10,6 +10,7 @@ mod rewrite;
 mod rich_def;
 mod rich_macro;
 mod rich_node;
+mod rich_structs;
 mod route;
 mod shape;
 mod struct_def;
