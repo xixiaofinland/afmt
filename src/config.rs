@@ -102,7 +102,7 @@ impl Session {
             })
             .unwrap();
 
-        let context = FmtContext::new(&self.config, source_code);
+        let context = FmtContext::new(self.config.clone(), source_code);
 
         // traverse the tree to collect all comment nodes
         let mut cursor = context.ast_tree.walk();
@@ -151,14 +151,14 @@ impl Session {
 }
 
 #[derive(Clone)]
-pub struct FmtContext<'a> {
-    pub config: &'a Config,
+pub struct FmtContext {
+    pub config: Config,
     pub source_code: String,
     pub ast_tree: Tree,
 }
 
-impl<'a> FmtContext<'a> {
-    pub fn new(config: &'a Config, source_code: String) -> Self {
+impl FmtContext {
+    pub fn new(config: Config, source_code: String) -> Self {
         let mut parser = Parser::new();
         parser
             .set_language(&language())

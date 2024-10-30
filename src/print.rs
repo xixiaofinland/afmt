@@ -1,4 +1,4 @@
-use crate::notation::{Doc, DocRef};
+use crate::doc::{Doc, DocRef};
 
 pub fn pretty_print(n_ref: DocRef, max_width: u32) -> String {
     let mut printer = PrettyPrinter::new(n_ref, max_width);

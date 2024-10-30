@@ -19,8 +19,7 @@ macro_rules! def_struct {
                     let node = self.node();
                     let result = String::new();
                     let source_code = &context.source_code;
-                    let config = context.config;
-                    (node, result, source_code, config)
+                    (node, result, source_code, &context.config)
                 }
             }
 

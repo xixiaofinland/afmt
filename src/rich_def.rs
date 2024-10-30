@@ -1,13 +1,13 @@
 use crate::accessor::Accessor;
 use crate::config::FmtContext;
-use crate::notation::Doc;
+use crate::doc::Doc;
 use std::fmt::Debug;
 use tree_sitter::Node;
 
-pub struct ClassDeclaration<'a, 't> {
+pub struct ClassDeclaration<'t> {
     pub node: Node<'t>,
+    pub source_code: &'t str,
     pub buckets: CommentBuckets,
-    pub notations: Vec<Doc<'a>>,
 }
 
 //pub trait RichNode: Debug {

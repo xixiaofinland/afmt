@@ -46,7 +46,7 @@ pub fn get_length_before_brace(s: &str) -> usize {
 
 pub fn visit_root(context: &FmtContext) -> String {
     let mut result = String::new();
-    let shape = Shape::empty(context.config);
+    let shape = Shape::empty(&context.config);
     let root = &context.ast_tree.root_node();
 
     let mut cursor = root.walk();
@@ -143,7 +143,7 @@ pub fn add_standalone_suffix_no_semicolumn(node: &Node, result: &mut String, sou
 }
 
 pub fn add_indent(result: &mut String, shape: &Shape, context: &FmtContext) {
-    result.push_str(&shape.indent.as_string(context.config));
+    result.push_str(&shape.indent.as_string(&context.config));
 }
 
 fn newlines_to_add(node: &Node, source_code: &str) -> usize {

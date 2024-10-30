@@ -55,7 +55,7 @@ impl<'a, 'tree> Rewrite for ClassDeclaration<'a, 'tree> {
             |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
 
-        result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
+        result.push_str(&format!("{}}}", shape.indent.as_string(&context.config)));
         try_add_standalone_suffix_no_semicolumn(node, &mut result, shape, source_code);
         result
     }
@@ -475,7 +475,7 @@ impl<'a, 'tree> Rewrite for IfStatement<'a, 'tree> {
         let updated_context =
             update_source_code_for_if_statement(&node, source_code).map(|updated_source_code| {
                 let wrapped_source = format!("class Dummy {{ {{ {} }} }}", updated_source_code);
-                FmtContext::new(config, wrapped_source)
+                FmtContext::new(config.clone(), wrapped_source)
             });
         let context = match &updated_context {
             Some(c) => {
@@ -616,7 +616,7 @@ impl<'a, 'tree> Rewrite for EnhancedForStatement<'a, 'tree> {
                 .clone_with_indent_increase(config)
                 .clone_with_standalone(true);
             result.push_str(&rewrite::<Statement>(&body, &mut c_shape, context));
-            result.push_str(&format!("\n{}}}", shape.indent.as_string(context.config)));
+            result.push_str(&format!("\n{}}}", shape.indent.as_string(&context.config)));
         }
 
         add_standalone_suffix_no_semicolumn(&node, &mut result, source_code);
@@ -984,7 +984,7 @@ impl<'a, 'tree> Rewrite for ConstructorBody<'a, 'tree> {
             context,
             |c, c_shape, c_context| c._visit(c_shape, c_context),
         ));
-        result.push_str(&format!("{}}}", shape.indent.as_string(context.config)));
+        result.push_str(&format!("{}}}", shape.indent.as_string(&context.config)));
         result
     }
 }

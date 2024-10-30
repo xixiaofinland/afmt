@@ -1,10 +1,9 @@
 mod accessor;
 pub mod args;
 pub mod config;
+mod doc;
 mod fmt_push;
 mod macros;
-mod node_structs;
-mod notation;
 mod print;
 mod rewrite;
 mod rich_def;
