@@ -35,6 +35,7 @@ pub fn enrich(context: &FmtContext) {
     let root = context.ast_tree.root_node();
     let c = root.c_by_k("class_declaration");
     let class_node = ClassDeclaration::new(c, &context.source_code, 0);
+    eprintln!("gopro[6]: utility.rs:37: class_node={:#?}", class_node);
 }
 
 //pub fn visit_root(context: &FmtContext) -> String {

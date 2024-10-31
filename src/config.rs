@@ -114,8 +114,6 @@ impl Session {
 
         // traverse enriched data and create combinators to print result
 
-        let _ = enrich(&context);
-
         //let (tx, rx) = mpsc::channel();
         //let config = Arc::new(self.config.clone());
         //

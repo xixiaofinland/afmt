@@ -1,4 +1,4 @@
 @IsTest
 public class Me  {
-	Public String s = 'hello';
+	Public Integer s = 1;
 }
