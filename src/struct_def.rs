@@ -56,6 +56,7 @@ impl Modifiers {
                         name: c.value(source_code),
                     });
                 }
+                "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
             }
         }
@@ -89,6 +90,7 @@ impl ClassBody {
                 "field_declaration" => declarations.push(ClassMember::Field(
                     FieldDeclaration::new(c, source_code, indent + 1),
                 )),
+                "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
             }
         }
