@@ -1,13 +1,4 @@
-// c1
 @IsTest
-public /* inner */ class Me  {
-//public class Me implements namespace.InterfaceName {
-
-// c2
-  void methodOne();
-  void methodTwo();
-// c3
+public class Me  {
+	Public String s = 'hello';
 }
-
-
-/* c4 */

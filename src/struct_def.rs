@@ -103,6 +103,7 @@ impl ClassBody {
 pub struct FieldDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
+    pub type_value: String,
 }
 
 impl FieldDeclaration {
@@ -115,7 +116,13 @@ impl FieldDeclaration {
             None
         };
 
-        Self { buckets, modifiers }
+        let type_value = node.cvalue_by_n("type", source_code);
+
+        Self {
+            buckets,
+            modifiers,
+            type_value,
+        }
     }
 }
 
