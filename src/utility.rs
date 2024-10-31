@@ -17,7 +17,7 @@ pub fn collect_comments(
     loop {
         let node = cursor.node();
         if node.is_named() && node.is_comment() {
-            comments.push(Comment::from_node(node, context));
+            comments.push(Comment::from_node(node, &context.source_code));
         }
 
         if cursor.goto_first_child() {
@@ -34,7 +34,7 @@ pub fn collect_comments(
 pub fn enrich(context: &FmtContext) {
     let root = context.ast_tree.root_node();
     let c = root.c_by_k("class_declaration");
-    let class_node = ClassDeclaration::from_node(c, context.source_code);
+    let class_node = ClassDeclaration::new(c, &context.source_code, 0);
 }
 
 pub fn get_length_before_brace(s: &str) -> usize {

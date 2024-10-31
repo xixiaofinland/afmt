@@ -10,6 +10,7 @@ use tree_sitter::Node;
 #[allow(dead_code)]
 pub trait Accessor<'t> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
+    fn value(&self, source_code: &str) -> String;
     fn children_vec(&self) -> Vec<Node<'t>>;
     fn all_children_vec(&self) -> Vec<Node<'t>>;
 
@@ -25,6 +26,7 @@ pub trait Accessor<'t> {
     fn first_c(&self) -> Node<'t>;
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn cvalue_by_n<'a>(&self, name: &str, source_code: &'a str) -> String;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
@@ -35,6 +37,10 @@ impl<'t> Accessor<'t> for Node<'t> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str {
         self.utf8_text(source_code.as_bytes())
             .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind().red()))
+    }
+
+    fn value(&self, source_code: &str) -> String {
+        self.v(source_code).to_string()
     }
 
     fn children_vec(&self) -> Vec<Node<'t>> {
@@ -97,6 +103,10 @@ impl<'t> Accessor<'t> for Node<'t> {
             )
         });
         node.v(source_code)
+    }
+
+    fn cvalue_by_n<'a>(&self, name: &str, source_code: &'a str) -> String {
+        self.cv_by_n(name, source_code).to_string()
     }
 
     fn c_by_n(&self, name: &str) -> Node<'t> {
