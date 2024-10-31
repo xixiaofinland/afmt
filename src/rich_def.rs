@@ -1,12 +1,10 @@
 use crate::accessor::Accessor;
-use crate::config::FmtContext;
 use std::fmt::Debug;
 use tree_sitter::Node;
 
 #[derive(Debug)]
 pub struct ClassDeclaration {
     pub buckets: CommentBuckets,
-    //annotation: Annotation,
     modifiers: Option<Modifiers>,
     name: String,
     //body: ClassBody<'a>,
