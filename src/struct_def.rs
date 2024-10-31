@@ -1,133 +1,163 @@
-use crate::config::Config;
-use crate::config::FmtContext;
-use crate::def_struct;
+use crate::{accessor::Accessor, enum_def::*};
+use colored::Colorize;
+use std::fmt::Debug;
 use tree_sitter::Node;
 
-pub trait FromNode<'a, 'tree> {
-    fn new(node: &'a Node<'tree>) -> Self;
+#[derive(Debug)]
+pub struct ClassDeclaration {
+    pub buckets: Option<CommentBuckets>,
+    modifiers: Option<Modifiers>,
+    name: String,
+    body: ClassBody,
 }
 
-def_struct!(
-    ClassDeclaration,
-    FieldDeclaration,
-    MethodDeclaration,
-    FormalParameter,
-    EnumDeclaration,
-    EnumConstant,
-    EnumBody,
+impl ClassDeclaration {
+    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
+        let buckets = None;
+
+        let modifiers = if let Some(m) = node.try_c_by_k("modifiers") {
+            Some(Modifiers::new(m, source_code))
+        } else {
+            None
+        };
+
+        let name = node.cvalue_by_n("name", source_code);
+        let body = ClassBody::new(node.c_by_n("body"), source_code, indent + 1);
+
+        Self {
+            buckets,
+            modifiers,
+            name,
+            body,
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct Modifiers {
+    //pub buckets: CommentBuckets,
+    annotation: Option<Annotation>,
+    modifiers: Vec<Modifier>,
+}
+
+impl Modifiers {
+    pub fn new(node: Node, source_code: &str) -> Self {
+        let mut modifiers = Self::default();
+
+        for c in node.children_vec() {
+            match c.kind() {
+                "annotation" => {
+                    modifiers.annotation = Some(Annotation {
+                        name: c.value(source_code),
+                    });
+                }
+                "modifier" => {
+                    modifiers.modifiers.push(Modifier {
+                        name: c.value(source_code),
+                    });
+                }
+                _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
+            }
+        }
+
+        modifiers
+    }
+}
+
+#[derive(Debug)]
+pub struct Modifier {
+    //pub buckets: CommentBuckets,
+    pub name: String,
+}
+
+#[derive(Debug)]
+pub struct Annotation {
+    pub name: String,
+}
+
+#[derive(Debug)]
+struct ClassBody {
+    declarations: Vec<ClassMember>,
+}
+
+impl ClassBody {
+    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
+        let mut declarations: Vec<ClassMember> = Vec::new();
+
+        for c in node.children_vec() {
+            match c.kind() {
+                "field_declaration" => declarations.push(ClassMember::Field(
+                    FieldDeclaration::new(c, source_code, indent + 1),
+                )),
+                _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
+            }
+        }
+
+        Self { declarations }
+    }
+}
+
+#[derive(Debug)]
+pub struct FieldDeclaration {
+    pub buckets: Option<CommentBuckets>,
+    pub modifiers: Option<Modifiers>,
+}
+
+impl FieldDeclaration {
+    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
+        let buckets = None;
+
+        let modifiers = if let Some(m) = node.try_c_by_k("modifiers") {
+            Some(Modifiers::new(m, source_code))
+        } else {
+            None
+        };
+
+        Self { buckets, modifiers }
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct CommentBuckets {
+    pub pre_comments: Vec<Comment>,
+    pub post_comments: Vec<Comment>,
+}
+
+#[derive(Debug)]
+pub struct Comment {
+    pub id: usize,
+    pub content: String,
+    pub comment_type: CommentType,
+    pub is_processed: bool,
+}
+
+impl Comment {
+    pub fn from_node(node: Node, source_code: &str) -> Self {
+        let id = node.id();
+        let content = node.v(source_code).to_string();
+        Self {
+            id,
+            content,
+            is_processed: false,
+            comment_type: match node.kind() {
+                "line_comment" => CommentType::Line,
+                "block_comment" => CommentType::Block,
+                _ => panic!("Unexpected comment type"),
+            },
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum CommentType {
+    Line,
     Block,
-    Statement,
-    ExpressionStatement,
-    DoStatement,
-    WhileStatement,
-    ForStatement,
-    EnhancedForStatement,
-    Value,
-    SmallCaseValue,
-    CapitalValue,
-    SuperClass,
-    Expression,
-    ArrayAccess,
-    PrimaryExpression,
-    DmlExpression,
-    DmlSecurityMode,
-    DmlType,
-    AssignmentExpression,
-    LocalVariableDeclaration,
-    VariableDeclarator,
-    IfStatement,
-    UpdateExpression,
-    ParenthesizedExpression,
-    Interfaces,
-    LineComment,
-    BlockComment,
-    ReturnStatement,
-    ArgumentList,
-    TypeArguments,
-    GenericType,
-    ArrayInitializer,
-    DimensionsExpr,
-    ArrayType,
-    MapInitializer,
-    MapKeyInitializer,
-    Annotation,
-    AnnotationArgumentList,
-    AnnotationKeyValue,
-    Modifiers,
-    ConstructorDeclaration,
-    ConstructorBody,
-    ExplicitConstructorInvocation,
-    RunAsStatement,
-    ScopedTypeIdentifier,
-    ObjectCreationExpression,
-    TryStatement,
-    CatchClause,
-    GroupByClause,
-    HavingClause,
-    HavingComparisonExpression,
-    CatchFormalParameter,
-    FinallyClause,
-    ForClause,
-    FieldAccess,
-    InstanceOfExpression,
-    CastExpression,
-    TernaryExpression,
-    MethodInvocation,
-    AccessorList,
-    AccessorDeclaration,
-    QueryExpression,
-    SoqlQueryBody,
-    SoslQuery,
-    SubQuery,
-    SoslQueryBody,
-    BinaryExpression,
-    UnaryExpression,
-    ArrayCreationExpression,
-    MapCreationExpression,
-    SelectClause,
-    FromClause,
-    StorageAlias,
-    StorageIdentifier,
-    WhereCluase,
-    ComparisonExpression,
-    ComparableList,
-    OrExpression,
-    NotExpression,
-    FieldIdentifier,
-    BoundApexExpression,
-    LimitClause,
-    OffsetClause,
-    AllRowClause,
-    AndExpression,
-    FindClause,
-    InClause,
-    ReturningClause,
-    UpdateClause,
-    WithClause,
-    OrderByClause,
-    OrderExpression,
-    Operator,
-    OrderDirection,
-    SobjectReturn,
-    WithDivisionExpression,
-    DateLiteral,
-    DateLiteralWithParam,
-    SwitchExpression,
-    SwitchBlock,
-    SwitchRule,
-    SwitchLabel,
-    StaticInitializer,
-    InterfaceDeclaration,
-    ThrowStatement,
-    BreakStatement,
-    ContinueStatement,
-    TypeParameters,
-    TypeParameter,
-    TypeList,
-    TriggerDeclaration,
-    TriggerEvent,
-    ClassLiteral,
-    FunctionExpression,
-    JavaType,
-    JavaFieldAccess,
-);
+}
+
+//rich_struct!(ClassNode, Modifiers);
+
+//#[derive(Debug)]
+//pub enum ASTNode<'a> {
+//    ClassNode(ClassNode<'a>),
+//    Modifiers(Modifiers<'a>),
+//}
