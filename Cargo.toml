@@ -18,7 +18,6 @@ colored = "2.1.0"
 env_logger = "0.11.5"
 log = "0.4.22"
 phf = { version = "0.11.2", features = ["macros"] }
-pretty = "0.12.3"
 serde = { version = "1.0.210", features = ["derive"] }
 toml = "0.8.19"
 tree-sitter = "0.22.6"
