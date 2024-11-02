@@ -19,7 +19,7 @@ struct Chunk<'a> {
 }
 
 impl<'a> Chunk<'a> {
-    fn with_n(self, n_ref: DocRef<'a>) -> Self {
+    fn with_doc(self, n_ref: DocRef<'a>) -> Self {
         Chunk {
             n_ref,
             indent: self.indent,
@@ -79,14 +79,14 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
-                        self.chunks.push(chunk.with_n(n));
+                        self.chunks.push(chunk.with_doc(n));
                     }
                 }
                 Doc::Choice(x, y) => {
-                    if chunk.flat || self.fits(chunk.with_n(x)) {
-                        self.chunks.push(chunk.with_n(x));
+                    if chunk.flat || self.fits(chunk.with_doc(x)) {
+                        self.chunks.push(chunk.with_doc(x));
                     } else {
-                        self.chunks.push(chunk.with_n(y));
+                        self.chunks.push(chunk.with_doc(y));
                     }
                 }
             }
@@ -122,16 +122,16 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
-                        stack.push(chunk.with_n(n));
+                        stack.push(chunk.with_doc(n));
                     }
                 }
                 Doc::Choice(x, y) => {
                     if chunk.flat {
-                        stack.push(chunk.with_n(x));
+                        stack.push(chunk.with_doc(x));
                     } else {
                         // With assumption: for every choice `x | y`,
                         // the first line of `y` is no longer than the first line of `x`.
-                        stack.push(chunk.with_n(y));
+                        stack.push(chunk.with_doc(y));
                     }
                 }
             }

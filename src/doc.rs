@@ -46,4 +46,21 @@ impl<'a> DocBuilder<'a> {
     pub fn choice(&'a self, first: DocRef<'a>, second: DocRef<'a>) -> DocRef<'a> {
         self.0.alloc(Doc::Choice(first, second))
     }
+
+    pub fn group(&'a self, n_ref: DocRef<'a>) -> DocRef<'a> {
+        let flat_n = self.flat(n_ref);
+        self.choice(flat_n, n_ref)
+    }
+
+    pub fn softline(&'a self) -> DocRef<'a> {
+        let space = self.txt(" ");
+        let newline = self.nl();
+        self.choice(space, newline)
+    }
+
+    pub fn line(&'a self) -> DocRef<'a> {
+        let empty = self.txt("");
+        let newline = self.nl();
+        self.choice(empty, newline)
+    }
 }

@@ -1,5 +1,8 @@
 use crate::config::FmtContext;
+use crate::doc::DocBuilder;
+use crate::doc::DocRef;
 use crate::enum_def::*;
+use crate::print::pretty_print;
 use crate::struct_def::*;
 #[allow(unused_imports)]
 use log::debug;
@@ -28,11 +31,20 @@ pub fn collect_comments(
 }
 
 pub fn enrich(context: &FmtContext) {
-    let root_node = context.ast_tree.root_node();
-    let result = Root::new(root_node, &context.source_code);
+    //let root_node = context.ast_tree.root_node();
+    //let result = Root::new(root_node, &context.source_code);
 
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
-    eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
+    //eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
+    example_usage();
+}
+
+fn example_usage<'a>() {
+    let db = DocBuilder::new();
+    let content = db.concat(vec![db.txt("Hello,"), db.softline(), db.txt("World!")]);
+    let result = db.group(content);
+    let output = pretty_print(result, 10);
+    println!("{}", output);
 }
 
 //pub fn visit_root(context: &FmtContext) -> String {
