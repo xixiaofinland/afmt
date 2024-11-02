@@ -17,7 +17,7 @@ pub fn collect_comments(
 ) {
     loop {
         let node = cursor.node();
-        if node.is_named() && node.is_comment() {
+        if node.is_named() && node.is_extra() {
             comments.push(Comment::from_node(node, &context.source_code));
         }
 
