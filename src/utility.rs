@@ -1,4 +1,5 @@
 use crate::config::FmtContext;
+use crate::enum_def::ClassMember;
 use crate::struct_def::{ClassDeclaration, Root};
 use crate::{accessor::Accessor, struct_def::Comment};
 //use crate::rewrite::Rewrite;
@@ -34,7 +35,9 @@ pub fn collect_comments(
 pub fn enrich(context: &FmtContext) {
     let root_node = context.ast_tree.root_node();
     let result = Root::new(root_node, &context.source_code);
-    eprintln!("gopro[1]: utility.rs:36: result={:#?}", result);
+
+    //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
+    //eprintln!("Class={:#?}", std::mem::size_of::<ClassDeclaration>());
 }
 
 //pub fn visit_root(context: &FmtContext) -> String {
