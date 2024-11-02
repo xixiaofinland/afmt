@@ -4,6 +4,7 @@ pub mod config;
 mod doc;
 mod enum_def;
 mod macros;
+mod node_to_doc;
 mod print;
 mod shape;
 mod struct_def;
