@@ -3,8 +3,8 @@ use crate::struct_def::*;
 #[derive(Debug)]
 pub enum ClassMember {
     Field(FieldDeclaration),
+    NestedClass(Box<ClassDeclaration>),
     //Method(MethodDeclaration<'a>),
-    //NestedClass(ClassDeclaration<'a>),
     //Interface(InterfaceDeclaration<'a>),
     //Enum(EnumDeclaration<'a>),
     //Block(Block<'a>),

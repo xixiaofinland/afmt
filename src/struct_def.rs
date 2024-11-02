@@ -105,6 +105,9 @@ impl ClassBody {
                 "field_declaration" => declarations.push(ClassMember::Field(
                     FieldDeclaration::new(c, source_code, indent + 1),
                 )),
+                "class_declaration" => declarations.push(ClassMember::NestedClass(Box::new(
+                    ClassDeclaration::new(c, source_code, indent + 1),
+                ))),
                 "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
             }
