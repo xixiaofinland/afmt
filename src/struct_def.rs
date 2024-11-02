@@ -230,8 +230,7 @@ pub struct Comment {
     pub content: String,
     pub comment_type: CommentType,
     pub is_processed: bool,
-    pub start_byte: usize,
-    pub end_byte: usize,
+    pub range: Range,
 }
 
 impl Comment {
@@ -247,8 +246,7 @@ impl Comment {
                 "block_comment" => CommentType::Block,
                 _ => panic!("Unexpected comment type"),
             },
-            start_byte: node.start_byte(),
-            end_byte: node.end_byte(),
+            range: node.range(),
         }
     }
 }
