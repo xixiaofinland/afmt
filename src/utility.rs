@@ -32,7 +32,7 @@ pub fn enrich(context: &FmtContext) {
     let result = Root::new(root_node, &context.source_code);
 
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
-    eprintln!("Class={:#?}", std::mem::size_of::<Identifier>());
+    eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
 }
 
 //pub fn visit_root(context: &FmtContext) -> String {
