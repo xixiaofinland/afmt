@@ -92,7 +92,7 @@ pub struct Annotation {
 }
 
 #[derive(Debug)]
-struct ClassBody {
+pub struct ClassBody {
     declarations: Vec<ClassMember>,
 }
 
@@ -102,9 +102,9 @@ impl ClassBody {
 
         for c in node.children_vec() {
             match c.kind() {
-                "field_declaration" => declarations.push(ClassMember::Field(
+                "field_declaration" => declarations.push(ClassMember::Field(Box::new(
                     FieldDeclaration::new(c, source_code, indent + 1),
-                )),
+                ))),
                 "class_declaration" => declarations.push(ClassMember::NestedClass(Box::new(
                     ClassDeclaration::new(c, source_code, indent + 1),
                 ))),
@@ -121,7 +121,7 @@ impl ClassBody {
 pub struct FieldDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
-    pub _type: UnnanotatedType,
+    pub type_: UnnanotatedType,
     pub declarators: Vec<VariableDeclarator>,
     pub range: Range,
 }
@@ -135,7 +135,7 @@ impl FieldDeclaration {
             .map(|n| Modifiers::new(n, source_code));
 
         let type_node = node.c_by_n("type");
-        let _type = match type_node.kind() {
+        let type_ = match type_node.kind() {
             "type_identifier" => UnnanotatedType::Identifier(Identifier {
                 value: type_node.value(source_code),
             }),
@@ -154,7 +154,7 @@ impl FieldDeclaration {
         Self {
             buckets,
             modifiers,
-            _type,
+            type_,
             declarators,
             range: node.range(),
         }

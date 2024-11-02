@@ -1,14 +1,9 @@
 use crate::config::FmtContext;
-use crate::enum_def::ClassMember;
-use crate::struct_def::{ClassDeclaration, Root};
-use crate::{accessor::Accessor, struct_def::Comment};
-//use crate::rewrite::Rewrite;
-use crate::shape::Shape;
-//use crate::struct_def::{BinaryExpression, Expression, FromNode};
-//use crate::visit::Visitor;
+use crate::enum_def::*;
+use crate::struct_def::*;
 #[allow(unused_imports)]
 use log::debug;
-use tree_sitter::{Node, TreeCursor};
+use tree_sitter::TreeCursor;
 
 pub fn collect_comments(
     cursor: &mut TreeCursor,
@@ -37,7 +32,7 @@ pub fn enrich(context: &FmtContext) {
     let result = Root::new(root_node, &context.source_code);
 
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
-    //eprintln!("Class={:#?}", std::mem::size_of::<ClassDeclaration>());
+    eprintln!("Class={:#?}", std::mem::size_of::<Identifier>());
 }
 
 //pub fn visit_root(context: &FmtContext) -> String {
