@@ -1,5 +1,5 @@
 use crate::config::FmtContext;
-use crate::struct_def::ClassDeclaration;
+use crate::struct_def::{ClassDeclaration, Root};
 use crate::{accessor::Accessor, struct_def::Comment};
 //use crate::rewrite::Rewrite;
 use crate::shape::Shape;
@@ -32,10 +32,9 @@ pub fn collect_comments(
 }
 
 pub fn enrich(context: &FmtContext) {
-    let root = context.ast_tree.root_node();
-    let c = root.c_by_k("class_declaration");
-    let class_node = ClassDeclaration::new(c, &context.source_code, 0);
-    eprintln!("gopro[6]: utility.rs:37: class_node={:#?}", class_node);
+    let root_node = context.ast_tree.root_node();
+    let result = Root::new(root_node, &context.source_code);
+    eprintln!("gopro[1]: utility.rs:36: result={:#?}", result);
 }
 
 //pub fn visit_root(context: &FmtContext) -> String {

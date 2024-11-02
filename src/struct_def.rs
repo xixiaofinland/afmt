@@ -1,14 +1,30 @@
 use crate::{accessor::Accessor, enum_def::*};
 use colored::Colorize;
 use std::fmt::Debug;
-use tree_sitter::Node;
+use tree_sitter::{Node, Range};
+
+#[derive(Debug)]
+pub struct Root {
+    pub class: Option<ClassDeclaration>,
+}
+
+impl Root {
+    pub fn new(node: Node, source_code: &str) -> Self {
+        let class = node
+            .try_c_by_k("class_declaration")
+            .map(|n| ClassDeclaration::new(n, source_code, 0));
+
+        Self { class }
+    }
+}
 
 #[derive(Debug)]
 pub struct ClassDeclaration {
     pub buckets: Option<CommentBuckets>,
-    modifiers: Option<Modifiers>,
-    name: String,
-    body: ClassBody,
+    pub modifiers: Option<Modifiers>,
+    pub name: String,
+    pub body: ClassBody,
+    pub range: Range,
 }
 
 impl ClassDeclaration {
@@ -27,6 +43,7 @@ impl ClassDeclaration {
             modifiers,
             name,
             body,
+            range: node.range(),
         }
     }
 }
@@ -103,6 +120,7 @@ pub struct FieldDeclaration {
     pub modifiers: Option<Modifiers>,
     pub _type: UnnanotatedType,
     pub declarators: Vec<VariableDeclarator>,
+    pub range: Range,
 }
 
 impl FieldDeclaration {
@@ -135,6 +153,7 @@ impl FieldDeclaration {
             modifiers,
             _type,
             declarators,
+            range: node.range(),
         }
     }
 }
@@ -208,6 +227,8 @@ pub struct Comment {
     pub content: String,
     pub comment_type: CommentType,
     pub is_processed: bool,
+    pub start_byte: usize,
+    pub end_byte: usize,
 }
 
 impl Comment {
@@ -223,6 +244,8 @@ impl Comment {
                 "block_comment" => CommentType::Block,
                 _ => panic!("Unexpected comment type"),
             },
+            start_byte: node.start_byte(),
+            end_byte: node.end_byte(),
         }
     }
 }
@@ -232,11 +255,3 @@ pub enum CommentType {
     Line,
     Block,
 }
-
-//rich_struct!(ClassNode, Modifiers);
-
-//#[derive(Debug)]
-//pub enum ASTNode<'a> {
-//    ClassNode(ClassNode<'a>),
-//    Modifiers(Modifiers<'a>),
-//}

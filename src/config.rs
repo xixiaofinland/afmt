@@ -113,41 +113,41 @@ impl Session {
         enrich(&context);
 
         // traverse enriched data and create combinators to print result
-
-        //let (tx, rx) = mpsc::channel();
-        //let config = Arc::new(self.config.clone());
-        //
-        //for file in &self.source_files {
-        //    let tx = tx.clone();
-        //    let config = Arc::clone(&config);
-        //    let file = file.clone();
-        //
-        //    thread::spawn(move || {
-        //        let result = std::panic::catch_unwind(|| {
-        //            let source_code = fs::read_to_string(Path::new(&file)).map_err(|e| {
-        //                anyhow!(format!(
-        //                    "Failed to read file: {} {}",
-        //                    &file.red(),
-        //                    e.to_string().yellow()
-        //                ))
-        //            })?;
-        //            let context = FmtContext::new(&config, source_code);
-        //            context.format_one_file()
-        //        });
-        //        match result {
-        //            Ok(result) => tx.send(result).expect("failed to send result in tx"),
-        //            Err(_) => tx
-        //                .send(Err(anyhow!("Thread panicked")))
-        //                .expect("failed to send error in tx"),
-        //        }
-        //    });
-        //}
-        //
-        //drop(tx);
-        //
-        //rx.into_iter().collect()
     }
 }
+
+//let (tx, rx) = mpsc::channel();
+//let config = Arc::new(self.config.clone());
+//
+//for file in &self.source_files {
+//    let tx = tx.clone();
+//    let config = Arc::clone(&config);
+//    let file = file.clone();
+//
+//    thread::spawn(move || {
+//        let result = std::panic::catch_unwind(|| {
+//            let source_code = fs::read_to_string(Path::new(&file)).map_err(|e| {
+//                anyhow!(format!(
+//                    "Failed to read file: {} {}",
+//                    &file.red(),
+//                    e.to_string().yellow()
+//                ))
+//            })?;
+//            let context = FmtContext::new(&config, source_code);
+//            context.format_one_file()
+//        });
+//        match result {
+//            Ok(result) => tx.send(result).expect("failed to send result in tx"),
+//            Err(_) => tx
+//                .send(Err(anyhow!("Thread panicked")))
+//                .expect("failed to send error in tx"),
+//        }
+//    });
+//}
+//
+//drop(tx);
+//
+//rx.into_iter().collect()
 
 #[derive(Clone)]
 pub struct FmtContext {
