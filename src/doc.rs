@@ -2,7 +2,6 @@ use typed_arena::Arena;
 
 pub type DocRef<'a> = &'a Doc<'a>;
 
-// `Notation`, equals the `Doc` in Wadler's Printer
 #[derive(Debug)]
 pub enum Doc<'a> {
     Newline,
