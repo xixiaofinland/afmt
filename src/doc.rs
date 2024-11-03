@@ -2,7 +2,11 @@ use typed_arena::Arena;
 
 pub type DocRef<'a> = &'a Doc<'a>;
 
-// `Notation`, equals the `Doc` in Wadler's Printer
+pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
+    let mut printer = PrettyPrinter::new(doc_ref, max_width);
+    printer.print()
+}
+
 #[derive(Debug)]
 pub enum Doc<'a> {
     Newline,
@@ -58,16 +62,11 @@ impl<'a> DocBuilder<'a> {
         self.choice(space, newline)
     }
 
-    pub fn line(&'a self) -> DocRef<'a> {
+    pub fn maybeLine(&'a self) -> DocRef<'a> {
         let empty = self.txt("");
         let newline = self.nl();
         self.choice(empty, newline)
     }
-}
-
-pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
-    let mut printer = PrettyPrinter::new(doc_ref, max_width);
-    printer.print()
 }
 
 struct PrettyPrinter<'a> {

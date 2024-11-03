@@ -1,8 +1,6 @@
 use crate::config::FmtContext;
 use crate::doc::pretty_print;
 use crate::doc::DocBuilder;
-use crate::doc::DocRef;
-use crate::enum_def::*;
 use crate::struct_def::*;
 #[allow(unused_imports)]
 use log::debug;
