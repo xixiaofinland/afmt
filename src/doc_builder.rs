@@ -1,4 +1,7 @@
-use crate::doc::{Doc, DocRef, PrettyConfig};
+use crate::{
+    data_model::DocBuild,
+    doc::{Doc, DocRef, PrettyConfig},
+};
 use typed_arena::Arena;
 
 pub struct DocBuilder<'a> {
@@ -74,7 +77,7 @@ impl<'a> DocBuilder<'a> {
         self.choice(single_line, multi_line)
     }
 
-    fn surrounded(
+    pub fn surrounded(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
@@ -100,6 +103,16 @@ impl<'a> DocBuilder<'a> {
         ]);
 
         self.choice(single_line, multi_line)
+    }
+
+    pub fn build_docs<'b, T: DocBuild<'a>>(
+        &'a self,
+        items: impl IntoIterator<Item = &'b T>,
+    ) -> Vec<DocRef<'a>>
+    where
+        T: DocBuild<'a> + 'b,
+    {
+        items.into_iter().map(|item| item.build(self)).collect()
     }
 
     // fundamental blocks
