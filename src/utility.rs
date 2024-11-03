@@ -43,7 +43,7 @@ fn example_usage<'a>() {
     let db = DocBuilder::new();
     let content = db.concat(vec![db.txt("Hello,"), db.softline(), db.txt("World!")]);
     let result = db.group(content);
-    let output = pretty_print(result, 10);
+    let output = pretty_print(result, 20);
     println!("{}", output);
 }
 

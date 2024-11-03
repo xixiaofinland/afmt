@@ -1,7 +1,7 @@
 use crate::doc::{Doc, DocRef};
 
-pub fn pretty_print(n_ref: DocRef, max_width: u32) -> String {
-    let mut printer = PrettyPrinter::new(n_ref, max_width);
+pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
+    let mut printer = PrettyPrinter::new(doc_ref, max_width);
     printer.print()
 }
 
@@ -13,31 +13,31 @@ struct PrettyPrinter<'a> {
 
 #[derive(Debug, Clone, Copy)]
 struct Chunk<'a> {
-    n_ref: DocRef<'a>,
+    doc_ref: DocRef<'a>,
     indent: u32,
     flat: bool,
 }
 
 impl<'a> Chunk<'a> {
-    fn with_doc(self, n_ref: DocRef<'a>) -> Self {
+    fn with_doc(self, doc_ref: DocRef<'a>) -> Self {
         Chunk {
-            n_ref,
+            doc_ref,
             indent: self.indent,
             flat: self.flat,
         }
     }
 
-    fn indented(self, indent: u32, n_ref: DocRef<'a>) -> Self {
+    fn indented(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
         Chunk {
-            n_ref,
+            doc_ref,
             indent: self.indent + indent,
             flat: self.flat,
         }
     }
 
-    fn flat(self, n_ref: DocRef<'a>) -> Self {
+    fn flat(self, doc_ref: DocRef<'a>) -> Self {
         Chunk {
-            n_ref,
+            doc_ref,
             indent: self.indent,
             flat: true,
         }
@@ -45,9 +45,9 @@ impl<'a> Chunk<'a> {
 }
 
 impl<'a> PrettyPrinter<'a> {
-    fn new(n_ref: DocRef<'a>, width: u32) -> Self {
+    fn new(doc_ref: DocRef<'a>, width: u32) -> Self {
         let chunk = Chunk {
-            n_ref,
+            doc_ref,
             indent: 0,
             flat: false,
         };
@@ -63,7 +63,7 @@ impl<'a> PrettyPrinter<'a> {
         let mut result = String::new();
 
         while let Some(chunk) = self.chunks.pop() {
-            match chunk.n_ref {
+            match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
                     for _ in 0..chunk.indent {
@@ -109,7 +109,7 @@ impl<'a> PrettyPrinter<'a> {
                 return true;
             };
 
-            match chunk.n_ref {
+            match chunk.doc_ref {
                 Doc::Newline => return true,
                 Doc::Text(_, text_width) => {
                     if *text_width <= remaining_width {
