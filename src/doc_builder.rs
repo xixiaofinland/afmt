@@ -1,6 +1,5 @@
-use typed_arena::Arena;
-
 use crate::doc::{Doc, DocRef};
+use typed_arena::Arena;
 
 pub struct DocBuilder<'a>(Arena<Doc<'a>>);
 
@@ -10,8 +9,8 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let flat_n = self.flat(doc_ref);
-        self.choice(flat_n, doc_ref)
+        let flat_doc = self.flat(doc_ref);
+        self.choice(flat_doc, doc_ref)
     }
 
     pub fn softline(&'a self) -> DocRef<'a> {

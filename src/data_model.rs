@@ -1,12 +1,16 @@
-use crate::{
-    accessor::Accessor, config::FmtContext, doc::DocRef, doc_builder::DocBuilder, enum_def::*,
-};
+use crate::{accessor::Accessor, doc::DocRef, doc_builder::DocBuilder, enum_def::*};
 use colored::Colorize;
 use std::fmt::Debug;
 use tree_sitter::{Node, Range};
 
 pub trait DocBuild<'a> {
-    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a>;
+    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
+        let mut result: Vec<DocRef<'a>> = Vec::new();
+        self.build_inner(b, &mut result);
+        b.concat(result)
+    }
+
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
 }
 
 #[derive(Debug)]
@@ -15,12 +19,10 @@ pub struct Root {
 }
 
 impl<'a> DocBuild<'a> for Root {
-    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
-        let mut result: Vec<DocRef<'a>> = Vec::new();
-        if let Some(ref c) = self.class {
-            result.push(c.build(b));
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.class {
+            result.push(n.build(b));
         }
-        b.concat(result)
     }
 }
 
@@ -44,8 +46,12 @@ pub struct ClassDeclaration {
 }
 
 impl<'a> DocBuild<'a> for ClassDeclaration {
-    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
-        b.txt("class")
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+        result.push(b.txt(&self.name));
+        //result.push(self.body.build(b));
     }
 }
 
@@ -77,6 +83,14 @@ pub struct Modifiers {
     modifiers: Vec<Modifier>,
 }
 
+impl<'a> DocBuild<'a> for Modifiers {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.annotation {
+            result.push(n.build(b));
+        }
+    }
+}
+
 impl Modifiers {
     pub fn new(node: Node, source_code: &str) -> Self {
         let mut modifiers = Self::default();
@@ -85,12 +99,12 @@ impl Modifiers {
             match c.kind() {
                 "annotation" => {
                     modifiers.annotation = Some(Annotation {
-                        name: c.value(source_code),
+                        name: c.cv_by_n("name", source_code).to_string(),
                     });
                 }
                 "modifier" => {
                     modifiers.modifiers.push(Modifier {
-                        name: c.value(source_code),
+                        value: c.value(source_code),
                     });
                 }
                 "line_comment" | "block_comment" => continue,
@@ -105,12 +119,19 @@ impl Modifiers {
 #[derive(Debug)]
 pub struct Modifier {
     //pub buckets: CommentBuckets,
-    pub name: String,
+    pub value: String,
 }
 
 #[derive(Debug)]
 pub struct Annotation {
     pub name: String,
+}
+
+impl<'a> DocBuild<'a> for Annotation {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(format!("@{}", self.name)));
+        result.push(b.nl());
+    }
 }
 
 #[derive(Debug)]
