@@ -1,3 +1,5 @@
+use crate::data_model::*;
+use crate::doc_builder::DocBuilder;
 use crate::utility::{collect_comments, enrich};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
@@ -110,9 +112,11 @@ impl Session {
         collect_comments(&mut cursor, &mut comments, &context);
 
         // traverse the tree to build enriched data
-        enrich(&context);
+        let root: Root = enrich(&context);
 
         // traverse enriched data and create combinators to print result
+        let b = DocBuilder::new();
+        root.build(&b);
     }
 }
 

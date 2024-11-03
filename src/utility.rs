@@ -1,7 +1,9 @@
 use crate::config::FmtContext;
 use crate::data_model::*;
 use crate::doc::pretty_print;
-use crate::doc::DocBuilder;
+use crate::doc::Doc;
+use crate::doc::DocRef;
+use crate::doc_builder::DocBuilder;
 #[allow(unused_imports)]
 use log::debug;
 use tree_sitter::TreeCursor;
@@ -28,13 +30,17 @@ pub fn collect_comments(
     }
 }
 
-pub fn enrich(context: &FmtContext) {
-    //let root_node = context.ast_tree.root_node();
-    //let result = Root::new(root_node, &context.source_code);
+pub fn enrich(context: &FmtContext) -> Root {
+    let root_node = context.ast_tree.root_node();
+    Root::new(root_node, &context.source_code)
+
+    //let db = DocBuilder::new();
+    //let grouped_doc = test_doc(db);
+    //let output = pretty_print(grouped_doc, 30);
+    //println!("{}", output);
 
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
     //eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
-    test_doc();
 }
 
 fn test_doc<'a>() {

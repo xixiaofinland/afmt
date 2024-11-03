@@ -1,7 +1,13 @@
-use crate::{accessor::Accessor, enum_def::*};
+use crate::{
+    accessor::Accessor, config::FmtContext, doc::DocRef, doc_builder::DocBuilder, enum_def::*,
+};
 use colored::Colorize;
 use std::fmt::Debug;
 use tree_sitter::{Node, Range};
+
+pub trait DocBuild<'a> {
+    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a>;
+}
 
 #[derive(Debug)]
 pub struct Root {
@@ -15,6 +21,12 @@ impl Root {
             .map(|n| ClassDeclaration::new(n, source_code, 0));
 
         Self { class }
+    }
+}
+
+impl<'a> DocBuild<'a> for Root {
+    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
+        b.txt("hello")
     }
 }
 
