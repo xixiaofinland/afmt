@@ -83,7 +83,6 @@ impl<'a> PrettyPrinter<'a> {
         let mut result = String::new();
 
         while let Some(chunk) = self.chunks.pop() {
-            eprintln!("gopro[4]: doc.rs:85: chunk={:#?}", chunk);
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
