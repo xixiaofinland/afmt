@@ -30,16 +30,16 @@ impl<'a> DocBuilder<'a> {
         self.0.alloc(Doc::Text(string, width))
     }
 
-    pub fn flat(&'a self, n_ref: DocRef<'a>) -> DocRef<'a> {
-        self.0.alloc(Doc::Flat(n_ref))
+    pub fn flat(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.0.alloc(Doc::Flat(doc_ref))
     }
 
-    pub fn indent(&'a self, indent: u32, n_ref: DocRef<'a>) -> DocRef<'a> {
-        self.0.alloc(Doc::Indent(indent, n_ref))
+    pub fn indent(&'a self, indent: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.0.alloc(Doc::Indent(indent, doc_ref))
     }
 
-    pub fn concat(&'a self, n_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
-        let n_vec = n_refs.into_iter().collect::<Vec<_>>();
+    pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+        let n_vec = doc_refs.into_iter().collect::<Vec<_>>();
         self.0.alloc(Doc::Concat(n_vec))
     }
 
@@ -47,9 +47,9 @@ impl<'a> DocBuilder<'a> {
         self.0.alloc(Doc::Choice(first, second))
     }
 
-    pub fn group(&'a self, n_ref: DocRef<'a>) -> DocRef<'a> {
-        let flat_n = self.flat(n_ref);
-        self.choice(flat_n, n_ref)
+    pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let flat_n = self.flat(doc_ref);
+        self.choice(flat_n, doc_ref)
     }
 
     pub fn softline(&'a self) -> DocRef<'a> {
