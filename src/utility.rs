@@ -34,14 +34,39 @@ pub fn enrich(context: &FmtContext) {
 
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
     //eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
-    example_usage();
+    test_doc();
 }
 
-fn example_usage<'a>() {
+fn test_doc<'a>() {
     let db = DocBuilder::new();
-    let content = db.concat(vec![db.txt("Hello,"), db.softline(), db.txt("World!")]);
-    let result = db.group(content);
-    let output = pretty_print(result, 20);
+    let header = db.concat(vec![
+        db.txt("[INFO]"),
+        db.softline(),
+        db.txt("Application started"),
+    ]);
+    let body = db.concat(vec![
+        db.txt("Processing data..."),
+        db.softline(),
+        db.txt("Data processed successfully."),
+    ]);
+    let footer = db.concat(vec![
+        db.txt("[INFO]"),
+        db.softline(),
+        db.txt("Application terminated"),
+    ]);
+
+    let full_doc = db.concat(vec![
+        header,
+        db.nl(),
+        db.nl(),
+        body,
+        db.nl(),
+        db.nl(),
+        footer,
+    ]);
+    let grouped_doc = db.group(full_doc);
+    let output = pretty_print(grouped_doc, 30);
+
     println!("{}", output);
 }
 
