@@ -213,8 +213,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         let decl_docs: Vec<DocRef<'a>> =
             self.declarators.iter().map(|decl| decl.build(b)).collect();
 
-        let declarators_doc = b.concat(decl_docs);
-        //let declarators_doc = b.join(b.txt(", "), decl_docs);
+        let declarators_doc = b.separated_choice(&decl_docs, ", ", ", ");
         result.push(declarators_doc);
 
         result.push(b.txt(";"));

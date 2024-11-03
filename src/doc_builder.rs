@@ -8,6 +8,10 @@ impl<'a> DocBuilder<'a> {
         DocBuilder(Arena::new())
     }
 
+    pub fn nil(&'a self) -> DocRef<'a> {
+        self.txt("")
+    }
+
     pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let flat_doc = self.flat(doc_ref);
         self.choice(flat_doc, doc_ref)
@@ -25,37 +29,41 @@ impl<'a> DocBuilder<'a> {
         self.choice(empty, newline)
     }
 
-    fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
-        let mut list = self.flat(elems[0]);
-        for elem in &elems[1..] {
-            list = self.concat([list, self.txt(separator), self.flat(elem)]);
-        }
-        list
+    pub fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+        elems.iter().skip(1).fold(
+            if let Some(&first) = elems.get(0) {
+                self.flat(first)
+            } else {
+                self.nil()
+            },
+            |acc, &elem| self.concat(vec![acc, self.txt(separator), self.flat(elem)]),
+        )
     }
 
-    fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
-        let mut list = elems[0];
-        for elem in &elems[1..] {
-            list = self.concat([list, self.txt(separator), self.nl(), elem]);
-        }
-        list
+    pub fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+        elems.iter().skip(1).fold(
+            if let Some(&first) = elems.get(0) {
+                first
+            } else {
+                self.nil()
+            },
+            |acc, &elem| self.concat(vec![acc, self.txt(separator), self.nl(), elem]),
+        )
     }
 
-    fn separated_choice(
+    pub fn separated_choice(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
         multi_sep: &str,
     ) -> DocRef<'a> {
-        let single_line = self.concat([self.sep_single_line(elems, single_sep)]);
+        if elems.is_empty() {
+            return self.nil();
+        }
 
-        let multi_line = self.concat([
-            self.indent(
-                4,
-                self.concat([self.nl(), self.sep_multi_line(elems, multi_sep)]),
-            ),
-            self.nl(),
-        ]);
+        let single_line = self.sep_single_line(elems, single_sep);
+
+        let multi_line = self.indent(4, self.sep_multi_line(elems, multi_sep));
 
         self.choice(single_line, multi_line)
     }
@@ -72,18 +80,15 @@ impl<'a> DocBuilder<'a> {
             return self.txt(format!("{}{}", open, closed));
         }
 
-        let single_line = self.concat([
+        let single_line = self.concat(vec![
             self.txt(open),
             self.sep_single_line(elems, single_sep),
             self.txt(closed),
         ]);
 
-        let multi_line = self.concat([
+        let multi_line = self.concat(vec![
             self.txt(open),
-            self.indent(
-                4,
-                self.concat([self.nl(), self.sep_multi_line(elems, multi_sep)]),
-            ),
+            self.indent(4, self.sep_multi_line(elems, multi_sep)),
             self.nl(),
             self.txt(closed),
         ]);
