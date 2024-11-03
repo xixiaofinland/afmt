@@ -1,4 +1,4 @@
-use crate::struct_def::*;
+use crate::data_model::*;
 
 #[derive(Debug)]
 pub enum ClassMember {

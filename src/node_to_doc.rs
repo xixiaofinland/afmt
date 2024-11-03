@@ -1,5 +1,5 @@
+use crate::data_model::*;
 use crate::doc::{DocBuilder, DocRef};
-use crate::struct_def::*;
 
 #[derive(Clone, Copy)]
 struct NodeBuilder<'a>(&'a DocBuilder<'a>);

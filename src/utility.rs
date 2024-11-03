@@ -1,7 +1,7 @@
 use crate::config::FmtContext;
+use crate::data_model::*;
 use crate::doc::pretty_print;
 use crate::doc::DocBuilder;
-use crate::struct_def::*;
 #[allow(unused_imports)]
 use log::debug;
 use tree_sitter::TreeCursor;

@@ -1,12 +1,12 @@
 mod accessor;
 pub mod args;
 pub mod config;
+mod data_model;
 mod doc;
 mod enum_def;
 mod macros;
 mod node_to_doc;
 mod shape;
-mod struct_def;
 mod utility;
 //mod rewrite;
 //mod rich_macro;
