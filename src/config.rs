@@ -1,4 +1,5 @@
 use crate::data_model::*;
+use crate::doc::pretty_print;
 use crate::doc_builder::DocBuilder;
 use crate::utility::{collect_comments, enrich};
 use anyhow::{anyhow, Result};
@@ -116,7 +117,11 @@ impl Session {
 
         // traverse enriched data and create combinators to print result
         let b = DocBuilder::new();
-        root.build(&b);
+        let doc_ref = root.build(&b);
+
+        //print
+        let result = pretty_print(doc_ref, 20);
+        println!("{}", result);
     }
 }
 
