@@ -25,41 +25,69 @@ impl<'a> DocBuilder<'a> {
         self.choice(empty, newline)
     }
 
-    fn comma_sep_single_line(&'a self, elems: &[DocRef<'a>]) -> DocRef<'a> {
+    fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         let mut list = self.flat(elems[0]);
         for elem in &elems[1..] {
-            list = self.concat([list, self.txt(", "), self.flat(elem)]);
+            list = self.concat([list, self.txt(separator), self.flat(elem)]);
         }
         list
     }
 
-    fn comma_sep_multi_line(&'a self, elems: &[DocRef<'a>]) -> DocRef<'a> {
+    fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         let mut list = elems[0];
         for elem in &elems[1..] {
-            list = self.concat([list, self.txt(", "), self.nl(), elem]);
+            list = self.concat([list, self.txt(separator), self.nl(), elem]);
         }
         list
     }
 
-    fn surrounded(&'a self, open: &str, elems: &[DocRef<'a>], closed: &str) -> DocRef<'a> {
+    fn separated_choice(
+        &'a self,
+        elems: &[DocRef<'a>],
+        single_sep: &str,
+        multi_sep: &str,
+    ) -> DocRef<'a> {
+        let single_line = self.concat([self.sep_single_line(elems, single_sep)]);
+
+        let multi_line = self.concat([
+            self.indent(
+                4,
+                self.concat([self.nl(), self.sep_multi_line(elems, multi_sep)]),
+            ),
+            self.nl(),
+        ]);
+
+        self.choice(single_line, multi_line)
+    }
+
+    fn surrounded(
+        &'a self,
+        elems: &[DocRef<'a>],
+        single_sep: &str,
+        multi_sep: &str,
+        open: &str,
+        closed: &str,
+    ) -> DocRef<'a> {
         if elems.is_empty() {
             return self.txt(format!("{}{}", open, closed));
         }
 
         let single_line = self.concat([
             self.txt(open),
-            self.comma_sep_single_line(elems),
+            self.sep_single_line(elems, single_sep),
             self.txt(closed),
         ]);
+
         let multi_line = self.concat([
             self.txt(open),
             self.indent(
                 4,
-                self.concat([self.nl(), self.comma_sep_multi_line(elems)]),
+                self.concat([self.nl(), self.sep_multi_line(elems, multi_sep)]),
             ),
             self.nl(),
             self.txt(closed),
         ]);
+
         self.choice(single_line, multi_line)
     }
 
