@@ -14,6 +14,17 @@ pub struct Root {
     pub class: Option<ClassDeclaration>,
 }
 
+impl<'a> DocBuild<'a> for Root {
+    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
+        let mut result: Vec<DocRef<'a>> = Vec::new();
+        if let Some(ref c) = self.class {
+            result.push(c.build(b));
+        }
+        result.push(b.txt("root"));
+        b.concat(result)
+    }
+}
+
 impl Root {
     pub fn new(node: Node, source_code: &str) -> Self {
         let class = node
@@ -24,12 +35,6 @@ impl Root {
     }
 }
 
-impl<'a> DocBuild<'a> for Root {
-    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
-        b.txt("hello")
-    }
-}
-
 #[derive(Debug)]
 pub struct ClassDeclaration {
     pub buckets: Option<CommentBuckets>,
@@ -37,6 +42,12 @@ pub struct ClassDeclaration {
     pub name: String,
     pub body: ClassBody,
     pub range: Range,
+}
+
+impl<'a> DocBuild<'a> for ClassDeclaration {
+    fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
+        b.txt("class")
+    }
 }
 
 impl ClassDeclaration {
