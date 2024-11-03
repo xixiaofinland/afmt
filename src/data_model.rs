@@ -20,7 +20,6 @@ impl<'a> DocBuild<'a> for Root {
         if let Some(ref c) = self.class {
             result.push(c.build(b));
         }
-        result.push(b.txt("root"));
         b.concat(result)
     }
 }

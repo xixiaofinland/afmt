@@ -115,13 +115,13 @@ impl Session {
         // traverse the tree to build enriched data
         let root: Root = enrich(&context);
 
-        // traverse enriched data and create combinators to print result
+        // traverse enriched data and create pretty print combinators
         let b = DocBuilder::new();
         let doc_ref = root.build(&b);
 
-        //print
+        //pretty print
         let result = pretty_print(doc_ref, 20);
-        println!("{}", result);
+        println!("\n###\n{}\n\n", result);
     }
 }
 
