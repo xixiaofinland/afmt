@@ -49,9 +49,21 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
+            result.push(b.txt(" "));
         }
+
+        result.push(b.txt("class "));
         result.push(b.txt(&self.name));
-        //result.push(self.body.build(b));
+
+        result.push(b.txt(" {"));
+        result.push(b.nl());
+
+        let body_doc = self.body.build(b);
+        let indented_body = b.indent(4, body_doc);
+        result.push(indented_body);
+
+        result.push(b.nl());
+        result.push(b.txt("}"));
     }
 }
 
@@ -139,6 +151,24 @@ pub struct ClassBody {
     declarations: Vec<ClassMember>,
 }
 
+impl<'a> DocBuild<'a> for ClassBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let mut member_docs = Vec::new();
+
+        for member in &self.declarations {
+            let member_doc = member.build(b);
+            member_docs.push(member_doc);
+            member_docs.push(b.nl());
+        }
+
+        // Concatenate all member docs
+        let body_content = b.concat(member_docs);
+
+        // Since the body is already indented in `ClassDeclaration`, we don't need to indent here
+        result.push(body_content);
+    }
+}
+
 impl ClassBody {
     pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
         let mut declarations: Vec<ClassMember> = Vec::new();
@@ -167,6 +197,28 @@ pub struct FieldDeclaration {
     pub type_: UnnanotatedType,
     pub declarators: Vec<VariableDeclarator>,
     pub range: Range,
+}
+
+impl<'a> DocBuild<'a> for FieldDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        // Build modifiers if present
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+            result.push(b.txt(" "));
+        }
+
+        result.push(self.type_.build(b));
+        result.push(b.txt(" "));
+
+        let decl_docs: Vec<DocRef<'a>> =
+            self.declarators.iter().map(|decl| decl.build(b)).collect();
+
+        let declarators_doc = b.concat(decl_docs);
+        //let declarators_doc = b.join(b.txt(", "), decl_docs);
+        result.push(declarators_doc);
+
+        result.push(b.txt(";"));
+    }
 }
 
 impl FieldDeclaration {
@@ -210,14 +262,24 @@ pub struct VariableDeclarator {
     pub value: Option<VariableInitializer>,
 }
 
+impl<'a> DocBuild<'a> for VariableDeclarator {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.name));
+        result.push(b.txt(" = "));
+        if let Some(ref v) = self.value {
+            result.push(v.build(b));
+        }
+    }
+}
+
 impl VariableDeclarator {
     pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
         let name = node.cvalue_by_n("name", source_code);
 
         let value = node.try_c_by_n("value").map(|v| match v.kind() {
-            "array_initializer" => {
-                VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
-            }
+            //"array_initializer" => {
+            //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
+            //}
             _ => VariableInitializer::Expression(Expression::Primary(
                 PrimaryExpression::Identifier(Identifier {
                     value: v.value(source_code),
