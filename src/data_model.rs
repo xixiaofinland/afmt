@@ -30,7 +30,7 @@ impl Root {
     pub fn new(node: Node, source_code: &str) -> Self {
         let class = node
             .try_c_by_k("class_declaration")
-            .map(|n| ClassDeclaration::new(n, source_code, 0));
+            .map(|n| ClassDeclaration::new(n, source_code, 2));
 
         Self { class }
     }
