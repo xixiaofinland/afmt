@@ -152,14 +152,7 @@ pub struct ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //let mut member_docs = Vec::new();
-        //for member in &self.declarations {
-        //    let member_doc = member.build(b);
-        //    member_docs.push(member_doc);
-        //}
-
         let member_docs = b.build_docs(&self.declarations);
-
         let body_doc = b.sep_multi_line(&member_docs, "");
         result.push(body_doc);
     }
