@@ -37,39 +37,6 @@ pub fn enrich(context: &FmtContext) -> Root {
     //eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
 }
 
-fn test_doc<'a>() {
-    let db = DocBuilder::new();
-    let header = db.concat(vec![
-        db.txt("[INFO]"),
-        db.softline(),
-        db.txt("Application started"),
-    ]);
-    let body = db.concat(vec![
-        db.txt("Processing data..."),
-        db.softline(),
-        db.txt("Data processed successfully."),
-    ]);
-    let footer = db.concat(vec![
-        db.txt("[INFO]"),
-        db.softline(),
-        db.txt("Application terminated"),
-    ]);
-
-    let full_doc = db.concat(vec![
-        header,
-        db.nl(),
-        db.nl(),
-        body,
-        db.nl(),
-        db.nl(),
-        footer,
-    ]);
-    let grouped_doc = db.group(full_doc);
-    let output = pretty_print(grouped_doc, 30);
-
-    println!("{}", output);
-}
-
 //pub fn visit_root(context: &FmtContext) -> String {
 //    let mut result = String::new();
 //    let shape = Shape::empty(&context.config);

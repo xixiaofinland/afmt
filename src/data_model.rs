@@ -30,7 +30,7 @@ impl Root {
     pub fn new(node: Node, source_code: &str) -> Self {
         let class = node
             .try_c_by_k("class_declaration")
-            .map(|n| ClassDeclaration::new(n, source_code, 2));
+            .map(|n| ClassDeclaration::new(n, source_code, 0));
 
         Self { class }
     }
@@ -49,7 +49,6 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
-            result.push(b.txt(" "));
         }
 
         result.push(b.txt("class "));
@@ -59,7 +58,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.nl());
 
         let body_doc = self.body.build(b);
-        let indented_body = b.indent(4, body_doc);
+        let indented_body = b.indent(1, body_doc);
         result.push(indented_body);
 
         result.push(b.nl());

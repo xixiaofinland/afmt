@@ -1,5 +1,5 @@
 use crate::data_model::*;
-use crate::doc::pretty_print;
+use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
 use crate::utility::{collect_comments, enrich};
 use anyhow::{anyhow, Result};
@@ -116,7 +116,8 @@ impl Session {
         let root: Root = enrich(&context);
 
         // traverse enriched data and create pretty print combinators
-        let b = DocBuilder::new();
+        let config = PrettyConfig::new(4);
+        let b = DocBuilder::new(config);
         let doc_ref = root.build(&b);
 
         //pretty print

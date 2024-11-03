@@ -1,11 +1,17 @@
-use crate::doc::{Doc, DocRef};
+use crate::doc::{Doc, DocRef, PrettyConfig};
 use typed_arena::Arena;
 
-pub struct DocBuilder<'a>(Arena<Doc<'a>>);
+pub struct DocBuilder<'a> {
+    arena: Arena<Doc<'a>>,
+    config: PrettyConfig,
+}
 
 impl<'a> DocBuilder<'a> {
-    pub fn new() -> DocBuilder<'a> {
-        DocBuilder(Arena::new())
+    pub fn new(config: PrettyConfig) -> Self {
+        Self {
+            arena: Arena::new(),
+            config,
+        }
     }
 
     pub fn nil(&'a self) -> DocRef<'a> {
@@ -99,29 +105,30 @@ impl<'a> DocBuilder<'a> {
     // fundamental blocks
 
     pub fn nl(&'a self) -> DocRef<'a> {
-        self.0.alloc(Doc::Newline)
+        self.arena.alloc(Doc::Newline)
     }
 
     pub fn txt(&'a self, text: impl ToString) -> DocRef<'a> {
         let string = text.to_string();
         let width = string.len() as u32;
-        self.0.alloc(Doc::Text(string, width))
+        self.arena.alloc(Doc::Text(string, width))
     }
 
     pub fn flat(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        self.0.alloc(Doc::Flat(doc_ref))
+        self.arena.alloc(Doc::Flat(doc_ref))
     }
 
-    pub fn indent(&'a self, indent: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        self.0.alloc(Doc::Indent(indent, doc_ref))
+    pub fn indent(&'a self, levels: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let relative_indent = levels * self.config.indent_size;
+        self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
         let n_vec = doc_refs.into_iter().collect::<Vec<_>>();
-        self.0.alloc(Doc::Concat(n_vec))
+        self.arena.alloc(Doc::Concat(n_vec))
     }
 
     pub fn choice(&'a self, first: DocRef<'a>, second: DocRef<'a>) -> DocRef<'a> {
-        self.0.alloc(Doc::Choice(first, second))
+        self.arena.alloc(Doc::Choice(first, second))
     }
 }

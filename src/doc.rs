@@ -21,6 +21,16 @@ struct PrettyPrinter<'a> {
     chunks: Vec<Chunk<'a>>,
 }
 
+pub struct PrettyConfig {
+    pub indent_size: u32,
+}
+
+impl PrettyConfig {
+    pub fn new(indent_size: u32) -> Self {
+        Self { indent_size }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 struct Chunk<'a> {
     doc_ref: DocRef<'a>,
@@ -73,6 +83,7 @@ impl<'a> PrettyPrinter<'a> {
         let mut result = String::new();
 
         while let Some(chunk) = self.chunks.pop() {
+            eprintln!("gopro[4]: doc.rs:85: chunk={:#?}", chunk);
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
