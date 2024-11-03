@@ -55,6 +55,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.txt(&self.name));
 
         result.push(b.txt(" {"));
+        result.push(b.nl());
 
         let body_doc = self.body.build(b);
         let indented_body = b.indent(1, body_doc);
@@ -151,8 +152,6 @@ pub struct ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.nl());
-
         let mut member_docs = Vec::new();
         for member in &self.declarations {
             let member_doc = member.build(b);
