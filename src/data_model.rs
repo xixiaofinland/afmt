@@ -154,18 +154,27 @@ impl<'a> DocBuild<'a> for ClassBody {
         result.push(b.nl());
 
         let mut member_docs = Vec::new();
-
         for member in &self.declarations {
             let member_doc = member.build(b);
             member_docs.push(member_doc);
-            member_docs.push(b.nl());
         }
 
-        // Concatenate all member docs
-        let body_content = b.concat(member_docs);
+        let body_doc = b.sep_multi_line(&member_docs, "");
+        result.push(body_doc);
 
-        // Since the body is already indented in `ClassDeclaration`, we don't need to indent here
-        result.push(body_content);
+        //let mut member_docs = Vec::new();
+        //
+        //for member in &self.declarations {
+        //    let member_doc = member.build(b);
+        //    member_docs.push(member_doc);
+        //    member_docs.push(b.nl());
+        //}
+        //
+        //// Concatenate all member docs
+        //let body_content = b.concat(member_docs);
+        //
+        //// Since the body is already indented in `ClassDeclaration`, we don't need to indent here
+        //result.push(body_content);
     }
 }
 
