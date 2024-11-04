@@ -76,7 +76,7 @@ impl<'a> DocBuilder<'a> {
 
         let single_line = self.sep_single_line(elems, single_sep);
 
-        let multi_line = self.indent(4, self.sep_multi_line(elems, multi_sep));
+        let multi_line = self.add_indent_level(self.sep_multi_line(elems, multi_sep));
 
         self.choice(single_line, multi_line)
     }
@@ -101,7 +101,7 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.indent(4, self.sep_multi_line(elems, multi_sep)),
+            self.add_indent_level(self.sep_multi_line(elems, multi_sep)),
             self.nl(),
             self.txt(closed),
         ]);
@@ -143,10 +143,15 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Flat(doc_ref))
     }
 
-    pub fn indent(&'a self, levels: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let relative_indent = levels * self.config.indent_size;
+    pub fn add_indent_level(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let relative_indent = self.config.indent_size;
         self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
     }
+
+    //pub fn add_indent_level(&'a self, levels: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    //    let relative_indent = levels * self.config.indent_size;
+    //    self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
+    //}
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
         let n_vec = doc_refs.into_iter().collect::<Vec<_>>();

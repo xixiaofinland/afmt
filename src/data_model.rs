@@ -62,7 +62,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(b.nl());
 
             let body_doc = self.body.build(b);
-            let indented_body = b.indent(1, body_doc);
+            let indented_body = b.add_indent_level(body_doc);
             result.push(indented_body);
 
             result.push(b.nl());
