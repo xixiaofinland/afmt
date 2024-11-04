@@ -115,6 +115,14 @@ impl<'a> DocBuilder<'a> {
         items.into_iter().map(|item| item.build(self)).collect()
     }
 
+    pub fn braces(&'a self) -> DocRef<'a> {
+        self.txt("{ }\n")
+    }
+
+    pub fn parens(&'a self) -> DocRef<'a> {
+        self.txt("( )\n")
+    }
+
     // fundamental blocks
 
     pub fn nl(&'a self) -> DocRef<'a> {

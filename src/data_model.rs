@@ -54,15 +54,20 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.txt("class "));
         result.push(b.txt(&self.name));
 
-        result.push(b.txt(" {"));
-        result.push(b.nl());
+        if self.body.declarations.is_empty() {
+            result.push(b.txt(" "));
+            result.push(b.braces());
+        } else {
+            result.push(b.txt(" {"));
+            result.push(b.nl());
 
-        let body_doc = self.body.build(b);
-        let indented_body = b.indent(1, body_doc);
-        result.push(indented_body);
+            let body_doc = self.body.build(b);
+            let indented_body = b.indent(1, body_doc);
+            result.push(indented_body);
 
-        result.push(b.nl());
-        result.push(b.txt("}"));
+            result.push(b.nl());
+            result.push(b.txt("}"));
+        }
     }
 }
 
@@ -110,7 +115,7 @@ impl Modifiers {
             match c.kind() {
                 "annotation" => {
                     modifiers.annotation = Some(Annotation {
-                        name: c.cv_by_n("name", source_code).to_string(),
+                        name: c.cvalue_by_n("name", source_code),
                     });
                 }
                 "modifier" => {
@@ -147,7 +152,7 @@ impl<'a> DocBuild<'a> for Annotation {
 
 #[derive(Debug)]
 pub struct ClassBody {
-    declarations: Vec<ClassMember>,
+    pub declarations: Vec<ClassMember>,
 }
 
 impl<'a> DocBuild<'a> for ClassBody {
@@ -193,7 +198,6 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         // Build modifiers if present
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
-            result.push(b.txt(" "));
         }
 
         result.push(self.type_.build(b));
