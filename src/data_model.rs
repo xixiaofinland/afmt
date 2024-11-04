@@ -126,7 +126,7 @@ impl Modifiers {
                 }
                 "modifier" => match c.first_c().kind() {
                     "public" => modifiers.modifiers.push(Modifier::Public),
-                    _ => modifiers.modifiers.push(Modifier::Public),
+                    _ => panic!("## unknown node: {} in Modifier", c.kind().red()),
                 },
                 "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
