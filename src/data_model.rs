@@ -55,8 +55,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.txt(&self.name));
 
         if self.body.declarations.is_empty() {
-            result.push(b.space());
-            result.push(b.braces());
+            result.push(b.txt(" {\n}\n"));
         } else {
             result.push(b.txt(" {"));
             result.push(b.nl());
