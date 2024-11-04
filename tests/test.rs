@@ -163,10 +163,11 @@ mod tests {
             .expect("Create session failed.");
 
         let vec = session.format();
-        vec.into_iter()
-            .next()
-            .and_then(|result| result.ok())
-            .expect("format result failed.")
+        vec
+        //vec.into_iter()
+        //    .next()
+        //    .and_then(|result| result.ok())
+        //    .expect("format result failed.")
     }
 
     fn print_side_by_side_diff(against: &str, output: &str, expected: &str) {

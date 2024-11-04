@@ -201,8 +201,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(self.type_.build(b));
         result.push(b.space());
 
-        let decl_docs: Vec<DocRef<'a>> =
-            self.declarators.iter().map(|decl| decl.build(b)).collect();
+        let decl_docs = b.build_docs(&self.declarators);
 
         let declarators_doc = b.separated_choice(&decl_docs, ", ", ", ");
         result.push(declarators_doc);

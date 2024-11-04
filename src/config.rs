@@ -93,7 +93,7 @@ impl Session {
         Ok(Session::new(config, source_files))
     }
 
-    pub fn format(&self) {
+    pub fn format(&self) -> String {
         let file = &self.source_files[0];
         let source_code = fs::read_to_string(Path::new(file))
             .map_err(|e| {
@@ -123,6 +123,7 @@ impl Session {
         //pretty print
         let result = pretty_print(doc_ref, 20);
         println!("\n###\n{}\n\n", result);
+        result
     }
 }
 
