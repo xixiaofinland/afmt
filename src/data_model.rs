@@ -55,7 +55,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.txt(&self.name));
 
         if self.body.declarations.is_empty() {
-            result.push(b.txt(" "));
+            result.push(b.space());
             result.push(b.braces());
         } else {
             result.push(b.txt(" {"));
@@ -206,7 +206,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         }
 
         result.push(self.type_.build(b));
-        result.push(b.txt(" "));
+        result.push(b.space());
 
         let decl_docs: Vec<DocRef<'a>> =
             self.declarators.iter().map(|decl| decl.build(b)).collect();
