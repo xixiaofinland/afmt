@@ -106,8 +106,8 @@ impl<'a> DocBuild<'a> for Modifiers {
         }
 
         if !self.modifiers.is_empty() {
-            let doc_vec: Vec<DocRef<'a>> = self.modifiers.iter().map(|n| b.txt(&n.value)).collect();
-            result.push(b.concat(doc_vec));
+            let modifiers_doc = b.build_docs(&self.modifiers);
+            result.push(b.concat(modifiers_doc));
             result.push(b.space());
         }
     }
@@ -124,11 +124,10 @@ impl Modifiers {
                         name: c.cvalue_by_n("name", source_code),
                     });
                 }
-                "modifier" => {
-                    modifiers.modifiers.push(Modifier {
-                        value: c.first_c().value(source_code),
-                    });
-                }
+                "modifier" => match c.first_c().kind() {
+                    "public" => modifiers.modifiers.push(Modifier::Public),
+                    _ => modifiers.modifiers.push(Modifier::Public),
+                },
                 "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
             }
@@ -136,12 +135,6 @@ impl Modifiers {
 
         modifiers
     }
-}
-
-#[derive(Debug)]
-pub struct Modifier {
-    //pub buckets: CommentBuckets,
-    pub value: String,
 }
 
 #[derive(Debug)]

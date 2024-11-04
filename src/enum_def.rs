@@ -103,6 +103,72 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
 }
 
 #[derive(Debug)]
-pub enum ModifierType {
-    Identifier(Identifier),
+pub enum Modifier {
+    Abstract,
+    Final,
+    Global,
+    InheritedSharing,
+    Override,
+    Private,
+    Protected,
+    Public,
+    Static,
+    TestMethod,
+    Transient,
+    Virtual,
+    Webservice,
+    WithSharing,
+    WithoutSharing,
+}
+
+impl<'a> DocBuild<'a> for Modifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Modifier::Abstract => {
+                result.push(b.txt("abstract"));
+            }
+            Modifier::Final => {
+                result.push(b.txt("final"));
+            }
+            Modifier::Global => {
+                result.push(b.txt("global"));
+            }
+            Modifier::InheritedSharing => {
+                result.push(b.txt("inherited sharing"));
+            }
+            Modifier::Override => {
+                result.push(b.txt("overwrite"));
+            }
+            Modifier::Private => {
+                result.push(b.txt("private"));
+            }
+            Modifier::Protected => {
+                result.push(b.txt("Protected"));
+            }
+            Modifier::Public => {
+                result.push(b.txt("public"));
+            }
+            Modifier::Static => {
+                result.push(b.txt("static"));
+            }
+            Modifier::TestMethod => {
+                result.push(b.txt("testmethod"));
+            }
+            Modifier::Transient => {
+                result.push(b.txt("transient"));
+            }
+            Modifier::Virtual => {
+                result.push(b.txt("virtual"));
+            }
+            Modifier::Webservice => {
+                result.push(b.txt("webserivce"));
+            }
+            Modifier::WithSharing => {
+                result.push(b.txt("with sharing"));
+            }
+            Modifier::WithoutSharing => {
+                result.push(b.txt("without sharing"));
+            }
+        }
+    }
 }
