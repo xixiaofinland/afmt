@@ -104,6 +104,12 @@ impl<'a> DocBuild<'a> for Modifiers {
         if let Some(ref n) = self.annotation {
             result.push(n.build(b));
         }
+
+        if !self.modifiers.is_empty() {
+            let doc_vec: Vec<DocRef<'a>> = self.modifiers.iter().map(|n| b.txt(&n.value)).collect();
+            result.push(b.concat(doc_vec));
+            result.push(b.space());
+        }
     }
 }
 
@@ -120,7 +126,7 @@ impl Modifiers {
                 }
                 "modifier" => {
                     modifiers.modifiers.push(Modifier {
-                        value: c.value(source_code),
+                        value: c.first_c().value(source_code),
                     });
                 }
                 "line_comment" | "block_comment" => continue,
@@ -195,7 +201,6 @@ pub struct FieldDeclaration {
 
 impl<'a> DocBuild<'a> for FieldDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        // Build modifiers if present
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
         }

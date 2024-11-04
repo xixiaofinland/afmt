@@ -101,3 +101,8 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum ModifierType {
+    Identifier(Identifier),
+}
