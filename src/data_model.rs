@@ -1,7 +1,30 @@
 use crate::{accessor::Accessor, doc::DocRef, doc_builder::DocBuilder, enum_def::*};
 use colored::Colorize;
-use std::fmt::Debug;
+use std::{cell::RefCell, fmt::Debug};
 use tree_sitter::{Node, Range};
+
+use std::cell::Cell;
+
+// Define thread-local storage for source_code using `Cell`
+thread_local! {
+    static THREAD_SOURCE_CODE: Cell<Option<&'static str>> = Cell::new(None);
+}
+
+/// Sets the source code for the current thread.
+/// This should be called once per thread before processing.
+fn set_thread_source_code(code: String) {
+    // Leak the `String` to obtain a `&'static str`
+    let leaked_code: &'static str = Box::leak(code.into_boxed_str());
+    THREAD_SOURCE_CODE.with(|sc| {
+        sc.set(Some(leaked_code));
+    });
+}
+
+/// Retrieves the source code for the current thread.
+/// Panics if the source code has not been set.
+fn get_thread_source_code() -> &'static str {
+    THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
+}
 
 pub trait DocBuild<'a> {
     fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
