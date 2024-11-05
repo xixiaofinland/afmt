@@ -1,26 +1,38 @@
-use crate::config::FmtContext;
 use crate::data_model::*;
-use crate::doc::pretty_print;
-use crate::doc::Doc;
-use crate::doc::DocRef;
-use crate::doc_builder::DocBuilder;
 #[allow(unused_imports)]
 use log::debug;
-use tree_sitter::TreeCursor;
+use std::cell::Cell;
+use tree_sitter::{Tree, TreeCursor};
 
-pub fn collect_comments(
-    cursor: &mut TreeCursor,
-    comments: &mut Vec<Comment>,
-    context: &FmtContext,
-) {
+thread_local! {
+    static THREAD_SOURCE_CODE: Cell<Option<&'static str>> = Cell::new(None);
+}
+
+/// Sets the source code for the current thread.
+/// This should be called once per thread before processing.
+pub fn set_thread_source_code(code: String) {
+    // Leak the `String` to obtain a `&'static str`
+    let leaked_code: &'static str = Box::leak(code.into_boxed_str());
+    THREAD_SOURCE_CODE.with(|sc| {
+        sc.set(Some(leaked_code));
+    });
+}
+
+/// Retrieves the source code for the current thread.
+/// Panics if the source code has not been set.
+pub fn source_code() -> &'static str {
+    THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
+}
+
+pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
     loop {
         let node = cursor.node();
         if node.is_named() && node.is_extra() {
-            comments.push(Comment::from_node(node, &context.source_code));
+            comments.push(Comment::from_node(node, source_code()));
         }
 
         if cursor.goto_first_child() {
-            collect_comments(cursor, comments, context);
+            collect_comments(cursor, comments);
             cursor.goto_parent();
         }
 
@@ -30,9 +42,9 @@ pub fn collect_comments(
     }
 }
 
-pub fn enrich(context: &FmtContext) -> Root {
-    let root_node = context.ast_tree.root_node();
-    Root::new(root_node, &context.source_code)
+pub fn enrich(ast_tree: &Tree) -> Root {
+    let root_node = ast_tree.root_node();
+    Root::new(root_node)
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
     //eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
 }

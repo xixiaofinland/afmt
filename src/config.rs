@@ -1,7 +1,7 @@
 use crate::data_model::*;
 use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
-use crate::utility::{collect_comments, enrich};
+use crate::utility::{collect_comments, enrich, set_thread_source_code};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use serde::Deserialize;
@@ -13,18 +13,18 @@ use tree_sitter::{Language, Node, Parser, Tree};
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     #[serde(default = "default_max_width")]
-    pub max_width: usize,
+    pub max_width: u32,
 
     #[serde(default = "default_indent_size")]
-    pub indent_size: usize,
+    pub indent_size: u32,
 }
 
-fn default_max_width() -> usize {
-    80
+fn default_max_width() -> u32 {
+    20
 }
 
-fn default_indent_size() -> usize {
-    2
+fn default_indent_size() -> u32 {
+    4
 }
 
 impl Default for Config {
@@ -37,7 +37,7 @@ impl Default for Config {
 }
 
 impl Config {
-    pub fn new(max_width: usize) -> Self {
+    pub fn new(max_width: u32) -> Self {
         Self {
             max_width,
             indent_size: 2,
@@ -52,11 +52,11 @@ impl Config {
         Ok(config)
     }
 
-    pub fn max_width(&self) -> usize {
+    pub fn max_width(&self) -> u32 {
         self.max_width
     }
 
-    pub fn indent_size(&self) -> usize {
+    pub fn indent_size(&self) -> u32 {
         self.indent_size
     }
 }
@@ -105,25 +105,81 @@ impl Session {
             })
             .unwrap();
 
-        let context = FmtContext::new(self.config.clone(), source_code);
+        let ast_tree = Session::parse(&source_code);
+
+        set_thread_source_code(source_code.clone());
 
         // traverse the tree to collect all comment nodes
-        let mut cursor = context.ast_tree.walk();
+        let mut cursor = ast_tree.walk();
         let mut comments = Vec::new();
-        collect_comments(&mut cursor, &mut comments, &context);
+        collect_comments(&mut cursor, &mut comments);
 
         // traverse the tree to build enriched data
-        let root: Root = enrich(&context);
+        let root: Root = enrich(&ast_tree);
 
         // traverse enriched data and create pretty print combinators
-        let config = PrettyConfig::new(4);
+        let config = PrettyConfig::new(self.config.indent_size);
         let b = DocBuilder::new(config);
         let doc_ref = root.build(&b);
 
         //pretty print
-        let result = pretty_print(doc_ref, 20);
+        let result = pretty_print(doc_ref, self.config.max_width);
         println!("\n###\n{}\n\n", result);
         result
+    }
+
+    pub fn parse(source_code: &str) -> Tree {
+        let mut parser = Parser::new();
+        parser
+            .set_language(&language())
+            .expect("Error loading Apex grammar");
+
+        let ast_tree = parser.parse(&source_code, None).unwrap();
+        let root_node = &ast_tree.root_node();
+
+        if root_node.has_error() {
+            if let Some(error_node) = Self::find_last_error_node(root_node) {
+                let error_snippet = &source_code[error_node.start_byte()..error_node.end_byte()];
+                println!(
+                    "Error in node kind: {}, at byte range: {}-{}, snippet: {}",
+                    error_node.kind().yellow(),
+                    error_node.start_byte(),
+                    error_node.end_byte(),
+                    error_snippet,
+                );
+                if let Some(p) = error_node.parent() {
+                    let parent_snippet = &source_code[p.start_byte()..p.end_byte()];
+                    println!(
+                        "Parent node kind: {}, at byte range: {}-{}, snippet: {}",
+                        p.kind().yellow(),
+                        p.start_byte(),
+                        p.end_byte(),
+                        parent_snippet,
+                    );
+                }
+            }
+            panic!("{}", "Parser encounters an error node in the tree.".red());
+        }
+
+        ast_tree
+    }
+
+    fn find_last_error_node<'tree>(node: &Node<'tree>) -> Option<Node<'tree>> {
+        if !node.has_error() {
+            return None; // If the current node has no error, return None
+        }
+
+        let mut last_error_node = Some(*node);
+
+        for i in 0..node.child_count() {
+            if let Some(child) = node.child(i) {
+                if child.has_error() {
+                    last_error_node = Self::find_last_error_node(&child);
+                }
+            }
+        }
+
+        last_error_node // Return the last (deepest) error node
     }
 }
 
@@ -159,73 +215,6 @@ impl Session {
 //drop(tx);
 //
 //rx.into_iter().collect()
-
-#[derive(Clone)]
-pub struct FmtContext {
-    pub config: Config,
-    pub source_code: String,
-    pub ast_tree: Tree,
-}
-
-impl FmtContext {
-    pub fn new(config: Config, source_code: String) -> Self {
-        let mut parser = Parser::new();
-        parser
-            .set_language(&language())
-            .expect("Error loading Apex grammar");
-
-        let ast_tree = parser.parse(&source_code, None).unwrap();
-        let root_node = &ast_tree.root_node();
-
-        if root_node.has_error() {
-            if let Some(error_node) = Self::find_last_error_node(root_node) {
-                let error_snippet = &source_code[error_node.start_byte()..error_node.end_byte()];
-                println!(
-                    "Error in node kind: {}, at byte range: {}-{}, snippet: {}",
-                    error_node.kind().yellow(),
-                    error_node.start_byte(),
-                    error_node.end_byte(),
-                    error_snippet,
-                );
-                if let Some(p) = error_node.parent() {
-                    let parent_snippet = &source_code[p.start_byte()..p.end_byte()];
-                    println!(
-                        "Parent node kind: {}, at byte range: {}-{}, snippet: {}",
-                        p.kind().yellow(),
-                        p.start_byte(),
-                        p.end_byte(),
-                        parent_snippet,
-                    );
-                }
-            }
-            panic!("{}", "Parser encounters an error node in the tree.".red());
-        }
-
-        Self {
-            config,
-            source_code,
-            ast_tree,
-        }
-    }
-
-    fn find_last_error_node<'tree>(node: &Node<'tree>) -> Option<Node<'tree>> {
-        if !node.has_error() {
-            return None; // If the current node has no error, return None
-        }
-
-        let mut last_error_node = Some(*node);
-
-        for i in 0..node.child_count() {
-            if let Some(child) = node.child(i) {
-                if child.has_error() {
-                    last_error_node = Self::find_last_error_node(&child);
-                }
-            }
-        }
-
-        last_error_node // Return the last (deepest) error node
-    }
-}
 
 extern "C" {
     fn tree_sitter_apex() -> Language;
