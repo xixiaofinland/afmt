@@ -79,7 +79,7 @@ impl ClassDeclaration {
         let modifiers = node.try_c_by_k("modifiers").map(|m| Modifiers::new(m));
 
         let name = node.cvalue_by_n("name", source_code());
-        let body = ClassBody::new(node.c_by_n("body"), source_code(), indent + 1);
+        let body = ClassBody::new(node.c_by_n("body"), indent + 1);
 
         Self {
             buckets,
@@ -162,7 +162,7 @@ impl<'a> DocBuild<'a> for ClassBody {
 }
 
 impl ClassBody {
-    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
+    pub fn new(node: Node, indent: usize) -> Self {
         let mut declarations: Vec<ClassMember> = Vec::new();
 
         for c in node.children_vec() {
@@ -229,7 +229,7 @@ impl FieldDeclaration {
         let declarators = node
             .cs_by_n("declarator")
             .into_iter()
-            .map(|n| VariableDeclarator::new(n, source_code(), indent))
+            .map(|n| VariableDeclarator::new(n, indent))
             .collect();
 
         Self {
@@ -259,8 +259,8 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
 }
 
 impl VariableDeclarator {
-    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
-        let name = node.cvalue_by_n("name", source_code);
+    pub fn new(node: Node, indent: usize) -> Self {
+        let name = node.cvalue_by_n("name", source_code());
 
         let value = node.try_c_by_n("value").map(|v| match v.kind() {
             //"array_initializer" => {
@@ -268,7 +268,7 @@ impl VariableDeclarator {
             //}
             _ => VariableInitializer::Expression(Expression::Primary(
                 PrimaryExpression::Identifier(Identifier {
-                    value: v.value(source_code),
+                    value: v.value(source_code()),
                 }),
             )),
         });
@@ -283,7 +283,7 @@ pub struct ArrayInitializer {
 }
 
 impl ArrayInitializer {
-    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
+    pub fn new(node: Node, indent: usize) -> Self {
         ArrayInitializer::default()
     }
 }
@@ -296,10 +296,10 @@ pub struct AssignmentExpression {
 }
 
 impl AssignmentExpression {
-    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
-        let left = node.cvalue_by_n("left", source_code);
-        let op = node.cvalue_by_n("operator", source_code);
-        let right = node.cvalue_by_n("right", source_code);
+    pub fn new(node: Node, indent: usize) -> Self {
+        let left = node.cvalue_by_n("left", source_code());
+        let op = node.cvalue_by_n("operator", source_code());
+        let right = node.cvalue_by_n("right", source_code());
         Self { left, op, right }
     }
 }
@@ -325,9 +325,9 @@ pub struct Comment {
 }
 
 impl Comment {
-    pub fn from_node(node: Node, source_code: &str) -> Self {
+    pub fn from_node(node: Node) -> Self {
         let id = node.id();
-        let content = node.v(source_code).to_string();
+        let content = node.v(source_code()).to_string();
         Self {
             id,
             content,

@@ -28,7 +28,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
     loop {
         let node = cursor.node();
         if node.is_named() && node.is_extra() {
-            comments.push(Comment::from_node(node, source_code()));
+            comments.push(Comment::from_node(node));
         }
 
         if cursor.goto_first_child() {
