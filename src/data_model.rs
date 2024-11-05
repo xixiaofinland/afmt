@@ -6,8 +6,9 @@ use crate::{
     utility::{assert_check, source_code},
 };
 use colored::Colorize;
+use serde::Serialize;
 use std::fmt::Debug;
-use tree_sitter::{Node, Range};
+use tree_sitter::{Node, Point, Range};
 
 pub trait DocBuild<'a> {
     fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
@@ -19,7 +20,7 @@ pub trait DocBuild<'a> {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Root {
     pub class: Option<ClassDeclaration>,
 }
@@ -43,13 +44,13 @@ impl Root {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ClassDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
     pub name: String,
     pub body: ClassBody,
-    pub range: Range,
+    pub range: DataRange,
 }
 
 impl<'a> DocBuild<'a> for ClassDeclaration {
@@ -86,18 +87,19 @@ impl ClassDeclaration {
 
         let name = node.cvalue_by_n("name", source_code());
         let body = ClassBody::new(node.c_by_n("body"), indent + 1);
+        let range = DataRange::from(node.range());
 
         Self {
             buckets,
             modifiers,
             name,
             body,
-            range: node.range(),
+            range,
         }
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct Modifiers {
     //pub buckets: CommentBuckets,
     annotation: Option<Annotation>,
@@ -143,7 +145,7 @@ impl Modifiers {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Annotation {
     pub name: String,
 }
@@ -155,7 +157,7 @@ impl<'a> DocBuild<'a> for Annotation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ClassBody {
     pub declarations: Vec<ClassMember>,
 }
@@ -190,13 +192,13 @@ impl ClassBody {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct FieldDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
     pub type_: UnnanotatedType,
     pub declarators: Vec<VariableDeclarator>,
-    pub range: Range,
+    pub range: DataRange,
 }
 
 impl<'a> DocBuild<'a> for FieldDeclaration {
@@ -246,12 +248,12 @@ impl FieldDeclaration {
             modifiers,
             type_,
             declarators,
-            range: node.range(),
+            range: DataRange::from(node.range()),
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct VariableDeclarator {
     pub name: String,
     pub value: Option<VariableInitializer>,
@@ -287,7 +289,7 @@ impl VariableDeclarator {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct ArrayInitializer {
     variable_initializers: Vec<VariableInitializer>,
 }
@@ -299,7 +301,7 @@ impl ArrayInitializer {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct AssignmentExpression {
     pub left: String,
     pub op: String,
@@ -317,24 +319,61 @@ impl AssignmentExpression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Identifier {
     pub value: String,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Serialize)]
+pub struct DataRange {
+    pub start_byte: usize,
+    pub end_byte: usize,
+    pub start_point: DataPoint,
+    pub end_point: DataPoint,
+}
+
+impl From<Range> for DataRange {
+    fn from(r: Range) -> Self {
+        let start_point = DataPoint::from(r.start_point);
+        let end_point = DataPoint::from(r.end_point);
+
+        Self {
+            start_byte: r.start_byte,
+            end_byte: r.end_byte,
+            start_point,
+            end_point,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct DataPoint {
+    pub row: usize,
+    pub column: usize,
+}
+
+impl From<Point> for DataPoint {
+    fn from(p: Point) -> Self {
+        Self {
+            row: p.row,
+            column: p.column,
+        }
+    }
+}
+
+#[derive(Debug, Default, Serialize)]
 pub struct CommentBuckets {
     pub pre_comments: Vec<Comment>,
     pub post_comments: Vec<Comment>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Comment {
     pub id: usize,
     pub content: String,
     pub comment_type: CommentType,
     pub is_processed: bool,
-    pub range: Range,
+    pub range: DataRange,
 }
 
 impl Comment {
@@ -350,12 +389,12 @@ impl Comment {
                 "block_comment" => CommentType::Block,
                 _ => panic!("Unexpected comment type"),
             },
-            range: node.range(),
+            range: DataRange::from(node.range()),
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum CommentType {
     Line,
     Block,

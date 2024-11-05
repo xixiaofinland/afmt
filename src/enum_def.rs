@@ -1,6 +1,8 @@
+use serde::Serialize;
+
 use crate::{data_model::*, doc::DocRef, doc_builder::DocBuilder};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum ClassMember {
     Field(Box<FieldDeclaration>),
     NestedClass(Box<ClassDeclaration>),
@@ -27,7 +29,7 @@ impl<'a> DocBuild<'a> for ClassMember {
 }
 
 //_unannotated_type: ($) => choice($._simple_type, $.array_type),
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum UnnanotatedType {
     Identifier(Identifier),
 }
@@ -42,7 +44,7 @@ impl<'a> DocBuild<'a> for UnnanotatedType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum VariableInitializer {
     Expression(Expression),
     //ArrayInitializer(ArrayInitializer),
@@ -71,7 +73,7 @@ impl<'a> DocBuild<'a> for VariableInitializer {
 //    $.dml_expression
 //  ),
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Expression {
     //Assignment(AssignmentExpression),
     Primary(PrimaryExpression),
@@ -87,7 +89,7 @@ impl<'a> DocBuild<'a> for Expression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum PrimaryExpression {
     Identifier(Identifier),
 }
@@ -102,7 +104,7 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Modifier {
     Abstract,
     Final,
