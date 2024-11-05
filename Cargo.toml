@@ -20,7 +20,7 @@ log = "0.4.22"
 phf = { version = "0.11.2", features = ["macros"] }
 serde = { version = "1.0.210", features = ["derive"] }
 toml = "0.8.19"
-tree-sitter = "0.22.6"
+tree-sitter = "0.24.3"
 typed-arena = "2.0.2"
 
 [build-dependencies]
