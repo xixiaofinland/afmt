@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use afmt::config::*;
+    use afmt::formatter::*;
     use colored::Colorize;
     use similar::{ChangeTag, TextDiff};
     use std::fs::File;
@@ -159,7 +159,7 @@ mod tests {
             .expect("PathBuf to String failed.")
             .to_string();
 
-        let session = Session::create_from_config(config_path, vec![file_path.clone()])
+        let session = Formatter::create_from_config(config_path, vec![file_path.clone()])
             .expect("Create session failed.");
 
         let vec = session.format();

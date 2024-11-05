@@ -2,7 +2,7 @@ use crate::{
     accessor::Accessor, doc::DocRef, doc_builder::DocBuilder, enum_def::*, utility::source_code,
 };
 use colored::Colorize;
-use std::{cell::RefCell, fmt::Debug};
+use std::fmt::Debug;
 use tree_sitter::{Node, Range};
 
 pub trait DocBuild<'a> {

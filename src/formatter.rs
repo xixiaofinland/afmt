@@ -62,13 +62,13 @@ impl Config {
 }
 
 #[derive(Clone, Debug)]
-pub struct Session {
+pub struct Formatter {
     config: Config,
     source_files: Vec<String>,
     //pub errors: ReportedErrors,
 }
 
-impl Session {
+impl Formatter {
     pub fn new(config: Config, source_files: Vec<String>) -> Self {
         Self {
             config,
@@ -84,13 +84,13 @@ impl Session {
     pub fn create_from_config(
         config_path: Option<&str>,
         source_files: Vec<String>,
-    ) -> Result<Session> {
+    ) -> Result<Formatter> {
         let config = match config_path {
             Some(path) => Config::from_file(path)
                 .map_err(|e| anyhow!(format!("{}: {}", e.to_string().yellow(), path)))?,
             None => Config::default(),
         };
-        Ok(Session::new(config, source_files))
+        Ok(Formatter::new(config, source_files))
     }
 
     pub fn format(&self) -> Vec<Result<String>> {
@@ -114,7 +114,7 @@ impl Session {
                         })
                         .unwrap();
 
-                    Session::format_one(source_code, config)
+                    Formatter::format_one(source_code, config)
                 });
                 match result {
                     Ok(result) => tx.send(result).expect("failed to send result in tx"),
@@ -131,7 +131,7 @@ impl Session {
     }
 
     pub fn format_one(source_code: String, config: Config) -> Result<String> {
-        let ast_tree = Session::parse(&source_code);
+        let ast_tree = Formatter::parse(&source_code);
 
         set_thread_source_code(source_code); // important to set thread level source code now;
 

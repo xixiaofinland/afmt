@@ -1,10 +1,10 @@
 mod accessor;
 pub mod args;
-pub mod config;
 mod data_model;
 mod doc;
 mod doc_builder;
 mod enum_def;
+pub mod formatter;
 mod macros;
 mod utility;
 //mod shape;
@@ -16,8 +16,8 @@ mod utility;
 //mod fmt_push;
 //mod visit;
 
-use config::Session;
+use formatter::Formatter;
 
-pub fn format(session: Session) {
+pub fn format(session: Formatter) {
     session.format();
 }

@@ -1,4 +1,4 @@
-use afmt::{config::Session, format};
+use afmt::{config::Formatter, format};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::fs;
 
@@ -20,7 +20,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     for sample_path in apex_files {
         let file_name = sample_path.split('/').last().unwrap_or("Unknown file");
 
-        let session = Session::create_from_config(None, vec![sample_path.to_string()])
+        let session = Formatter::create_from_config(None, vec![sample_path.to_string()])
             .expect("Failed to create session");
 
         // Add benchmarks for each file to the same report

@@ -1,6 +1,6 @@
 use afmt::args::{get_args, Args};
-use afmt::config::Session;
 use afmt::format;
+use afmt::formatter::Formatter;
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use log::error;
@@ -30,7 +30,7 @@ fn main() {
 }
 
 fn run(args: Args) -> Result<()> {
-    let session = Session::create_from_config(args.config.as_deref(), vec![args.path.clone()])?;
+    let session = Formatter::create_from_config(args.config.as_deref(), vec![args.path.clone()])?;
     format(session);
 
     //for (index, result) in results.iter().enumerate() {
