@@ -1,8 +1,9 @@
 use crate::data_model::*;
+use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
 use std::cell::Cell;
-use tree_sitter::{Tree, TreeCursor};
+use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
     static THREAD_SOURCE_CODE: Cell<Option<&'static str>> = Cell::new(None);
@@ -47,6 +48,15 @@ pub fn enrich(ast_tree: &Tree) -> Root {
     Root::new(root_node)
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
     //eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
+}
+
+pub fn assert_check(node: Node, expected_kind: &str) {
+    assert!(
+        node.kind() == expected_kind,
+        "Expected node kind '{}', found '{}'",
+        expected_kind.yellow(),
+        node.kind().red()
+    );
 }
 
 //pub fn visit_root(context: &FmtContext) -> String {

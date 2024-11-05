@@ -1,5 +1,9 @@
 use crate::{
-    accessor::Accessor, doc::DocRef, doc_builder::DocBuilder, enum_def::*, utility::source_code,
+    accessor::Accessor,
+    doc::DocRef,
+    doc_builder::DocBuilder,
+    enum_def::*,
+    utility::{assert_check, source_code},
 };
 use colored::Colorize;
 use std::fmt::Debug;
@@ -30,6 +34,7 @@ impl<'a> DocBuild<'a> for Root {
 
 impl Root {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "parser_output");
         let class = node
             .try_c_by_k("class_declaration")
             .map(|n| ClassDeclaration::new(n, 0));
@@ -74,6 +79,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
 impl ClassDeclaration {
     pub fn new(node: Node, indent: usize) -> Self {
+        assert_check(node, "class_declaration");
         let buckets = None;
 
         let modifiers = node.try_c_by_k("modifiers").map(|m| Modifiers::new(m));
@@ -114,6 +120,7 @@ impl<'a> DocBuild<'a> for Modifiers {
 
 impl Modifiers {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "modifiers");
         let mut modifiers = Self::default();
 
         for c in node.children_vec() {
@@ -163,6 +170,7 @@ impl<'a> DocBuild<'a> for ClassBody {
 
 impl ClassBody {
     pub fn new(node: Node, indent: usize) -> Self {
+        assert_check(node, "class_body");
         let mut declarations: Vec<ClassMember> = Vec::new();
 
         for c in node.children_vec() {
@@ -211,6 +219,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 
 impl FieldDeclaration {
     pub fn new(node: Node, indent: usize) -> Self {
+        assert_check(node, "field_declaration");
         let buckets = None;
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
@@ -260,6 +269,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
 
 impl VariableDeclarator {
     pub fn new(node: Node, indent: usize) -> Self {
+        assert_check(node, "variable_declarator");
         let name = node.cvalue_by_n("name", source_code());
 
         let value = node.try_c_by_n("value").map(|v| match v.kind() {
@@ -284,6 +294,7 @@ pub struct ArrayInitializer {
 
 impl ArrayInitializer {
     pub fn new(node: Node, indent: usize) -> Self {
+        assert_check(node, "array_initializer");
         ArrayInitializer::default()
     }
 }
@@ -297,6 +308,8 @@ pub struct AssignmentExpression {
 
 impl AssignmentExpression {
     pub fn new(node: Node, indent: usize) -> Self {
+        assert_check(node, "assignment_expression");
+
         let left = node.cvalue_by_n("left", source_code());
         let op = node.cvalue_by_n("operator", source_code());
         let right = node.cvalue_by_n("right", source_code());
