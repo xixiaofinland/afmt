@@ -1,5 +1,5 @@
 use afmt::args::{get_args, Args};
-use afmt::config::{Config, Session};
+use afmt::config::Session;
 use afmt::format;
 use anyhow::{anyhow, Result};
 use colored::Colorize;

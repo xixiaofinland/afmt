@@ -32,7 +32,7 @@ impl Root {
     pub fn new(node: Node) -> Self {
         let class = node
             .try_c_by_k("class_declaration")
-            .map(|n| ClassDeclaration::new(n, source_code(), 0));
+            .map(|n| ClassDeclaration::new(n, 0));
 
         Self { class }
     }
@@ -73,15 +73,13 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 }
 
 impl ClassDeclaration {
-    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
+    pub fn new(node: Node, indent: usize) -> Self {
         let buckets = None;
 
-        let modifiers = node
-            .try_c_by_k("modifiers")
-            .map(|m| Modifiers::new(m, source_code));
+        let modifiers = node.try_c_by_k("modifiers").map(|m| Modifiers::new(m));
 
-        let name = node.cvalue_by_n("name", source_code);
-        let body = ClassBody::new(node.c_by_n("body"), source_code, indent + 1);
+        let name = node.cvalue_by_n("name", source_code());
+        let body = ClassBody::new(node.c_by_n("body"), source_code(), indent + 1);
 
         Self {
             buckets,
@@ -115,14 +113,14 @@ impl<'a> DocBuild<'a> for Modifiers {
 }
 
 impl Modifiers {
-    pub fn new(node: Node, source_code: &str) -> Self {
+    pub fn new(node: Node) -> Self {
         let mut modifiers = Self::default();
 
         for c in node.children_vec() {
             match c.kind() {
                 "annotation" => {
                     modifiers.annotation = Some(Annotation {
-                        name: c.cvalue_by_n("name", source_code),
+                        name: c.cvalue_by_n("name", source_code()),
                     });
                 }
                 "modifier" => match c.first_c().kind() {
@@ -173,7 +171,7 @@ impl ClassBody {
                     FieldDeclaration::new(c, source_code, indent + 1),
                 ))),
                 "class_declaration" => declarations.push(ClassMember::NestedClass(Box::new(
-                    ClassDeclaration::new(c, source_code, indent + 1),
+                    ClassDeclaration::new(c, indent + 1),
                 ))),
                 "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
@@ -215,9 +213,7 @@ impl FieldDeclaration {
     pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
         let buckets = None;
 
-        let modifiers = node
-            .try_c_by_k("modifiers")
-            .map(|n| Modifiers::new(n, source_code));
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
 
         let type_node = node.c_by_n("type");
         let type_ = match type_node.kind() {

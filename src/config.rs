@@ -93,21 +93,47 @@ impl Session {
         Ok(Session::new(config, source_files))
     }
 
-    pub fn format(&self) -> String {
-        let file = &self.source_files[0];
-        let source_code = fs::read_to_string(Path::new(file))
-            .map_err(|e| {
-                anyhow!(format!(
-                    "Failed to read file: {} {}",
-                    &file.red(),
-                    e.to_string().yellow()
-                ))
-            })
-            .unwrap();
+    pub fn format(&self) -> Vec<Result<String>> {
+        let (tx, rx) = mpsc::channel();
+        let config = self.config.clone();
 
+        for file in &self.source_files {
+            let tx = tx.clone();
+            let config = config.clone();
+            let file = file.clone();
+
+            thread::spawn(move || {
+                let result = std::panic::catch_unwind(|| {
+                    let source_code = fs::read_to_string(Path::new(&file))
+                        .map_err(|e| {
+                            anyhow!(format!(
+                                "Failed to read file: {} {}",
+                                &file.red(),
+                                e.to_string().yellow()
+                            ))
+                        })
+                        .unwrap();
+
+                    Session::format_one(source_code, config)
+                });
+                match result {
+                    Ok(result) => tx.send(result).expect("failed to send result in tx"),
+                    Err(_) => tx
+                        .send(Err(anyhow!("Thread panicked")))
+                        .expect("failed to send error in tx"),
+                }
+            });
+        }
+
+        drop(tx);
+
+        rx.into_iter().collect()
+    }
+
+    pub fn format_one(source_code: String, config: Config) -> Result<String> {
         let ast_tree = Session::parse(&source_code);
 
-        set_thread_source_code(source_code.clone());
+        set_thread_source_code(source_code); // important to set thread level source code now;
 
         // traverse the tree to collect all comment nodes
         let mut cursor = ast_tree.walk();
@@ -118,14 +144,14 @@ impl Session {
         let root: Root = enrich(&ast_tree);
 
         // traverse enriched data and create pretty print combinators
-        let config = PrettyConfig::new(self.config.indent_size);
-        let b = DocBuilder::new(config);
+        let c = PrettyConfig::new(config.indent_size);
+        let b = DocBuilder::new(c);
         let doc_ref = root.build(&b);
 
         //pretty print
-        let result = pretty_print(doc_ref, self.config.max_width);
+        let result = pretty_print(doc_ref, config.max_width);
         println!("\n###\n{}\n\n", result);
-        result
+        Ok(result)
     }
 
     pub fn parse(source_code: &str) -> Tree {
@@ -182,39 +208,6 @@ impl Session {
         last_error_node // Return the last (deepest) error node
     }
 }
-
-//let (tx, rx) = mpsc::channel();
-//let config = Arc::new(self.config.clone());
-//
-//for file in &self.source_files {
-//    let tx = tx.clone();
-//    let config = Arc::clone(&config);
-//    let file = file.clone();
-//
-//    thread::spawn(move || {
-//        let result = std::panic::catch_unwind(|| {
-//            let source_code = fs::read_to_string(Path::new(&file)).map_err(|e| {
-//                anyhow!(format!(
-//                    "Failed to read file: {} {}",
-//                    &file.red(),
-//                    e.to_string().yellow()
-//                ))
-//            })?;
-//            let context = FmtContext::new(&config, source_code);
-//            context.format_one_file()
-//        });
-//        match result {
-//            Ok(result) => tx.send(result).expect("failed to send result in tx"),
-//            Err(_) => tx
-//                .send(Err(anyhow!("Thread panicked")))
-//                .expect("failed to send error in tx"),
-//        }
-//    });
-//}
-//
-//drop(tx);
-//
-//rx.into_iter().collect()
 
 extern "C" {
     fn tree_sitter_apex() -> Language;
