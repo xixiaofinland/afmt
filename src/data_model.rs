@@ -168,7 +168,7 @@ impl ClassBody {
         for c in node.children_vec() {
             match c.kind() {
                 "field_declaration" => declarations.push(ClassMember::Field(Box::new(
-                    FieldDeclaration::new(c, source_code, indent + 1),
+                    FieldDeclaration::new(c, indent + 1),
                 ))),
                 "class_declaration" => declarations.push(ClassMember::NestedClass(Box::new(
                     ClassDeclaration::new(c, indent + 1),
@@ -210,7 +210,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 }
 
 impl FieldDeclaration {
-    pub fn new(node: Node, source_code: &str, indent: usize) -> Self {
+    pub fn new(node: Node, indent: usize) -> Self {
         let buckets = None;
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
@@ -218,7 +218,7 @@ impl FieldDeclaration {
         let type_node = node.c_by_n("type");
         let type_ = match type_node.kind() {
             "type_identifier" => UnnanotatedType::Identifier(Identifier {
-                value: type_node.value(source_code),
+                value: type_node.value(source_code()),
             }),
             _ => panic!(
                 "## unknown node: {} in FieldDeclaration ",
@@ -229,7 +229,7 @@ impl FieldDeclaration {
         let declarators = node
             .cs_by_n("declarator")
             .into_iter()
-            .map(|n| VariableDeclarator::new(n, source_code, indent))
+            .map(|n| VariableDeclarator::new(n, source_code(), indent))
             .collect();
 
         Self {
