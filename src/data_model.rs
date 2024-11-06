@@ -20,27 +20,33 @@ pub trait DocBuild<'a> {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Serialize)]
 pub struct Root {
-    pub class: Option<ClassDeclaration>,
+    pub members: Vec<RootMember>,
 }
 
 impl Root {
     pub fn new(node: Node) -> Self {
         assert_check(node, "parser_output");
-        let class = node
-            .try_c_by_k("class_declaration")
-            .map(|n| ClassDeclaration::new(n));
+        let mut root = Root::default();
 
-        Self { class }
+        for c in node.children_vec() {
+            match c.kind() {
+                "class_declaration" => root
+                    .members
+                    .push(RootMember::Class(Box::new(ClassDeclaration::new(c)))),
+                _ => panic!("## unknown node: {} in Root ", c.kind().red()),
+            }
+        }
+        root
     }
 }
 
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.class {
-            result.push(n.build(b));
-        }
+        let member_docs = b.build_docs(&self.members);
+        let body_doc = b.sep_multi_line(&member_docs, "");
+        result.push(body_doc);
     }
 }
 
@@ -161,14 +167,6 @@ pub struct ClassBody {
     pub declarations: Vec<ClassMember>,
 }
 
-impl<'a> DocBuild<'a> for ClassBody {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let member_docs = b.build_docs(&self.declarations);
-        let body_doc = b.sep_multi_line(&member_docs, "");
-        result.push(body_doc);
-    }
-}
-
 impl ClassBody {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_body");
@@ -182,12 +180,21 @@ impl ClassBody {
                 "class_declaration" => {
                     declarations.push(ClassMember::NestedClass(Box::new(ClassDeclaration::new(c))))
                 }
+                "block" => declarations.push(ClassMember::Block(Box::new(Block::new(c)))),
                 "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
             }
         }
 
         Self { declarations }
+    }
+}
+
+impl<'a> DocBuild<'a> for ClassBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let member_docs = b.build_docs(&self.declarations);
+        let body_doc = b.sep_multi_line(&member_docs, "");
+        result.push(body_doc);
     }
 }
 
@@ -399,24 +406,28 @@ pub enum CommentType {
     Block,
 }
 
-//#[derive(Debug, Default, Serialize)]
-//pub struct Block {
-//    pub statement: Vec<Statement>,
-//}
-//
-//impl Block {
-//    pub fn new(node: Node, indent: usize) -> Self {
-//        assert_check(node, "block");
-//        Block::default();
-//    }
-//}
-//
-//impl<'a> DocBuild<'a> for Block {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-//        result.push(b.txt(&self.name));
-//        result.push(b.txt(" = "));
-//        if let Some(ref v) = self.value {
-//            result.push(v.build(b));
-//        }
-//    }
-//}
+#[derive(Debug, Default, Serialize)]
+pub struct Block {
+    pub statements: Vec<Statement>,
+}
+
+impl Block {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "block");
+        Block::default()
+    }
+}
+
+impl<'a> DocBuild<'a> for Block {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("{"));
+
+        if !self.statements.is_empty() {
+            let statement_docs = b.build_docs(&self.statements);
+            let block_doc = b.sep_multi_line(&statement_docs, "");
+            result.push(block_doc);
+        }
+        result.push(b.nl());
+        result.push(b.txt("}"));
+    }
+}

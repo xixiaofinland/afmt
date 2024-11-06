@@ -3,10 +3,25 @@ use serde::Serialize;
 use crate::{data_model::*, doc::DocRef, doc_builder::DocBuilder};
 
 #[derive(Debug, Serialize)]
+pub enum RootMember {
+    Class(Box<ClassDeclaration>),
+}
+
+impl<'a> DocBuild<'a> for RootMember {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            RootMember::Class(class) => {
+                result.push(class.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub enum ClassMember {
     Field(Box<FieldDeclaration>),
     NestedClass(Box<ClassDeclaration>),
-    //Block(Box<Block>),
+    Block(Box<Block>),
     //Method(MethodDeclaration<'a>),
     //Interface(InterfaceDeclaration<'a>),
     //Enum(EnumDeclaration<'a>),
@@ -23,6 +38,9 @@ impl<'a> DocBuild<'a> for ClassMember {
             }
             ClassMember::NestedClass(class_decl) => {
                 result.push(class_decl.build(b));
+            }
+            ClassMember::Block(block) => {
+                result.push(block.build(b));
             }
         }
     }
@@ -177,5 +195,15 @@ impl<'a> DocBuild<'a> for Modifier {
 
 #[derive(Debug, Serialize)]
 pub enum Statement {
-    Identifier(Identifier),
+    //Identifier(Identifier),
+}
+
+impl<'a> DocBuild<'a> for Statement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        //match self {
+        //    PrimaryExpression::Identifier(i) => {
+        //        result.push(b.txt(&i.value));
+        //    }
+        //}
+    }
 }

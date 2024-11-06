@@ -24,7 +24,7 @@ fn default_max_width() -> u32 {
 }
 
 fn default_indent_size() -> u32 {
-    4
+    2
 }
 
 impl Default for Config {
@@ -154,7 +154,7 @@ impl Formatter {
 
         //pretty print
         let result = pretty_print(doc_ref, config.max_width);
-        println!("\n###\n{}\n\n", result);
+        println!("\n###\n{}\n###\n", result);
         Ok(result)
     }
 
