@@ -90,7 +90,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.txt(&self.name));
 
         if self.body.declarations.is_empty() {
-            result.push(b.txt(" {\n}\n"));
+            result.push(b.txt(" {\n"));
         } else {
             result.push(b.txt(" {"));
             result.push(b.nl());
@@ -100,8 +100,9 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(indented_body);
 
             result.push(b.nl());
-            result.push(b.txt("}"));
         }
+
+        result.push(b.txt("}"));
     }
 }
 

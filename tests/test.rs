@@ -132,20 +132,20 @@ mod tests {
         compare("Prettier:", output, prettier_output, source)
     }
 
-    //fn normalize(content: &str) {
-    //    println!("(Hex):");
-    //    for (i, byte) in content.bytes().enumerate() {
-    //        if i % 16 == 0 && i != 0 {
-    //            println!();
-    //        }
-    //        print!("{:02X} ", byte);
-    //    }
-    //    println!("\n");
-    //}
+    fn normalize(label: &str, content: &str) {
+        println!("{} (Hex):", label);
+        for (i, byte) in content.bytes().enumerate() {
+            if i % 16 == 0 && i != 0 {
+                println!();
+            }
+            print!("{:02X} ", byte);
+        }
+        println!("\n");
+    }
 
     fn compare(against: &str, output: String, expected: String, source: &Path) -> bool {
-        //let normalized_output = normalize(&output);
-        //let normalized_expected = normalize(&expected);
+        //let normalized_expected = normalize("prettier", &expected);
+        //let normalized_output = normalize("afmt", &output);
         //if normalized_output != normalized_expected {
         if output != expected {
             let source_content =
