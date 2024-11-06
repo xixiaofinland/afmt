@@ -143,6 +143,10 @@ impl Formatter {
         // traverse the tree to build enriched data
         let root: Root = enrich(&ast_tree);
 
+        // Serialize to JSON with pretty printing
+        //let serialized = serde_json::to_string_pretty(&root).unwrap();
+        //println!("JSON: \n{}", serialized);
+
         // traverse enriched data and create pretty print combinators
         let c = PrettyConfig::new(config.indent_size);
         let b = DocBuilder::new(c);
