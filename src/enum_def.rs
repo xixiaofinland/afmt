@@ -6,10 +6,10 @@ use crate::{data_model::*, doc::DocRef, doc_builder::DocBuilder};
 pub enum ClassMember {
     Field(Box<FieldDeclaration>),
     NestedClass(Box<ClassDeclaration>),
+    //Block(Box<Block>),
     //Method(MethodDeclaration<'a>),
     //Interface(InterfaceDeclaration<'a>),
     //Enum(EnumDeclaration<'a>),
-    //Block(Block<'a>),
     //StaticInitializer(StaticInitializer<'a>),
     //Constructor(ConstructorDeclaration<'a>),
     //EmptyStatement, // Represents the ";" case
@@ -173,4 +173,9 @@ impl<'a> DocBuild<'a> for Modifier {
             }
         }
     }
+}
+
+#[derive(Debug, Serialize)]
+pub enum Statement {
+    Identifier(Identifier),
 }

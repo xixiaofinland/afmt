@@ -25,22 +25,22 @@ pub struct Root {
     pub class: Option<ClassDeclaration>,
 }
 
-impl<'a> DocBuild<'a> for Root {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.class {
-            result.push(n.build(b));
-        }
-    }
-}
-
 impl Root {
     pub fn new(node: Node) -> Self {
         assert_check(node, "parser_output");
         let class = node
             .try_c_by_k("class_declaration")
-            .map(|n| ClassDeclaration::new(n, 0));
+            .map(|n| ClassDeclaration::new(n));
 
         Self { class }
+    }
+}
+
+impl<'a> DocBuild<'a> for Root {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.class {
+            result.push(n.build(b));
+        }
     }
 }
 
@@ -51,6 +51,26 @@ pub struct ClassDeclaration {
     pub name: String,
     pub body: ClassBody,
     pub range: DataRange,
+}
+
+impl ClassDeclaration {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "class_declaration");
+        let buckets = None;
+
+        let modifiers = node.try_c_by_k("modifiers").map(|m| Modifiers::new(m));
+        let name = node.cvalue_by_n("name", source_code());
+        let body = ClassBody::new(node.c_by_n("body"));
+        let range = DataRange::from(node.range());
+
+        Self {
+            buckets,
+            modifiers,
+            name,
+            body,
+            range,
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for ClassDeclaration {
@@ -74,27 +94,6 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
             result.push(b.nl());
             result.push(b.txt("}"));
-        }
-    }
-}
-
-impl ClassDeclaration {
-    pub fn new(node: Node, indent: usize) -> Self {
-        assert_check(node, "class_declaration");
-        let buckets = None;
-
-        let modifiers = node.try_c_by_k("modifiers").map(|m| Modifiers::new(m));
-
-        let name = node.cvalue_by_n("name", source_code());
-        let body = ClassBody::new(node.c_by_n("body"), indent + 1);
-        let range = DataRange::from(node.range());
-
-        Self {
-            buckets,
-            modifiers,
-            name,
-            body,
-            range,
         }
     }
 }
@@ -171,18 +170,18 @@ impl<'a> DocBuild<'a> for ClassBody {
 }
 
 impl ClassBody {
-    pub fn new(node: Node, indent: usize) -> Self {
+    pub fn new(node: Node) -> Self {
         assert_check(node, "class_body");
         let mut declarations: Vec<ClassMember> = Vec::new();
 
         for c in node.children_vec() {
             match c.kind() {
-                "field_declaration" => declarations.push(ClassMember::Field(Box::new(
-                    FieldDeclaration::new(c, indent + 1),
-                ))),
-                "class_declaration" => declarations.push(ClassMember::NestedClass(Box::new(
-                    ClassDeclaration::new(c, indent + 1),
-                ))),
+                "field_declaration" => {
+                    declarations.push(ClassMember::Field(Box::new(FieldDeclaration::new(c))))
+                }
+                "class_declaration" => {
+                    declarations.push(ClassMember::NestedClass(Box::new(ClassDeclaration::new(c))))
+                }
                 "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
             }
@@ -220,7 +219,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 }
 
 impl FieldDeclaration {
-    pub fn new(node: Node, indent: usize) -> Self {
+    pub fn new(node: Node) -> Self {
         assert_check(node, "field_declaration");
         let buckets = None;
 
@@ -240,7 +239,7 @@ impl FieldDeclaration {
         let declarators = node
             .cs_by_n("declarator")
             .into_iter()
-            .map(|n| VariableDeclarator::new(n, indent))
+            .map(|n| VariableDeclarator::new(n))
             .collect();
 
         Self {
@@ -270,7 +269,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
 }
 
 impl VariableDeclarator {
-    pub fn new(node: Node, indent: usize) -> Self {
+    pub fn new(node: Node) -> Self {
         assert_check(node, "variable_declarator");
         let name = node.cvalue_by_n("name", source_code());
 
@@ -399,3 +398,25 @@ pub enum CommentType {
     Line,
     Block,
 }
+
+//#[derive(Debug, Default, Serialize)]
+//pub struct Block {
+//    pub statement: Vec<Statement>,
+//}
+//
+//impl Block {
+//    pub fn new(node: Node, indent: usize) -> Self {
+//        assert_check(node, "block");
+//        Block::default();
+//    }
+//}
+//
+//impl<'a> DocBuild<'a> for Block {
+//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+//        result.push(b.txt(&self.name));
+//        result.push(b.txt(" = "));
+//        if let Some(ref v) = self.value {
+//            result.push(v.build(b));
+//        }
+//    }
+//}
