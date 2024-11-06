@@ -117,7 +117,10 @@ impl Formatter {
                     Formatter::format_one(source_code, config)
                 });
                 match result {
-                    Ok(result) => tx.send(result).expect("failed to send result in tx"),
+                    Ok(result) => {
+                        println!("\n###\n{}\n###\n", result);
+                        tx.send(Ok(result)).expect("failed to send result in tx");
+                    }
                     Err(_) => tx
                         .send(Err(anyhow!("Thread panicked")))
                         .expect("failed to send error in tx"),
@@ -130,7 +133,7 @@ impl Formatter {
         rx.into_iter().collect()
     }
 
-    pub fn format_one(source_code: String, config: Config) -> Result<String> {
+    pub fn format_one(source_code: String, config: Config) -> String {
         let ast_tree = Formatter::parse(&source_code);
 
         set_thread_source_code(source_code); // important to set thread level source code now;
@@ -154,8 +157,7 @@ impl Formatter {
 
         //pretty print
         let result = pretty_print(doc_ref, config.max_width);
-        println!("\n###\n{}\n###\n", result);
-        Ok(result)
+        result
     }
 
     pub fn parse(source_code: &str) -> Tree {
