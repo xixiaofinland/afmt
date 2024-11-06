@@ -47,6 +47,7 @@ impl<'a> DocBuild<'a> for Root {
         let member_docs = b.build_docs(&self.members);
         let body_doc = b.sep_multi_line(&member_docs, "");
         result.push(body_doc);
+        result.push(b.nl());
     }
 }
 
