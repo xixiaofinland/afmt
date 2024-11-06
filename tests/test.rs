@@ -173,10 +173,10 @@ mod tests {
             .expect("PathBuf to String failed.")
             .to_string();
 
-        let session = Formatter::create_from_config(config_path, vec![file_path.clone()])
-            .expect("Create session failed.");
+        let formatter = Formatter::create_from_config(config_path, vec![file_path.clone()])
+            .expect("Create formatter failed.");
 
-        let vec = session.format();
+        let vec = formatter.format();
         vec.into_iter()
             .next()
             .and_then(|result| result.ok())

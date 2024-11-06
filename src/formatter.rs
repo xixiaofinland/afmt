@@ -118,7 +118,6 @@ impl Formatter {
                 });
                 match result {
                     Ok(result) => {
-                        println!("\n###\n{}\n###\n", result);
                         tx.send(Ok(result)).expect("failed to send result in tx");
                     }
                     Err(_) => tx

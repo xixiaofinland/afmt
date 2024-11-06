@@ -18,6 +18,10 @@ mod utility;
 
 use formatter::Formatter;
 
-pub fn format(session: Formatter) {
-    session.format();
+pub fn format(f: Formatter) {
+    let result = f.format();
+    match &result[0] {
+        Ok(data) => println!("\n###\n{}\n###\n", data),
+        Err(_) => eprintln!("error in result"),
+    }
 }
