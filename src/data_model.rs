@@ -88,17 +88,15 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
         result.push(b.txt("class "));
         result.push(b.txt(&self.name));
+        result.push(b.txt(" {"));
 
         if self.body.declarations.is_empty() {
-            result.push(b.txt(" {\n"));
-        } else {
-            result.push(b.txt(" {"));
             result.push(b.nl());
-
+        } else {
+            result.push(b.add_indent_level(b.nl()));
             let body_doc = self.body.build(b);
             let indented_body = b.add_indent_level(body_doc);
             result.push(indented_body);
-
             result.push(b.nl());
         }
 
