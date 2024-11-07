@@ -93,7 +93,6 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.txt(&self.name));
 
         if let Some(ref n) = self.interface {
-            result.push(b.txt(" "));
             result.push(n.build(b));
         }
 
@@ -480,8 +479,8 @@ impl Interface {
 
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("implements"));
         result.push(b.softline());
+        result.push(b.txt("implements "));
 
         let types_doc = b.build_docs(&self.types);
         let doc = b.sep_single_line(&types_doc, ", ");
