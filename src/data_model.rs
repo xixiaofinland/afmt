@@ -56,6 +56,7 @@ pub struct ClassDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
     pub name: String,
+    pub interface: Option<Interface>,
     pub body: ClassBody,
     pub range: DataRange,
 }
@@ -65,8 +66,9 @@ impl ClassDeclaration {
         assert_check(node, "class_declaration");
         let buckets = None;
 
-        let modifiers = node.try_c_by_k("modifiers").map(|m| Modifiers::new(m));
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let name = node.cvalue_by_n("name", source_code());
+        let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
         let body = ClassBody::new(node.c_by_n("body"));
         let range = DataRange::from(node.range());
 
@@ -74,6 +76,7 @@ impl ClassDeclaration {
             buckets,
             modifiers,
             name,
+            interface,
             body,
             range,
         }
@@ -88,6 +91,12 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
         result.push(b.txt("class "));
         result.push(b.txt(&self.name));
+
+        if let Some(ref n) = self.interface {
+            result.push(b.txt(" "));
+            result.push(n.build(b));
+        }
+
         result.push(b.txt(" {"));
 
         if self.body.declarations.is_empty() {
@@ -120,7 +129,7 @@ impl<'a> DocBuild<'a> for Modifiers {
         if !self.modifiers.is_empty() {
             let modifiers_doc = b.build_docs(&self.modifiers);
             result.push(b.concat(modifiers_doc));
-            result.push(b.space());
+            result.push(b.txt(" "));
         }
     }
 }
@@ -214,7 +223,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         }
 
         result.push(self.type_.build(b));
-        result.push(b.space());
+        result.push(b.txt(" "));
 
         let decl_docs = b.build_docs(&self.declarators);
 
@@ -234,9 +243,9 @@ impl FieldDeclaration {
 
         let type_node = node.c_by_n("type");
         let type_ = match type_node.kind() {
-            "type_identifier" => UnnanotatedType::Identifier(Identifier {
-                value: type_node.value(source_code()),
-            }),
+            "type_identifier" => {
+                UnnanotatedType::Simple(SimpleType::Identifier(Identifier::new(type_node)))
+            }
             _ => panic!(
                 "## unknown node: {} in FieldDeclaration ",
                 type_node.kind().red()
@@ -328,6 +337,14 @@ impl AssignmentExpression {
 #[derive(Debug, Serialize)]
 pub struct Identifier {
     pub value: String,
+}
+
+impl Identifier {
+    pub fn new(node: Node) -> Self {
+        Self {
+            value: node.value(source_code()),
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -429,5 +446,45 @@ impl<'a> DocBuild<'a> for Block {
         }
         result.push(b.nl());
         result.push(b.txt("}"));
+    }
+}
+
+#[derive(Debug, Default, Serialize)]
+pub struct Interface {
+    pub types: Vec<Type>,
+}
+
+impl Interface {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "interfaces");
+        let mut interface = Interface::default();
+
+        let type_list = node.c_by_k("type_list");
+
+        for c in type_list.children_vec() {
+            match c.kind() {
+                "type_identifier" => {
+                    interface
+                        .types
+                        .push(Type::Unnanotated(UnnanotatedType::Simple(
+                            SimpleType::Identifier(Identifier::new(c)),
+                        )))
+                }
+                _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
+            }
+        }
+
+        interface
+    }
+}
+
+impl<'a> DocBuild<'a> for Interface {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("implement"));
+        result.push(b.softline());
+
+        let types_doc = b.build_docs(&self.types);
+        let doc = b.sep_single_line(&types_doc, ", ");
+        result.push(doc);
     }
 }

@@ -21,10 +21,6 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
-    pub fn space(&'a self) -> DocRef<'a> {
-        self.txt(" ")
-    }
-
     pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let flat_doc = self.flat(doc_ref);
         self.choice(flat_doc, doc_ref)

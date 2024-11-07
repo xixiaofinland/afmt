@@ -1,10 +1,4 @@
-public class Me {
-
-    public class Inside {
-        {
-
-          }
-  }
-
+public   class Me    implements
+  Interface1
+  {
 }
-

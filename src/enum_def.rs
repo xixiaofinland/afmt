@@ -49,13 +49,27 @@ impl<'a> DocBuild<'a> for ClassMember {
 //_unannotated_type: ($) => choice($._simple_type, $.array_type),
 #[derive(Debug, Serialize)]
 pub enum UnnanotatedType {
-    Identifier(Identifier),
+    Simple(SimpleType),
+    //Array(ArrayType),
 }
 
 impl<'a> DocBuild<'a> for UnnanotatedType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            UnnanotatedType::Identifier(i) => {
+            UnnanotatedType::Simple(s) => result.push(s.build(b)),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum SimpleType {
+    Identifier(Identifier),
+}
+
+impl<'a> DocBuild<'a> for SimpleType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            SimpleType::Identifier(i) => {
                 result.push(b.txt(&i.value));
             }
         }
@@ -205,5 +219,20 @@ impl<'a> DocBuild<'a> for Statement {
         //        result.push(b.txt(&i.value));
         //    }
         //}
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum Type {
+    Unnanotated(UnnanotatedType),
+}
+
+impl<'a> DocBuild<'a> for Type {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Type::Unnanotated(u) => {
+                result.push(u.build(b));
+            }
+        }
     }
 }
