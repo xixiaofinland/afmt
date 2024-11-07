@@ -480,7 +480,7 @@ impl Interface {
 
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("implement"));
+        result.push(b.txt("implements"));
         result.push(b.softline());
 
         let types_doc = b.build_docs(&self.types);
