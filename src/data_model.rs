@@ -479,11 +479,14 @@ impl Interface {
 
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.softline());
-        result.push(b.txt("implements "));
-
         let types_doc = b.build_docs(&self.types);
-        let doc = b.sep_single_line(&types_doc, ", ");
-        result.push(doc);
+
+        let implements_group = b.add_indent_level(b.group(b.concat(vec![
+            b.softline(),
+            b.txt("implements "),
+            b.sep_single_line(&types_doc, ", "),
+        ])));
+
+        result.push(implements_group);
     }
 }
