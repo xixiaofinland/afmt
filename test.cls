@@ -1,4 +1,4 @@
-public   class Me    implements
-  Interface1, Interface2, Interface3
-  {
+public with sharing     class        MyClass {
+    private String s;
+        private String             k;
 }

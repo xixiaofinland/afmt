@@ -127,7 +127,7 @@ impl<'a> DocBuild<'a> for Modifiers {
 
         if !self.modifiers.is_empty() {
             let modifiers_doc = b.build_docs(&self.modifiers);
-            result.push(b.concat(modifiers_doc));
+            result.push(b.sep_single_line(&modifiers_doc, " "));
             result.push(b.txt(" "));
         }
     }
@@ -147,7 +147,9 @@ impl Modifiers {
                 }
                 "modifier" => match c.first_c().kind() {
                     "public" => modifiers.modifiers.push(Modifier::Public),
-                    _ => panic!("## unknown node: {} in Modifier", c.kind().red()),
+                    "with_sharing" => modifiers.modifiers.push(Modifier::WithSharing),
+                    "private" => modifiers.modifiers.push(Modifier::Private),
+                    _ => panic!("## unknown node: {} in Modifier", c.first_c().kind().red()),
                 },
                 "line_comment" | "block_comment" => continue,
                 _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
@@ -215,24 +217,6 @@ pub struct FieldDeclaration {
     pub range: DataRange,
 }
 
-impl<'a> DocBuild<'a> for FieldDeclaration {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-
-        result.push(self.type_.build(b));
-        result.push(b.txt(" "));
-
-        let decl_docs = b.build_docs(&self.declarators);
-
-        let declarators_doc = b.separated_choice(&decl_docs, ", ", ", ");
-        result.push(declarators_doc);
-
-        result.push(b.txt(";"));
-    }
-}
-
 impl FieldDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "field_declaration");
@@ -267,20 +251,28 @@ impl FieldDeclaration {
     }
 }
 
+impl<'a> DocBuild<'a> for FieldDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+
+        result.push(self.type_.build(b));
+        result.push(b.txt(" "));
+
+        let decl_docs = b.build_docs(&self.declarators);
+
+        let declarators_doc = b.separated_choice(&decl_docs, ", ", ", ");
+        result.push(declarators_doc);
+
+        result.push(b.txt(";"));
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct VariableDeclarator {
     pub name: String,
     pub value: Option<VariableInitializer>,
-}
-
-impl<'a> DocBuild<'a> for VariableDeclarator {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.name));
-        result.push(b.txt(" = "));
-        if let Some(ref v) = self.value {
-            result.push(v.build(b));
-        }
-    }
 }
 
 impl VariableDeclarator {
@@ -300,6 +292,16 @@ impl VariableDeclarator {
         });
 
         Self { name, value }
+    }
+}
+
+impl<'a> DocBuild<'a> for VariableDeclarator {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.name));
+        if let Some(ref v) = self.value {
+            result.push(b.txt(" = "));
+            result.push(v.build(b));
+        }
     }
 }
 
