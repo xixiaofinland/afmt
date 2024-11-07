@@ -96,12 +96,12 @@ impl<'a> PrettyPrinter<'a> {
                     self.col = chunk.indent;
                 }
                 Doc::Text(text, width) => {
-                    if self.col == 0 {
-                        for _ in 0..chunk.indent {
-                            result.push(' ');
-                        }
-                        self.col += chunk.indent;
-                    }
+                    //if self.col == 0 {
+                    //    for _ in 0..chunk.indent {
+                    //        result.push(' ');
+                    //    }
+                    //    self.col += chunk.indent;
+                    //}
                     result.push_str(text);
                     self.col += width;
                 }
