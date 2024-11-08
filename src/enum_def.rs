@@ -1,4 +1,6 @@
+use colored::Colorize;
 use serde::Serialize;
+use tree_sitter::Node;
 
 use crate::{data_model::*, doc::DocRef, doc_builder::DocBuilder};
 
@@ -51,6 +53,17 @@ impl<'a> DocBuild<'a> for ClassMember {
 pub enum UnnanotatedType {
     Simple(SimpleType),
     //Array(ArrayType),
+}
+
+impl UnnanotatedType {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "type_identifier" => {
+                UnnanotatedType::Simple(SimpleType::Identifier(Identifier::new(n)))
+            }
+            _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for UnnanotatedType {
@@ -225,6 +238,17 @@ impl<'a> DocBuild<'a> for Statement {
 #[derive(Debug, Serialize)]
 pub enum Type {
     Unnanotated(UnnanotatedType),
+}
+
+impl Type {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "type_identifier" => Type::Unnanotated(UnnanotatedType::Simple(
+                SimpleType::Identifier(Identifier::new(n)),
+            )),
+            _ => panic!("## unknown node: {} in Type ", n.kind().red()),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for Type {

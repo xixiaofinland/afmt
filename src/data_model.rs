@@ -56,6 +56,7 @@ pub struct ClassDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
     pub name: String,
+    pub superclass: Option<SuperClass>,
     pub interface: Option<Interface>,
     pub body: ClassBody,
     pub range: DataRange,
@@ -68,6 +69,7 @@ impl ClassDeclaration {
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let name = node.cvalue_by_n("name", source_code());
+        let superclass = node.try_c_by_k("superclass").map(|n| SuperClass::new(n));
         let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
         let body = ClassBody::new(node.c_by_n("body"));
         let range = DataRange::from(node.range());
@@ -76,6 +78,7 @@ impl ClassDeclaration {
             buckets,
             modifiers,
             name,
+            superclass,
             interface,
             body,
             range,
@@ -109,6 +112,27 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         }
 
         result.push(b.txt("}"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SuperClass {
+    pub type_: Type,
+}
+
+impl SuperClass {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "superclass");
+
+        let type_ = Type::new(node.first_c());
+        Self { type_ }
+    }
+}
+
+impl<'a> DocBuild<'a> for SuperClass {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(" extends "));
+        result.push(self.type_.build(b));
     }
 }
 
@@ -225,15 +249,7 @@ impl FieldDeclaration {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
 
         let type_node = node.c_by_n("type");
-        let type_ = match type_node.kind() {
-            "type_identifier" => {
-                UnnanotatedType::Simple(SimpleType::Identifier(Identifier::new(type_node)))
-            }
-            _ => panic!(
-                "## unknown node: {} in FieldDeclaration ",
-                type_node.kind().red()
-            ),
-        };
+        let type_ = UnnanotatedType::new(type_node);
 
         let declarators = node
             .cs_by_n("declarator")
@@ -463,16 +479,7 @@ impl Interface {
         let type_list = node.c_by_k("type_list");
 
         for c in type_list.children_vec() {
-            match c.kind() {
-                "type_identifier" => {
-                    interface
-                        .types
-                        .push(Type::Unnanotated(UnnanotatedType::Simple(
-                            SimpleType::Identifier(Identifier::new(c)),
-                        )))
-                }
-                _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
-            }
+            interface.types.push(Type::new(c));
         }
 
         interface
