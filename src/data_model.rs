@@ -116,6 +116,42 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 }
 
 #[derive(Debug, Serialize)]
+pub struct MethodDeclaration {
+    pub declarations: Vec<ClassMember>,
+}
+
+impl MethodDeclaration {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "class_body");
+        let mut declarations: Vec<ClassMember> = Vec::new();
+
+        for c in node.children_vec() {
+            match c.kind() {
+                "field_declaration" => {
+                    declarations.push(ClassMember::Field(Box::new(FieldDeclaration::new(c))))
+                }
+                "class_declaration" => {
+                    declarations.push(ClassMember::NestedClass(Box::new(ClassDeclaration::new(c))))
+                }
+                "block" => declarations.push(ClassMember::Block(Box::new(Block::new(c)))),
+                "line_comment" | "block_comment" => continue,
+                _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
+            }
+        }
+
+        Self { declarations }
+    }
+}
+
+impl<'a> DocBuild<'a> for MethodDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let member_docs = b.build_docs(&self.declarations);
+        let body_doc = b.sep_multi_line(&member_docs, "");
+        result.push(body_doc);
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct SuperClass {
     pub type_: Type,
 }
