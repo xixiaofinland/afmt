@@ -130,9 +130,27 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn txt(&'a self, text: impl ToString) -> DocRef<'a> {
-        let string = text.to_string();
-        let width = string.len() as u32;
-        self.arena.alloc(Doc::Text(string, width))
+        let s = text.to_string();
+        let width = s.len() as u32;
+        self.arena.alloc(Doc::Text(s, width))
+    }
+
+    pub fn _txt(&'a self, text: impl ToString) -> DocRef<'a> {
+        let s = text.to_string();
+        let space_s = format!(" {}", s);
+        self.txt(space_s)
+    }
+
+    pub fn txt_(&'a self, text: impl ToString) -> DocRef<'a> {
+        let s = text.to_string();
+        let s_space = format!("{} ", s);
+        self.txt(s_space)
+    }
+
+    pub fn _txt_(&'a self, text: impl ToString) -> DocRef<'a> {
+        let s = text.to_string();
+        let space_s_space = format!(" {} ", s);
+        self.txt(space_s_space)
     }
 
     pub fn flat(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
