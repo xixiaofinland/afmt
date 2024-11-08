@@ -117,39 +117,123 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
 #[derive(Debug, Serialize)]
 pub struct MethodDeclaration {
-    pub declarations: Vec<ClassMember>,
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub name: String,
+    pub formal_parameters: FormalParameters,
+    pub body: Option<Block>,
+    //pub dimentions
 }
 
 impl MethodDeclaration {
     pub fn new(node: Node) -> Self {
-        assert_check(node, "class_body");
-        let mut declarations: Vec<ClassMember> = Vec::new();
+        assert_check(node, "method_declaration");
 
-        for c in node.children_vec() {
-            match c.kind() {
-                "field_declaration" => {
-                    declarations.push(ClassMember::Field(Box::new(FieldDeclaration::new(c))))
-                }
-                "class_declaration" => {
-                    declarations.push(ClassMember::NestedClass(Box::new(ClassDeclaration::new(c))))
-                }
-                "block" => declarations.push(ClassMember::Block(Box::new(Block::new(c)))),
-                "line_comment" | "block_comment" => continue,
-                _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
-            }
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let name = node.cvalue_by_n("name", source_code());
+        let formal_parameters = FormalParameters::new(node.c_by_n("parameters"));
+        let body = node.try_c_by_n("body").map(|n| Block::new(n));
+
+        Self {
+            modifiers,
+            type_,
+            name,
+            formal_parameters,
+            body,
         }
-
-        Self { declarations }
     }
 }
 
 impl<'a> DocBuild<'a> for MethodDeclaration {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let member_docs = b.build_docs(&self.declarations);
-        let body_doc = b.sep_multi_line(&member_docs, "");
-        result.push(body_doc);
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
+
+#[derive(Debug, Serialize)]
+pub struct FormalParameters {
+    pub formal_parameters: Vec<FormalParameter>,
+}
+
+impl FormalParameters {
+    pub fn new(node: Node) -> Self {
+        let formal_parameters = node
+            .try_cs_by_k("formal_parameter")
+            .into_iter()
+            .map(|n| FormalParameter::new(n))
+            .collect();
+
+        Self { formal_parameters }
     }
 }
+
+impl<'a> DocBuild<'a> for FormalParameters {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("("));
+
+        if !self.formal_parameters.is_empty() {
+            let sep = b.concat(vec![b.txt(","), b.softline()]);
+            let modifiers_doc = b.build_docs(&self.formal_parameters);
+            result.push(b.group(b.join_with_doc_sep(&modifiers_doc, sep)));
+        }
+
+        result.push(b.txt(")"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct FormalParameter {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub name: String,
+    //pub dimenssions
+}
+
+impl FormalParameter {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let name = node.cvalue_by_n("name", source_code());
+
+        Self {
+            modifiers,
+            type_,
+            name,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FormalParameter {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+
+        result.push(self.type_.build(b));
+        result.push(b.txt(" "));
+        result.push(b.txt_(&self.name));
+    }
+}
+
+//#[derive(Debug, Serialize)]
+//pub struct VariableDeclaratorId {
+//    pub name: String,
+//    //pub dimenssions:
+//
+//}
+//
+//impl VariableDeclaratorId {
+//    pub fn new(node: Node) -> Self {
+//        let name = node.cvalue_by_n("name", source_code());
+//        Self{name}
+//    }
+//}
+//
+//impl<'a> DocBuild<'a> for VariableDeclaratorId {
+//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+//        let name = b.txt_(&self.name);
+//        result.push(name);
+//    }
+//}
 
 #[derive(Debug, Serialize)]
 pub struct SuperClass {
@@ -244,15 +328,8 @@ impl ClassBody {
 
         for c in node.children_vec() {
             match c.kind() {
-                "field_declaration" => {
-                    declarations.push(ClassMember::Field(Box::new(FieldDeclaration::new(c))))
-                }
-                "class_declaration" => {
-                    declarations.push(ClassMember::NestedClass(Box::new(ClassDeclaration::new(c))))
-                }
-                "block" => declarations.push(ClassMember::Block(Box::new(Block::new(c)))),
                 "line_comment" | "block_comment" => continue,
-                _ => panic!("## unknown node: {} in ClassBody ", c.kind().red()),
+                _ => declarations.push(ClassMember::new(c)),
             }
         }
 
@@ -393,6 +470,19 @@ pub struct Identifier {
 }
 
 impl Identifier {
+    pub fn new(node: Node) -> Self {
+        Self {
+            value: node.value(source_code()),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct VoidType {
+    pub value: String,
+}
+
+impl VoidType {
     pub fn new(node: Node) -> Self {
         Self {
             value: node.value(source_code()),

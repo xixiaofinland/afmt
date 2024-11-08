@@ -23,6 +23,7 @@ impl<'a> DocBuild<'a> for RootMember {
 pub enum ClassMember {
     Field(Box<FieldDeclaration>),
     NestedClass(Box<ClassDeclaration>),
+    Method(Box<MethodDeclaration>),
     Block(Box<Block>),
     //Method(MethodDeclaration<'a>),
     //Interface(InterfaceDeclaration<'a>),
@@ -30,6 +31,18 @@ pub enum ClassMember {
     //StaticInitializer(StaticInitializer<'a>),
     //Constructor(ConstructorDeclaration<'a>),
     //EmptyStatement, // Represents the ";" case
+}
+
+impl ClassMember {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "field_declaration" => ClassMember::Field(Box::new(FieldDeclaration::new(n))),
+            "class_declaration" => ClassMember::NestedClass(Box::new(ClassDeclaration::new(n))),
+            "method_declaration" => ClassMember::Method(Box::new(MethodDeclaration::new(n))),
+            "block" => ClassMember::Block(Box::new(Block::new(n))),
+            _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for ClassMember {
@@ -40,6 +53,9 @@ impl<'a> DocBuild<'a> for ClassMember {
             }
             ClassMember::NestedClass(class_decl) => {
                 result.push(class_decl.build(b));
+            }
+            ClassMember::Method(method) => {
+                result.push(method.build(b));
             }
             ClassMember::Block(block) => {
                 result.push(block.build(b));
@@ -61,6 +77,7 @@ impl UnnanotatedType {
             "type_identifier" => {
                 UnnanotatedType::Simple(SimpleType::Identifier(Identifier::new(n)))
             }
+            "void_type" => UnnanotatedType::Simple(SimpleType::Void(VoidType::new(n))),
             _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
         }
     }
@@ -77,6 +94,7 @@ impl<'a> DocBuild<'a> for UnnanotatedType {
 #[derive(Debug, Serialize)]
 pub enum SimpleType {
     Identifier(Identifier),
+    Void(VoidType),
 }
 
 impl<'a> DocBuild<'a> for SimpleType {
@@ -84,6 +102,9 @@ impl<'a> DocBuild<'a> for SimpleType {
         match self {
             SimpleType::Identifier(i) => {
                 result.push(b.txt(&i.value));
+            }
+            SimpleType::Void(v) => {
+                result.push(b.txt(&v.value));
             }
         }
     }
