@@ -141,8 +141,19 @@ impl<'a> DocBuild<'a> for VariableInitializer {
 
 #[derive(Debug, Serialize)]
 pub enum Expression {
-    //Assignment(AssignmentExpression),
-    Primary(PrimaryExpression),
+    Primary(Box<PrimaryExpression>),
+    //Assignment(Box<AssignmentExpression>),
+}
+
+impl Expression {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "method_invocation" => Expression::Primary(Box::new(PrimaryExpression::Method(
+                MethodInvocation::new(n),
+            ))),
+            _ => panic!("## unknown node: {} in Expression", n.kind().red()),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for Expression {
@@ -155,9 +166,28 @@ impl<'a> DocBuild<'a> for Expression {
     }
 }
 
+//primary_expression: ($) =>
+//  choice(
+//    $._literal,
+//    $.class_literal,
+//    $.this,
+//    $.identifier,
+//    $.parenthesized_expression,
+//    $.object_creation_expression,
+//    $.field_access,
+//    $.java_field_access,
+//    $.array_access,
+//    $.method_invocation,
+//    $.array_creation_expression,
+//    $.map_creation_expression,
+//    $.query_expression,
+//    $.version_expression
+//  ),
+
 #[derive(Debug, Serialize)]
 pub enum PrimaryExpression {
     Identifier(Identifier),
+    Method(MethodInvocation),
 }
 
 impl<'a> DocBuild<'a> for PrimaryExpression {
@@ -165,6 +195,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
         match self {
             PrimaryExpression::Identifier(i) => {
                 result.push(b.txt(&i.value));
+            }
+            PrimaryExpression::Method(m) => {
+                result.push(m.build(b));
             }
         }
     }
@@ -254,9 +287,43 @@ impl<'a> DocBuild<'a> for Modifier {
     }
 }
 
+//statement: ($) =>
+//  choice(
+//    $.declaration,
+//    $.expression_statement,
+//    $.if_statement,
+//    $.while_statement,
+//    $.for_statement,
+//    $.enhanced_for_statement,
+//    $.block,
+//    ";",
+//    $.do_statement,
+//    $.break_statement,
+//    $.continue_statement,
+//    $.return_statement,
+//    $.switch_expression,
+//    $.local_variable_declaration,
+//    $.throw_statement,
+//    $.try_statement,
+//    $.run_as_statement
+
+#[derive(Debug, Serialize)]
+pub enum ExpressionStatement {
+    Expression(Box<Expression>),
+}
+
+impl<'a> DocBuild<'a> for ExpressionStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        //match self {
+        //    PrimaryExpression::Identifier(i) => {
+        //        result.push(b.txt(&i.value));
+        //    }
+        //}
+    }
+}
 #[derive(Debug, Serialize)]
 pub enum Statement {
-    //Identifier(Identifier),
+    Expression(Box<ExpressionStatement>),
 }
 
 impl<'a> DocBuild<'a> for Statement {

@@ -156,7 +156,7 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
         }
 
         result.push(&self.type_.build(b));
-        result.push(b._txt_(&self.name));
+        result.push(b._txt(&self.name));
         result.push(self.formal_parameters.build(b));
         result.push(b.txt(" "));
 
@@ -406,11 +406,11 @@ impl VariableDeclarator {
             //"array_initializer" => {
             //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
             //}
-            _ => VariableInitializer::Expression(Expression::Primary(
+            _ => VariableInitializer::Expression(Expression::Primary(Box::new(
                 PrimaryExpression::Identifier(Identifier {
                     value: v.value(source_code()),
                 }),
-            )),
+            ))),
         });
 
         Self { name, value }
@@ -620,5 +620,75 @@ impl<'a> DocBuild<'a> for Interface {
         //    b.sep_single_line(&types_doc, ", "),
         //])));
         //result.push(implements_group);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ExpressionStatement {
+    pub expression: Expression,
+}
+
+impl ExpressionStatement {
+    pub fn new(node: Node) -> Self {
+        Self {
+            expression: Expression::new(node.first_c()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ExpressionStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.expression.build(b));
+        result.push(b.txt(";"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct MethodInvocation {
+    pub name: String,
+    pub arguments: ArgumentList,
+}
+
+impl MethodInvocation {
+    pub fn new(node: Node) -> Self {
+        let name = node.cvalue_by_n("name", source_code());
+        let arguments = ArgumentList::new(node.c_by_n("arguments"));
+        Self { name, arguments }
+    }
+}
+
+impl<'a> DocBuild<'a> for MethodInvocation {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_(&self.name));
+        result.push(self.arguments.build(b));
+    }
+}
+
+#[derive(Debug, Default, Serialize)]
+pub struct ArgumentList {
+    pub expressions: Vec<Expression>,
+}
+
+impl ArgumentList {
+    pub fn new(node: Node) -> Self {
+        let mut this = ArgumentList::default();
+        for c in node.children_vec() {
+            this.expressions.push(Expression::new(c));
+        }
+        this
+    }
+}
+
+impl<'a> DocBuild<'a> for ArgumentList {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("("));
+
+        if !self.expressions.is_empty() {
+            let sep = b.concat(vec![b.txt(","), b.softline()]);
+            let exp_doc = b.build_docs(&self.expressions);
+            result.push(b.group(b.join_with_doc_sep(&exp_doc, sep)));
+        }
+
+        result.push(b.txt(")"));
     }
 }
