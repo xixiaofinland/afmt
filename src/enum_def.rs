@@ -312,11 +312,21 @@ pub enum Statement {
     Exp(Expression),
 }
 
+impl Statement {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "expression_statement" => Statement::Exp(Expression::new(n.first_c())),
+            _ => panic!("## unknown node: {} in Statement", n.kind().red()),
+        }
+    }
+}
+
 impl<'a> DocBuild<'a> for Statement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Statement::Exp(exp) => {
                 result.push(exp.build(b));
+                result.push(b.txt(";"));
             }
         }
     }

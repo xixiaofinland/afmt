@@ -570,12 +570,7 @@ impl Block {
         let mut this = Block::default();
 
         for c in node.children_vec() {
-            match c.kind() {
-                "expression_statement" => this
-                    .statements
-                    .push(Statement::Exp(Expression::new(c.first_c()))),
-                _ => panic!("## unknown node: {} inside Block", c.kind().red()),
-            }
+            this.statements.push(Statement::new(c));
         }
         this
     }
@@ -586,6 +581,7 @@ impl<'a> DocBuild<'a> for Block {
         result.push(b.txt("{"));
 
         if !self.statements.is_empty() {
+            result.push(b.add_indent_level(b.nl()));
             let statement_docs = b.build_docs(&self.statements);
             let block_doc = b.sep_multi_line(&statement_docs, "");
             result.push(block_doc);
@@ -649,7 +645,7 @@ impl MethodInvocation {
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_(&self.name));
+        result.push(b.txt(&self.name));
         result.push(self.arguments.build(b));
     }
 }
