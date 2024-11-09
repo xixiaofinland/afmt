@@ -92,8 +92,12 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(b.txt("class "));
+        result.push(b.txt_("class"));
         result.push(b.txt(&self.name));
+
+        if let Some(ref n) = self.superclass {
+            result.push(n.build(b));
+        }
 
         if let Some(ref n) = self.interface {
             result.push(n.build(b));
@@ -101,7 +105,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
         result.push(b.txt(" {"));
 
-        if self.body.declarations.is_empty() {
+        if self.body.class_members.is_empty() {
             result.push(b.nl());
         } else {
             result.push(b.add_indent_level(b.nl()));
@@ -146,7 +150,24 @@ impl MethodDeclaration {
 }
 
 impl<'a> DocBuild<'a> for MethodDeclaration {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+
+        result.push(b.txt_(&self.name));
+
+        result.push(self.formal_parameters.build(b));
+
+        result.push(b.txt(" "));
+
+        if let Some(ref n) = self.body {
+            let body_doc = n.build(b);
+            result.push(body_doc);
+        } else {
+            result.push(b.txt(";"));
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -214,27 +235,6 @@ impl<'a> DocBuild<'a> for FormalParameter {
     }
 }
 
-//#[derive(Debug, Serialize)]
-//pub struct VariableDeclaratorId {
-//    pub name: String,
-//    //pub dimenssions:
-//
-//}
-//
-//impl VariableDeclaratorId {
-//    pub fn new(node: Node) -> Self {
-//        let name = node.cvalue_by_n("name", source_code());
-//        Self{name}
-//    }
-//}
-//
-//impl<'a> DocBuild<'a> for VariableDeclaratorId {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-//        let name = b.txt_(&self.name);
-//        result.push(name);
-//    }
-//}
-
 #[derive(Debug, Serialize)]
 pub struct SuperClass {
     pub type_: Type,
@@ -263,6 +263,27 @@ pub struct Modifiers {
     modifiers: Vec<Modifier>,
 }
 
+impl Modifiers {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "modifiers");
+        let mut this = Self::default();
+
+        for c in node.children_vec() {
+            match c.kind() {
+                "annotation" => {
+                    this.annotation = Some(Annotation {
+                        name: c.cvalue_by_n("name", source_code()),
+                    });
+                }
+                "modifier" => this.modifiers.push(Modifier::new(c.first_c())),
+                "line_comment" | "block_comment" => continue,
+                _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
+            }
+        }
+        this
+    }
+}
+
 impl<'a> DocBuild<'a> for Modifiers {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         if let Some(ref n) = self.annotation {
@@ -274,33 +295,6 @@ impl<'a> DocBuild<'a> for Modifiers {
             result.push(b.sep_single_line(&modifiers_doc, " "));
             result.push(b.txt(" "));
         }
-    }
-}
-
-impl Modifiers {
-    pub fn new(node: Node) -> Self {
-        assert_check(node, "modifiers");
-        let mut modifiers = Self::default();
-
-        for c in node.children_vec() {
-            match c.kind() {
-                "annotation" => {
-                    modifiers.annotation = Some(Annotation {
-                        name: c.cvalue_by_n("name", source_code()),
-                    });
-                }
-                "modifier" => match c.first_c().kind() {
-                    "public" => modifiers.modifiers.push(Modifier::Public),
-                    "with_sharing" => modifiers.modifiers.push(Modifier::WithSharing),
-                    "private" => modifiers.modifiers.push(Modifier::Private),
-                    _ => panic!("## unknown node: {} in Modifier", c.first_c().kind().red()),
-                },
-                "line_comment" | "block_comment" => continue,
-                _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
-            }
-        }
-
-        modifiers
     }
 }
 
@@ -318,28 +312,28 @@ impl<'a> DocBuild<'a> for Annotation {
 
 #[derive(Debug, Serialize)]
 pub struct ClassBody {
-    pub declarations: Vec<ClassMember>,
+    pub class_members: Vec<ClassMember>,
 }
 
 impl ClassBody {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_body");
-        let mut declarations: Vec<ClassMember> = Vec::new();
+        let mut class_members: Vec<ClassMember> = Vec::new();
 
         for c in node.children_vec() {
             match c.kind() {
                 "line_comment" | "block_comment" => continue,
-                _ => declarations.push(ClassMember::new(c)),
+                _ => class_members.push(ClassMember::new(c)),
             }
         }
 
-        Self { declarations }
+        Self { class_members }
     }
 }
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let member_docs = b.build_docs(&self.declarations);
+        let member_docs = b.build_docs(&self.class_members);
         let body_doc = b.sep_multi_line(&member_docs, "");
         result.push(body_doc);
     }

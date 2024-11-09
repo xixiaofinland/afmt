@@ -2,7 +2,7 @@ use colored::Colorize;
 use serde::Serialize;
 use tree_sitter::Node;
 
-use crate::{data_model::*, doc::DocRef, doc_builder::DocBuilder};
+use crate::{accessor::Accessor, data_model::*, doc::DocRef, doc_builder::DocBuilder};
 
 #[derive(Debug, Serialize)]
 pub enum RootMember {
@@ -187,6 +187,19 @@ pub enum Modifier {
     Webservice,
     WithSharing,
     WithoutSharing,
+}
+
+impl Modifier {
+    pub fn new(n: Node) -> Self {
+        let kind = n.kind();
+        match kind {
+            "public" => Modifier::Public,
+            "with_sharing" => Modifier::WithSharing,
+            "private" => Modifier::Private,
+            "override" => Modifier::Override,
+            _ => panic!("## unknown node: {} in Modifier", kind),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for Modifier {
