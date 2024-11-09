@@ -155,10 +155,9 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(b.txt_(&self.name));
-
+        result.push(&self.type_.build(b));
+        result.push(b._txt_(&self.name));
         result.push(self.formal_parameters.build(b));
-
         result.push(b.txt(" "));
 
         if let Some(ref n) = self.body {

@@ -218,7 +218,7 @@ impl<'a> DocBuild<'a> for Modifier {
                 result.push(b.txt("inherited sharing"));
             }
             Modifier::Override => {
-                result.push(b.txt("overwrite"));
+                result.push(b.txt("override"));
             }
             Modifier::Private => {
                 result.push(b.txt("private"));
