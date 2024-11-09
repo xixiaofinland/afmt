@@ -567,7 +567,17 @@ pub struct Block {
 impl Block {
     pub fn new(node: Node) -> Self {
         assert_check(node, "block");
-        Block::default()
+        let mut this = Block::default();
+
+        for c in node.children_vec() {
+            match c.kind() {
+                "expression_statement" => this
+                    .statements
+                    .push(Statement::Exp(Expression::new(c.first_c()))),
+                _ => panic!("## unknown node: {} inside Block", c.kind().red()),
+            }
+        }
+        this
     }
 }
 
@@ -620,26 +630,6 @@ impl<'a> DocBuild<'a> for Interface {
         //    b.sep_single_line(&types_doc, ", "),
         //])));
         //result.push(implements_group);
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct ExpressionStatement {
-    pub expression: Expression,
-}
-
-impl ExpressionStatement {
-    pub fn new(node: Node) -> Self {
-        Self {
-            expression: Expression::new(node.first_c()),
-        }
-    }
-}
-
-impl<'a> DocBuild<'a> for ExpressionStatement {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.expression.build(b));
-        result.push(b.txt(";"));
     }
 }
 

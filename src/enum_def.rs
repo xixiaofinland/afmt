@@ -308,31 +308,17 @@ impl<'a> DocBuild<'a> for Modifier {
 //    $.run_as_statement
 
 #[derive(Debug, Serialize)]
-pub enum ExpressionStatement {
-    Expression(Box<Expression>),
-}
-
-impl<'a> DocBuild<'a> for ExpressionStatement {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //match self {
-        //    PrimaryExpression::Identifier(i) => {
-        //        result.push(b.txt(&i.value));
-        //    }
-        //}
-    }
-}
-#[derive(Debug, Serialize)]
 pub enum Statement {
-    Expression(Box<ExpressionStatement>),
+    Exp(Expression),
 }
 
 impl<'a> DocBuild<'a> for Statement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //match self {
-        //    PrimaryExpression::Identifier(i) => {
-        //        result.push(b.txt(&i.value));
-        //    }
-        //}
+        match self {
+            Statement::Exp(exp) => {
+                result.push(exp.build(b));
+            }
+        }
     }
 }
 
