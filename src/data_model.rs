@@ -189,7 +189,7 @@ impl FormalParameters {
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let modifiers_doc = b.build_docs(&self.formal_parameters);
-        result.push(b.surrounded(&modifiers_doc, ", ", ",", "(", ")"));
+        result.push(b.pretty_surrounded(&modifiers_doc, ", ", ",", "(", ")"));
     }
 }
 

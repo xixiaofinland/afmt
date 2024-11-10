@@ -32,11 +32,11 @@ impl<'a> DocBuilder<'a> {
         self.choice(space, newline)
     }
 
-    pub fn maybeline(&'a self) -> DocRef<'a> {
-        let empty = self.txt("");
-        let newline = self.nl();
-        self.choice(empty, newline)
-    }
+    //pub fn maybeline(&'a self) -> DocRef<'a> {
+    //    let empty = self.txt("");
+    //    let newline = self.nl();
+    //    self.choice(empty, newline)
+    //}
 
     pub fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         elems.iter().skip(1).fold(
@@ -97,6 +97,35 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
+            self.add_indent_level(self.sep_multi_line(elems, multi_sep)),
+            self.nl(),
+            self.txt(closed),
+        ]);
+
+        self.choice(single_line, multi_line)
+    }
+
+    pub fn pretty_surrounded(
+        &'a self,
+        elems: &[DocRef<'a>],
+        single_sep: &str,
+        multi_sep: &str,
+        open: &str,
+        closed: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.txt(format!("{}{}", open, closed));
+        }
+
+        let single_line = self.concat(vec![
+            self.txt(open),
+            self.sep_single_line(elems, single_sep),
+            self.txt(closed),
+        ]);
+
+        let multi_line = self.concat(vec![
+            self.txt(open),
+            self.add_indent_level(self.nl()),
             self.add_indent_level(self.sep_multi_line(elems, multi_sep)),
             self.nl(),
             self.txt(closed),
