@@ -145,7 +145,7 @@ impl Formatter {
         // traverse the tree to build enriched data
         let root: Root = enrich(&ast_tree);
 
-        //Serialize to JSON with pretty printing
+        // Serialize to JSON with pretty printing
         //let serialized = serde_json::to_string_pretty(&root).unwrap();
         //println!("JSON: \n{}", serialized);
 

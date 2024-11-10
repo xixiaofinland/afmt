@@ -190,6 +190,15 @@ pub enum PrimaryExpression {
     Method(MethodInvocation),
 }
 
+impl PrimaryExpression {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "method_invocation" => PrimaryExpression::Method(MethodInvocation::new(n)),
+            _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
+        }
+    }
+}
+
 impl<'a> DocBuild<'a> for PrimaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
@@ -353,6 +362,25 @@ impl<'a> DocBuild<'a> for Type {
         match self {
             Type::Unnanotated(u) => {
                 result.push(u.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum PropertyNavigation {
+    SafeNavigationOperator,
+    Dot,
+}
+
+impl<'a> DocBuild<'a> for PropertyNavigation {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            PropertyNavigation::SafeNavigationOperator => {
+                result.push(b.txt("?."));
+            }
+            PropertyNavigation::Dot => {
+                result.push(b.txt("."));
             }
         }
     }

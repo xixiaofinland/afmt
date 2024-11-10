@@ -190,11 +190,9 @@ impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("("));
 
-        if !self.formal_parameters.is_empty() {
-            let sep = b.concat(vec![b.txt(","), b.softline()]);
-            let modifiers_doc = b.build_docs(&self.formal_parameters);
-            result.push(b.group(b.join_with_doc_sep(&modifiers_doc, sep)));
-        }
+        let sep = b.concat(vec![b.txt(","), b.softline()]);
+        let modifiers_doc = b.build_docs(&self.formal_parameters);
+        result.push(b.group(b.join_with_doc_sep(&modifiers_doc, sep)));
 
         result.push(b.txt(")"));
     }
@@ -631,22 +629,106 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug, Serialize)]
 pub struct MethodInvocation {
+    pub object: Option<MethodObject>,
+    pub property_navigation: Option<PropertyNavigation>,
+    pub type_arguments: Option<TypeArguments>,
     pub name: String,
     pub arguments: ArgumentList,
 }
 
 impl MethodInvocation {
     pub fn new(node: Node) -> Self {
+        let object = node.try_c_by_n("object").map(|n| {
+            if n.kind() == "super" {
+                MethodObject::Super(Super {})
+            } else {
+                MethodObject::Primary(Box::new(PrimaryExpression::new(n)))
+            }
+        });
+
+        let property_navigation = object.as_ref().map(|_| {
+            if node.try_c_by_n("safe_navigation_operator").is_some() {
+                PropertyNavigation::SafeNavigationOperator
+            } else {
+                PropertyNavigation::Dot
+            }
+        });
+
+        let type_arguments = node
+            .try_c_by_k("type_arguments")
+            .map(|n| TypeArguments::new(n));
+
         let name = node.cvalue_by_n("name", source_code());
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
-        Self { name, arguments }
+
+        Self {
+            object,
+            property_navigation,
+            type_arguments,
+            name,
+            arguments,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref o) = self.object {
+            result.push(o.build(b));
+        }
+
+        if let Some(ref p) = self.property_navigation {
+            result.push(p.build(b));
+        }
+
         result.push(b.txt(&self.name));
         result.push(self.arguments.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum MethodObject {
+    Super(Super),
+    Primary(Box<PrimaryExpression>),
+}
+
+impl<'a> DocBuild<'a> for MethodObject {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            MethodObject::Super(s) => {
+                result.push(s.build(b));
+            }
+            MethodObject::Primary(p) => {
+                result.push(p.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct TypeArguments {
+    pub types: Vec<Type>,
+}
+
+impl TypeArguments {
+    pub fn new(node: Node) -> Self {
+        let mut types = Vec::new();
+        for c in node.children_vec() {
+            types.push(Type::new(c));
+        }
+        Self { types }
+    }
+}
+
+impl<'a> DocBuild<'a> for TypeArguments {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("<"));
+
+        let sep = b.concat(vec![b.txt(","), b.softline()]);
+        let types_doc = b.build_docs(&self.types);
+        result.push(b.group(b.join_with_doc_sep(&types_doc, sep)));
+
+        result.push(b.txt(">"));
     }
 }
 
@@ -676,5 +758,23 @@ impl<'a> DocBuild<'a> for ArgumentList {
         }
 
         result.push(b.txt(")"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct Super {}
+
+impl<'a> DocBuild<'a> for Super {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("super"))
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct This {}
+
+impl<'a> DocBuild<'a> for This {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("this"))
     }
 }
