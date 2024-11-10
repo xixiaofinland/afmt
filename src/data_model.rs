@@ -262,9 +262,7 @@ impl Modifiers {
         for c in node.children_vec() {
             match c.kind() {
                 "annotation" => {
-                    this.annotation = Some(Annotation {
-                        name: c.cvalue_by_n("name", source_code()),
-                    });
+                    this.annotation = Some(Annotation::new(c));
                 }
                 "modifier" => this.modifiers.push(Modifier::new(c.first_c())),
                 "line_comment" | "block_comment" => continue,
@@ -292,12 +290,58 @@ impl<'a> DocBuild<'a> for Modifiers {
 #[derive(Debug, Serialize)]
 pub struct Annotation {
     pub name: String,
+    pub arguments: Vec<AnnotationKeyValue>,
+}
+
+impl Annotation {
+    pub fn new(node: Node) -> Self {
+        let name = node.cvalue_by_n("name", source_code());
+
+        let mut arguments = Vec::new();
+        node.try_c_by_n("arguments").map(|n| {
+            n.try_cs_by_k("annotation_key_value")
+                .into_iter()
+                .for_each(|a| {
+                    arguments.push(AnnotationKeyValue::new(a));
+                })
+        });
+
+        Self { name, arguments }
+    }
 }
 
 impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(format!("@{}", self.name)));
+        if !self.arguments.is_empty() {
+            let arguments_doc = b.build_docs(&self.arguments);
+            let single_line_doc = b.pretty_surrounded_single_line(&arguments_doc, " ", "(", ")");
+            result.push(single_line_doc);
+        }
         result.push(b.nl());
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct AnnotationKeyValue {
+    key: String,
+    value: String,
+}
+
+impl AnnotationKeyValue {
+    pub fn new(node: Node) -> Self {
+        Self {
+            key: node.cvalue_by_n("key", source_code()),
+            value: node.cvalue_by_n("value", source_code()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AnnotationKeyValue {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.key));
+        result.push(b.txt("="));
+        result.push(b.txt(&self.value));
     }
 }
 

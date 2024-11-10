@@ -20,7 +20,7 @@ pub struct Config {
 }
 
 fn default_max_width() -> u32 {
-    20
+    80
 }
 
 fn default_indent_size() -> u32 {
