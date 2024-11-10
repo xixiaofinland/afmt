@@ -758,3 +758,18 @@ impl<'a> DocBuild<'a> for This {
         result.push(b.txt("this"))
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct BinaryExpression {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub variable_declarator_id: VariableDeclaratorId,
+}
+
+impl BinaryExpression {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for BinaryExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}

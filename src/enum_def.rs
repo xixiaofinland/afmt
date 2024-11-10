@@ -143,14 +143,15 @@ impl<'a> DocBuild<'a> for VariableInitializer {
 
 #[derive(Debug, Serialize)]
 pub enum Expression {
+    Binary(Box<BinaryExpression>),
     Primary(Box<PrimaryExpression>),
-    Primary(Box<BinaryExpression>),
     //Assignment(Box<AssignmentExpression>),
 }
 
 impl Expression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
+            "binary_expression" => Expression::Binary(Box::new(BinaryExpression::new(n))),
             "method_invocation" => Expression::Primary(Box::new(PrimaryExpression::Method(
                 MethodInvocation::new(n),
             ))),
@@ -162,6 +163,9 @@ impl Expression {
 impl<'a> DocBuild<'a> for Expression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Expression::Binary(binary) => {
+                result.push(binary.build(b));
+            }
             Expression::Primary(p) => {
                 result.push(p.build(b));
             }
