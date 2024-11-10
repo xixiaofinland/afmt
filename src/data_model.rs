@@ -227,8 +227,7 @@ impl<'a> DocBuild<'a> for FormalParameter {
         }
 
         result.push(self.type_.build(b));
-        result.push(b.txt(" "));
-        result.push(b.txt_(&self.name));
+        result.push(b._txt(&self.name));
     }
 }
 
