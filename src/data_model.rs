@@ -188,23 +188,8 @@ impl FormalParameters {
 
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        // Define the separator: comma followed by a softline
-        let sep = b.concat(vec![b.txt(","), b.softline()]);
-
-        // Build the documents for each formal parameter
         let modifiers_doc = b.build_docs(&self.formal_parameters);
-        let joined_doc = b.concat(vec![
-            b.txt("("),                               // Opening parenthesis
-            b.softline(),                             // Softline after '('
-            b.join_with_doc_sep(&modifiers_doc, sep), // Joined parameters with separators
-            b.softline(),                             // Softline before ')'
-            b.txt(")"),                               // Closing parenthesis
-        ]);
-
-        let grouped_doc = b.group(b.add_indent_level(joined_doc));
-
-        // Add the grouped content to the result
-        result.push(grouped_doc);
+        result.push(b.surrounded(&modifiers_doc, ", ", ",", "(", ")"));
     }
 }
 

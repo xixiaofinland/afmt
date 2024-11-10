@@ -60,16 +60,6 @@ impl<'a> DocBuilder<'a> {
         )
     }
 
-    pub fn join_with_doc_sep(&'a self, elems: &[DocRef<'a>], separator: DocRef<'a>) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
-
-        elems.iter().skip(1).fold(elems[0], |acc, &elem| {
-            self.concat(vec![acc, separator, elem])
-        })
-    }
-
     pub fn separated_choice(
         &'a self,
         elems: &[DocRef<'a>],
@@ -113,6 +103,16 @@ impl<'a> DocBuilder<'a> {
         ]);
 
         self.choice(single_line, multi_line)
+    }
+
+    pub fn join_with_doc_sep(&'a self, elems: &[DocRef<'a>], separator: DocRef<'a>) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        elems.iter().skip(1).fold(elems[0], |acc, &elem| {
+            self.concat(vec![acc, separator, elem])
+        })
     }
 
     pub fn build_docs<'b, T: DocBuild<'a>>(
