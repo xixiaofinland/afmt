@@ -69,7 +69,7 @@ impl<'a> Chunk<'a> {
 }
 
 impl<'a> PrettyPrinter<'a> {
-    fn new(doc_ref: DocRef<'a>, width: u32) -> Self {
+    fn new(doc_ref: DocRef<'a>, max_width: u32) -> Self {
         let chunk = Chunk {
             doc_ref,
             indent: 0,
@@ -77,7 +77,7 @@ impl<'a> PrettyPrinter<'a> {
         };
 
         Self {
-            max_width: width,
+            max_width,
             col: 0,
             chunks: vec![chunk],
         }
