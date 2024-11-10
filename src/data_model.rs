@@ -405,9 +405,7 @@ impl VariableDeclarator {
             //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
             //}
             _ => VariableInitializer::Expression(Expression::Primary(Box::new(
-                PrimaryExpression::Identifier(Identifier {
-                    value: v.value(source_code()),
-                }),
+                PrimaryExpression::Identifier(v.value(source_code())),
             ))),
         });
 
@@ -455,18 +453,18 @@ impl AssignmentExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
-pub struct Identifier {
-    pub value: String,
-}
-
-impl Identifier {
-    pub fn new(node: Node) -> Self {
-        Self {
-            value: node.value(source_code()),
-        }
-    }
-}
+//#[derive(Debug, Serialize)]
+//pub struct Identifier {
+//    pub value: String,
+//}
+//
+//impl Identifier {
+//    pub fn new(node: Node) -> Self {
+//        Self {
+//            value: node.value(source_code()),
+//        }
+//    }
+//}
 
 #[derive(Debug, Serialize)]
 pub struct VoidType {

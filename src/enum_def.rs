@@ -2,7 +2,9 @@ use colored::Colorize;
 use serde::Serialize;
 use tree_sitter::Node;
 
-use crate::{accessor::Accessor, data_model::*, doc::DocRef, doc_builder::DocBuilder};
+use crate::{
+    accessor::Accessor, data_model::*, doc::DocRef, doc_builder::DocBuilder, utility::source_code,
+};
 
 #[derive(Debug, Serialize)]
 pub enum RootMember {
@@ -75,7 +77,7 @@ impl UnnanotatedType {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "type_identifier" => {
-                UnnanotatedType::Simple(SimpleType::Identifier(Identifier::new(n)))
+                UnnanotatedType::Simple(SimpleType::Identifier(n.value(source_code())))
             }
             "void_type" => UnnanotatedType::Simple(SimpleType::Void(VoidType::new(n))),
             _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
@@ -93,7 +95,7 @@ impl<'a> DocBuild<'a> for UnnanotatedType {
 
 #[derive(Debug, Serialize)]
 pub enum SimpleType {
-    Identifier(Identifier),
+    Identifier(String),
     Void(VoidType),
 }
 
@@ -101,7 +103,7 @@ impl<'a> DocBuild<'a> for SimpleType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             SimpleType::Identifier(i) => {
-                result.push(b.txt(&i.value));
+                result.push(b.txt(i));
             }
             SimpleType::Void(v) => {
                 result.push(b.txt(&v.value));
@@ -186,7 +188,7 @@ impl<'a> DocBuild<'a> for Expression {
 
 #[derive(Debug, Serialize)]
 pub enum PrimaryExpression {
-    Identifier(Identifier),
+    Identifier(String),
     Method(MethodInvocation),
 }
 
@@ -203,7 +205,7 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             PrimaryExpression::Identifier(i) => {
-                result.push(b.txt(&i.value));
+                result.push(b.txt(i));
             }
             PrimaryExpression::Method(m) => {
                 result.push(m.build(b));
@@ -350,7 +352,7 @@ impl Type {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "type_identifier" => Type::Unnanotated(UnnanotatedType::Simple(
-                SimpleType::Identifier(Identifier::new(n)),
+                SimpleType::Identifier(n.value(source_code())),
             )),
             _ => panic!("## unknown node: {} in Type ", n.kind().red()),
         }
