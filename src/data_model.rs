@@ -568,16 +568,13 @@ impl Block {
 
 impl<'a> DocBuild<'a> for Block {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("{"));
-
-        if !self.statements.is_empty() {
-            result.push(b.add_indent_level(b.nl()));
-            let statement_docs = b.build_docs(&self.statements);
-            let block_doc = b.sep_multi_line(&statement_docs, "");
-            result.push(block_doc);
+        if self.statements.is_empty() {
+            return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
-        result.push(b.nl());
-        result.push(b.txt("}"));
+
+        let statement_docs = b.build_docs(&self.statements);
+        let docs = b.pretty_surrounded_multi_line(&statement_docs, "", "{", "}");
+        result.push(docs);
     }
 }
 

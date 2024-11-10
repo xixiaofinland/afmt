@@ -60,32 +60,44 @@ impl<'a> DocBuilder<'a> {
         self.choice(single_line, multi_line)
     }
 
-    pub fn surrounded(
+    pub fn pretty_surrounded_single_line(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
-        multi_sep: &str,
         open: &str,
-        closed: &str,
+        close: &str,
     ) -> DocRef<'a> {
         if elems.is_empty() {
-            return self.txt(format!("{}{}", open, closed));
+            return self.txt(format!("{}{}", open, close));
         }
 
         let single_line = self.concat(vec![
             self.txt(open),
             self.sep_single_line(elems, single_sep),
-            self.txt(closed),
+            self.txt(close),
         ]);
+        single_line
+    }
+
+    pub fn pretty_surrounded_multi_line(
+        &'a self,
+        elems: &[DocRef<'a>],
+        multi_sep: &str,
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.txt(format!("{}{}", open, close));
+        }
 
         let multi_line = self.concat(vec![
             self.txt(open),
+            self.add_indent_level(self.nl()),
             self.add_indent_level(self.sep_multi_line(elems, multi_sep)),
             self.nl(),
-            self.txt(closed),
+            self.txt(close),
         ]);
-
-        self.choice(single_line, multi_line)
+        multi_line
     }
 
     pub fn pretty_surrounded(
@@ -94,25 +106,10 @@ impl<'a> DocBuilder<'a> {
         single_sep: &str,
         multi_sep: &str,
         open: &str,
-        closed: &str,
+        close: &str,
     ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.txt(format!("{}{}", open, closed));
-        }
-
-        let single_line = self.concat(vec![
-            self.txt(open),
-            self.sep_single_line(elems, single_sep),
-            self.txt(closed),
-        ]);
-
-        let multi_line = self.concat(vec![
-            self.txt(open),
-            self.add_indent_level(self.nl()),
-            self.add_indent_level(self.sep_multi_line(elems, multi_sep)),
-            self.nl(),
-            self.txt(closed),
-        ]);
+        let single_line = self.pretty_surrounded_single_line(elems, single_sep, open, close);
+        let multi_line = self.pretty_surrounded_multi_line(elems, multi_sep, open, close);
 
         self.choice(single_line, multi_line)
     }
