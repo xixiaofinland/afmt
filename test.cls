@@ -1,6 +1,6 @@
 public class Subclass extends Superclass {
-  public override void printName(String s, Integer k, String a, String b, String l) {
-
+  public override void printName() {
     super.printName();
+    System.debug('But you can call me ' + super.getFirstName());
   }
 }

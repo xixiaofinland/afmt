@@ -144,6 +144,7 @@ impl<'a> DocBuild<'a> for VariableInitializer {
 #[derive(Debug, Serialize)]
 pub enum Expression {
     Primary(Box<PrimaryExpression>),
+    Primary(Box<BinaryExpression>),
     //Assignment(Box<AssignmentExpression>),
 }
 
