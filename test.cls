@@ -1,3 +1,6 @@
-@Annotation('this is a test of \' strings')
-public class Me {
+public without sharing class Me {
+  {
+    @InvocableVariable(required=true label='Old User')
+    public Id oldUserId;
+  }
 }

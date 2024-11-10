@@ -250,6 +250,7 @@ impl Modifier {
         match kind {
             "public" => Modifier::Public,
             "with_sharing" => Modifier::WithSharing,
+            "without_sharing" => Modifier::WithoutSharing,
             "private" => Modifier::Private,
             "override" => Modifier::Override,
             _ => panic!("## unknown node: {} in Modifier", kind),
