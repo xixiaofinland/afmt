@@ -21,23 +21,6 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
-    //pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-    //    let flat_doc = self.flat(doc_ref);
-    //    self.choice(flat_doc, doc_ref)
-    //}
-
-    //pub fn softline(&'a self) -> DocRef<'a> {
-    //    let space = self.txt(" ");
-    //    let newline = self.nl();
-    //    self.choice(space, newline)
-    //}
-
-    //pub fn maybeline(&'a self) -> DocRef<'a> {
-    //    let empty = self.txt("");
-    //    let newline = self.nl();
-    //    self.choice(empty, newline)
-    //}
-
     pub fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         elems.iter().skip(1).fold(
             if let Some(&first) = elems.get(0) {
@@ -134,15 +117,15 @@ impl<'a> DocBuilder<'a> {
         self.choice(single_line, multi_line)
     }
 
-    pub fn join_with_doc_sep(&'a self, elems: &[DocRef<'a>], separator: DocRef<'a>) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
-
-        elems.iter().skip(1).fold(elems[0], |acc, &elem| {
-            self.concat(vec![acc, separator, elem])
-        })
-    }
+    //pub fn join_with_doc_sep(&'a self, elems: &[DocRef<'a>], separator: DocRef<'a>) -> DocRef<'a> {
+    //    if elems.is_empty() {
+    //        return self.nil();
+    //    }
+    //
+    //    elems.iter().skip(1).fold(elems[0], |acc, &elem| {
+    //        self.concat(vec![acc, separator, elem])
+    //    })
+    //}
 
     pub fn build_docs<'b, T: DocBuild<'a>>(
         &'a self,
