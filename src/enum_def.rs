@@ -143,6 +143,7 @@ impl<'a> DocBuild<'a> for VariableInitializer {
 
 #[derive(Debug, Serialize)]
 pub enum Expression {
+    StringLiteral(String),
     Binary(Box<BinaryExpression>),
     Primary(Box<PrimaryExpression>),
     //Assignment(Box<AssignmentExpression>),
@@ -151,6 +152,7 @@ pub enum Expression {
 impl Expression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
+            "string_literal" => Expression::StringLiteral(n.value(source_code())),
             "binary_expression" => Expression::Binary(Box::new(BinaryExpression::new(n))),
             "method_invocation" => Expression::Primary(Box::new(PrimaryExpression::Method(
                 MethodInvocation::new(n),
@@ -163,6 +165,9 @@ impl Expression {
 impl<'a> DocBuild<'a> for Expression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Expression::StringLiteral(s) => {
+                result.push(b.txt(s));
+            }
             Expression::Binary(binary) => {
                 result.push(binary.build(b));
             }
@@ -200,6 +205,7 @@ pub enum PrimaryExpression {
 impl PrimaryExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
+            "identifier" => PrimaryExpression::Identifier(n.value(source_code())),
             "method_invocation" => PrimaryExpression::Method(MethodInvocation::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }

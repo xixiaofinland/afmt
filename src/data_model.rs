@@ -761,15 +761,25 @@ impl<'a> DocBuild<'a> for This {
 
 #[derive(Debug, Serialize)]
 pub struct BinaryExpression {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+    pub left: Expression,
+    pub op: String,
+    pub right: Expression,
 }
 
 impl BinaryExpression {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        let left = Expression::new(node.c_by_n("left"));
+        let op = node.cvalue_by_n("operator", source_code());
+        let right = Expression::new(node.c_by_n("right"));
+
+        Self { left, op, right }
+    }
 }
 
 impl<'a> DocBuild<'a> for BinaryExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.left.build(b));
+        result.push(b._txt_(&self.op));
+        result.push(self.right.build(b));
+    }
 }
