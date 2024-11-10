@@ -313,6 +313,7 @@ impl Annotation {
 impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(format!("@{}", self.name)));
+
         if !self.arguments.is_empty() {
             let arguments_doc = b.build_docs(&self.arguments);
             let single_line_doc = b.pretty_surrounded_single_line(&arguments_doc, " ", "(", ")");
