@@ -21,16 +21,16 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
-    pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let flat_doc = self.flat(doc_ref);
-        self.choice(flat_doc, doc_ref)
-    }
+    //pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    //    let flat_doc = self.flat(doc_ref);
+    //    self.choice(flat_doc, doc_ref)
+    //}
 
-    pub fn softline(&'a self) -> DocRef<'a> {
-        let space = self.txt(" ");
-        let newline = self.nl();
-        self.choice(space, newline)
-    }
+    //pub fn softline(&'a self) -> DocRef<'a> {
+    //    let space = self.txt(" ");
+    //    let newline = self.nl();
+    //    self.choice(space, newline)
+    //}
 
     //pub fn maybeline(&'a self) -> DocRef<'a> {
     //    let empty = self.txt("");

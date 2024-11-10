@@ -714,13 +714,8 @@ impl TypeArguments {
 
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("<"));
-
-        let sep = b.concat(vec![b.txt(","), b.softline()]);
         let types_doc = b.build_docs(&self.types);
-        result.push(b.group(b.join_with_doc_sep(&types_doc, sep)));
-
-        result.push(b.txt(">"));
+        result.push(b.pretty_surrounded(&types_doc, ", ", ",", "<", ">"));
     }
 }
 
@@ -741,15 +736,8 @@ impl ArgumentList {
 
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("("));
-
-        if !self.expressions.is_empty() {
-            let sep = b.concat(vec![b.txt(","), b.softline()]);
-            let exp_doc = b.build_docs(&self.expressions);
-            result.push(b.group(b.join_with_doc_sep(&exp_doc, sep)));
-        }
-
-        result.push(b.txt(")"));
+        let exp_doc = b.build_docs(&self.expressions);
+        result.push(b.pretty_surrounded(&exp_doc, ", ", ",", "(", ")"));
     }
 }
 
