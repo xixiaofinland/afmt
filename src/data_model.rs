@@ -290,6 +290,7 @@ impl<'a> DocBuild<'a> for Modifiers {
 #[derive(Debug, Serialize)]
 pub struct Annotation {
     pub name: String,
+    pub value: Option<String>,
     pub arguments: Vec<AnnotationKeyValue>,
 }
 
@@ -297,8 +298,12 @@ impl Annotation {
     pub fn new(node: Node) -> Self {
         let name = node.cvalue_by_n("name", source_code());
 
+        let mut value = None;
         let mut arguments = Vec::new();
         node.try_c_by_n("arguments").map(|n| {
+            n.try_c_by_n("value")
+                .map(|c| value = Some(c.value(source_code())));
+
             n.try_cs_by_k("annotation_key_value")
                 .into_iter()
                 .for_each(|a| {
@@ -306,13 +311,23 @@ impl Annotation {
                 })
         });
 
-        Self { name, arguments }
+        Self {
+            name,
+            value,
+            arguments,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(format!("@{}", self.name)));
+
+        if let Some(v) = &self.value {
+            result.push(b.txt("("));
+            result.push(b.txt(v));
+            result.push(b.txt(")"));
+        }
 
         if !self.arguments.is_empty() {
             let arguments_doc = b.build_docs(&self.arguments);

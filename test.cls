@@ -1,3 +1,3 @@
-@Annotation(param1=false   param2   = true)
+@Annotation('this is a test of \' strings')
 public class Me {
 }
