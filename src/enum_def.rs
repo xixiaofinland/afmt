@@ -157,9 +157,6 @@ impl Expression {
         match n.kind() {
             "string_literal" => Self::StringLiteral(n.value(source_code())),
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
-            //"method_invocation" => Self::Primary(Box::new(PrimaryExpression::Method(
-            //    MethodInvocation::new(n),
-            //))),
             "boolean" | "identifier" | "null_literal" | "method_invocation" => {
                 Self::Primary(Box::new(PrimaryExpression::new(n)))
             }
