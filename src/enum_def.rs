@@ -38,10 +38,10 @@ pub enum ClassMember {
 impl ClassMember {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "field_declaration" => ClassMember::Field(Box::new(FieldDeclaration::new(n))),
-            "class_declaration" => ClassMember::NestedClass(Box::new(ClassDeclaration::new(n))),
-            "method_declaration" => ClassMember::Method(Box::new(MethodDeclaration::new(n))),
-            "block" => ClassMember::Block(Box::new(Block::new(n))),
+            "field_declaration" => Self::Field(Box::new(FieldDeclaration::new(n))),
+            "class_declaration" => Self::NestedClass(Box::new(ClassDeclaration::new(n))),
+            "method_declaration" => Self::Method(Box::new(MethodDeclaration::new(n))),
+            "block" => Self::Block(Box::new(Block::new(n))),
             _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
         }
     }
@@ -50,16 +50,16 @@ impl ClassMember {
 impl<'a> DocBuild<'a> for ClassMember {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            ClassMember::Field(field_decl) => {
+            Self::Field(field_decl) => {
                 result.push(field_decl.build(b));
             }
-            ClassMember::NestedClass(class_decl) => {
+            Self::NestedClass(class_decl) => {
                 result.push(class_decl.build(b));
             }
-            ClassMember::Method(method) => {
+            Self::Method(method) => {
                 result.push(method.build(b));
             }
-            ClassMember::Block(block) => {
+            Self::Block(block) => {
                 result.push(block.build(b));
             }
         }
@@ -76,10 +76,8 @@ pub enum UnnanotatedType {
 impl UnnanotatedType {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" => {
-                UnnanotatedType::Simple(SimpleType::Identifier(n.value(source_code())))
-            }
-            "void_type" => UnnanotatedType::Simple(SimpleType::Void(VoidType::new(n))),
+            "type_identifier" => Self::Simple(SimpleType::Identifier(n.value(source_code()))),
+            "void_type" => Self::Simple(SimpleType::Void(VoidType::new(n))),
             _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
         }
     }
@@ -88,7 +86,7 @@ impl UnnanotatedType {
 impl<'a> DocBuild<'a> for UnnanotatedType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            UnnanotatedType::Simple(s) => result.push(s.build(b)),
+            Self::Simple(s) => result.push(s.build(b)),
         }
     }
 }
@@ -102,10 +100,10 @@ pub enum SimpleType {
 impl<'a> DocBuild<'a> for SimpleType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            SimpleType::Identifier(i) => {
+            Self::Identifier(i) => {
                 result.push(b.txt(i));
             }
-            SimpleType::Void(v) => {
+            Self::Void(v) => {
                 result.push(b.txt(&v.value));
             }
         }
@@ -121,7 +119,7 @@ pub enum VariableInitializer {
 impl<'a> DocBuild<'a> for VariableInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            VariableInitializer::Expression(exp) => {
+            Self::Expression(exp) => {
                 result.push(exp.build(b));
             }
         }
@@ -152,9 +150,9 @@ pub enum Expression {
 impl Expression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "string_literal" => Expression::StringLiteral(n.value(source_code())),
-            "binary_expression" => Expression::Binary(Box::new(BinaryExpression::new(n))),
-            "method_invocation" => Expression::Primary(Box::new(PrimaryExpression::Method(
+            "string_literal" => Self::StringLiteral(n.value(source_code())),
+            "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
+            "method_invocation" => Self::Primary(Box::new(PrimaryExpression::Method(
                 MethodInvocation::new(n),
             ))),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
@@ -165,13 +163,13 @@ impl Expression {
 impl<'a> DocBuild<'a> for Expression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Expression::StringLiteral(s) => {
+            Self::StringLiteral(s) => {
                 result.push(b.txt(s));
             }
-            Expression::Binary(binary) => {
+            Self::Binary(binary) => {
                 result.push(binary.build(b));
             }
-            Expression::Primary(p) => {
+            Self::Primary(p) => {
                 result.push(p.build(b));
             }
         }
@@ -205,8 +203,8 @@ pub enum PrimaryExpression {
 impl PrimaryExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "identifier" => PrimaryExpression::Identifier(n.value(source_code())),
-            "method_invocation" => PrimaryExpression::Method(MethodInvocation::new(n)),
+            "identifier" => Self::Identifier(n.value(source_code())),
+            "method_invocation" => Self::Method(MethodInvocation::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -215,10 +213,10 @@ impl PrimaryExpression {
 impl<'a> DocBuild<'a> for PrimaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            PrimaryExpression::Identifier(i) => {
+            Self::Identifier(i) => {
                 result.push(b.txt(i));
             }
-            PrimaryExpression::Method(m) => {
+            Self::Method(m) => {
                 result.push(m.build(b));
             }
         }
@@ -248,11 +246,11 @@ impl Modifier {
     pub fn new(n: Node) -> Self {
         let kind = n.kind();
         match kind {
-            "public" => Modifier::Public,
-            "with_sharing" => Modifier::WithSharing,
-            "without_sharing" => Modifier::WithoutSharing,
-            "private" => Modifier::Private,
-            "override" => Modifier::Override,
+            "public" => Self::Public,
+            "with_sharing" => Self::WithSharing,
+            "without_sharing" => Self::WithoutSharing,
+            "private" => Self::Private,
+            "override" => Self::Override,
             _ => panic!("## unknown node: {} in Modifier", kind),
         }
     }
@@ -261,49 +259,49 @@ impl Modifier {
 impl<'a> DocBuild<'a> for Modifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Modifier::Abstract => {
+            Self::Abstract => {
                 result.push(b.txt("abstract"));
             }
-            Modifier::Final => {
+            Self::Final => {
                 result.push(b.txt("final"));
             }
-            Modifier::Global => {
+            Self::Global => {
                 result.push(b.txt("global"));
             }
-            Modifier::InheritedSharing => {
+            Self::InheritedSharing => {
                 result.push(b.txt("inherited sharing"));
             }
-            Modifier::Override => {
+            Self::Override => {
                 result.push(b.txt("override"));
             }
-            Modifier::Private => {
+            Self::Private => {
                 result.push(b.txt("private"));
             }
-            Modifier::Protected => {
+            Self::Protected => {
                 result.push(b.txt("Protected"));
             }
-            Modifier::Public => {
+            Self::Public => {
                 result.push(b.txt("public"));
             }
-            Modifier::Static => {
+            Self::Static => {
                 result.push(b.txt("static"));
             }
-            Modifier::TestMethod => {
+            Self::TestMethod => {
                 result.push(b.txt("testmethod"));
             }
-            Modifier::Transient => {
+            Self::Transient => {
                 result.push(b.txt("transient"));
             }
-            Modifier::Virtual => {
+            Self::Virtual => {
                 result.push(b.txt("virtual"));
             }
-            Modifier::Webservice => {
+            Self::Webservice => {
                 result.push(b.txt("webserivce"));
             }
-            Modifier::WithSharing => {
+            Self::WithSharing => {
                 result.push(b.txt("with sharing"));
             }
-            Modifier::WithoutSharing => {
+            Self::WithoutSharing => {
                 result.push(b.txt("without sharing"));
             }
         }
@@ -338,7 +336,7 @@ pub enum Statement {
 impl Statement {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "expression_statement" => Statement::Exp(Expression::new(n.first_c())),
+            "expression_statement" => Self::Exp(Expression::new(n.first_c())),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -347,7 +345,7 @@ impl Statement {
 impl<'a> DocBuild<'a> for Statement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Statement::Exp(exp) => {
+            Self::Exp(exp) => {
                 result.push(exp.build(b));
                 result.push(b.txt(";"));
             }
@@ -363,7 +361,7 @@ pub enum Type {
 impl Type {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" => Type::Unnanotated(UnnanotatedType::Simple(
+            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
                 SimpleType::Identifier(n.value(source_code())),
             )),
             _ => panic!("## unknown node: {} in Type ", n.kind().red()),
@@ -374,7 +372,7 @@ impl Type {
 impl<'a> DocBuild<'a> for Type {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Type::Unnanotated(u) => {
+            Self::Unnanotated(u) => {
                 result.push(u.build(b));
             }
         }
@@ -390,10 +388,10 @@ pub enum PropertyNavigation {
 impl<'a> DocBuild<'a> for PropertyNavigation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            PropertyNavigation::SafeNavigationOperator => {
+            Self::SafeNavigationOperator => {
                 result.push(b.txt("?."));
             }
-            PropertyNavigation::Dot => {
+            Self::Dot => {
                 result.push(b.txt("."));
             }
         }
@@ -426,12 +424,12 @@ impl AnnotationArgumentList {
 impl<'a> DocBuild<'a> for AnnotationArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            AnnotationArgumentList::Value(v) => {
+            Self::Value(v) => {
                 result.push(b.txt("("));
                 result.push(b.txt(v));
                 result.push(b.txt(")"));
             }
-            AnnotationArgumentList::KeyValues(vec) => {
+            Self::KeyValues(vec) => {
                 if !vec.is_empty() {
                     let docs = b.build_docs(vec);
                     let single_line_doc = b.pretty_surrounded_single_line(&docs, " ", "(", ")");
