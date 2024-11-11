@@ -863,3 +863,28 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct GenericType {
+    pub type_identifier: String,
+    pub type_arguments: TypeArguments,
+}
+
+impl GenericType {
+    pub fn new(node: Node) -> Self {
+        let type_identifier = node.cvalue_by_k("type_identifier", source_code());
+        let type_arguments = TypeArguments::new(node.c_by_k("type_arguments"));
+
+        Self {
+            type_identifier,
+            type_arguments,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for GenericType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.type_identifier));
+        result.push(self.type_arguments.build(b));
+    }
+}

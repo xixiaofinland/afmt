@@ -78,6 +78,7 @@ impl UnnanotatedType {
         match n.kind() {
             "type_identifier" => Self::Simple(SimpleType::Identifier(n.value(source_code()))),
             "void_type" => Self::Simple(SimpleType::Void(VoidType::new(n))),
+            "generic_type" => Self::Simple(SimpleType::Generic(GenericType::new(n))),
             _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
         }
     }
@@ -95,6 +96,7 @@ impl<'a> DocBuild<'a> for UnnanotatedType {
 pub enum SimpleType {
     Identifier(String),
     Void(VoidType),
+    Generic(GenericType),
 }
 
 impl<'a> DocBuild<'a> for SimpleType {
@@ -105,6 +107,9 @@ impl<'a> DocBuild<'a> for SimpleType {
             }
             Self::Void(v) => {
                 result.push(b.txt(&v.value));
+            }
+            Self::Generic(g) => {
+                result.push(g.build(b));
             }
         }
     }
@@ -251,6 +256,7 @@ impl Modifier {
             "without_sharing" => Self::WithoutSharing,
             "private" => Self::Private,
             "override" => Self::Override,
+            "static" => Self::Static,
             _ => panic!("## unknown node: {} in Modifier", kind),
         }
     }
