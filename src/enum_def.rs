@@ -160,7 +160,7 @@ impl Expression {
             //"method_invocation" => Self::Primary(Box::new(PrimaryExpression::Method(
             //    MethodInvocation::new(n),
             //))),
-            "boolean" | "null_literal" | "method_invocation" => {
+            "boolean" | "identifier" | "null_literal" | "method_invocation" => {
                 Self::Primary(Box::new(PrimaryExpression::new(n)))
             }
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),

@@ -1,7 +1,6 @@
-class Conditional {
-  {
-    if (true) {
-      System.debug('true');
+public with sharing class MyClass {
+  public void hello(String s) {
+    if (s == 'hello') {
     }
   }
 }
