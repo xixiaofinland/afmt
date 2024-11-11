@@ -1,7 +1,7 @@
-@IsTest()
-public class Java {
-  @IsTest()
-  public void testJavaVariable() {
-    
+class Conditional {
+  {
+    if (true) {
+      System.debug('true');
+    }
   }
 }

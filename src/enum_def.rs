@@ -157,9 +157,12 @@ impl Expression {
         match n.kind() {
             "string_literal" => Self::StringLiteral(n.value(source_code())),
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
-            "method_invocation" => Self::Primary(Box::new(PrimaryExpression::Method(
-                MethodInvocation::new(n),
-            ))),
+            //"method_invocation" => Self::Primary(Box::new(PrimaryExpression::Method(
+            //    MethodInvocation::new(n),
+            //))),
+            "boolean" | "null_literal" | "method_invocation" => {
+                Self::Primary(Box::new(PrimaryExpression::new(n)))
+            }
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
     }
@@ -201,6 +204,7 @@ impl<'a> DocBuild<'a> for Expression {
 
 #[derive(Debug, Serialize)]
 pub enum PrimaryExpression {
+    Literal(Literal_),
     Identifier(String),
     Method(MethodInvocation),
 }
@@ -210,6 +214,7 @@ impl PrimaryExpression {
         match n.kind() {
             "identifier" => Self::Identifier(n.value(source_code())),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
+            "boolean" | "null_literal" => Self::Literal(Literal_::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -218,11 +223,46 @@ impl PrimaryExpression {
 impl<'a> DocBuild<'a> for PrimaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::Literal(l) => {
+                result.push(l.build(b));
+            }
             Self::Identifier(i) => {
                 result.push(b.txt(i));
             }
             Self::Method(m) => {
                 result.push(m.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum Literal_ {
+    Bool(String),
+    Null,
+    //Int(String),
+    //Decimal(String),
+    //Str(String),
+}
+
+impl Literal_ {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "boolean" => Self::Bool(n.value(source_code()).to_lowercase()),
+            "null" => Self::Null,
+            _ => panic!("## unknown node: {} in Literal", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for Literal_ {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Bool(v) => {
+                result.push(b.txt(v));
+            }
+            Self::Null => {
+                result.push(b.txt("null"));
             }
         }
     }
@@ -336,15 +376,19 @@ impl<'a> DocBuild<'a> for Modifier {
 
 #[derive(Debug, Serialize)]
 pub enum Statement {
+    If(Box<IfStatement>),
     Exp(Expression),
     Local(LocalVariableDeclaration),
+    Block(Block),
 }
 
 impl Statement {
     pub fn new(n: Node) -> Self {
         match n.kind() {
+            "if_statement" => Self::If(Box::new(IfStatement::new(n))),
             "expression_statement" => Self::Exp(Expression::new(n.first_c())),
             "local_variable_declaration" => Self::Local(LocalVariableDeclaration::new(n)),
+            "block" => Self::Block(Block::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -353,6 +397,9 @@ impl Statement {
 impl<'a> DocBuild<'a> for Statement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::If(i) => {
+                result.push(i.build(b));
+            }
             Self::Exp(exp) => {
                 result.push(exp.build(b));
                 result.push(b.txt(";"));
@@ -360,6 +407,9 @@ impl<'a> DocBuild<'a> for Statement {
             Self::Local(l) => {
                 result.push(l.build(b));
                 result.push(b.txt(";"));
+            }
+            Self::Block(v) => {
+                result.push(v.build(b));
             }
         }
     }

@@ -888,3 +888,56 @@ impl<'a> DocBuild<'a> for GenericType {
         result.push(self.type_arguments.build(b));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct IfStatement {
+    pub condition: ParenthesizedExpression,
+    pub consequence: Statement,
+    pub alternative: Option<Statement>,
+}
+
+impl IfStatement {
+    pub fn new(node: Node) -> Self {
+        let condition = ParenthesizedExpression::new(node.c_by_n("condition"));
+        let consequence = Statement::new(node.c_by_n("consequence"));
+        let alternative = node.try_c_by_n("alternative").map(|a| Statement::new(a));
+        Self {
+            condition,
+            consequence,
+            alternative,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for IfStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("if "));
+        result.push(self.condition.build(b));
+        result.push(b.txt(" "));
+        result.push(self.consequence.build(b));
+
+        if let Some(ref a) = self.alternative {
+            result.push(a.build(b));
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ParenthesizedExpression {
+    pub exp: Expression,
+}
+
+impl ParenthesizedExpression {
+    pub fn new(node: Node) -> Self {
+        let exp = Expression::new(node.first_c());
+        Self { exp }
+    }
+}
+
+impl<'a> DocBuild<'a> for ParenthesizedExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("("));
+        result.push(self.exp.build(b));
+        result.push(b.txt(")"));
+    }
+}
