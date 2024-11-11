@@ -290,32 +290,19 @@ impl<'a> DocBuild<'a> for Modifiers {
 #[derive(Debug, Serialize)]
 pub struct Annotation {
     pub name: String,
-    pub value: Option<String>,
-    pub arguments: Vec<AnnotationKeyValue>,
+    pub arguments: Option<AnnotationArgumentList>,
 }
 
 impl Annotation {
     pub fn new(node: Node) -> Self {
         let name = node.cvalue_by_n("name", source_code());
 
-        let mut value = None;
-        let mut arguments = Vec::new();
+        let mut arguments = None;
         node.try_c_by_n("arguments").map(|n| {
-            n.try_c_by_n("value")
-                .map(|c| value = Some(c.value(source_code())));
-
-            n.try_cs_by_k("annotation_key_value")
-                .into_iter()
-                .for_each(|a| {
-                    arguments.push(AnnotationKeyValue::new(a));
-                })
+            arguments = Some(AnnotationArgumentList::new(n));
         });
 
-        Self {
-            name,
-            value,
-            arguments,
-        }
+        Self { name, arguments }
     }
 }
 
@@ -323,16 +310,8 @@ impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(format!("@{}", self.name)));
 
-        if let Some(v) = &self.value {
-            result.push(b.txt("("));
-            result.push(b.txt(v));
-            result.push(b.txt(")"));
-        }
-
-        if !self.arguments.is_empty() {
-            let arguments_doc = b.build_docs(&self.arguments);
-            let single_line_doc = b.pretty_surrounded_single_line(&arguments_doc, " ", "(", ")");
-            result.push(single_line_doc);
+        if let Some(a) = &self.arguments {
+            result.push(a.build(b));
         }
         result.push(b.nl());
     }
@@ -346,6 +325,7 @@ pub struct AnnotationKeyValue {
 
 impl AnnotationKeyValue {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "annotation_key_value");
         Self {
             key: node.cvalue_by_n("key", source_code()),
             value: node.cvalue_by_n("value", source_code()),

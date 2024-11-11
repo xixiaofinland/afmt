@@ -399,3 +399,45 @@ impl<'a> DocBuild<'a> for PropertyNavigation {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub enum AnnotationArgumentList {
+    Value(String),
+    KeyValues(Vec<AnnotationKeyValue>),
+}
+
+impl AnnotationArgumentList {
+    pub fn new(n: Node) -> Self {
+        if let Some(_) = n.try_c_by_k("annotation_key_value") {
+            let mut key_values = Vec::new();
+
+            n.try_cs_by_k("annotation_key_value")
+                .into_iter()
+                .for_each(|a| {
+                    key_values.push(AnnotationKeyValue::new(a));
+                });
+            Self::KeyValues(key_values)
+        } else {
+            Self::Value(n.cvalue_by_n("value", source_code()))
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AnnotationArgumentList {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            AnnotationArgumentList::Value(v) => {
+                result.push(b.txt("("));
+                result.push(b.txt(v));
+                result.push(b.txt(")"));
+            }
+            AnnotationArgumentList::KeyValues(vec) => {
+                if !vec.is_empty() {
+                    let docs = b.build_docs(vec);
+                    let single_line_doc = b.pretty_surrounded_single_line(&docs, " ", "(", ")");
+                    result.push(single_line_doc);
+                }
+            }
+        }
+    }
+}
