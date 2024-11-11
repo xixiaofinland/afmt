@@ -1,5 +1,7 @@
-class topLevelClass {
-  @InvocableMethod
-  public static List<Results> execute(List<Requests> requestList) {
+@IsTest()
+public class Java {
+  @IsTest()
+  public void testJavaVariable() {
+    
   }
 }

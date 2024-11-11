@@ -412,12 +412,17 @@ impl<'a> DocBuild<'a> for PropertyNavigation {
 
 #[derive(Debug, Serialize)]
 pub enum AnnotationArgumentList {
+    Nil,
     Value(String),
     KeyValues(Vec<AnnotationKeyValue>),
 }
 
 impl AnnotationArgumentList {
     pub fn new(n: Node) -> Self {
+        if n.named_child_count() == 0 {
+            return Self::Nil;
+        }
+
         let key_values = n.try_cs_by_k("annotation_key_value");
 
         if key_values.is_empty() {
@@ -435,6 +440,7 @@ impl AnnotationArgumentList {
 impl<'a> DocBuild<'a> for AnnotationArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::Nil => {}
             Self::Value(v) => {
                 result.push(b.txt("("));
                 result.push(b.txt(v));
