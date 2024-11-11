@@ -331,12 +331,14 @@ impl<'a> DocBuild<'a> for Modifier {
 #[derive(Debug, Serialize)]
 pub enum Statement {
     Exp(Expression),
+    Local(LocalVariableDeclaration),
 }
 
 impl Statement {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "expression_statement" => Self::Exp(Expression::new(n.first_c())),
+            "local_variable_declaration" => Self::Local(LocalVariableDeclaration::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -347,6 +349,10 @@ impl<'a> DocBuild<'a> for Statement {
         match self {
             Self::Exp(exp) => {
                 result.push(exp.build(b));
+                result.push(b.txt(";"));
+            }
+            Self::Local(l) => {
+                result.push(l.build(b));
                 result.push(b.txt(";"));
             }
         }

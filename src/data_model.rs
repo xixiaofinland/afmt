@@ -423,40 +423,6 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
-pub struct VariableDeclarator {
-    pub name: String,
-    pub value: Option<VariableInitializer>,
-}
-
-impl VariableDeclarator {
-    pub fn new(node: Node) -> Self {
-        assert_check(node, "variable_declarator");
-        let name = node.cvalue_by_n("name", source_code());
-
-        let value = node.try_c_by_n("value").map(|v| match v.kind() {
-            //"array_initializer" => {
-            //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
-            //}
-            _ => VariableInitializer::Expression(Expression::Primary(Box::new(
-                PrimaryExpression::Identifier(v.value(source_code())),
-            ))),
-        });
-
-        Self { name, value }
-    }
-}
-
-impl<'a> DocBuild<'a> for VariableDeclarator {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.name));
-        if let Some(ref v) = self.value {
-            result.push(b.txt(" = "));
-            result.push(v.build(b));
-        }
-    }
-}
-
 #[derive(Debug, Default, Serialize)]
 pub struct ArrayInitializer {
     variable_initializers: Vec<VariableInitializer>,
@@ -818,5 +784,82 @@ impl<'a> DocBuild<'a> for BinaryExpression {
         result.push(self.left.build(b));
         result.push(b._txt_(&self.op));
         result.push(self.right.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct LocalVariableDeclaration {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub declarators: Vec<VariableDeclarator>,
+}
+
+impl LocalVariableDeclaration {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "local_variable_declaration");
+
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let declarators = node
+            .cs_by_n("declarator")
+            .into_iter()
+            .map(|n| VariableDeclarator::new(n))
+            .collect();
+
+        Self {
+            modifiers,
+            type_,
+            declarators,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for LocalVariableDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+
+        result.push(self.type_.build(b));
+        result.push(b.txt(" "));
+
+        let docs_vec = b.build_docs(&self.declarators);
+        let declarators_doc = b.separated_choice(&docs_vec, ", ", ",");
+        result.push(declarators_doc);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct VariableDeclarator {
+    pub name: String,
+    //pub dimenssions
+    pub value: Option<VariableInitializer>,
+}
+
+impl VariableDeclarator {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "variable_declarator");
+        let name = node.cvalue_by_n("name", source_code());
+
+        let value = node.try_c_by_n("value").map(|v| match v.kind() {
+            //"array_initializer" => {
+            //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
+            //}
+            _ => VariableInitializer::Expression(Expression::Primary(Box::new(
+                PrimaryExpression::Identifier(v.value(source_code())),
+            ))),
+        });
+
+        Self { name, value }
+    }
+}
+
+impl<'a> DocBuild<'a> for VariableDeclarator {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.name));
+        if let Some(ref v) = self.value {
+            result.push(b.txt(" = "));
+            result.push(v.build(b));
+        }
     }
 }
