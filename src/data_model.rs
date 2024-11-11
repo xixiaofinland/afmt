@@ -917,6 +917,7 @@ impl<'a> DocBuild<'a> for IfStatement {
         result.push(self.consequence.build(b));
 
         if let Some(ref a) = self.alternative {
+            result.push(b.txt(" else "));
             result.push(a.build(b));
         }
     }

@@ -1,6 +1,9 @@
-public with sharing class MyClass {
-  public void hello(String s) {
-    if (s == 'hello') {
+public class Me {
+  {
+    if (true) {
+      Integer l = 3;
+    } else if (false) {
+      Integer a = 3;
     }
   }
 }
