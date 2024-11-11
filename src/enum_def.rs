@@ -406,17 +406,16 @@ pub enum AnnotationArgumentList {
 
 impl AnnotationArgumentList {
     pub fn new(n: Node) -> Self {
-        if let Some(_) = n.try_c_by_k("annotation_key_value") {
-            let mut key_values = Vec::new();
+        let key_values = n.try_cs_by_k("annotation_key_value");
 
-            n.try_cs_by_k("annotation_key_value")
-                .into_iter()
-                .for_each(|a| {
-                    key_values.push(AnnotationKeyValue::new(a));
-                });
-            Self::KeyValues(key_values)
-        } else {
+        if key_values.is_empty() {
             Self::Value(n.cvalue_by_n("value", source_code()))
+        } else {
+            let key_values = key_values
+                .into_iter()
+                .map(AnnotationKeyValue::new)
+                .collect();
+            Self::KeyValues(key_values)
         }
     }
 }
