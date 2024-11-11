@@ -1,6 +1,5 @@
-public without sharing class Me {
-  {
-    @InvocableVariable(required=true label='Old User')
-    public Id oldUserId;
+class topLevelClass {
+  @InvocableMethod
+  public static List<Results> execute(List<Requests> requestList) {
   }
 }
