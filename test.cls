@@ -1,3 +1,6 @@
-@Annotation(param1=false   param2   = true)
-public class Me {
+public without sharing class Me {
+  {
+    @InvocableVariable(required=true label='Old User')
+    public Id oldUserId;
+  }
 }
