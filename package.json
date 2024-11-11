@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "prettier": "^3.3.3",
-    "prettier-plugin-apex": "^2.1.5"
+    "prettier-plugin-apex": "^2.2.1"
   },
   "name": "prettier for afmt test",
   "version": "1.0.0",
