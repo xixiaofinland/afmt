@@ -1018,12 +1018,13 @@ impl<'a> DocBuild<'a> for ForStatement {
             None => b.nil(),
         };
         let condition = match &self.condition {
-            Some(c) => c.build(b),
+            Some(c) => b.concat(vec![b.txt(" "), c.build(b)]),
             None => b.nil(),
         };
+        let update = b.concat(vec![b.txt(" "), self.update.build(b)]);
 
-        let docs = vec![init, condition, self.update.build(b)];
-        result.push(b.pretty_surrounded(&docs, "; ", ";", "(", ")"));
+        let docs = vec![init, condition, update];
+        result.push(b.pretty_surrounded(&docs, ";", ";", "(", ")"));
         result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
