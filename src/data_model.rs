@@ -987,16 +987,18 @@ impl<'a> DocBuild<'a> for ParenthesizedExpression {
 
 #[derive(Debug, Serialize)]
 pub struct ForStatement {
-    pub init: LocalVariableDeclaration,
-    pub condition: Expression,
+    pub init: Option<LocalVariableDeclaration>,
+    pub condition: Option<Expression>,
     pub update: Expression,
     pub body: Statement,
 }
 
 impl ForStatement {
     pub fn new(node: Node) -> Self {
-        let init = LocalVariableDeclaration::new(node.c_by_n("init"));
-        let condition = Expression::new(node.c_by_n("condition"));
+        let init = node
+            .try_c_by_n("init")
+            .map(|n| LocalVariableDeclaration::new(n));
+        let condition = node.try_c_by_n("condition").map(|n| Expression::new(n));
         let update = Expression::new(node.c_by_n("update"));
         let body = Statement::new(node.c_by_n("body"));
         Self {
@@ -1011,11 +1013,16 @@ impl ForStatement {
 impl<'a> DocBuild<'a> for ForStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("for "));
-        let docs = vec![
-            self.init.build(b),
-            self.condition.build(b),
-            self.update.build(b),
-        ];
+        let init = match &self.init {
+            Some(i) => i.build(b),
+            None => b.nil(),
+        };
+        let condition = match &self.condition {
+            Some(c) => c.build(b),
+            None => b.nil(),
+        };
+
+        let docs = vec![init, condition, self.update.build(b)];
         result.push(b.pretty_surrounded(&docs, "; ", ";", "(", ")"));
         result.push(b.txt(" "));
         result.push(self.body.build(b));
