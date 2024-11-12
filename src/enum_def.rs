@@ -301,6 +301,7 @@ impl Modifier {
     pub fn new(n: Node) -> Self {
         let kind = n.kind();
         match kind {
+            "global" => Self::Global,
             "public" => Self::Public,
             "with_sharing" => Self::WithSharing,
             "without_sharing" => Self::WithoutSharing,

@@ -1120,3 +1120,18 @@ impl<'a> DocBuild<'a> for UpdateExpression {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct ScopedTypeIdentifier {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub variable_declarator_id: VariableDeclaratorId,
+}
+
+impl ScopedTypeIdentifier {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
