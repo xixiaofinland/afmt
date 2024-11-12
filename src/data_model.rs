@@ -913,12 +913,46 @@ impl<'a> DocBuild<'a> for IfStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("if "));
         result.push(self.condition.build(b));
-        result.push(b.txt(" "));
-        result.push(self.consequence.build(b));
+
+        let nested_if_stmt_with_alter = self
+            .alternative
+            .as_ref()
+            .map(|a| a.is_if_stmt_with_alter())
+            .unwrap_or(false);
+
+        //let is_else_if = self
+        //    .alternative
+        //    .as_ref()
+        //    .map(|a| a.is_if_statement())
+        //    .unwrap_or(false);
+
+        if self.consequence.is_block() {
+            result.push(b.txt(" "));
+            result.push(self.consequence.build(b));
+        } else {
+            result.push(b.add_indent_level(b.nl()));
+            result.push(b.add_indent_level(self.consequence.build(b)));
+            if nested_if_stmt_with_alter {
+                result.push(b.nl());
+            }
+        }
 
         if let Some(ref a) = self.alternative {
-            result.push(b.txt(" else "));
-            result.push(a.build(b));
+            if a.is_if_statement() {
+                if self.consequence.is_block() {
+                    result.push(b.txt(" "));
+                }
+                result.push(b.txt("else "));
+                result.push(a.build(b));
+            } else if a.is_block() {
+                result.push(b.txt(" else "));
+                result.push(a.build(b));
+            } else {
+                result.push(b.nl());
+                result.push(b.txt("else"));
+                result.push(b.add_indent_level(b.nl()));
+                result.push(b.add_indent_level(a.build(b)));
+            }
         }
     }
 }

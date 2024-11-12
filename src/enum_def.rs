@@ -389,6 +389,21 @@ impl Statement {
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
+
+    pub fn is_block(&self) -> bool {
+        matches!(self, Statement::Block(_))
+    }
+
+    pub fn is_if_statement(&self) -> bool {
+        matches!(self, Statement::If(_))
+    }
+
+    pub fn is_if_stmt_with_alter(&self) -> bool {
+        match self {
+            Statement::If(if_stmt) => if_stmt.alternative.is_some(),
+            _ => false,
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for Statement {
