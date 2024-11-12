@@ -443,13 +443,19 @@ pub struct AssignmentExpression {
 }
 
 impl AssignmentExpression {
-    pub fn new(node: Node, indent: usize) -> Self {
+    pub fn new(node: Node) -> Self {
         assert_check(node, "assignment_expression");
 
         let left = node.cvalue_by_n("left", source_code());
         let op = node.cvalue_by_n("operator", source_code());
         let right = node.cvalue_by_n("right", source_code());
         Self { left, op, right }
+    }
+}
+
+impl<'a> DocBuild<'a> for AssignmentExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(format!("{} {} {}", self.left, self.op, self.right)));
     }
 }
 
@@ -1010,21 +1016,56 @@ impl<'a> DocBuild<'a> for ForStatement {
             self.condition.build(b),
             self.update.build(b),
         ];
-        result.push(b.pretty_surrounded(&docs, ", ", ",", "(", ")"));
+        result.push(b.pretty_surrounded(&docs, "; ", ";", "(", ")"));
+        result.push(b.txt(" "));
+        result.push(self.body.build(b));
     }
 }
 
 #[derive(Debug, Serialize)]
-pub struct UpdateExpression {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+pub enum UpdateExpression {
+    Pre {
+        operator: String,
+        operand: Box<Expression>,
+    },
+    Post {
+        operand: Box<Expression>,
+        operator: String,
+    },
 }
 
 impl UpdateExpression {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "update_expression");
+
+        let operator_node = node.c_by_n("operator");
+        let operand_node = node.c_by_n("operand");
+
+        if operator_node.start_byte() < operand_node.start_byte() {
+            Self::Pre {
+                operator: operator_node.value(source_code()),
+                operand: Box::new(Expression::new(operand_node)),
+            }
+        } else {
+            Self::Post {
+                operand: Box::new(Expression::new(operand_node)),
+                operator: operator_node.value(source_code()),
+            }
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for UpdateExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Pre { operator, operand } => {
+                result.push(b.txt(operator));
+                result.push(operand.build(b));
+            }
+            Self::Post { operand, operator } => {
+                result.push(operand.build(b));
+                result.push(b.txt(operator));
+            }
+        }
+    }
 }

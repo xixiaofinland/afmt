@@ -146,6 +146,7 @@ impl<'a> DocBuild<'a> for VariableInitializer {
 
 #[derive(Debug, Serialize)]
 pub enum Expression {
+    Assignment(Box<AssignmentExpression>),
     StringLiteral(String),
     Binary(Box<BinaryExpression>),
     Primary(Box<PrimaryExpression>),
@@ -155,6 +156,7 @@ pub enum Expression {
 impl Expression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
+            "assignment_expression" => Self::Assignment(Box::new(AssignmentExpression::new(n))),
             "string_literal" => Self::StringLiteral(n.value(source_code())),
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
             "int" | "boolean" | "identifier" | "null_literal" | "method_invocation" => {
@@ -169,6 +171,9 @@ impl Expression {
 impl<'a> DocBuild<'a> for Expression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::Assignment(a) => {
+                result.push(a.build(b));
+            }
             Self::StringLiteral(s) => {
                 result.push(b.txt(s));
             }
