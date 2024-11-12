@@ -175,9 +175,12 @@ impl Expression {
             "assignment_expression" => Self::Assignment(Box::new(AssignmentExpression::new(n))),
             "string_literal" => Self::StringLiteral(n.value(source_code())),
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
-            "int" | "boolean" | "identifier" | "null_literal" | "method_invocation" => {
-                Self::Primary(Box::new(PrimaryExpression::new(n)))
-            }
+            "int"
+            | "boolean"
+            | "identifier"
+            | "null_literal"
+            | "method_invocation"
+            | "parenthesized_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
@@ -229,14 +232,16 @@ pub enum PrimaryExpression {
     Literal(Literal_),
     Identifier(String),
     Method(MethodInvocation),
+    Parenth(ParenthesizedExpression),
 }
 
 impl PrimaryExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
+            "int" | "boolean" | "null_literal" => Self::Literal(Literal_::new(n)),
             "identifier" => Self::Identifier(n.value(source_code())),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
-            "int" | "boolean" | "null_literal" => Self::Literal(Literal_::new(n)),
+            "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -253,6 +258,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
             }
             Self::Method(m) => {
                 result.push(m.build(b));
+            }
+            Self::Parenth(p) => {
+                result.push(p.build(b));
             }
         }
     }
