@@ -914,10 +914,10 @@ impl<'a> DocBuild<'a> for IfStatement {
         result.push(b.txt("if "));
         result.push(self.condition.build(b));
 
-        let nested_if_stmt_with_alter = self
+        let nested_if_stmt_with_else = self
             .alternative
             .as_ref()
-            .map(|a| a.is_if_stmt_with_alter())
+            .map(|a| a.is_if_stmt_with_else())
             .unwrap_or(false);
 
         //let is_else_if = self
@@ -932,7 +932,7 @@ impl<'a> DocBuild<'a> for IfStatement {
         } else {
             result.push(b.add_indent_level(b.nl()));
             result.push(b.add_indent_level(self.consequence.build(b)));
-            if nested_if_stmt_with_alter {
+            if nested_if_stmt_with_else {
                 result.push(b.nl());
             }
         }

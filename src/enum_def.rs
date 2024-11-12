@@ -398,7 +398,7 @@ impl Statement {
         matches!(self, Statement::If(_))
     }
 
-    pub fn is_if_stmt_with_alter(&self) -> bool {
+    pub fn is_if_stmt_with_else(&self) -> bool {
         match self {
             Statement::If(if_stmt) => if_stmt.alternative.is_some(),
             _ => false,
