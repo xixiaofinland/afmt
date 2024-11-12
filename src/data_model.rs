@@ -914,45 +914,46 @@ impl<'a> DocBuild<'a> for IfStatement {
         result.push(b.txt("if "));
         result.push(self.condition.build(b));
 
-        let has_nested_if_stmt_with_else = self
-            .alternative
-            .as_ref()
-            .map(|a| a.is_if_stmt_with_else())
-            .unwrap_or(false);
-
         if self.consequence.is_block() {
             result.push(b.txt(" "));
             result.push(self.consequence.build(b));
         } else {
             result.push(b.add_indent_level(b.nl()));
             result.push(b.add_indent_level(self.consequence.build(b)));
-            if has_nested_if_stmt_with_else {
-                result.push(b.nl());
-            } else {
-                if let Some(ref a) = self.alternative {
-                    if a.is_block() {
-                        result.push(b.nl());
-                    }
-                }
-            }
         }
 
+        // Handle the 'else' part
         if let Some(ref a) = self.alternative {
-            if self.consequence.is_block() {
-                result.push(b.txt(" "));
-            }
-
-            if a.is_if_statement() {
-                result.push(b.txt("else "));
-                result.push(a.build(b));
-            } else if a.is_block() {
-                result.push(b.txt("else "));
-                result.push(a.build(b));
-            } else {
-                result.push(b.nl());
-                result.push(b.txt("else"));
-                result.push(b.add_indent_level(b.nl()));
-                result.push(b.add_indent_level(a.build(b)));
+            match a {
+                Statement::If(_) => {
+                    if self.consequence.is_block() {
+                        result.push(b.txt(" else "));
+                    } else {
+                        result.push(b.nl());
+                        result.push(b.txt("else "));
+                    }
+                    result.push(a.build(b)); // Recursively build the nested 'else if' statement
+                }
+                Statement::Block(_) => {
+                    if self.consequence.is_block() {
+                        result.push(b.txt(" else "));
+                    } else {
+                        result.push(b.nl());
+                        result.push(b.txt("else "));
+                    }
+                    result.push(a.build(b));
+                }
+                // Handle "else" with a single statement
+                _ => {
+                    if self.consequence.is_block() {
+                        result.push(b.txt(" else "));
+                    } else {
+                        result.push(b.nl());
+                        result.push(b.txt("else"));
+                        result.push(b.add_indent_level(b.nl()));
+                    }
+                    result.push(a.build(b)); // Build the else statement
+                }
             }
         }
     }

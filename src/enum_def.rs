@@ -393,24 +393,6 @@ impl Statement {
     pub fn is_block(&self) -> bool {
         matches!(self, Statement::Block(_))
     }
-
-    pub fn is_if_statement(&self) -> bool {
-        matches!(self, Statement::If(_))
-    }
-
-    pub fn is_if_stmt_with_else(&self) -> bool {
-        match self {
-            Statement::If(if_stmt) => if_stmt.alternative.is_some(),
-            _ => false,
-        }
-    }
-
-    pub fn as_if(&self) -> Option<&IfStatement> {
-        match self {
-            Statement::If(ref if_stmt) => Some(if_stmt),
-            _ => None,
-        }
-    }
 }
 
 impl<'a> DocBuild<'a> for Statement {
