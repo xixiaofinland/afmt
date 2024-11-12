@@ -149,7 +149,7 @@ pub enum Expression {
     StringLiteral(String),
     Binary(Box<BinaryExpression>),
     Primary(Box<PrimaryExpression>),
-    //Assignment(Box<AssignmentExpression>),
+    Update(UpdateExpression), //Assignment(Box<AssignmentExpression>),
 }
 
 impl Expression {
@@ -160,6 +160,7 @@ impl Expression {
             "int" | "boolean" | "identifier" | "null_literal" | "method_invocation" => {
                 Self::Primary(Box::new(PrimaryExpression::new(n)))
             }
+            "update_expression" => Self::Update(UpdateExpression::new(n)),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
     }
@@ -176,6 +177,9 @@ impl<'a> DocBuild<'a> for Expression {
             }
             Self::Primary(p) => {
                 result.push(p.build(b));
+            }
+            Self::Update(u) => {
+                result.push(u.build(b));
             }
         }
     }

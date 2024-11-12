@@ -1013,3 +1013,18 @@ impl<'a> DocBuild<'a> for ForStatement {
         result.push(b.pretty_surrounded(&docs, ", ", ",", "(", ")"));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct UpdateExpression {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub variable_declarator_id: VariableDeclaratorId,
+}
+
+impl UpdateExpression {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for UpdateExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
