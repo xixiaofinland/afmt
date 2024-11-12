@@ -157,7 +157,7 @@ impl Expression {
         match n.kind() {
             "string_literal" => Self::StringLiteral(n.value(source_code())),
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
-            "boolean" | "identifier" | "null_literal" | "method_invocation" => {
+            "int" | "boolean" | "identifier" | "null_literal" | "method_invocation" => {
                 Self::Primary(Box::new(PrimaryExpression::new(n)))
             }
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
@@ -211,7 +211,7 @@ impl PrimaryExpression {
         match n.kind() {
             "identifier" => Self::Identifier(n.value(source_code())),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
-            "boolean" | "null_literal" => Self::Literal(Literal_::new(n)),
+            "int" | "boolean" | "null_literal" => Self::Literal(Literal_::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -237,7 +237,7 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
 pub enum Literal_ {
     Bool(String),
     Null,
-    //Int(String),
+    Int(String),
     //Decimal(String),
     //Str(String),
 }
@@ -247,6 +247,7 @@ impl Literal_ {
         match n.kind() {
             "boolean" => Self::Bool(n.value(source_code()).to_lowercase()),
             "null" => Self::Null,
+            "int" => Self::Int(n.value(source_code())),
             _ => panic!("## unknown node: {} in Literal", n.kind().red()),
         }
     }
@@ -260,6 +261,9 @@ impl<'a> DocBuild<'a> for Literal_ {
             }
             Self::Null => {
                 result.push(b.txt("null"));
+            }
+            Self::Int(s) => {
+                result.push(b.txt(s));
             }
         }
     }
