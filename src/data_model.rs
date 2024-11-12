@@ -1025,8 +1025,8 @@ impl<'a> DocBuild<'a> for ForStatement {
             Some(u) => b.concat(vec![b.txt(" "), u.build(b)]),
             None => b.nil(),
         };
-
         let docs = vec![init, condition, update];
+
         result.push(b.pretty_surrounded(&docs, ";", ";", "(", ")"));
         result.push(b.txt(" "));
         result.push(self.body.build(b));
