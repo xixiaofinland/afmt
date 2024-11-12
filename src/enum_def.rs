@@ -404,6 +404,13 @@ impl Statement {
             _ => false,
         }
     }
+
+    pub fn as_if(&self) -> Option<&IfStatement> {
+        match self {
+            Statement::If(ref if_stmt) => Some(if_stmt),
+            _ => None,
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for Statement {
