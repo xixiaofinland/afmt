@@ -1,11 +1,9 @@
 public class Me {
   {
-    if (true) 
-      Integer i = 1; else if (false) {
-      Integer l = 3;
-    } else if (true)
-      Integer a = 3; else {
-      Integer j = 2;
+    for (Integer i = 0; i < 3; i++) {
+      System.debug(i);
+      System.debug(i);
+      i = 5;
     }
   }
 }

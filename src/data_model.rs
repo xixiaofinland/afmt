@@ -978,3 +978,38 @@ impl<'a> DocBuild<'a> for ParenthesizedExpression {
         result.push(b.txt(")"));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct ForStatement {
+    pub init: LocalVariableDeclaration,
+    pub condition: Expression,
+    pub update: Expression,
+    pub body: Statement,
+}
+
+impl ForStatement {
+    pub fn new(node: Node) -> Self {
+        let init = LocalVariableDeclaration::new(node.c_by_n("init"));
+        let condition = Expression::new(node.c_by_n("condition"));
+        let update = Expression::new(node.c_by_n("update"));
+        let body = Statement::new(node.c_by_n("body"));
+        Self {
+            init,
+            condition,
+            update,
+            body,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ForStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("for "));
+        let docs = vec![
+            self.init.build(b),
+            self.condition.build(b),
+            self.update.build(b),
+        ];
+        result.push(b.pretty_surrounded(&docs, ", ", ",", "(", ")"));
+    }
+}
