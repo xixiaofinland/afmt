@@ -1034,6 +1034,46 @@ impl<'a> DocBuild<'a> for ForStatement {
 }
 
 #[derive(Debug, Serialize)]
+pub struct EnhancedForStatement {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub name: String,
+    //pub dimension
+    pub value: Expression,
+    pub body: Statement,
+}
+
+impl EnhancedForStatement {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "enhanced_for_statement");
+
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let name = node.cvalue_by_n("name", source_code());
+        let value = Expression::new(node.c_by_n("value"));
+        let body = Statement::new(node.c_by_n("body"));
+        Self {
+            modifiers,
+            type_,
+            name,
+            value,
+            body,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for EnhancedForStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("for ("));
+        result.push(self.type_.build(b));
+        result.push(b._txt(&self.name));
+        result.push(b._txt_(":"));
+        result.push(self.value.build(b));
+        result.push(b.txt_(")"));
+        result.push(self.body.build(b));
+    }
+}
+#[derive(Debug, Serialize)]
 pub enum UpdateExpression {
     Pre {
         operator: String,

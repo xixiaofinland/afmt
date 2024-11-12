@@ -1,7 +1,8 @@
 public class Me {
   {
-    for (Integer i = 0; i < 3;) {
-      System.debug(i);
+    List<Account> accs = new List<Account>();
+    for (Account a : accs) {
+      System.debug(a);
     }
   }
 }

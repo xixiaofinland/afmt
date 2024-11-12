@@ -391,6 +391,7 @@ pub enum Statement {
     Local(LocalVariableDeclaration),
     Block(Block),
     For(Box<ForStatement>),
+    EnhancedFor(Box<EnhancedForStatement>),
 }
 
 impl Statement {
@@ -401,6 +402,7 @@ impl Statement {
             "local_variable_declaration" => Self::Local(LocalVariableDeclaration::new(n)),
             "block" => Self::Block(Block::new(n)),
             "for_statement" => Self::For(Box::new(ForStatement::new(n))),
+            "enhanced_for_statement" => Self::EnhancedFor(Box::new(EnhancedForStatement::new(n))),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -428,6 +430,9 @@ impl<'a> DocBuild<'a> for Statement {
                 result.push(v.build(b));
             }
             Self::For(f) => {
+                result.push(f.build(b));
+            }
+            Self::EnhancedFor(f) => {
                 result.push(f.build(b));
             }
         }
