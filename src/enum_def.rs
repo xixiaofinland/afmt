@@ -443,6 +443,7 @@ impl<'a> DocBuild<'a> for Statement {
 #[derive(Debug, Serialize)]
 pub enum Type {
     Unnanotated(UnnanotatedType),
+    Scoped(ScopedTypeIdentifier),
 }
 
 impl Type {
@@ -451,6 +452,7 @@ impl Type {
             "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
                 SimpleType::Identifier(n.value(source_code())),
             )),
+            "scoped_type_identifier" => Self::Scoped(ScopedTypeIdentifier::new(n)),
             _ => panic!("## unknown node: {} in Type ", n.kind().red()),
         }
     }
@@ -461,6 +463,9 @@ impl<'a> DocBuild<'a> for Type {
         match self {
             Self::Unnanotated(u) => {
                 result.push(u.build(b));
+            }
+            Self::Scoped(s) => {
+                result.push(s.build(b));
             }
         }
     }

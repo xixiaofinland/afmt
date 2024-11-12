@@ -1123,15 +1123,78 @@ impl<'a> DocBuild<'a> for UpdateExpression {
 
 #[derive(Debug, Serialize)]
 pub struct ScopedTypeIdentifier {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+    pub scoped_choice: ScopedChoice,
+    pub annotations: Vec<Annotation>,
+    pub type_identifier: String,
 }
 
 impl ScopedTypeIdentifier {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "scoped_type_identifier");
+
+        let prefix_node = node.first_c();
+        let scoped_choice = match prefix_node.kind() {
+            "type_identifier" => ScopedChoice::TypeIdentifier(prefix_node.value(source_code())),
+            "scoped_type_identifier" => ScopedChoice::Scoped(Box::new(Self::new(prefix_node))),
+            "generic_type" => ScopedChoice::Generic(Box::new(GenericType::new(prefix_node))),
+            _ => panic!(
+                "## unknown node: {} in ScopedTypeIdentifier prefix node",
+                prefix_node.kind().red()
+            ),
+        };
+
+        let annotations: Vec<_> = node
+            .try_cs_by_k("annotation")
+            .into_iter()
+            .map(|n| Annotation::new(n))
+            .collect();
+
+        let type_identifier_node = node
+            .cs_by_k("type_identifier")
+            .pop()
+            .expect("## mandatory node type_identifier missing in ScopedTypeIdentifier");
+        let type_identifier = type_identifier_node.value(source_code());
+
+        Self {
+            scoped_choice,
+            annotations,
+            type_identifier,
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.scoped_choice.build(b));
+        result.push(b.txt("."));
+        if !self.annotations.is_empty() {
+            let docs = b.build_docs(&self.annotations);
+            result.push(b.sep_single_line(&docs, " "));
+            result.push(b.txt(" "));
+        }
+        result.push(b.txt(&self.type_identifier));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum ScopedChoice {
+    TypeIdentifier(String),
+    Scoped(Box<ScopedTypeIdentifier>),
+    Generic(Box<GenericType>),
+}
+
+impl<'a> DocBuild<'a> for ScopedChoice {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::TypeIdentifier(t) => {
+                result.push(b.txt(t));
+            }
+            Self::Scoped(s) => {
+                result.push(s.build(b));
+            }
+            Self::Generic(g) => {
+                result.push(g.build(b));
+            }
+        }
+    }
 }
