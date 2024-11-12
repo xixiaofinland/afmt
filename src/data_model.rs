@@ -989,7 +989,7 @@ impl<'a> DocBuild<'a> for ParenthesizedExpression {
 pub struct ForStatement {
     pub init: Option<LocalVariableDeclaration>,
     pub condition: Option<Expression>,
-    pub update: Expression,
+    pub update: Option<Expression>,
     pub body: Statement,
 }
 
@@ -999,7 +999,7 @@ impl ForStatement {
             .try_c_by_n("init")
             .map(|n| LocalVariableDeclaration::new(n));
         let condition = node.try_c_by_n("condition").map(|n| Expression::new(n));
-        let update = Expression::new(node.c_by_n("update"));
+        let update = node.try_c_by_n("update").map(|n| Expression::new(n));
         let body = Statement::new(node.c_by_n("body"));
         Self {
             init,
@@ -1021,7 +1021,10 @@ impl<'a> DocBuild<'a> for ForStatement {
             Some(c) => b.concat(vec![b.txt(" "), c.build(b)]),
             None => b.nil(),
         };
-        let update = b.concat(vec![b.txt(" "), self.update.build(b)]);
+        let update = match &self.update {
+            Some(u) => b.concat(vec![b.txt(" "), u.build(b)]),
+            None => b.nil(),
+        };
 
         let docs = vec![init, condition, update];
         result.push(b.pretty_surrounded(&docs, ";", ";", "(", ")"));

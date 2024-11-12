@@ -1,9 +1,7 @@
 public class Me {
   {
-    for (Integer i = 0;; i++) {
+    for (Integer i = 0; i < 3;) {
       System.debug(i);
-      System.debug(i);
-      i = 5;
     }
   }
 }
