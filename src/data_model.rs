@@ -872,17 +872,26 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
 
 #[derive(Debug, Serialize)]
 pub struct GenericType {
-    pub type_identifier: String,
+    pub generic_identifier: GenericIdentifier,
     pub type_arguments: TypeArguments,
 }
 
 impl GenericType {
     pub fn new(node: Node) -> Self {
-        let type_identifier = node.cvalue_by_k("type_identifier", source_code());
+        assert_check(node, "generic_type");
+
+        let generic_identifier = if let Some(t) = node.try_c_by_k("type_identifier") {
+            GenericIdentifier::Type(t.value(source_code()))
+        } else if let Some(s) = node.try_c_by_k("scoped_type_identifier") {
+            GenericIdentifier::Scoped(ScopedTypeIdentifier::new(s))
+        } else {
+            panic!("## can't build generic_identifier node in GenericType");
+        };
+
         let type_arguments = TypeArguments::new(node.c_by_k("type_arguments"));
 
         Self {
-            type_identifier,
+            generic_identifier,
             type_arguments,
         }
     }
@@ -890,11 +899,29 @@ impl GenericType {
 
 impl<'a> DocBuild<'a> for GenericType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.type_identifier));
+        result.push(self.generic_identifier.build(b));
         result.push(self.type_arguments.build(b));
     }
 }
 
+#[derive(Debug, Serialize)]
+pub enum GenericIdentifier {
+    Type(String),
+    Scoped(ScopedTypeIdentifier),
+}
+
+impl<'a> DocBuild<'a> for GenericIdentifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Type(s) => {
+                result.push(b.txt(s));
+            }
+            Self::Scoped(s) => {
+                result.push(s.build(b));
+            }
+        }
+    }
+}
 #[derive(Debug, Serialize)]
 pub struct IfStatement {
     pub condition: ParenthesizedExpression,

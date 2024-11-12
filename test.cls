@@ -1,2 +1,1 @@
-global class Me implements namespace.InterfaceName {
-}
+public with sharing class Me implements Database.Batchable<SObject> {}

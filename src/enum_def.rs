@@ -76,9 +76,9 @@ pub enum UnnanotatedType {
 impl UnnanotatedType {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" => Self::Simple(SimpleType::Identifier(n.value(source_code()))),
-            "void_type" => Self::Simple(SimpleType::Void(VoidType::new(n))),
-            "generic_type" => Self::Simple(SimpleType::Generic(GenericType::new(n))),
+            "type_identifier" | "void_type" | "generic_type" | "scoped_type_identifier" => {
+                Self::Simple(SimpleType::new(n))
+            }
             _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
         }
     }
@@ -97,6 +97,19 @@ pub enum SimpleType {
     Identifier(String),
     Void(VoidType),
     Generic(GenericType),
+    Scoped(ScopedTypeIdentifier),
+}
+
+impl SimpleType {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "type_identifier" => Self::Identifier(n.value(source_code())),
+            "void_type" => Self::Void(VoidType::new(n)),
+            "generic_type" => Self::Generic(GenericType::new(n)),
+            "scoped_type_identifier" => Self::Scoped(ScopedTypeIdentifier::new(n)),
+            _ => panic!("## unknown node: {} in SimpleType", n.kind().red()),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for SimpleType {
@@ -109,6 +122,9 @@ impl<'a> DocBuild<'a> for SimpleType {
                 result.push(b.txt(&v.value));
             }
             Self::Generic(g) => {
+                result.push(g.build(b));
+            }
+            Self::Scoped(g) => {
                 result.push(g.build(b));
             }
         }
@@ -443,16 +459,14 @@ impl<'a> DocBuild<'a> for Statement {
 #[derive(Debug, Serialize)]
 pub enum Type {
     Unnanotated(UnnanotatedType),
-    Scoped(ScopedTypeIdentifier),
 }
 
 impl Type {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
-                SimpleType::Identifier(n.value(source_code())),
-            )),
-            "scoped_type_identifier" => Self::Scoped(ScopedTypeIdentifier::new(n)),
+            "type_identifier" | "void_type" | "generic_type" | "scoped_type_identifier" => {
+                Self::Unnanotated(UnnanotatedType::Simple(SimpleType::new(n)))
+            }
             _ => panic!("## unknown node: {} in Type ", n.kind().red()),
         }
     }
@@ -463,9 +477,6 @@ impl<'a> DocBuild<'a> for Type {
         match self {
             Self::Unnanotated(u) => {
                 result.push(u.build(b));
-            }
-            Self::Scoped(s) => {
-                result.push(s.build(b));
             }
         }
     }
