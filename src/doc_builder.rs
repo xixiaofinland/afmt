@@ -139,7 +139,7 @@ impl<'a> DocBuilder<'a> {
     where
         M: DocBuild<'a>,
     {
-        let mut member_docs = Vec::with_capacity(members.len() * 2); // Estimate capacity
+        let mut member_docs = Vec::new();
 
         for (i, m) in members.iter().enumerate() {
             member_docs.push(m.member.build(self));
@@ -151,7 +151,6 @@ impl<'a> DocBuilder<'a> {
                 }
             }
         }
-
         self.concat(member_docs)
     }
 
