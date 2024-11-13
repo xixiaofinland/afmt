@@ -86,7 +86,7 @@ pub fn has_trailing_new_line(node: &Node) -> bool {
         }
     }
 
-    if found_non_whitespace && newline_count == 0 {
+    if found_non_whitespace && newline_count == 1 {
         false
     } else {
         true
