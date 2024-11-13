@@ -1,7 +1,4 @@
 class EmptyBlockStatement {
-  public EmptyBlockStatement() {
-
-  }
 
   public static void emptyForLoop() {
     for (Integer i = 1; i ++; i < 5) {

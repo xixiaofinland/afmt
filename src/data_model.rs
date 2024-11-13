@@ -1233,3 +1233,207 @@ impl<'a> DocBuild<'a> for ScopedChoice {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct ConstructorDeclaration {
+    pub modifiers: Option<Modifiers>,
+    pub type_parameters: Option<TypeParameters>,
+    pub name: String,
+    pub parameters: FormalParameters,
+    pub body: ConstructorBody,
+}
+
+impl ConstructorDeclaration {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let type_parameters = node
+            .try_c_by_k("type_parameters")
+            .map(|n| TypeParameters::new(n));
+        let name = node.cvalue_by_n("name", source_code());
+        let parameters = FormalParameters::new(node.c_by_n("parameters"));
+        let body = ConstructorBody::new(node.c_by_n("body"));
+        Self {
+            modifiers,
+            type_parameters,
+            name,
+            parameters,
+            body,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ConstructorDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+        if let Some(ref n) = self.type_parameters {
+            result.push(n.build(b));
+        }
+
+        result.push(b.txt_(&self.name));
+        result.push(self.parameters.build(b));
+        result.push(self.body.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ConstructorBody {
+    pub constructor_invocation: Option<ConstructInvocation>,
+    pub statements: Vec<Statement>,
+}
+
+impl ConstructorBody {
+    pub fn new(node: Node) -> Self {
+        let mut constructor_invocation = None;
+        let mut statements = Vec::new();
+
+        for (i, c) in node.children_vec().into_iter().enumerate() {
+            if i == 0 && c.kind() == "explicit_constructor_invocation" {
+                constructor_invocation = Some(ConstructInvocation::new(c));
+            }
+            statements.push(Statement::new(c));
+        }
+
+        ConstructorBody {
+            constructor_invocation,
+            statements,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ConstructorBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let member_docs = b.build_docs(&self.statements);
+        let statements_doc = b.sep_multi_line(&member_docs, "");
+        result.push(statements_doc);
+
+        if self.constructor_invocation.is_none() && self.statements.is_empty() {
+            return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+        }
+
+        let mut doc_vec = Vec::new();
+        if let Some(ref c) = self.constructor_invocation {
+            doc_vec.push(c.build(b));
+        }
+
+        self.statements
+            .iter()
+            .for_each(|n| doc_vec.push(n.build(b)));
+
+        let docs = b.pretty_surrounded_multi_line(&doc_vec, "", "{", "}");
+        result.push(docs);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ConstructInvocation {
+    pub object: Option<Box<PrimaryExpression>>,
+    pub type_arguments: Option<TypeArguments>,
+    pub constructor: Constructor,
+}
+
+impl ConstructInvocation {
+    pub fn new(node: Node) -> Self {
+        let object = node
+            .try_c_by_n("object")
+            .map(|n| Box::new(PrimaryExpression::new(n)));
+
+        let type_arguments = node
+            .try_c_by_k("type_arguments")
+            .map(|n| TypeArguments::new(n));
+
+        let constructor = match node.c_by_n("constructor").kind() {
+            "this" => Constructor::This,
+            "super" => Constructor::Super,
+            other => panic!("## unknown node: {} in Constructor", other.red()),
+        };
+
+        Self {
+            object,
+            type_arguments,
+            constructor,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ConstructInvocation {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref o) = self.object {
+            result.push(o.build(b));
+        }
+
+        if let Some(ref t) = self.type_arguments {
+            result.push(t.build(b));
+        }
+
+        result.push(self.constructor.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+enum Constructor {
+    This,
+    Super,
+}
+
+impl<'a> DocBuild<'a> for Constructor {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::This => result.push(b.txt("this")),
+            Self::Super => result.push(b.txt("super")),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct TypeParameters {
+    pub type_parameters: Vec<TypeParameter>,
+}
+
+impl TypeParameters {
+    pub fn new(node: Node) -> Self {
+        let type_parameters: Vec<_> = node
+            .cs_by_k("type_parameter")
+            .into_iter()
+            .map(|n| TypeParameter::new(n))
+            .collect();
+        Self { type_parameters }
+    }
+}
+
+impl<'a> DocBuild<'a> for TypeParameters {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        self.type_parameters
+            .iter()
+            .for_each(|t| result.push(t.build(b)));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct TypeParameter {
+    annotations: Vec<Annotation>,
+    pub type_identifier: String,
+}
+
+impl TypeParameter {
+    pub fn new(node: Node) -> Self {
+        let annotations: Vec<_> = node
+            .try_cs_by_k("annotation")
+            .into_iter()
+            .map(|n| Annotation::new(n))
+            .collect();
+
+        let type_identifier = node.cvalue_by_k("type_identifier", source_code());
+        Self {
+            annotations,
+            type_identifier,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for TypeParameter {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.type_identifier));
+    }
+}
