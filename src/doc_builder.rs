@@ -32,6 +32,17 @@ impl<'a> DocBuilder<'a> {
         )
     }
 
+    pub fn sep_with_empty_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+        elems.iter().skip(1).fold(
+            if let Some(&first) = elems.get(0) {
+                first
+            } else {
+                self.nil()
+            },
+            |acc, &elem| self.concat(vec![acc, self.txt(separator), self.nl(), self.nl(), elem]),
+        )
+    }
+
     pub fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         elems.iter().skip(1).fold(
             if let Some(&first) = elems.get(0) {

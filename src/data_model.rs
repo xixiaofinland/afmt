@@ -1271,8 +1271,9 @@ impl<'a> DocBuild<'a> for ConstructorDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(b.txt_(&self.name));
+        result.push(b.txt(&self.name));
         result.push(self.parameters.build(b));
+        result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
 }
