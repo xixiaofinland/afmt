@@ -140,27 +140,22 @@ impl<'a> DocBuilder<'a> {
         M: DocBuild<'a>,
     {
         let mut member_docs = Vec::new();
-        let mut first_member = true;
 
-        for formatted_member in members {
-            if !first_member {
-                if formatted_member.has_trailing_newlines {
-                    // Insert two newlines for an empty line
-                    member_docs.push(self.nl());
-                    member_docs.push(self.nl());
-                } else {
-                    // Insert one newline to maintain existing formatting
-                    member_docs.push(self.nl());
-                }
-            } else {
-                first_member = false;
+        for (i, m) in members.iter().enumerate() {
+            member_docs.push(m.member.build(self));
+
+            if i == members.len() - 1 {
+                break;
             }
 
-            // Append the formatted member's document
-            formatted_member.member.build_inner(self, &mut member_docs);
+            if m.has_trailing_newlines {
+                member_docs.push(self.nl());
+                member_docs.push(self.nl());
+            } else {
+                // Insert one newline to maintain existing formatting
+                member_docs.push(self.nl());
+            }
         }
-
-        // Concatenate all member documents into one
         self.concat(member_docs)
     }
 
