@@ -59,6 +59,40 @@ pub fn assert_check(node: Node, expected_kind: &str) {
     );
 }
 
+pub fn has_trailing_new_line(node: &Node) -> bool {
+    let source_code = source_code();
+    let index = node.end_byte();
+    if index >= source_code.len() {
+        return false;
+    }
+
+    let remaining_code = &source_code[index..];
+    let mut newline_count = 0;
+    let mut found_non_whitespace = false;
+
+    for char in remaining_code.chars() {
+        match char {
+            '\n' => {
+                newline_count += 1;
+                if newline_count >= 2 {
+                    break;
+                }
+            }
+            ' ' | '\t' | '\r' => continue,
+            _ => {
+                found_non_whitespace = true;
+                break;
+            }
+        }
+    }
+
+    if found_non_whitespace && newline_count == 0 {
+        false
+    } else {
+        true
+    }
+}
+
 //pub fn visit_root(context: &FmtContext) -> String {
 //    let mut result = String::new();
 //    let shape = Shape::empty(&context.config);
@@ -167,38 +201,6 @@ pub fn assert_check(node: Node, expected_kind: &str) {
 //    result.push_str(&shape.indent.as_string(&context.config));
 //}
 //
-//fn newlines_to_add(node: &Node, source_code: &str) -> usize {
-//    let index = node.end_byte();
-//    if index >= source_code.len() {
-//        return 0;
-//    }
-//
-//    let remaining_code = &source_code[index..];
-//    let mut newline_count = 0;
-//    let mut found_non_whitespace = false;
-//
-//    for char in remaining_code.chars() {
-//        match char {
-//            '\n' => {
-//                newline_count += 1;
-//                if newline_count >= 2 {
-//                    break;
-//                }
-//            }
-//            ' ' | '\t' | '\r' => continue,
-//            _ => {
-//                found_non_whitespace = true;
-//                break;
-//            }
-//        }
-//    }
-//
-//    if found_non_whitespace && newline_count == 0 {
-//        1
-//    } else {
-//        newline_count
-//    }
-//}
 //
 //pub fn rewrite<'a, 't, T>(n: &'a Node<'t>, shape: &mut Shape, context: &FmtContext) -> String
 //where

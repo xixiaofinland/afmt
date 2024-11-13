@@ -559,3 +559,10 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
         }
     }
 }
+
+// Generic struct to associate a body member with trailing newline information
+#[derive(Debug, Serialize)]
+pub struct FormattedMember<M> {
+    pub member: M,
+    pub has_trailing_newlines: bool,
+}

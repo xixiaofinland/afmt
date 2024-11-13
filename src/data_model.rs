@@ -3,7 +3,7 @@ use crate::{
     doc::DocRef,
     doc_builder::DocBuilder,
     enum_def::*,
-    utility::{assert_check, source_code},
+    utility::{assert_check, has_trailing_new_line, source_code},
 };
 use colored::Colorize;
 use serde::Serialize;
@@ -343,18 +343,26 @@ impl<'a> DocBuild<'a> for AnnotationKeyValue {
 
 #[derive(Debug, Serialize)]
 pub struct ClassBody {
-    pub class_members: Vec<ClassMember>,
+    pub class_members: Vec<FormattedMember<ClassMember>>,
 }
 
 impl ClassBody {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_body");
-        let mut class_members: Vec<ClassMember> = Vec::new();
+        let children = node.children_vec();
+        let mut class_members: Vec<FormattedMember<ClassMember>> = Vec::new();
 
-        for c in node.children_vec() {
+        for c in children {
             match c.kind() {
                 "line_comment" | "block_comment" => continue,
-                _ => class_members.push(ClassMember::new(c)),
+                _ => {
+                    let member = ClassMember::new(c);
+                    let has_trailing_newlines = has_trailing_new_line(&c);
+                    class_members.push(FormattedMember {
+                        member,
+                        has_trailing_newlines,
+                    });
+                }
             }
         }
 
@@ -364,8 +372,7 @@ impl ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let member_docs = b.build_docs(&self.class_members);
-        let body_doc = b.sep_multi_line(&member_docs, "");
+        let body_doc = b.sep_with_trailing_newlines(&self.class_members);
         result.push(body_doc);
     }
 }

@@ -1,6 +1,7 @@
 use crate::{
     data_model::DocBuild,
     doc::{Doc, DocRef, PrettyConfig},
+    enum_def::FormattedMember,
 };
 use typed_arena::Arena;
 
@@ -132,6 +133,35 @@ impl<'a> DocBuilder<'a> {
         T: DocBuild<'a> + 'b,
     {
         items.into_iter().map(|item| item.build(self)).collect()
+    }
+
+    pub fn sep_with_trailing_newlines<'b, M>(&'a self, members: &[FormattedMember<M>]) -> DocRef<'a>
+    where
+        M: DocBuild<'a>,
+    {
+        let mut member_docs = Vec::new();
+        let mut first_member = true;
+
+        for formatted_member in members {
+            if !first_member {
+                if formatted_member.has_trailing_newlines {
+                    // Insert two newlines for an empty line
+                    member_docs.push(self.nl());
+                    member_docs.push(self.nl());
+                } else {
+                    // Insert one newline to maintain existing formatting
+                    member_docs.push(self.nl());
+                }
+            } else {
+                first_member = false;
+            }
+
+            // Append the formatted member's document
+            formatted_member.member.build_inner(self, &mut member_docs);
+        }
+
+        // Concatenate all member documents into one
+        self.concat(member_docs)
     }
 
     pub fn nl(&'a self) -> DocRef<'a> {
