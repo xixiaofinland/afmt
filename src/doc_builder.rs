@@ -139,23 +139,19 @@ impl<'a> DocBuilder<'a> {
     where
         M: DocBuild<'a>,
     {
-        let mut member_docs = Vec::new();
+        let mut member_docs = Vec::with_capacity(members.len() * 2); // Estimate capacity
 
         for (i, m) in members.iter().enumerate() {
             member_docs.push(m.member.build(self));
 
-            if i == members.len() - 1 {
-                break;
-            }
-
-            if m.has_trailing_newlines {
+            if i < members.len() - 1 {
                 member_docs.push(self.nl());
-                member_docs.push(self.nl());
-            } else {
-                // Insert one newline to maintain existing formatting
-                member_docs.push(self.nl());
+                if m.has_trailing_newlines {
+                    member_docs.push(self.nl());
+                }
             }
         }
+
         self.concat(member_docs)
     }
 
