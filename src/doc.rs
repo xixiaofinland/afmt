@@ -90,9 +90,9 @@ impl<'a> PrettyPrinter<'a> {
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
-                    for _ in 0..chunk.indent {
-                        result.push(' ');
-                    }
+                    //for _ in 0..chunk.indent {
+                    //    result.push(' ');
+                    //}
                     self.col = chunk.indent;
                 }
                 Doc::Text(text, width) => {
