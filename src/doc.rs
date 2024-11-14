@@ -8,6 +8,7 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
 #[derive(Debug)]
 pub enum Doc<'a> {
     Newline,
+    TrailingNewline,
     Text(String, u32), // The given text should not contain line breaks
     Flat(DocRef<'a>),
     Indent(u32, DocRef<'a>),
@@ -90,10 +91,14 @@ impl<'a> PrettyPrinter<'a> {
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
-                    //for _ in 0..chunk.indent {
-                    //    result.push(' ');
-                    //}
+                    for _ in 0..chunk.indent {
+                        result.push(' ');
+                    }
                     self.col = chunk.indent;
+                }
+                Doc::TrailingNewline => {
+                    result.push('\n');
+                    self.col = 0;
                 }
                 Doc::Text(text, width) => {
                     //if self.col == 0 {
@@ -141,6 +146,7 @@ impl<'a> PrettyPrinter<'a> {
 
             match chunk.doc_ref {
                 Doc::Newline => return true,
+                Doc::TrailingNewline => return true,
                 Doc::Text(_, text_width) => {
                     if *text_width <= remaining_width {
                         remaining_width -= text_width;

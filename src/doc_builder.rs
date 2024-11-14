@@ -145,10 +145,10 @@ impl<'a> DocBuilder<'a> {
             member_docs.push(m.member.build(self));
 
             if i < members.len() - 1 {
-                member_docs.push(self.nl());
                 if m.has_trailing_newlines {
-                    member_docs.push(self.nl());
+                    member_docs.push(self.nl_trailing());
                 }
+                member_docs.push(self.nl());
             }
         }
         self.concat(member_docs)
@@ -156,6 +156,10 @@ impl<'a> DocBuilder<'a> {
 
     pub fn nl(&'a self) -> DocRef<'a> {
         self.arena.alloc(Doc::Newline)
+    }
+
+    pub fn nl_trailing(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::TrailingNewline)
     }
 
     pub fn txt(&'a self, text: impl ToString) -> DocRef<'a> {
