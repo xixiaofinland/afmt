@@ -132,22 +132,26 @@ mod tests {
         compare("Prettier:", output, prettier_output, source)
     }
 
-    fn normalize(label: &str, content: &str) {
-        println!("{} (Hex):", label);
+    fn normalize(label: &str, content: &str) -> String {
+        //println!("{} (Hex):", label);
+        let mut normalized = String::new();
+
         for (i, byte) in content.bytes().enumerate() {
             if i % 16 == 0 && i != 0 {
-                println!();
+                normalized.push('\n');
             }
-            print!("{:02X} ", byte);
+            normalized.push_str(&format!("{:02X} ", byte));
         }
-        println!("\n");
+
+        //println!("{}\n", normalized);
+        normalized
     }
 
     fn compare(against: &str, output: String, expected: String, source: &Path) -> bool {
-        //let normalized_expected = normalize("prettier", &expected);
-        //let normalized_output = normalize("afmt", &output);
-        //if normalized_output != normalized_expected {
-        if output != expected {
+        let normalized_expected = normalize("prettier", &expected);
+        let normalized_output = normalize("afmt", &output);
+        if normalized_output != normalized_expected {
+            //if output != expected {
             let source_content =
                 std::fs::read_to_string(source).expect("Failed to read the file content.");
 
@@ -155,6 +159,7 @@ mod tests {
             println!("-------------------------------------\n");
             println!("{}", source_content);
             println!("-------------------------------------\n");
+            //print_side_by_side_diff(against, &normalized_output, &normalized_expected);
             print_side_by_side_diff(against, &output, &expected);
             println!("\n-------------------------------------\n");
             println!("{}", format!("Failed: {:?}:", source).yellow());
