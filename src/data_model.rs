@@ -794,12 +794,6 @@ impl BinaryExpression {
 
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //let left_doc = self.left.build(b);
-        //let op_doc = b._txt_(&self.op);
-        //let right_doc = self.right.build(b);
-        //result.push(self.left.build(b));
-        //result.push(b._txt_(&self.op));
-        //result.push(self.right.build(b));
         let single_sep = format!(" {} ", &self.op);
         let multi_sep = format!(" {}", &self.op);
         let docs_vec = b.build_docs(vec![&self.left, &self.right]);

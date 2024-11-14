@@ -1,8 +1,7 @@
-class Ea {
-  public Ea() {
-  }
-
-  public static void emp() {
+class Conditional {
+  {
+    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBB() || isC()) {
+      System.debug('true');
+    }
   }
 }
-
