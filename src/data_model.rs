@@ -45,7 +45,7 @@ impl Root {
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let member_docs = b.build_docs(&self.members);
-        let body_doc = b.sep_multi_line(&member_docs, "");
+        let body_doc = b.intersperse_multi_line(&member_docs, "");
         result.push(body_doc);
         result.push(b.nl());
     }
@@ -281,7 +281,7 @@ impl<'a> DocBuild<'a> for Modifiers {
 
         if !self.modifiers.is_empty() {
             let modifiers_doc = b.build_docs(&self.modifiers);
-            result.push(b.sep_single_line(&modifiers_doc, " "));
+            result.push(b.intersperse_single_line(&modifiers_doc, " "));
             result.push(b.txt(" "));
         }
     }
@@ -423,7 +423,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 
         let decl_docs = b.build_docs(&self.declarators);
 
-        let declarators_doc = b.separated_choice(&decl_docs, ", ", ", ");
+        let declarators_doc = b.intersperse_choice(&decl_docs, ", ", ", ");
         result.push(declarators_doc);
 
         result.push(b.txt(";"));
@@ -622,7 +622,7 @@ impl<'a> DocBuild<'a> for Interface {
         let types_doc = b.build_docs(&self.types);
         let implements_group = b.concat(vec![
             b.txt(" implements "),
-            b.sep_single_line(&types_doc, ", "),
+            b.intersperse_single_line(&types_doc, ", "),
         ]);
         result.push(implements_group);
 
@@ -797,7 +797,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
         let single_sep = format!(" {} ", &self.op);
         let multi_sep = format!(" {}", &self.op);
         let docs_vec = b.build_docs(vec![&self.left, &self.right]);
-        let choice = b.separated_choice(&docs_vec, &single_sep, &multi_sep);
+        let choice = b.intersperse_choice(&docs_vec, &single_sep, &multi_sep);
         result.push(choice);
     }
 }
@@ -839,7 +839,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(b.txt(" "));
 
         let docs_vec = b.build_docs(&self.declarators);
-        let declarators_doc = b.separated_choice(&docs_vec, ", ", ",");
+        let declarators_doc = b.intersperse_choice(&docs_vec, ", ", ",");
         result.push(declarators_doc);
     }
 }
@@ -1205,7 +1205,7 @@ impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
         result.push(b.txt("."));
         if !self.annotations.is_empty() {
             let docs = b.build_docs(&self.annotations);
-            result.push(b.sep_single_line(&docs, " "));
+            result.push(b.intersperse_single_line(&docs, " "));
             result.push(b.txt(" "));
         }
         result.push(b.txt(&self.type_identifier));
@@ -1307,7 +1307,7 @@ impl ConstructorBody {
 impl<'a> DocBuild<'a> for ConstructorBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let member_docs = b.build_docs(&self.statements);
-        let statements_doc = b.sep_multi_line(&member_docs, "");
+        let statements_doc = b.intersperse_multi_line(&member_docs, "");
         result.push(statements_doc);
 
         if self.constructor_invocation.is_none() && self.statements.is_empty() {

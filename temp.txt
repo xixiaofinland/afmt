@@ -1,0 +1,33 @@
+sep_single_line(): flat all elements, combined with sep
+sep_multi_line(): flat all elements, combined with sep
+
+separated_choice() {
+  let single_line = self.sep_single_line(elems, single_sep);
+  let multi_line = self.add_indent_level(self.sep_multi_line(elems, multi_sep));
+  self.choice(single_line, multi_line)
+}
+
+pretty_surrounded_single_line(){
+  let single_line = self.concat(vec![
+      self.txt(open),
+      self.sep_single_line(elems, single_sep),
+      self.txt(close),
+  ]);
+}
+
+pretty_surrounded_multi_line() {
+  let multi_line = self.concat(vec![
+      self.txt(open),
+      self.add_indent_level(self.nl()),
+      self.add_indent_level(self.sep_multi_line(elems, multi_sep)),
+      self.nl(),
+      self.txt(close),
+  ]);
+}
+
+pretty_surrounded() {
+  let single_line = self.pretty_surrounded_single_line(elems, single_sep, open, close);
+  let multi_line = self.pretty_surrounded_multi_line(elems, multi_sep, open, close);
+
+  self.choice(single_line, multi_line)
+}

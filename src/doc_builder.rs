@@ -22,7 +22,7 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
-    pub fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+    pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
         }
@@ -38,7 +38,7 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+    pub fn intersperse_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
         }
@@ -56,7 +56,7 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn separated_choice(
+    pub fn intersperse_choice(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
@@ -66,9 +66,9 @@ impl<'a> DocBuilder<'a> {
             return self.nil();
         }
 
-        let single_line = self.sep_single_line(elems, single_sep);
+        let single_line = self.intersperse_single_line(elems, single_sep);
 
-        let multi_line = self.add_indent_level(self.sep_multi_line(elems, multi_sep));
+        let multi_line = self.add_indent_level(self.intersperse_multi_line(elems, multi_sep));
 
         self.choice(single_line, multi_line)
     }
@@ -86,7 +86,7 @@ impl<'a> DocBuilder<'a> {
 
         let single_line = self.concat(vec![
             self.txt(open),
-            self.sep_single_line(elems, single_sep),
+            self.intersperse_single_line(elems, single_sep),
             self.txt(close),
         ]);
         single_line
@@ -106,7 +106,7 @@ impl<'a> DocBuilder<'a> {
         let multi_line = self.concat(vec![
             self.txt(open),
             self.add_indent_level(self.nl()),
-            self.add_indent_level(self.sep_multi_line(elems, multi_sep)),
+            self.add_indent_level(self.intersperse_multi_line(elems, multi_sep)),
             self.nl(),
             self.txt(close),
         ]);
