@@ -38,17 +38,6 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    //pub fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
-    //    elems.iter().skip(1).fold(
-    //        if let Some(&first) = elems.get(0) {
-    //            self.flat(first)
-    //        } else {
-    //            self.nil()
-    //        },
-    //        |acc, &elem| self.concat(vec![acc, self.txt(separator), self.flat(elem)]),
-    //    )
-    //}
-
     pub fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
@@ -67,17 +56,6 @@ impl<'a> DocBuilder<'a> {
 
         self.concat(parts)
     }
-
-    //pub fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
-    //    elems.iter().skip(1).fold(
-    //        if let Some(&first) = elems.get(0) {
-    //            first
-    //        } else {
-    //            self.nil()
-    //        },
-    //        |acc, &elem| self.concat(vec![acc, self.txt(separator), self.nl(), elem]),
-    //    )
-    //}
 
     pub fn separated_choice(
         &'a self,
