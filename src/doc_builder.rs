@@ -22,6 +22,7 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
+    /// to be used in group()
     pub fn intersperse_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
@@ -39,7 +40,8 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+    /// flatted all elements
+    pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
         }
@@ -47,7 +49,7 @@ impl<'a> DocBuilder<'a> {
         let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
         for (i, &elem) in elems.iter().enumerate() {
             if i > 0 {
-                parts.push(self.txt(separator));
+                parts.push(self.txt(sep));
             }
             parts.push(self.flat(elem));
         }
@@ -55,42 +57,40 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn intersperse_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
+    /// use nl() as already determined as multi-line
+    //pub fn intersperse_multi_line(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+    //    if elems.is_empty() {
+    //        return self.nil();
+    //    }
+    //
+    //    let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+    //
+    //    for (i, &elem) in elems.iter().enumerate() {
+    //        if i > 0 {
+    //            parts.push(self.txt(sep));
+    //            parts.push(self.nl());
+    //        }
+    //        parts.push(elem);
+    //    }
+    //
+    //    self.concat(parts)
+    //}
 
-        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-
-        for (i, &elem) in elems.iter().enumerate() {
-            if i > 0 {
-                parts.push(self.txt(separator));
-                parts.push(self.nl());
-            }
-            parts.push(elem);
-        }
-
-        self.concat(parts)
-    }
-
-    pub fn intersperse_choice(
+    pub fn surrounded_choice(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
         multi_sep: &str,
+        open: &str,
+        close: &str,
     ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
-
-        let single_line = self.intersperse_single_line(elems, single_sep);
-
-        let multi_line = self.add_indent_level(self.intersperse_multi_line(elems, multi_sep));
+        let single_line = self.surrounded_single_line(elems, single_sep, open, close);
+        let multi_line = self.surrounded_multi_line(elems, multi_sep, open, close);
 
         self.choice(single_line, multi_line)
     }
 
-    pub fn surrounded_single_line(
+    fn surrounded_single_line(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
@@ -123,38 +123,11 @@ impl<'a> DocBuilder<'a> {
         let multi_line = self.concat(vec![
             self.txt(open),
             self.add_indent_level(self.nl()),
-            self.add_indent_level(self.intersperse_multi_line(elems, multi_sep)),
+            self.add_indent_level(self.intersperse_with_softline(elems, multi_sep)),
             self.nl(),
             self.txt(close),
         ]);
         multi_line
-    }
-
-    pub fn surrounded_with_softline(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: &str,
-        open: &str,
-        close: &str,
-    ) -> DocRef<'a> {
-        let single_line = self.surrounded_single_line(elems, sep, open, close);
-        let multi_line = self.surrounded_multi_line(elems, sep, open, close);
-
-        self.choice(single_line, multi_line)
-    }
-
-    pub fn surrounded_choice(
-        &'a self,
-        elems: &[DocRef<'a>],
-        single_sep: &str,
-        multi_sep: &str,
-        open: &str,
-        close: &str,
-    ) -> DocRef<'a> {
-        let single_line = self.surrounded_single_line(elems, single_sep, open, close);
-        let multi_line = self.surrounded_multi_line(elems, multi_sep, open, close);
-
-        self.choice(single_line, multi_line)
     }
 
     pub fn build_docs<'b, T: DocBuild<'a>>(
