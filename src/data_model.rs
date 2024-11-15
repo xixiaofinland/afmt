@@ -422,9 +422,8 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(b.txt(" "));
 
         let decl_docs = b.build_docs(&self.declarators);
-        let choice = b.intersperse_with_softline(&decl_docs, ",");
-        let declarators_doc = b.group(choice);
-        result.push(declarators_doc);
+        let decision = b.group_list(&decl_docs, ",");
+        result.push(decision);
 
         result.push(b.txt(";"));
     }
@@ -625,13 +624,6 @@ impl<'a> DocBuild<'a> for Interface {
             b.intersperse_single_line(&types_doc, ", "),
         ]);
         result.push(implements_group);
-
-        //let implements_group = b.add_indent_level(b.group(b.concat(vec![
-        //    b.softline(),
-        //    b.txt("implements "),
-        //    b.sep_single_line(&types_doc, ", "),
-        //])));
-        //result.push(implements_group);
     }
 }
 
@@ -796,8 +788,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs_vec = b.build_docs(vec![&self.left, &self.right]);
         let sep = format!(" {}", &self.op);
-        let choice = b.intersperse_with_softline(&docs_vec, &sep);
-        let decision = b.group(choice);
+        let decision = b.group_list(&docs_vec, &sep);
         result.push(decision);
     }
 }
@@ -839,9 +830,8 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(b.txt(" "));
 
         let docs_vec = b.build_docs(&self.declarators);
-        let choice = b.intersperse_with_softline(&docs_vec, ",");
-        let declarators_doc = b.group(choice);
-        result.push(declarators_doc);
+        let decision = b.group_list(&docs_vec, ",");
+        result.push(decision);
     }
 }
 

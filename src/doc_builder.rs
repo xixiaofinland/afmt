@@ -22,6 +22,11 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
+    pub fn group_list(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+        let choice = self.intersperse_with_softline(&elems, &sep);
+        self.add_indent_level(self.group(choice))
+    }
+
     /// to be used in group()
     pub fn intersperse_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         if elems.is_empty() {
@@ -218,6 +223,6 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
-        self.choice(self.flat(doc), self.add_indent_level(doc))
+        self.choice(self.flat(doc), doc)
     }
 }
