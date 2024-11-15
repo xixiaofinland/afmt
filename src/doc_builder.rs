@@ -219,4 +219,8 @@ impl<'a> DocBuilder<'a> {
     pub fn choice(&'a self, first: DocRef<'a>, second: DocRef<'a>) -> DocRef<'a> {
         self.arena.alloc(Doc::Choice(first, second))
     }
+
+    pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
+        self.choice(self.flat(doc), doc)
+    }
 }

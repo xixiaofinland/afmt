@@ -423,7 +423,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 
         let decl_docs = b.build_docs(&self.declarators);
 
-        let declarators_doc = b.intersperse_choice(&decl_docs, ", ", ", ");
+        let declarators_doc = b.intersperse_choice(&decl_docs, ", ", ",");
         result.push(declarators_doc);
 
         result.push(b.txt(";"));
