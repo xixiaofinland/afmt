@@ -552,7 +552,7 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
             Self::KeyValues(vec) => {
                 if !vec.is_empty() {
                     let docs = b.build_docs(vec);
-                    let single_line_doc = b.pretty_surrounded_single_line(&docs, " ", "(", ")");
+                    let single_line_doc = b.surrounded_single_line(&docs, " ", "(", ")");
                     result.push(single_line_doc);
                 }
             }

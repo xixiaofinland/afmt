@@ -90,7 +90,7 @@ impl<'a> DocBuilder<'a> {
         self.choice(single_line, multi_line)
     }
 
-    pub fn pretty_surrounded_single_line(
+    pub fn surrounded_single_line(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
@@ -109,7 +109,7 @@ impl<'a> DocBuilder<'a> {
         single_line
     }
 
-    pub fn pretty_surrounded_multi_line(
+    pub fn surrounded_multi_line(
         &'a self,
         elems: &[DocRef<'a>],
         multi_sep: &str,
@@ -130,7 +130,20 @@ impl<'a> DocBuilder<'a> {
         multi_line
     }
 
-    pub fn pretty_surrounded(
+    pub fn surrounded_with_softline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        let single_line = self.surrounded_single_line(elems, sep, open, close);
+        let multi_line = self.surrounded_multi_line(elems, multi_sep, open, close);
+
+        self.choice(single_line, multi_line)
+    }
+
+    pub fn surrounded(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,
@@ -138,8 +151,8 @@ impl<'a> DocBuilder<'a> {
         open: &str,
         close: &str,
     ) -> DocRef<'a> {
-        let single_line = self.pretty_surrounded_single_line(elems, single_sep, open, close);
-        let multi_line = self.pretty_surrounded_multi_line(elems, multi_sep, open, close);
+        let single_line = self.surrounded_single_line(elems, single_sep, open, close);
+        let multi_line = self.surrounded_multi_line(elems, multi_sep, open, close);
 
         self.choice(single_line, multi_line)
     }
@@ -165,7 +178,7 @@ impl<'a> DocBuilder<'a> {
 
             if i < members.len() - 1 {
                 if m.has_trailing_newlines {
-                    member_docs.push(self.nl_trailing());
+                    member_docs.push(self.nl_with_no_indent());
                 }
                 member_docs.push(self.nl());
             }
@@ -181,8 +194,12 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Softline)
     }
 
-    pub fn nl_trailing(&'a self) -> DocRef<'a> {
-        self.arena.alloc(Doc::TrailingNewline)
+    pub fn maybeline(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::Maybeline)
+    }
+
+    pub fn nl_with_no_indent(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::NewlineWithNoIndent)
     }
 
     pub fn txt(&'a self, text: impl ToString) -> DocRef<'a> {

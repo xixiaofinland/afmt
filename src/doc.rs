@@ -8,10 +8,11 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
 #[derive(Debug)]
 pub enum Doc<'a> {
     Newline,
-    TrailingNewline,
+    NewlineWithNoIndent,
     Text(String, u32), // The given text should not contain line breaks
     Flat(DocRef<'a>),
-    Softline,
+    Softline,  // a space or a newline
+    Maybeline, // empty or a newline
     Indent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
@@ -109,7 +110,16 @@ impl<'a> PrettyPrinter<'a> {
                         self.col = chunk.indent;
                     }
                 }
-                Doc::TrailingNewline => {
+                Doc::Maybeline => {
+                    if !chunk.flat {
+                        result.push('\n');
+                        for _ in 0..chunk.indent {
+                            result.push(' ');
+                        }
+                        self.col = chunk.indent;
+                    }
+                }
+                Doc::NewlineWithNoIndent => {
                     result.push('\n');
                     self.col = 0;
                 }
@@ -164,7 +174,12 @@ impl<'a> PrettyPrinter<'a> {
                         return true;
                     }
                 }
-                Doc::TrailingNewline => return true,
+                Doc::Maybeline => {
+                    if !chunk.flat {
+                        return true;
+                    }
+                }
+                Doc::NewlineWithNoIndent => return true,
                 Doc::Text(_, text_width) => {
                     if *text_width <= remaining_width {
                         remaining_width -= text_width;
