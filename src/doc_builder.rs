@@ -23,26 +23,61 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
-        elems.iter().skip(1).fold(
-            if let Some(&first) = elems.get(0) {
-                self.flat(first)
-            } else {
-                self.nil()
-            },
-            |acc, &elem| self.concat(vec![acc, self.txt(separator), self.flat(elem)]),
-        )
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                parts.push(self.txt(separator));
+            }
+            parts.push(self.flat(elem));
+        }
+
+        self.concat(parts)
     }
 
+    //pub fn sep_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+    //    elems.iter().skip(1).fold(
+    //        if let Some(&first) = elems.get(0) {
+    //            self.flat(first)
+    //        } else {
+    //            self.nil()
+    //        },
+    //        |acc, &elem| self.concat(vec![acc, self.txt(separator), self.flat(elem)]),
+    //    )
+    //}
+
     pub fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
-        elems.iter().skip(1).fold(
-            if let Some(&first) = elems.get(0) {
-                first
-            } else {
-                self.nil()
-            },
-            |acc, &elem| self.concat(vec![acc, self.txt(separator), self.nl(), elem]),
-        )
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        //let separator_doc = self.concat(vec![self.txt(separator), self.nl()]);
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                parts.push(self.txt(separator));
+                parts.push(self.nl());
+            }
+            parts.push(elem);
+        }
+
+        self.concat(parts)
     }
+
+    //pub fn sep_multi_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
+    //    elems.iter().skip(1).fold(
+    //        if let Some(&first) = elems.get(0) {
+    //            first
+    //        } else {
+    //            self.nil()
+    //        },
+    //        |acc, &elem| self.concat(vec![acc, self.txt(separator), self.nl(), elem]),
+    //    )
+    //}
 
     pub fn separated_choice(
         &'a self,
