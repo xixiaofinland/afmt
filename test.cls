@@ -1,6 +1,6 @@
 class MeClass {
   {
-    if (A() || B()) {
+    if (A() || B() || C()) {
     }
   }
 }
