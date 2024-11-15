@@ -43,7 +43,6 @@ impl<'a> DocBuilder<'a> {
             return self.nil();
         }
 
-        //let separator_doc = self.concat(vec![self.txt(separator), self.nl()]);
         let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
 
         for (i, &elem) in elems.iter().enumerate() {
