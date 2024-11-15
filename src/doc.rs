@@ -11,6 +11,7 @@ pub enum Doc<'a> {
     TrailingNewline,
     Text(String, u32), // The given text should not contain line breaks
     Flat(DocRef<'a>),
+    Softline,
     Indent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
@@ -96,6 +97,18 @@ impl<'a> PrettyPrinter<'a> {
                     }
                     self.col = chunk.indent;
                 }
+                Doc::Softline => {
+                    if chunk.flat {
+                        result.push(' ');
+                        self.col += 1;
+                    } else {
+                        result.push('\n');
+                        for _ in 0..chunk.indent {
+                            result.push(' ');
+                        }
+                        self.col = chunk.indent;
+                    }
+                }
                 Doc::TrailingNewline => {
                     result.push('\n');
                     self.col = 0;
@@ -140,6 +153,17 @@ impl<'a> PrettyPrinter<'a> {
 
             match chunk.doc_ref {
                 Doc::Newline => return true,
+                Doc::Softline => {
+                    if chunk.flat {
+                        if remaining_width >= 1 {
+                            remaining_width -= 1;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
                 Doc::TrailingNewline => return true,
                 Doc::Text(_, text_width) => {
                     if *text_width <= remaining_width {

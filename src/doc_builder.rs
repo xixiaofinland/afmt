@@ -170,6 +170,10 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Newline)
     }
 
+    pub fn softline(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::Softline)
+    }
+
     pub fn nl_trailing(&'a self) -> DocRef<'a> {
         self.arena.alloc(Doc::TrailingNewline)
     }
