@@ -422,8 +422,8 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(b.txt(" "));
 
         let decl_docs = b.build_docs(&self.declarators);
-
-        let declarators_doc = b.intersperse_choice(&decl_docs, ", ", ",");
+        let choice = b.intersperse_with_softline(&decl_docs, ",");
+        let declarators_doc = b.group(choice);
         result.push(declarators_doc);
 
         result.push(b.txt(";"));
@@ -841,8 +841,6 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         let docs_vec = b.build_docs(&self.declarators);
         let choice = b.intersperse_with_softline(&docs_vec, ",");
         let declarators_doc = b.group(choice);
-
-        //let declarators_doc = b.intersperse_choice(&docs_vec, ", ", ",");
         result.push(declarators_doc);
     }
 }
