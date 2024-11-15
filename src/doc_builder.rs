@@ -22,6 +22,23 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
+    pub fn intersperse_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                parts.push(self.txt(sep));
+                parts.push(self.softline());
+            }
+            parts.push(elem);
+        }
+
+        self.concat(parts)
+    }
+
     pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], separator: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
@@ -211,6 +228,6 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
-        self.choice(self.flat(doc), doc)
+        self.choice(self.flat(doc), self.add_indent_level(doc))
     }
 }

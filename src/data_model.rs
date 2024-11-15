@@ -839,7 +839,10 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(b.txt(" "));
 
         let docs_vec = b.build_docs(&self.declarators);
-        let declarators_doc = b.intersperse_choice(&docs_vec, ", ", ",");
+        let choice = b.intersperse_with_softline(&docs_vec, ",");
+        let declarators_doc = b.group(choice);
+
+        //let declarators_doc = b.intersperse_choice(&docs_vec, ", ", ",");
         result.push(declarators_doc);
     }
 }
