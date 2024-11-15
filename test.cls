@@ -1,6 +1,8 @@
 class MeClass {
   {
-    if (A() || B() || C()) {
+    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() ||
+        isALongVeryBBBBBBBBBBBBB() || (isCCCCCCCCCCCCCC()|| isDDDDDDDDDDDDDDDDDDDD)) {
     }
   }
 }
+
