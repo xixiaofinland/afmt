@@ -138,12 +138,12 @@ impl<'a> DocBuilder<'a> {
         close: &str,
     ) -> DocRef<'a> {
         let single_line = self.surrounded_single_line(elems, sep, open, close);
-        let multi_line = self.surrounded_multi_line(elems, multi_sep, open, close);
+        let multi_line = self.surrounded_multi_line(elems, sep, open, close);
 
         self.choice(single_line, multi_line)
     }
 
-    pub fn surrounded(
+    pub fn surrounded_choice(
         &'a self,
         elems: &[DocRef<'a>],
         single_sep: &str,

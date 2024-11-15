@@ -189,7 +189,7 @@ impl FormalParameters {
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let modifiers_doc = b.build_docs(&self.formal_parameters);
-        result.push(b.surrounded(&modifiers_doc, ", ", ",", "(", ")"));
+        result.push(b.surrounded_choice(&modifiers_doc, ", ", ",", "(", ")"));
     }
 }
 
@@ -731,7 +731,7 @@ impl TypeArguments {
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let types_doc = b.build_docs(&self.types);
-        result.push(b.surrounded(&types_doc, ", ", ",", "<", ">"));
+        result.push(b.surrounded_choice(&types_doc, ", ", ",", "<", ">"));
     }
 }
 
@@ -753,7 +753,7 @@ impl ArgumentList {
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let exp_doc = b.build_docs(&self.expressions);
-        result.push(b.surrounded(&exp_doc, ", ", ",", "(", ")"));
+        result.push(b.surrounded_choice(&exp_doc, ", ", ",", "(", ")"));
     }
 }
 
@@ -794,11 +794,11 @@ impl BinaryExpression {
 
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let single_sep = format!(" {} ", &self.op);
-        let multi_sep = format!(" {}", &self.op);
         let docs_vec = b.build_docs(vec![&self.left, &self.right]);
-        let choice = b.intersperse_choice(&docs_vec, &single_sep, &multi_sep);
-        result.push(choice);
+        let sep = format!(" {}", &self.op);
+        let choice = b.intersperse_with_softline(&docs_vec, &sep);
+        let decision = b.group(choice);
+        result.push(decision);
     }
 }
 
@@ -1064,7 +1064,7 @@ impl<'a> DocBuild<'a> for ForStatement {
         };
         let docs = vec![init, condition, update];
 
-        result.push(b.surrounded(&docs, ";", ";", "(", ")"));
+        result.push(b.surrounded_choice(&docs, ";", ";", "(", ")"));
         result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
