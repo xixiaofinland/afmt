@@ -170,7 +170,8 @@ pub enum Expression {
     StringLiteral(String),
     Binary(Box<BinaryExpression>),
     Primary(Box<PrimaryExpression>),
-    Update(UpdateExpression), //Assignment(Box<AssignmentExpression>),
+    Update(UpdateExpression),
+    Unary(UnaryExpression),
 }
 
 impl Expression {
@@ -187,6 +188,7 @@ impl Expression {
             | "parenthesized_expression"
             | "object_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
+            "unary_expression" => Self::Unary(UnaryExpression::new(n)),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
     }
@@ -208,6 +210,9 @@ impl<'a> DocBuild<'a> for Expression {
                 result.push(p.build(b));
             }
             Self::Update(u) => {
+                result.push(u.build(b));
+            }
+            Self::Unary(u) => {
                 result.push(u.build(b));
             }
         }
@@ -239,6 +244,7 @@ pub enum PrimaryExpression {
     Method(MethodInvocation),
     Parenth(ParenthesizedExpression),
     Obj(ObjectCreationExpression),
+    Field(FieldAccess),
 }
 
 impl PrimaryExpression {
@@ -249,6 +255,7 @@ impl PrimaryExpression {
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
             "object_creation_expression" => Self::Obj(ObjectCreationExpression::new(n)),
+            "field_access" => Self::Field(FieldAccess::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -271,6 +278,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
             }
             Self::Obj(o) => {
                 result.push(o.build(b));
+            }
+            Self::Field(f) => {
+                result.push(f.build(b));
             }
         }
     }

@@ -1558,3 +1558,39 @@ impl<'a> DocBuild<'a> for WhileStatement {
         result.push(self.body.build(b));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct UnaryExpression {
+    pub operator: String,
+    pub operand: Box<Expression>,
+}
+
+impl UnaryExpression {
+    pub fn new(node: Node) -> Self {
+        let operator = node.cvalue_by_n("operator", source_code());
+        let operand = Box::new(Expression::new(node.c_by_n("operand")));
+        Self { operator, operand }
+    }
+}
+
+impl<'a> DocBuild<'a> for UnaryExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.operator));
+        result.push(self.operand.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct FieldAccess {
+    pub object: Option<MethodObject>,
+    pub type_: UnnanotatedType,
+    pub variable_declarator_id: VariableDeclaratorId,
+}
+
+impl FieldAccess {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for FieldAccess {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
