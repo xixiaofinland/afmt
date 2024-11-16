@@ -18,6 +18,19 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
+    pub fn surround_with_newline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.concat(vec![self.txt("{"), self.nl(), self.txt("}")]);
+        }
+        self.surround_with_sep_and_newline(elems, sep, open, close)
+    }
+
     pub fn surround_with_softline(
         &'a self,
         elems: &[DocRef<'a>],
@@ -43,7 +56,28 @@ impl<'a> DocBuilder<'a> {
         self.choice(single_line, multi_line)
     }
 
-    pub fn surround_with_sep_and_softline(
+    fn surround_with_sep_and_newline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.txt(format!("{}{}", open, close));
+        }
+
+        let multi_line = self.concat(vec![
+            self.txt(open),
+            self.add_indent_level(self.softline()),
+            self.add_indent_level(self.intersperse_with_sep_and_newline(elems, sep)),
+            self.softline(),
+            self.txt(close),
+        ]);
+        multi_line
+    }
+
+    fn surround_with_sep_and_softline(
         &'a self,
         elems: &[DocRef<'a>],
         sep: &str,
@@ -120,6 +154,27 @@ impl<'a> DocBuilder<'a> {
                 parts.push(self.txt(sep));
             }
             parts.push(self.flat(elem));
+        }
+
+        self.concat(parts)
+    }
+
+    pub fn intersperse_with_sep_and_newline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                parts.push(self.txt(sep));
+                parts.push(self.nl());
+            }
+            parts.push(elem);
         }
 
         self.concat(parts)

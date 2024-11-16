@@ -591,7 +591,7 @@ impl<'a> DocBuild<'a> for Block {
         }
 
         let statement_docs = b.to_docs(&self.statements);
-        let docs = b.surround_with_sep_and_softline(&statement_docs, "", "{", "}");
+        let docs = b.surround_with_newline(&statement_docs, "", "{", "}");
         result.push(docs);
     }
 }
