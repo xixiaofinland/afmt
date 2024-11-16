@@ -69,13 +69,13 @@ impl<'a> DocBuilder<'a> {
         open: &str,
         close: &str,
     ) -> DocRef<'a> {
-        let single_line = self.surrounded_single_line(elems, single_sep, open, close);
+        let single_line = self.surround_single_line(elems, single_sep, open, close);
         let multi_line = self.surround_with_softline(elems, multi_sep, open, close);
 
         self.choice(single_line, multi_line)
     }
 
-    fn surrounded_single_line(
+    fn surround_single_line(
         &'a self,
         elems: &[DocRef<'a>],
         sep: &str,
