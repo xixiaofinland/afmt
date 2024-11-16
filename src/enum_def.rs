@@ -33,7 +33,7 @@ pub enum ClassMember {
     Block(Box<Block>),
     //Method(MethodDeclaration<'a>),
     //Interface(InterfaceDeclaration<'a>),
-    //Enum(EnumDeclaration<'a>),
+    Enum(EnumDeclaration),
     //StaticInitializer(StaticInitializer<'a>),
     Constructor(ConstructorDeclaration),
     //EmptyStatement, // Represents the ";" case
@@ -47,6 +47,7 @@ impl ClassMember {
             "method_declaration" => Self::Method(Box::new(MethodDeclaration::new(n))),
             "block" => Self::Block(Box::new(Block::new(n))),
             "constructor_declaration" => Self::Constructor(ConstructorDeclaration::new(n)),
+            "enum_declaration" => Self::Enum(EnumDeclaration::new(n)),
             _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
         }
     }
@@ -69,6 +70,9 @@ impl<'a> DocBuild<'a> for ClassMember {
             }
             Self::Constructor(c) => {
                 result.push(c.build(b));
+            }
+            Self::Enum(en) => {
+                result.push(en.build(b));
             }
         }
     }
