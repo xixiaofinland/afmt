@@ -70,7 +70,7 @@ impl<'a> DocBuilder<'a> {
         close: &str,
     ) -> DocRef<'a> {
         let single_line = self.surrounded_single_line(elems, single_sep, open, close);
-        let multi_line = self.surrounded_multi_line(elems, multi_sep, open, close);
+        let multi_line = self.surround_with_softline(elems, multi_sep, open, close);
 
         self.choice(single_line, multi_line)
     }
@@ -78,7 +78,7 @@ impl<'a> DocBuilder<'a> {
     fn surrounded_single_line(
         &'a self,
         elems: &[DocRef<'a>],
-        single_sep: &str,
+        sep: &str,
         open: &str,
         close: &str,
     ) -> DocRef<'a> {
@@ -88,16 +88,16 @@ impl<'a> DocBuilder<'a> {
 
         let single_line = self.concat(vec![
             self.txt(open),
-            self.intersperse_single_line(elems, single_sep),
+            self.intersperse_single_line(elems, sep),
             self.txt(close),
         ]);
         single_line
     }
 
-    pub fn surrounded_multi_line(
+    pub fn surround_with_softline(
         &'a self,
         elems: &[DocRef<'a>],
-        multi_sep: &str,
+        sep: &str,
         open: &str,
         close: &str,
     ) -> DocRef<'a> {
@@ -107,9 +107,9 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.add_indent_level(self.nl()),
-            self.add_indent_level(self.intersperse_with_softline(elems, multi_sep)),
-            self.nl(),
+            self.add_indent_level(self.softline()),
+            self.add_indent_level(self.intersperse_with_softline(elems, sep)),
+            self.softline(),
             self.txt(close),
         ]);
         multi_line
