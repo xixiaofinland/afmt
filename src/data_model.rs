@@ -422,7 +422,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(b.txt(" "));
 
         let decl_docs = b.build_docs(&self.declarators);
-        let decision = b.group_list(&decl_docs, ",");
+        let decision = b.group_list_with_softline(&decl_docs, ",");
         result.push(decision);
 
         result.push(b.txt(";"));
@@ -788,7 +788,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs_vec = b.build_docs(vec![&self.left, &self.right]);
         let sep = format!(" {}", &self.op);
-        let decision = b.group_list(&docs_vec, &sep);
+        let decision = b.group_list_with_softline(&docs_vec, &sep);
         result.push(decision);
     }
 }
@@ -830,7 +830,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(b.txt(" "));
 
         let docs_vec = b.build_docs(&self.declarators);
-        let decision = b.group_list(&docs_vec, ",");
+        let decision = b.group_list_with_softline(&docs_vec, ",");
         result.push(decision);
     }
 }
