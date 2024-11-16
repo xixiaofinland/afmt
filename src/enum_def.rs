@@ -342,6 +342,7 @@ impl Modifier {
             "private" => Self::Private,
             "override" => Self::Override,
             "static" => Self::Static,
+            "final" => Self::Final,
             _ => panic!("## unknown node: {} in Modifier", kind),
         }
     }

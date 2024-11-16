@@ -1277,8 +1277,9 @@ impl ConstructorBody {
         for (i, c) in node.children_vec().into_iter().enumerate() {
             if i == 0 && c.kind() == "explicit_constructor_invocation" {
                 constructor_invocation = Some(ConstructInvocation::new(c));
+            } else {
+                statements.push(Statement::new(c));
             }
-            statements.push(Statement::new(c));
         }
 
         ConstructorBody {

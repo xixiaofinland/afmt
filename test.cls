@@ -1,4 +1,5 @@
-public with sharing class MyClass {
-  public void hello(String s, Intgeter i1, Intgeter i2, Intgeter i3, String sac11k) {
+public class TestObject2 {
+  public TestObject2() {
+    this (    DEFAULT_SIZE ) ;
   }
 }
