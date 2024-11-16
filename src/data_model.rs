@@ -361,10 +361,6 @@ impl ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if self.class_members.is_empty() {
-            return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
-        }
-
         result.push(b.surround_with_trailing_newline_considered(&self.class_members, "{", "}"));
     }
 }
@@ -1305,27 +1301,24 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
 
-        result.push(b.surround_with_trailing_newline_considered(&self.statements, "{", "}"));
+        result.push(b.txt("{"));
+        result.push(b.add_indent_level(b.nl()));
 
-        //let member_docs = b.to_docs(&self.statements);
-        //let statements_doc = b.intersperse_with_sep_and_newline(&member_docs, "");
-        //result.push(statements_doc);
-        //
-        //if self.constructor_invocation.is_none() && self.statements.is_empty() {
-        //    return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
-        //}
-        //
-        //let mut doc_vec = Vec::new();
-        //if let Some(ref c) = self.constructor_invocation {
-        //    doc_vec.push(c.build(b));
-        //}
-        //
-        //self.statements
-        //    .iter()
-        //    .for_each(|n| doc_vec.push(n.build(b)));
-        //
-        //let docs = b.surround_with_maybeline(&doc_vec, "", "{", "}");
-        //result.push(docs);
+        if let Some(c) = &self.constructor_invocation {
+            result.push(c.member.build(b));
+            result.push(b.txt(";"));
+
+            if !self.statements.is_empty() {
+                if c.has_trailing_newlines {
+                    result.push(b.nl_with_no_indent());
+                }
+                result.push(b.nl());
+            }
+        }
+
+        result.push(b.add_indent_level(b.split_with_trailing_newline_considered(&self.statements)));
+        result.push(b.nl());
+        result.push(b.txt("}"));
     }
 }
 

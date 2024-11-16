@@ -41,7 +41,7 @@ impl<'a> DocBuilder<'a> {
         M: DocBuild<'a>,
     {
         if elems.is_empty() {
-            return self.concat(vec![self.txt(" {"), self.nl(), self.txt("}")]);
+            return self.concat(vec![self.txt("{"), self.nl(), self.txt("}")]);
         }
 
         let multi_line = self.concat(vec![
@@ -242,8 +242,11 @@ impl<'a> DocBuilder<'a> {
     where
         M: DocBuild<'a>,
     {
-        let mut member_docs = Vec::new();
+        if members.is_empty() {
+            return self.nil();
+        }
 
+        let mut member_docs = Vec::new();
         for (i, m) in members.iter().enumerate() {
             member_docs.push(m.member.build(self));
 
