@@ -1,4 +1,6 @@
-class topLevelClass {
-  public static List<Results> execute(List<Requests> requestList) {
+class MeClass {
+  {
+    SObject s = new Account();
+    String s = isKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK() || isMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM();
   }
 }

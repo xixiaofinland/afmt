@@ -184,7 +184,8 @@ impl Expression {
             | "identifier"
             | "null_literal"
             | "method_invocation"
-            | "parenthesized_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
+            | "parenthesized_expression"
+            | "object_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
@@ -237,6 +238,7 @@ pub enum PrimaryExpression {
     Identifier(String),
     Method(MethodInvocation),
     Parenth(ParenthesizedExpression),
+    Obj(ObjectCreationExpression),
 }
 
 impl PrimaryExpression {
@@ -246,6 +248,7 @@ impl PrimaryExpression {
             "identifier" => Self::Identifier(n.value(source_code())),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
+            "object_creation_expression" => Self::Obj(ObjectCreationExpression::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -265,6 +268,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
             }
             Self::Parenth(p) => {
                 result.push(p.build(b));
+            }
+            Self::Obj(o) => {
+                result.push(o.build(b));
             }
         }
     }

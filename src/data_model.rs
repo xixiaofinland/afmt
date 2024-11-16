@@ -847,13 +847,14 @@ impl VariableDeclarator {
         assert_check(node, "variable_declarator");
         let name = node.cvalue_by_n("name", source_code());
 
-        let value = node.try_c_by_n("value").map(|v| match v.kind() {
+        let value = node.try_c_by_n("value").map(|n| match n.kind() {
             //"array_initializer" => {
             //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
             //}
-            _ => VariableInitializer::Expression(Expression::Primary(Box::new(
-                PrimaryExpression::Identifier(v.value(source_code())),
-            ))),
+            //_ => VariableInitializer::Expression(Expression::Primary(Box::new(
+            //    PrimaryExpression::Identifier(v.value(source_code())),
+            //))),
+            _ => VariableInitializer::Expression(Expression::new(n)),
         });
 
         Self { name, value }
@@ -1429,4 +1430,20 @@ impl<'a> DocBuild<'a> for TypeParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(&self.type_identifier));
     }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ObjectCreationExpression {
+    pub type_arguments: Option<TypeArguments>,
+    pub type_: UnnanotatedType,
+    pub arguments: AnnotationArgumentList,
+    pub class_body: ClassBody,
+}
+
+impl ObjectCreationExpression {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for ObjectCreationExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
 }
