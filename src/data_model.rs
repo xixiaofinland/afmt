@@ -1436,14 +1436,43 @@ impl<'a> DocBuild<'a> for TypeParameter {
 pub struct ObjectCreationExpression {
     pub type_arguments: Option<TypeArguments>,
     pub type_: UnnanotatedType,
-    pub arguments: AnnotationArgumentList,
-    pub class_body: ClassBody,
+    pub arguments: ArgumentList,
+    pub class_body: Option<ClassBody>,
 }
 
 impl ObjectCreationExpression {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "object_creation_expression");
+
+        let type_arguments = node
+            .try_c_by_k("type_arguments")
+            .map(|n| TypeArguments::new(n));
+
+        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let arguments = ArgumentList::new(node.c_by_n("arguments"));
+        let class_body = node.try_c_by_k("class_body").map(|n| ClassBody::new(n));
+
+        Self {
+            type_arguments,
+            type_,
+            arguments,
+            class_body,
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for ObjectCreationExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("new"));
+        if let Some(t) = &self.type_arguments {
+            result.push(t.build(b));
+        }
+
+        result.push(self.type_.build(b));
+        result.push(self.arguments.build(b));
+
+        if let Some(c) = &self.class_body {
+            result.push(c.build(b));
+        }
+    }
 }
