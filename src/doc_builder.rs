@@ -155,7 +155,6 @@ impl<'a> DocBuilder<'a> {
             }
             parts.push(self.flat(elem));
         }
-
         self.concat(parts)
     }
 
@@ -180,11 +179,7 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn intersperse_with_sep_and_softline(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: &str,
-    ) -> DocRef<'a> {
+    fn intersperse_with_sep_and_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
         }
