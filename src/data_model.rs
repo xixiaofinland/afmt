@@ -1582,15 +1582,40 @@ impl<'a> DocBuild<'a> for UnaryExpression {
 
 #[derive(Debug, Serialize)]
 pub struct FieldAccess {
-    pub object: Option<MethodObject>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+    pub object: MethodObject,
+    pub property_navigation: PropertyNavigation,
+    pub field: String,
 }
 
 impl FieldAccess {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        let obj_node = node.c_by_n("object");
+        let object = if obj_node.kind() == "super" {
+            MethodObject::Super(Super {})
+        } else {
+            MethodObject::Primary(Box::new(PrimaryExpression::new(obj_node)))
+        };
+
+        let property_navigation = if node.try_c_by_n("safe_navigation_operator").is_some() {
+            PropertyNavigation::SafeNavigationOperator
+        } else {
+            PropertyNavigation::Dot
+        };
+
+        let field = node.cvalue_by_n("field", source_code());
+
+        Self {
+            object,
+            property_navigation,
+            field,
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for FieldAccess {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.object.build(b));
+        result.push(self.property_navigation.build(b));
+        result.push(b.txt(&self.field));
+    }
 }
