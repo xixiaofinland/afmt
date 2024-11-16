@@ -1468,3 +1468,28 @@ impl<'a> DocBuild<'a> for ObjectCreationExpression {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct RunAsStatement {
+    pub user: ParenthesizedExpression,
+    pub block: Block,
+}
+
+impl RunAsStatement {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "run_as_statement");
+
+        let user = ParenthesizedExpression::new(node.c_by_n("user"));
+        let block = Block::new(node.c_by_k("block"));
+        Self { user, block }
+    }
+}
+
+impl<'a> DocBuild<'a> for RunAsStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("System.runAs"));
+        result.push(self.user.build(b));
+        result.push(b.txt(" "));
+        result.push(self.block.build(b));
+    }
+}

@@ -427,6 +427,7 @@ pub enum Statement {
     Block(Block),
     For(Box<ForStatement>),
     EnhancedFor(Box<EnhancedForStatement>),
+    Run(RunAsStatement),
 }
 
 impl Statement {
@@ -438,6 +439,7 @@ impl Statement {
             "block" => Self::Block(Block::new(n)),
             "for_statement" => Self::For(Box::new(ForStatement::new(n))),
             "enhanced_for_statement" => Self::EnhancedFor(Box::new(EnhancedForStatement::new(n))),
+            "run_as_statement" => Self::Run(RunAsStatement::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -469,6 +471,9 @@ impl<'a> DocBuild<'a> for Statement {
             }
             Self::EnhancedFor(f) => {
                 result.push(f.build(b));
+            }
+            Self::Run(r) => {
+                result.push(r.build(b));
             }
         }
     }
