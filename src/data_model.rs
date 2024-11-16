@@ -114,7 +114,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 #[derive(Debug, Serialize)]
 pub struct MethodDeclaration {
     pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
+    pub type_: UnannotatedType,
     pub name: String,
     pub formal_parameters: FormalParameters,
     pub body: Option<Block>,
@@ -126,7 +126,7 @@ impl MethodDeclaration {
         assert_check(node, "method_declaration");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let type_ = UnannotatedType::new(node.c_by_n("type"));
         let name = node.cvalue_by_n("name", source_code());
         let formal_parameters = FormalParameters::new(node.c_by_n("parameters"));
         let body = node.try_c_by_n("body").map(|n| Block::new(n));
@@ -188,7 +188,7 @@ impl<'a> DocBuild<'a> for FormalParameters {
 #[derive(Debug, Serialize)]
 pub struct FormalParameter {
     pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
+    pub type_: UnannotatedType,
     pub name: String,
     //pub dimenssions
 }
@@ -196,7 +196,7 @@ pub struct FormalParameter {
 impl FormalParameter {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let type_ = UnannotatedType::new(node.c_by_n("type"));
         let name = node.cvalue_by_n("name", source_code());
 
         Self {
@@ -372,7 +372,7 @@ impl<'a> DocBuild<'a> for ClassBody {
 pub struct FieldDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
+    pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
     pub range: DataRange,
 }
@@ -385,7 +385,7 @@ impl FieldDeclaration {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
 
         let type_node = node.c_by_n("type");
-        let type_ = UnnanotatedType::new(type_node);
+        let type_ = UnannotatedType::new(type_node);
 
         let declarators = node
             .cs_by_n("declarator")
@@ -787,7 +787,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
 #[derive(Debug, Serialize)]
 pub struct LocalVariableDeclaration {
     pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
+    pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
 }
 
@@ -796,7 +796,7 @@ impl LocalVariableDeclaration {
         assert_check(node, "local_variable_declaration");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let type_ = UnannotatedType::new(node.c_by_n("type"));
         let declarators = node
             .cs_by_n("declarator")
             .into_iter()
@@ -1055,7 +1055,7 @@ impl<'a> DocBuild<'a> for ForStatement {
 #[derive(Debug, Serialize)]
 pub struct EnhancedForStatement {
     pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
+    pub type_: UnannotatedType,
     pub name: String,
     //pub dimension
     pub value: Expression,
@@ -1067,7 +1067,7 @@ impl EnhancedForStatement {
         assert_check(node, "enhanced_for_statement");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let type_ = UnannotatedType::new(node.c_by_n("type"));
         let name = node.cvalue_by_n("name", source_code());
         let value = Expression::new(node.c_by_n("value"));
         let body = Statement::new(node.c_by_n("body"));
@@ -1448,7 +1448,7 @@ impl<'a> DocBuild<'a> for TypeParameter {
 #[derive(Debug, Serialize)]
 pub struct ObjectCreationExpression {
     pub type_arguments: Option<TypeArguments>,
-    pub type_: UnnanotatedType,
+    pub type_: UnannotatedType,
     pub arguments: ArgumentList,
     pub class_body: Option<ClassBody>,
 }
@@ -1461,7 +1461,7 @@ impl ObjectCreationExpression {
             .try_c_by_k("type_arguments")
             .map(|n| TypeArguments::new(n));
 
-        let type_ = UnnanotatedType::new(node.c_by_n("type"));
+        let type_ = UnannotatedType::new(node.c_by_n("type"));
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
         let class_body = node.try_c_by_k("class_body").map(|n| ClassBody::new(n));
 
@@ -1717,7 +1717,7 @@ pub enum DmlExpression {
     Upsert {
         security_mode: Option<DmlSecurityMode>,
         exp: Expression,
-        unnanotated: Option<Box<UnnanotatedType>>,
+        unannotated: Option<Box<UnannotatedType>>,
     },
     Merge {
         security_mode: Option<DmlSecurityMode>,
@@ -1747,11 +1747,11 @@ impl DmlExpression {
                 ),
             };
         } else if dml_type == "upsert" {
-            let unnanotated = second_node.map(|n| Box::new(UnnanotatedType::new(n)));
+            let unannotated = second_node.map(|n| Box::new(UnannotatedType::new(n)));
             return Self::Upsert {
                 security_mode,
                 exp: Expression::new(exp_node),
-                unnanotated,
+                unannotated,
             };
         } else {
             return Self::Basic {

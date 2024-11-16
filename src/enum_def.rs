@@ -48,7 +48,7 @@ impl ClassMember {
             "block" => Self::Block(Box::new(Block::new(n))),
             "constructor_declaration" => Self::Constructor(ConstructorDeclaration::new(n)),
             "enum_declaration" => Self::Enum(EnumDeclaration::new(n)),
-            _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
+            _ => panic!("## unknown node: {} in UnannotatedType ", n.kind().red()),
         }
     }
 }
@@ -80,23 +80,23 @@ impl<'a> DocBuild<'a> for ClassMember {
 
 //_unannotated_type: ($) => choice($._simple_type, $.array_type),
 #[derive(Debug, Serialize)]
-pub enum UnnanotatedType {
+pub enum UnannotatedType {
     Simple(SimpleType),
     //Array(ArrayType),
 }
 
-impl UnnanotatedType {
+impl UnannotatedType {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "type_identifier" | "void_type" | "generic_type" | "scoped_type_identifier" => {
                 Self::Simple(SimpleType::new(n))
             }
-            _ => panic!("## unknown node: {} in UnnanotatedType ", n.kind().red()),
+            _ => panic!("## unknown node: {} in UnannotatedType ", n.kind().red()),
         }
     }
 }
 
-impl<'a> DocBuild<'a> for UnnanotatedType {
+impl<'a> DocBuild<'a> for UnannotatedType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Simple(s) => result.push(s.build(b)),
@@ -515,14 +515,14 @@ impl<'a> DocBuild<'a> for Statement {
 
 #[derive(Debug, Serialize)]
 pub enum Type {
-    Unnanotated(UnnanotatedType),
+    Unannotated(UnannotatedType),
 }
 
 impl Type {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "type_identifier" | "void_type" | "generic_type" | "scoped_type_identifier" => {
-                Self::Unnanotated(UnnanotatedType::Simple(SimpleType::new(n)))
+                Self::Unannotated(UnannotatedType::Simple(SimpleType::new(n)))
             }
             _ => panic!("## unknown node: {} in Type ", n.kind().red()),
         }
@@ -532,7 +532,7 @@ impl Type {
 impl<'a> DocBuild<'a> for Type {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Unnanotated(u) => {
+            Self::Unannotated(u) => {
                 result.push(u.build(b));
             }
         }
