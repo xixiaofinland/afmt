@@ -31,6 +31,29 @@ impl<'a> DocBuilder<'a> {
         self.surround_with_sep_and_newline(elems, sep, open, close)
     }
 
+    pub fn surround_with_trailing_newline_considered<M>(
+        &'a self,
+        elems: &[FormattedMember<M>],
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a>
+    where
+        M: DocBuild<'a>,
+    {
+        if elems.is_empty() {
+            return self.concat(vec![self.txt(" {"), self.nl(), self.txt("}")]);
+        }
+
+        let multi_line = self.concat(vec![
+            self.txt(open),
+            self.add_indent_level(self.nl()),
+            self.add_indent_level(self.split_with_trailing_newline_considered(elems)),
+            self.nl(),
+            self.txt(close),
+        ]);
+        multi_line
+    }
+
     pub fn surround_with_softline(
         &'a self,
         elems: &[DocRef<'a>],
