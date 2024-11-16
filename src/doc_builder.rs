@@ -1,7 +1,7 @@
 use crate::{
     data_model::DocBuild,
     doc::{Doc, DocRef, PrettyConfig},
-    enum_def::FormattedMember,
+    enum_def::BodyMember,
 };
 use typed_arena::Arena;
 
@@ -33,7 +33,7 @@ impl<'a> DocBuilder<'a> {
 
     pub fn surround_with_trailing_newline_considered<M>(
         &'a self,
-        elems: &[FormattedMember<M>],
+        elems: &[BodyMember<M>],
         open: &str,
         close: &str,
     ) -> DocRef<'a>
@@ -237,7 +237,7 @@ impl<'a> DocBuilder<'a> {
 
     pub fn split_with_trailing_newline_considered<'b, M>(
         &'a self,
-        members: &[FormattedMember<M>],
+        members: &[BodyMember<M>],
     ) -> DocRef<'a>
     where
         M: DocBuild<'a>,

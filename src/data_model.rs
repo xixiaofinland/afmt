@@ -332,14 +332,14 @@ impl<'a> DocBuild<'a> for AnnotationKeyValue {
 
 #[derive(Debug, Serialize)]
 pub struct ClassBody {
-    pub class_members: Vec<FormattedMember<ClassMember>>,
+    pub class_members: Vec<BodyMember<ClassMember>>,
 }
 
 impl ClassBody {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_body");
         let children = node.children_vec();
-        let mut class_members: Vec<FormattedMember<ClassMember>> = Vec::new();
+        let mut class_members: Vec<BodyMember<ClassMember>> = Vec::new();
 
         for c in children {
             match c.kind() {
@@ -347,7 +347,7 @@ impl ClassBody {
                 _ => {
                     let member = ClassMember::new(c);
                     let has_trailing_newlines = has_trailing_new_line(&c);
-                    class_members.push(FormattedMember {
+                    class_members.push(BodyMember {
                         member,
                         has_trailing_newlines,
                     });
@@ -1265,24 +1265,34 @@ impl<'a> DocBuild<'a> for ConstructorDeclaration {
 
 #[derive(Debug, Serialize)]
 pub struct ConstructorBody {
-    pub constructor_invocation: Option<ConstructInvocation>,
-    pub statements: Vec<Statement>,
+    pub constructor_invocation: Option<BodyMember<ConstructInvocation>>,
+    pub statements: Vec<BodyMember<Statement>>,
 }
 
 impl ConstructorBody {
     pub fn new(node: Node) -> Self {
         let mut constructor_invocation = None;
-        let mut statements = Vec::new();
+        let mut statements: Vec<BodyMember<Statement>> = Vec::new();
 
         for (i, c) in node.children_vec().into_iter().enumerate() {
             if i == 0 && c.kind() == "explicit_constructor_invocation" {
-                constructor_invocation = Some(ConstructInvocation::new(c));
+                let member = ConstructInvocation::new(c);
+                let has_trailing_newlines = has_trailing_new_line(&c);
+                constructor_invocation = Some(BodyMember {
+                    member,
+                    has_trailing_newlines,
+                });
             } else {
-                statements.push(Statement::new(c));
+                let member = Statement::new(c);
+                let has_trailing_newlines = has_trailing_new_line(&c);
+                statements.push(BodyMember {
+                    member,
+                    has_trailing_newlines,
+                });
             }
         }
 
-        ConstructorBody {
+        Self {
             constructor_invocation,
             statements,
         }
@@ -1291,25 +1301,31 @@ impl ConstructorBody {
 
 impl<'a> DocBuild<'a> for ConstructorBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let member_docs = b.to_docs(&self.statements);
-        let statements_doc = b.intersperse_with_sep_and_newline(&member_docs, "");
-        result.push(statements_doc);
-
         if self.constructor_invocation.is_none() && self.statements.is_empty() {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
 
-        let mut doc_vec = Vec::new();
-        if let Some(ref c) = self.constructor_invocation {
-            doc_vec.push(c.build(b));
-        }
+        result.push(b.surround_with_trailing_newline_considered(&self.statements, "{", "}"));
 
-        self.statements
-            .iter()
-            .for_each(|n| doc_vec.push(n.build(b)));
-
-        let docs = b.surround_with_maybeline(&doc_vec, "", "{", "}");
-        result.push(docs);
+        //let member_docs = b.to_docs(&self.statements);
+        //let statements_doc = b.intersperse_with_sep_and_newline(&member_docs, "");
+        //result.push(statements_doc);
+        //
+        //if self.constructor_invocation.is_none() && self.statements.is_empty() {
+        //    return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+        //}
+        //
+        //let mut doc_vec = Vec::new();
+        //if let Some(ref c) = self.constructor_invocation {
+        //    doc_vec.push(c.build(b));
+        //}
+        //
+        //self.statements
+        //    .iter()
+        //    .for_each(|n| doc_vec.push(n.build(b)));
+        //
+        //let docs = b.surround_with_maybeline(&doc_vec, "", "{", "}");
+        //result.push(docs);
     }
 }
 
@@ -1317,7 +1333,8 @@ impl<'a> DocBuild<'a> for ConstructorBody {
 pub struct ConstructInvocation {
     pub object: Option<Box<PrimaryExpression>>,
     pub type_arguments: Option<TypeArguments>,
-    pub constructor: Constructor,
+    pub constructor: Option<Constructor>,
+    pub arguments: ArgumentList,
 }
 
 impl ConstructInvocation {
@@ -1330,16 +1347,19 @@ impl ConstructInvocation {
             .try_c_by_k("type_arguments")
             .map(|n| TypeArguments::new(n));
 
-        let constructor = match node.c_by_n("constructor").kind() {
+        let constructor = node.try_c_by_n("constructor").map(|n| match n.kind() {
             "this" => Constructor::This,
             "super" => Constructor::Super,
             other => panic!("## unknown node: {} in Constructor", other.red()),
-        };
+        });
+
+        let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         Self {
             object,
             type_arguments,
             constructor,
+            arguments,
         }
     }
 }
@@ -1354,7 +1374,11 @@ impl<'a> DocBuild<'a> for ConstructInvocation {
             result.push(t.build(b));
         }
 
-        result.push(self.constructor.build(b));
+        if let Some(ref c) = self.constructor {
+            result.push(c.build(b));
+        }
+
+        result.push(self.arguments.build(b));
     }
 }
 
