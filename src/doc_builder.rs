@@ -27,7 +27,6 @@ impl<'a> DocBuilder<'a> {
         self.add_indent_level(self.group(choice))
     }
 
-    /// to be used in group()
     pub fn intersperse_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
@@ -61,25 +60,6 @@ impl<'a> DocBuilder<'a> {
 
         self.concat(parts)
     }
-
-    /// use nl() as already determined as multi-line
-    //pub fn intersperse_multi_line(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.nil();
-    //    }
-    //
-    //    let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-    //
-    //    for (i, &elem) in elems.iter().enumerate() {
-    //        if i > 0 {
-    //            parts.push(self.txt(sep));
-    //            parts.push(self.nl());
-    //        }
-    //        parts.push(elem);
-    //    }
-    //
-    //    self.concat(parts)
-    //}
 
     pub fn surrounded_choice(
         &'a self,
