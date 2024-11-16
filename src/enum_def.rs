@@ -429,6 +429,7 @@ pub enum Statement {
     EnhancedFor(Box<EnhancedForStatement>),
     Run(RunAsStatement),
     Do(DoStatement),
+    While(WhileStatement),
 }
 
 impl Statement {
@@ -442,6 +443,7 @@ impl Statement {
             "enhanced_for_statement" => Self::EnhancedFor(Box::new(EnhancedForStatement::new(n))),
             "run_as_statement" => Self::Run(RunAsStatement::new(n)),
             "do_statement" => Self::Do(DoStatement::new(n)),
+            "while_statement" => Self::While(WhileStatement::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -479,6 +481,9 @@ impl<'a> DocBuild<'a> for Statement {
             }
             Self::Do(d) => {
                 result.push(d.build(b));
+            }
+            Self::While(w) => {
+                result.push(w.build(b));
             }
         }
     }
