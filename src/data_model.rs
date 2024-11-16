@@ -1493,3 +1493,27 @@ impl<'a> DocBuild<'a> for RunAsStatement {
         result.push(self.block.build(b));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct DoStatement {
+    pub body: Block,
+    pub condition: ParenthesizedExpression,
+}
+
+impl DoStatement {
+    pub fn new(node: Node) -> Self {
+        let body = Block::new(node.c_by_n("body"));
+        let condition = ParenthesizedExpression::new(node.c_by_n("condition"));
+        Self { body, condition }
+    }
+}
+
+impl<'a> DocBuild<'a> for DoStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("do"));
+        result.push(self.body.build(b));
+        result.push(b._txt_("while"));
+        result.push(self.condition.build(b));
+        result.push(b.txt(";"));
+    }
+}
