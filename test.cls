@@ -1,6 +1,4 @@
-class MeClass {
-  {
-    SObject s = new Account();
-    String s = isKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK() || isMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM();
+public with sharing class MyClass {
+  public void hello(String s, Intgeter i1, Intgeter i2, Intgeter i3, String sac11k) {
   }
 }

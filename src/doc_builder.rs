@@ -18,129 +18,29 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
-        let choice = self.intersperse_with_sep_and_softline(&elems, &sep);
-        self.add_indent_level(self.group(choice))
-    }
-
-    pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
-
-        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-        for (i, &elem) in elems.iter().enumerate() {
-            if i > 0 {
-                parts.push(self.txt(sep));
-            }
-            parts.push(self.flat(elem));
-        }
-
-        self.concat(parts)
-    }
-
-    //pub fn intersperse_with_softline(&'a self, elems: &[DocRef<'a>]) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.nil();
-    //    }
-    //
-    //    let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-    //    for (i, &elem) in elems.iter().enumerate() {
-    //        if i > 0 {
-    //            parts.push(self.softline());
-    //        }
-    //        parts.push(elem);
-    //    }
-    //
-    //    self.concat(parts)
-    //}
-
-    pub fn intersperse_with_sep_and_softline(
+    pub fn surround_with_softline(
         &'a self,
         elems: &[DocRef<'a>],
         sep: &str,
-    ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
-
-        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-        for (i, &elem) in elems.iter().enumerate() {
-            if i > 0 {
-                parts.push(self.txt(sep));
-                parts.push(self.softline());
-            }
-            parts.push(elem);
-        }
-
-        self.concat(parts)
-    }
-
-    //pub fn intersperse_with_maybeline(&'a self, elems: &[DocRef<'a>]) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.nil();
-    //    }
-    //
-    //    let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-    //    for (i, &elem) in elems.iter().enumerate() {
-    //        if i > 0 {
-    //            parts.push(self.maybeline());
-    //        }
-    //        parts.push(elem);
-    //    }
-    //    self.concat(parts)
-    //}
-
-    //pub fn intersperse_with_maybeline_and_sep(
-    //    &'a self,
-    //    elems: &[DocRef<'a>],
-    //    sep: &str,
-    //) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.nil();
-    //    }
-    //
-    //    let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-    //    for (i, &elem) in elems.iter().enumerate() {
-    //        if i > 0 {
-    //            parts.push(self.txt(sep));
-    //            parts.push(self.maybeline());
-    //        }
-    //        parts.push(elem);
-    //    }
-    //    self.concat(parts)
-    //}
-
-    pub fn surround_choice(
-        &'a self,
-        elems: &[DocRef<'a>],
-        single_sep: &str,
-        multi_sep: &str,
         open: &str,
         close: &str,
     ) -> DocRef<'a> {
-        let single_line = self.surround_single_line(elems, single_sep, open, close);
-        let multi_line = self.surround_with_sep_and_softline(elems, multi_sep, open, close);
+        let single_sep = format!(" {}", sep);
+        let single_line = self.surround_single_line(elems, &single_sep, open, close);
+        let multi_line = self.surround_with_sep_and_softline(elems, sep, open, close);
         self.choice(single_line, multi_line)
     }
 
-    fn surround_single_line(
+    pub fn surround_with_maybeline(
         &'a self,
         elems: &[DocRef<'a>],
         sep: &str,
         open: &str,
         close: &str,
     ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.txt(format!("{}{}", open, close));
-        }
-
-        let single_line = self.concat(vec![
-            self.txt(open),
-            self.intersperse_single_line(elems, sep),
-            self.txt(close),
-        ]);
-        single_line
+        let single_line = self.surround_single_line(elems, sep, open, close);
+        let multi_line = self.surround_with_sep_and_maybeline(elems, sep, open, close);
+        self.choice(single_line, multi_line)
     }
 
     pub fn surround_with_sep_and_softline(
@@ -164,66 +64,103 @@ impl<'a> DocBuilder<'a> {
         multi_line
     }
 
-    //pub fn surround_with_softline(
-    //    &'a self,
-    //    elems: &[DocRef<'a>],
-    //    open: &str,
-    //    close: &str,
-    //) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.txt(format!("{}{}", open, close));
-    //    }
-    //
-    //    let multi_line = self.concat(vec![
-    //        self.txt(open),
-    //        self.add_indent_level(self.softline()),
-    //        self.add_indent_level(self.intersperse_with_softline(elems)),
-    //        self.softline(),
-    //        self.txt(close),
-    //    ]);
-    //    multi_line
-    //}
+    fn surround_with_sep_and_maybeline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.txt(format!("{}{}", open, close));
+        }
 
-    //pub fn surround_with_maybeline(
-    //    &'a self,
-    //    elems: &[DocRef<'a>],
-    //    open: &str,
-    //    close: &str,
-    //) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.txt(format!("{}{}", open, close));
-    //    }
-    //
-    //    let multi_line = self.concat(vec![
-    //        self.txt(open),
-    //        self.add_indent_level(self.softline()),
-    //        self.add_indent_level(self.intersperse_with_maybeline(elems)),
-    //        self.softline(),
-    //        self.txt(close),
-    //    ]);
-    //    multi_line
-    //}
+        let multi_line = self.concat(vec![
+            self.txt(open),
+            self.add_indent_level(self.softline()),
+            self.add_indent_level(self.intersperse_with_sep_and_maybeline(elems, sep)),
+            self.softline(),
+            self.txt(close),
+        ]);
+        multi_line
+    }
 
-    //pub fn surround_with_maybeline_and_sep(
-    //    &'a self,
-    //    elems: &[DocRef<'a>],
-    //    sep: &str,
-    //    open: &str,
-    //    close: &str,
-    //) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.txt(format!("{}{}", open, close));
-    //    }
-    //
-    //    let multi_line = self.concat(vec![
-    //        self.txt(open),
-    //        self.add_indent_level(self.softline()),
-    //        self.add_indent_level(self.intersperse_with_maybeline_and_sep(elems, sep)),
-    //        self.softline(),
-    //        self.txt(close),
-    //    ]);
-    //    multi_line
-    //}
+    fn surround_single_line(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.txt(format!("{}{}", open, close));
+        }
+
+        let single_line = self.concat(vec![
+            self.txt(open),
+            self.intersperse_single_line(elems, sep),
+            self.txt(close),
+        ]);
+        single_line
+    }
+
+    pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+        let choice = self.intersperse_with_sep_and_softline(&elems, &sep);
+        self.add_indent_level(self.group(choice))
+    }
+
+    pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                parts.push(self.txt(sep));
+            }
+            parts.push(self.flat(elem));
+        }
+
+        self.concat(parts)
+    }
+
+    pub fn intersperse_with_sep_and_softline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                parts.push(self.txt(sep));
+                parts.push(self.softline());
+            }
+            parts.push(elem);
+        }
+
+        self.concat(parts)
+    }
+
+    fn intersperse_with_sep_and_maybeline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                parts.push(self.txt(sep));
+                parts.push(self.maybeline());
+            }
+            parts.push(elem);
+        }
+        self.concat(parts)
+    }
 
     pub fn split_with_trailing_newline_considered<'b, M>(
         &'a self,

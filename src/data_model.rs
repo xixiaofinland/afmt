@@ -189,7 +189,7 @@ impl FormalParameters {
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let modifiers_doc = b.to_docs(&self.formal_parameters);
-        result.push(b.surround_choice(&modifiers_doc, ", ", ",", "(", ")"));
+        result.push(b.surround_with_softline(&modifiers_doc, ",", "(", ")"));
     }
 }
 
@@ -723,7 +723,7 @@ impl TypeArguments {
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let types_doc = b.to_docs(&self.types);
-        result.push(b.surround_choice(&types_doc, ", ", ",", "<", ">"));
+        result.push(b.surround_with_maybeline(&types_doc, ",", "<", ">"));
     }
 }
 
@@ -745,7 +745,7 @@ impl ArgumentList {
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let exp_doc = b.to_docs(&self.expressions);
-        result.push(b.surround_choice(&exp_doc, ", ", ",", "(", ")"));
+        result.push(b.surround_with_maybeline(&exp_doc, ",", "(", ")"));
     }
 }
 
@@ -1055,7 +1055,7 @@ impl<'a> DocBuild<'a> for ForStatement {
         };
         let docs = vec![init, condition, update];
 
-        result.push(b.surround_choice(&docs, ";", ";", "(", ")"));
+        result.push(b.surround_with_maybeline(&docs, ";", "(", ")"));
         result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
@@ -1315,7 +1315,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             .iter()
             .for_each(|n| doc_vec.push(n.build(b)));
 
-        let docs = b.surround_choice(&doc_vec, "", "", "{", "}");
+        let docs = b.surround_with_maybeline(&doc_vec, "", "{", "}");
         result.push(docs);
     }
 }
