@@ -180,7 +180,7 @@ pub enum Expression {
     Primary(Box<PrimaryExpression>),
     Update(UpdateExpression),
     Unary(UnaryExpression),
-    Dml(Box<DmlExpression),
+    Dml(Box<DmlExpression>),
 }
 
 impl Expression {

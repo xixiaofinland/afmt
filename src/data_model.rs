@@ -1709,62 +1709,49 @@ impl<'a> DocBuild<'a> for EnumConstant {
 }
 
 #[derive(Debug, Serialize)]
-pub struct DmlExpression {
-    pub variant: DmlVariant,
+pub enum DmlExpression {
+    Basic {
+        security_mode: Option<DmlSecurityMode>,
+        exp: Expression,
+    },
+    Upsert {
+        security_mode: Option<DmlSecurityMode>,
+        exp: Expression,
+        unnanotated: Option<Box<UnnanotatedType>>,
+    },
+    Merge {
+        security_mode: Option<DmlSecurityMode>,
+        exp1: Expression,
+        exp2: Expression,
+    },
+    Other,
 }
 
 impl DmlExpression {
     pub fn new(node: Node) -> Self {
-        let dml_type = node.c_by_k("dml_type");
-        let variant = match dml_type.kind(){
-            "merge" =>
-
-        }
-        Self { variant }
+        //let children = node.children_vec();
+        //let dml_type = node.c_by_k("dml_type");
+        //let variant = match dml_type.kind() {
+        //    "merge" => {
+        //        let mut merge = DmlVariant::Merge
+        //
+        //
+        //
+        //        let security_mode = node
+        //            .try_c_by_k("dml_security_mode")
+        //            .map(|n| DmlSecurityMode::new(n));
+        //        let exp1 =
+        //    }
+        //    _ => {}
+        //};
+        //Self { variant }
+        Self::Other
     }
 }
 
 impl<'a> DocBuild<'a> for DmlExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.variant.build(b));
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub enum DmlVariant {
-    Merge {
-        security_mode: DmlSecurityMode,
-        exp1: Box<Expression>,
-        exp2: Box<Expression>,
-    },
-    Upsert {
-        security_mode: DmlSecurityMode,
-        exp: Box<Expression>,
-        unnanotated: Option<Box<UnnanotatedType>>,
-    },
-    Others {
-        // insert, update, delete, undelete
-        security_mode: DmlSecurityMode,
-        exp: Box<Expression>,
-    },
-}
-
-//impl DmlVariant {
-//    pub fn new(n: Node) -> Self {
-//        match n.kind() {
-//            "merge" =>
-//            _ => panic!("## unknown node: {} in DmlVariant ", n.kind().red()),
-//        }
-//    }
-//}
-
-impl<'a> DocBuild<'a> for DmlVariant {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        match self {
-            _ => {
-                result.push(b.nil());
-            }
-        }
+        result.push(b.nil());
     }
 }
 
