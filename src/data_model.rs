@@ -591,7 +591,7 @@ impl<'a> DocBuild<'a> for Block {
         }
 
         let statement_docs = b.to_docs(&self.statements);
-        let docs = b.surround_with_softline_and_sep(&statement_docs, "", "{", "}");
+        let docs = b.surround_with_sep_and_softline(&statement_docs, "", "{", "}");
         result.push(docs);
     }
 }
@@ -1314,7 +1314,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             .iter()
             .for_each(|n| doc_vec.push(n.build(b)));
 
-        let docs = b.surround_with_maybeline(&doc_vec, "{", "}");
+        let docs = b.surround_choice(&doc_vec, "", "", "{", "}");
         result.push(docs);
     }
 }
