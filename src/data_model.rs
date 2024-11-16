@@ -103,19 +103,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(b.txt(" {"));
-
-        if self.body.class_members.is_empty() {
-            result.push(b.nl());
-        } else {
-            result.push(b.add_indent_level(b.nl()));
-            let body_doc = self.body.build(b);
-            let indented_body = b.add_indent_level(body_doc);
-            result.push(indented_body);
-            result.push(b.nl());
-        }
-
-        result.push(b.txt("}"));
+        result.push(self.body.build(b));
     }
 }
 
@@ -372,8 +360,16 @@ impl ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let body_doc = b.split_with_trailing_newline_considered(&self.class_members);
-        result.push(body_doc);
+        if self.class_members.is_empty() {
+            return result.push(b.concat(vec![b.txt(" {"), b.nl(), b.txt("}")]));
+        }
+
+        result.push(b.txt(" {"));
+        result.push(b.add_indent_level(b.nl()));
+        let members_doc = b.split_with_trailing_newline_considered(&self.class_members);
+        result.push(b.add_indent_level(members_doc));
+        result.push(b.nl());
+        result.push(b.txt("}"));
     }
 }
 
