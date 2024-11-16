@@ -204,7 +204,10 @@ impl<'a> DocBuilder<'a> {
         items.into_iter().map(|item| item.build(self)).collect()
     }
 
-    pub fn sep_with_trailing_newlines<'b, M>(&'a self, members: &[FormattedMember<M>]) -> DocRef<'a>
+    pub fn split_with_trailing_newline_considered<'b, M>(
+        &'a self,
+        members: &[FormattedMember<M>],
+    ) -> DocRef<'a>
     where
         M: DocBuild<'a>,
     {

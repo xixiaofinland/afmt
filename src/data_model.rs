@@ -372,7 +372,7 @@ impl ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let body_doc = b.sep_with_trailing_newlines(&self.class_members);
+        let body_doc = b.split_with_trailing_newline_considered(&self.class_members);
         result.push(body_doc);
     }
 }
