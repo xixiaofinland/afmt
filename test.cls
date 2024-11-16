@@ -1,6 +1,6 @@
 public class Me {
   {
-    upsert a;
+    update  as user account;
   }
 }
 

@@ -7,7 +7,7 @@ use crate::{
 };
 use colored::Colorize;
 use serde::Serialize;
-use std::fmt::Debug;
+use std::{collections::HashSet, fmt::Debug};
 use tree_sitter::{Node, Point, Range};
 
 pub trait DocBuild<'a> {
@@ -1721,36 +1721,82 @@ pub enum DmlExpression {
     },
     Merge {
         security_mode: Option<DmlSecurityMode>,
-        exp1: Expression,
-        exp2: Expression,
+        exp: Expression,
+        exp_extra: Expression,
     },
-    Other,
 }
 
+// TODO: update AST to add placeholder field_names
 impl DmlExpression {
     pub fn new(node: Node) -> Self {
-        //let children = node.children_vec();
-        //let dml_type = node.c_by_k("dml_type");
-        //let variant = match dml_type.kind() {
-        //    "merge" => {
-        //        let mut merge = DmlVariant::Merge
-        //
-        //
-        //
-        //        let security_mode = node
-        //            .try_c_by_k("dml_security_mode")
-        //            .map(|n| DmlSecurityMode::new(n));
-        //        let exp1 =
-        //    }
-        //    _ => {}
-        //};
-        //Self { variant }
-        Self::Other
+        let security_mode = node
+            .try_c_by_k("dml_security_mode")
+            .map(|n| DmlSecurityMode::new(n));
+
+        let (exp_node, second_node) = DmlExpression::get_two_extra_nodes(node)
+            .expect("Can't find expected child node in DmlExpression");
+
+        let dml_type = node.c_by_k("dml_type").kind();
+
+        if dml_type == "merge" {
+            return Self::Merge {
+                security_mode,
+                exp: Expression::new(exp_node),
+                exp_extra: Expression::new(
+                    second_node.expect("Second node in DmlExpression::Merge is missing"),
+                ),
+            };
+        } else if dml_type == "upsert" {
+            let unnanotated = second_node.map(|n| Box::new(UnnanotatedType::new(n)));
+            return Self::Upsert {
+                security_mode,
+                exp: Expression::new(exp_node),
+                unnanotated,
+            };
+        } else {
+            return Self::Basic {
+                security_mode,
+                exp: Expression::new(exp_node),
+            };
+        }
+    }
+
+    fn get_two_extra_nodes(node: Node) -> Option<(Node, Option<Node>)> {
+        let excluded_types: HashSet<&str> = [
+            "line_comment",
+            "block_comment",
+            "dml_security_mode",
+            "dml_type",
+        ]
+        .iter()
+        .cloned()
+        .collect();
+
+        let mut children_iter = node.children_vec().into_iter();
+        let mut first: Option<Node> = None;
+        let mut second: Option<Node> = None;
+
+        while let Some(child) = children_iter.next() {
+            let child_type = child.kind();
+
+            if excluded_types.contains(child_type) {
+                continue;
+            }
+
+            if first.is_none() {
+                first = Some(child);
+            } else if second.is_none() {
+                second = Some(child);
+                break;
+            }
+        }
+        first.map(|f| (f, second))
     }
 }
 
 impl<'a> DocBuild<'a> for DmlExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        eprintln!("gopro[1]: data_model.rs:1799: self={:#?}", self);
         result.push(b.nil());
     }
 }
