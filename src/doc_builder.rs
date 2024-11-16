@@ -80,40 +80,40 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn intersperse_with_maybeline(&'a self, elems: &[DocRef<'a>]) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
+    //pub fn intersperse_with_maybeline(&'a self, elems: &[DocRef<'a>]) -> DocRef<'a> {
+    //    if elems.is_empty() {
+    //        return self.nil();
+    //    }
+    //
+    //    let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+    //    for (i, &elem) in elems.iter().enumerate() {
+    //        if i > 0 {
+    //            parts.push(self.maybeline());
+    //        }
+    //        parts.push(elem);
+    //    }
+    //    self.concat(parts)
+    //}
 
-        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-        for (i, &elem) in elems.iter().enumerate() {
-            if i > 0 {
-                parts.push(self.maybeline());
-            }
-            parts.push(elem);
-        }
-        self.concat(parts)
-    }
-
-    pub fn intersperse_with_maybeline_and_sep(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: &str,
-    ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.nil();
-        }
-
-        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
-        for (i, &elem) in elems.iter().enumerate() {
-            if i > 0 {
-                parts.push(self.txt(sep));
-                parts.push(self.maybeline());
-            }
-            parts.push(elem);
-        }
-        self.concat(parts)
-    }
+    //pub fn intersperse_with_maybeline_and_sep(
+    //    &'a self,
+    //    elems: &[DocRef<'a>],
+    //    sep: &str,
+    //) -> DocRef<'a> {
+    //    if elems.is_empty() {
+    //        return self.nil();
+    //    }
+    //
+    //    let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+    //    for (i, &elem) in elems.iter().enumerate() {
+    //        if i > 0 {
+    //            parts.push(self.txt(sep));
+    //            parts.push(self.maybeline());
+    //        }
+    //        parts.push(elem);
+    //    }
+    //    self.concat(parts)
+    //}
 
     pub fn surround_choice(
         &'a self,
