@@ -733,7 +733,7 @@ impl ArgumentList {
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let exp_doc = b.to_docs(&self.expressions);
-        result.push(b.surround_with_maybeline(&exp_doc, ",", "(", ")"));
+        result.push(b.surround_with_softline(&exp_doc, ",", "(", ")"));
     }
 }
 

@@ -61,7 +61,7 @@ impl<'a> DocBuilder<'a> {
         open: &str,
         close: &str,
     ) -> DocRef<'a> {
-        let single_sep = format!(" {}", sep);
+        let single_sep = format!("{} ", sep);
         let single_line = self.surround_single_line(elems, &single_sep, open, close);
         let multi_line = self.surround_with_sep_and_softline(elems, sep, open, close);
         self.choice(single_line, multi_line)

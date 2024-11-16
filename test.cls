@@ -1,6 +1,10 @@
-public class TestObject2 {
-  public TestObject2 (  Integer ObjectSize  ) {
-    size = ObjectSize;
+public class Subclass extends Superclass {
+    public Subclass () {
+      super  (
+          'Madam', 'Brenda',
+                        'Clapentrap'
+        )
+    ;
   }
 }
 
