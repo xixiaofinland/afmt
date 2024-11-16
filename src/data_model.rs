@@ -35,6 +35,9 @@ impl Root {
                 "class_declaration" => root
                     .members
                     .push(RootMember::Class(Box::new(ClassDeclaration::new(c)))),
+                "enum_declaration" => root
+                    .members
+                    .push(RootMember::Enum(Box::new(EnumDeclaration::new(c)))),
                 _ => panic!("## unknown node: {} in Root ", c.kind().red()),
             }
         }
@@ -1617,5 +1620,90 @@ impl<'a> DocBuild<'a> for FieldAccess {
         result.push(self.object.build(b));
         result.push(self.property_navigation.build(b));
         result.push(b.txt(&self.field));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct EnumDeclaration {
+    pub modifiers: Option<Modifiers>,
+    pub name: String,
+    pub interface: Option<Interface>,
+    pub body: EnumBody,
+}
+
+impl EnumDeclaration {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let name = node.cvalue_by_n("name", source_code());
+        let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
+        let body = EnumBody::new(node.c_by_n("body"));
+        Self {
+            modifiers,
+            name,
+            interface,
+            body,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for EnumDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+        result.push(b.txt_("enum"));
+        result.push(b.txt_(&self.name));
+
+        if let Some(ref n) = self.interface {
+            result.push(n.build(b));
+        }
+        result.push(self.body.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct EnumBody {
+    enum_constants: Vec<EnumConstant>,
+}
+
+impl EnumBody {
+    pub fn new(node: Node) -> Self {
+        let enum_constants = node
+            .try_cs_by_k("enum_constant")
+            .into_iter()
+            .map(|n| EnumConstant::new(n))
+            .collect();
+
+        Self { enum_constants }
+    }
+}
+
+impl<'a> DocBuild<'a> for EnumBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let docs = b.to_docs(&self.enum_constants);
+        result.push(b.surround_with_newline(&docs, ",", "{", "}"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct EnumConstant {
+    pub modifiers: Option<Modifiers>,
+    pub name: String,
+}
+
+impl EnumConstant {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let name = node.cvalue_by_n("name", source_code());
+        Self { modifiers, name }
+    }
+}
+
+impl<'a> DocBuild<'a> for EnumConstant {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+        result.push(b.txt(&self.name));
     }
 }

@@ -9,6 +9,7 @@ use crate::{
 #[derive(Debug, Serialize)]
 pub enum RootMember {
     Class(Box<ClassDeclaration>),
+    Enum(Box<EnumDeclaration>),
 }
 
 impl<'a> DocBuild<'a> for RootMember {
@@ -16,6 +17,9 @@ impl<'a> DocBuild<'a> for RootMember {
         match self {
             RootMember::Class(class) => {
                 result.push(class.build(b));
+            }
+            RootMember::Enum(en) => {
+                result.push(en.build(b));
             }
         }
     }
