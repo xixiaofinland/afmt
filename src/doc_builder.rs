@@ -22,7 +22,7 @@ impl<'a> DocBuilder<'a> {
         self.txt("")
     }
 
-    pub fn group_list_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+    pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         let choice = self.intersperse_with_softline_and_sep(&elems, &sep);
         self.add_indent_level(self.group(choice))
     }
@@ -126,9 +126,6 @@ impl<'a> DocBuilder<'a> {
         let single_line = self.surround_single_line(elems, single_sep, open, close);
         let multi_line = self.surround_with_softline_and_sep(elems, multi_sep, open, close);
         self.choice(single_line, multi_line)
-
-        //let doc = self.surround_with_softline_and_sep(elems, multi_sep, open, close);
-        //self.group(doc)
     }
 
     fn surround_single_line(
@@ -150,25 +147,6 @@ impl<'a> DocBuilder<'a> {
         single_line
     }
 
-    pub fn surround_with_softline(
-        &'a self,
-        elems: &[DocRef<'a>],
-        open: &str,
-        close: &str,
-    ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.txt(format!("{}{}", open, close));
-        }
-
-        let multi_line = self.concat(vec![
-            self.txt(open),
-            self.add_indent_level(self.softline()),
-            self.add_indent_level(self.intersperse_with_softline(elems)),
-            self.softline(),
-            self.txt(close),
-        ]);
-        multi_line
-    }
     pub fn surround_with_softline_and_sep(
         &'a self,
         elems: &[DocRef<'a>],
@@ -184,6 +162,26 @@ impl<'a> DocBuilder<'a> {
             self.txt(open),
             self.add_indent_level(self.softline()),
             self.add_indent_level(self.intersperse_with_softline_and_sep(elems, sep)),
+            self.softline(),
+            self.txt(close),
+        ]);
+        multi_line
+    }
+
+    pub fn surround_with_softline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.txt(format!("{}{}", open, close));
+        }
+
+        let multi_line = self.concat(vec![
+            self.txt(open),
+            self.add_indent_level(self.softline()),
+            self.add_indent_level(self.intersperse_with_softline(elems)),
             self.softline(),
             self.txt(close),
         ]);

@@ -1,5 +1,4 @@
-class MeClass {
-  {
-    String aaaaaa, bbbbbbbb, cccccc, ddddddddddddddddd, fffffffffffffff, gggggg;
+class topLevelClass {
+  public static List<Results> execute(List<Requests> requestList) {
   }
 }
