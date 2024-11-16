@@ -1,5 +1,6 @@
-
-  enum TestEnum {
+public class Me {
+  {
+    upsert a;
   }
-
+}
 

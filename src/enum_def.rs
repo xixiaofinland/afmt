@@ -180,6 +180,7 @@ pub enum Expression {
     Primary(Box<PrimaryExpression>),
     Update(UpdateExpression),
     Unary(UnaryExpression),
+    Dml(Box<DmlExpression),
 }
 
 impl Expression {
@@ -197,6 +198,7 @@ impl Expression {
             | "object_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             "unary_expression" => Self::Unary(UnaryExpression::new(n)),
+            "dml_expression" => Self::Dml(Box::new(DmlExpression::new(n))),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
     }
@@ -222,6 +224,9 @@ impl<'a> DocBuild<'a> for Expression {
             }
             Self::Unary(u) => {
                 result.push(u.build(b));
+            }
+            Self::Dml(d) => {
+                result.push(d.build(b));
             }
         }
     }

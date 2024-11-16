@@ -1707,3 +1707,89 @@ impl<'a> DocBuild<'a> for EnumConstant {
         result.push(b.txt(&self.name));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct DmlExpression {
+    pub variant: DmlVariant,
+}
+
+impl DmlExpression {
+    pub fn new(node: Node) -> Self {
+        let dml_type = node.c_by_k("dml_type");
+        let variant = match dml_type.kind(){
+            "merge" =>
+
+        }
+        Self { variant }
+    }
+}
+
+impl<'a> DocBuild<'a> for DmlExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.variant.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum DmlVariant {
+    Merge {
+        security_mode: DmlSecurityMode,
+        exp1: Box<Expression>,
+        exp2: Box<Expression>,
+    },
+    Upsert {
+        security_mode: DmlSecurityMode,
+        exp: Box<Expression>,
+        unnanotated: Option<Box<UnnanotatedType>>,
+    },
+    Others {
+        // insert, update, delete, undelete
+        security_mode: DmlSecurityMode,
+        exp: Box<Expression>,
+    },
+}
+
+//impl DmlVariant {
+//    pub fn new(n: Node) -> Self {
+//        match n.kind() {
+//            "merge" =>
+//            _ => panic!("## unknown node: {} in DmlVariant ", n.kind().red()),
+//        }
+//    }
+//}
+
+impl<'a> DocBuild<'a> for DmlVariant {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            _ => {
+                result.push(b.nil());
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum DmlSecurityMode {
+    User,
+    System,
+}
+
+impl DmlSecurityMode {
+    pub fn new(n: Node) -> Self {
+        let child = n.first_c();
+        match child.kind() {
+            "user" => Self::User,
+            "system" => Self::System,
+            _ => panic!("## unknown node: {} in DmlSecurityMode ", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for DmlSecurityMode {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::User => result.push(b.txt("user")),
+            Self::System => result.push(b.txt("system")),
+        }
+    }
+}
