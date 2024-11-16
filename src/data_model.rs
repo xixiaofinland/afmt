@@ -45,7 +45,7 @@ impl Root {
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let member_docs = b.build_docs(&self.members);
-        let body_doc = b.intersperse_with_softline(&member_docs, "");
+        let body_doc = b.intersperse_with_sep_and_softline(&member_docs, "");
         result.push(body_doc);
         result.push(b.nl());
     }
@@ -591,7 +591,7 @@ impl<'a> DocBuild<'a> for Block {
         }
 
         let statement_docs = b.build_docs(&self.statements);
-        let docs = b.surround_with_softline(&statement_docs, "", "{", "}");
+        let docs = b.surround_with_sep_and_softline(&statement_docs, "", "{", "}");
         result.push(docs);
     }
 }
@@ -1298,7 +1298,7 @@ impl ConstructorBody {
 impl<'a> DocBuild<'a> for ConstructorBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let member_docs = b.build_docs(&self.statements);
-        let statements_doc = b.intersperse_with_softline(&member_docs, "");
+        let statements_doc = b.intersperse_with_sep_and_softline(&member_docs, "");
         result.push(statements_doc);
 
         if self.constructor_invocation.is_none() && self.statements.is_empty() {
@@ -1314,7 +1314,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             .iter()
             .for_each(|n| doc_vec.push(n.build(b)));
 
-        let docs = b.surround_with_softline(&doc_vec, "", "{", "}");
+        let docs = b.surround_with_maybeline(&doc_vec, "{", "}");
         result.push(docs);
     }
 }
