@@ -44,8 +44,8 @@ impl Root {
 
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let member_docs = b.build_docs(&self.members);
-        let body_doc = b.intersperse_with_sep_and_softline(&member_docs, "");
+        let member_docs = b.to_docs(&self.members);
+        let body_doc = b.intersperse_with_softline_and_sep(&member_docs, "");
         result.push(body_doc);
         result.push(b.nl());
     }
@@ -188,8 +188,8 @@ impl FormalParameters {
 
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let modifiers_doc = b.build_docs(&self.formal_parameters);
-        result.push(b.surrounded_choice(&modifiers_doc, ", ", ",", "(", ")"));
+        let modifiers_doc = b.to_docs(&self.formal_parameters);
+        result.push(b.surround_choice(&modifiers_doc, ", ", ",", "(", ")"));
     }
 }
 
@@ -280,7 +280,7 @@ impl<'a> DocBuild<'a> for Modifiers {
         }
 
         if !self.modifiers.is_empty() {
-            let modifiers_doc = b.build_docs(&self.modifiers);
+            let modifiers_doc = b.to_docs(&self.modifiers);
             result.push(b.intersperse_single_line(&modifiers_doc, " "));
             result.push(b.txt(" "));
         }
@@ -421,7 +421,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(self.type_.build(b));
         result.push(b.txt(" "));
 
-        let decl_docs = b.build_docs(&self.declarators);
+        let decl_docs = b.to_docs(&self.declarators);
         let decision = b.group_list_with_softline(&decl_docs, ",");
         result.push(decision);
 
@@ -590,8 +590,8 @@ impl<'a> DocBuild<'a> for Block {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
 
-        let statement_docs = b.build_docs(&self.statements);
-        let docs = b.surround_with_sep_and_softline(&statement_docs, "", "{", "}");
+        let statement_docs = b.to_docs(&self.statements);
+        let docs = b.surround_with_softline_and_sep(&statement_docs, "", "{", "}");
         result.push(docs);
     }
 }
@@ -618,7 +618,7 @@ impl Interface {
 
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let types_doc = b.build_docs(&self.types);
+        let types_doc = b.to_docs(&self.types);
         let implements_group = b.concat(vec![
             b.txt(" implements "),
             b.intersperse_single_line(&types_doc, ", "),
@@ -722,8 +722,8 @@ impl TypeArguments {
 
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let types_doc = b.build_docs(&self.types);
-        result.push(b.surrounded_choice(&types_doc, ", ", ",", "<", ">"));
+        let types_doc = b.to_docs(&self.types);
+        result.push(b.surround_choice(&types_doc, ", ", ",", "<", ">"));
     }
 }
 
@@ -744,8 +744,8 @@ impl ArgumentList {
 
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let exp_doc = b.build_docs(&self.expressions);
-        result.push(b.surrounded_choice(&exp_doc, ", ", ",", "(", ")"));
+        let exp_doc = b.to_docs(&self.expressions);
+        result.push(b.surround_choice(&exp_doc, ", ", ",", "(", ")"));
     }
 }
 
@@ -786,7 +786,7 @@ impl BinaryExpression {
 
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs_vec = b.build_docs(vec![&self.left, &self.right]);
+        let docs_vec = b.to_docs(vec![&self.left, &self.right]);
         let sep = format!(" {}", &self.op);
         let decision = b.group_list_with_softline(&docs_vec, &sep);
         result.push(decision);
@@ -829,7 +829,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(self.type_.build(b));
         result.push(b.txt(" "));
 
-        let docs_vec = b.build_docs(&self.declarators);
+        let docs_vec = b.to_docs(&self.declarators);
         let decision = b.group_list_with_softline(&docs_vec, ",");
         result.push(decision);
     }
@@ -1054,7 +1054,7 @@ impl<'a> DocBuild<'a> for ForStatement {
         };
         let docs = vec![init, condition, update];
 
-        result.push(b.surrounded_choice(&docs, ";", ";", "(", ")"));
+        result.push(b.surround_choice(&docs, ";", ";", "(", ")"));
         result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
@@ -1195,7 +1195,7 @@ impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
         result.push(self.scoped_choice.build(b));
         result.push(b.txt("."));
         if !self.annotations.is_empty() {
-            let docs = b.build_docs(&self.annotations);
+            let docs = b.to_docs(&self.annotations);
             result.push(b.intersperse_single_line(&docs, " "));
             result.push(b.txt(" "));
         }
@@ -1297,8 +1297,8 @@ impl ConstructorBody {
 
 impl<'a> DocBuild<'a> for ConstructorBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let member_docs = b.build_docs(&self.statements);
-        let statements_doc = b.intersperse_with_sep_and_softline(&member_docs, "");
+        let member_docs = b.to_docs(&self.statements);
+        let statements_doc = b.intersperse_with_softline_and_sep(&member_docs, "");
         result.push(statements_doc);
 
         if self.constructor_invocation.is_none() && self.statements.is_empty() {

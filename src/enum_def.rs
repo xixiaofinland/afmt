@@ -551,7 +551,7 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
             }
             Self::KeyValues(vec) => {
                 if !vec.is_empty() {
-                    let docs = b.build_docs(vec);
+                    let docs = b.to_docs(vec);
 
                     let doc = b.concat(vec![
                         b.txt("("),
