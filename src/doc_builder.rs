@@ -18,12 +18,8 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    pub fn nil(&'a self) -> DocRef<'a> {
-        self.txt("")
-    }
-
     pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
-        let choice = self.intersperse_with_softline_and_sep(&elems, &sep);
+        let choice = self.intersperse_with_sep_and_softline(&elems, &sep);
         self.add_indent_level(self.group(choice))
     }
 
@@ -59,7 +55,7 @@ impl<'a> DocBuilder<'a> {
     //    self.concat(parts)
     //}
 
-    pub fn intersperse_with_softline_and_sep(
+    pub fn intersperse_with_sep_and_softline(
         &'a self,
         elems: &[DocRef<'a>],
         sep: &str,
@@ -161,7 +157,7 @@ impl<'a> DocBuilder<'a> {
         let multi_line = self.concat(vec![
             self.txt(open),
             self.add_indent_level(self.softline()),
-            self.add_indent_level(self.intersperse_with_softline_and_sep(elems, sep)),
+            self.add_indent_level(self.intersperse_with_sep_and_softline(elems, sep)),
             self.softline(),
             self.txt(close),
         ]);
@@ -259,6 +255,10 @@ impl<'a> DocBuilder<'a> {
         T: DocBuild<'a> + 'b,
     {
         items.into_iter().map(|item| item.build(self)).collect()
+    }
+
+    pub fn nil(&'a self) -> DocRef<'a> {
+        self.txt("")
     }
 
     pub fn nl(&'a self) -> DocRef<'a> {

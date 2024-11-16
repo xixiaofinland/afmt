@@ -45,7 +45,7 @@ impl Root {
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let member_docs = b.to_docs(&self.members);
-        let body_doc = b.intersperse_with_softline_and_sep(&member_docs, "");
+        let body_doc = b.intersperse_with_sep_and_softline(&member_docs, "");
         result.push(body_doc);
         result.push(b.nl());
     }
@@ -1298,7 +1298,7 @@ impl ConstructorBody {
 impl<'a> DocBuild<'a> for ConstructorBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let member_docs = b.to_docs(&self.statements);
-        let statements_doc = b.intersperse_with_softline_and_sep(&member_docs, "");
+        let statements_doc = b.intersperse_with_sep_and_softline(&member_docs, "");
         result.push(statements_doc);
 
         if self.constructor_invocation.is_none() && self.statements.is_empty() {
