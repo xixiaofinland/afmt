@@ -1917,3 +1917,18 @@ impl DmlType {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct ArrayAccess {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub variable_declarator_id: VariableDeclaratorId,
+}
+
+impl ArrayAccess {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for ArrayAccess {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}

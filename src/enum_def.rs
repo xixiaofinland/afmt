@@ -195,7 +195,8 @@ impl Expression {
             | "null_literal"
             | "method_invocation"
             | "parenthesized_expression"
-            | "object_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
+            | "object_creation_expression"
+            | "array_access" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             "unary_expression" => Self::Unary(UnaryExpression::new(n)),
             "dml_expression" => Self::Dml(Box::new(DmlExpression::new(n))),
@@ -258,6 +259,7 @@ pub enum PrimaryExpression {
     Parenth(ParenthesizedExpression),
     Obj(ObjectCreationExpression),
     Field(FieldAccess),
+    Array(ArrayAccess),
 }
 
 impl PrimaryExpression {
@@ -269,6 +271,7 @@ impl PrimaryExpression {
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
             "object_creation_expression" => Self::Obj(ObjectCreationExpression::new(n)),
             "field_access" => Self::Field(FieldAccess::new(n)),
+            "array_access" => Self::Array(ArrayAccess::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -294,6 +297,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
             }
             Self::Field(f) => {
                 result.push(f.build(b));
+            }
+            Self::Array(a) => {
+                result.push(a.build(b));
             }
         }
     }
