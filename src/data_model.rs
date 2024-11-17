@@ -420,15 +420,29 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
     }
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct ArrayInitializer {
-    variable_initializers: Vec<VariableInitializer>,
+    initializers: Vec<VariableInitializer>,
 }
 
 impl ArrayInitializer {
-    pub fn new(node: Node, indent: usize) -> Self {
+    pub fn new(node: Node) -> Self {
         assert_check(node, "array_initializer");
-        ArrayInitializer::default()
+
+        let initializers: Vec<_> = node
+            .children_vec()
+            .into_iter()
+            .map(|n| VariableInitializer::new(n))
+            .collect();
+
+        Self { initializers }
+    }
+}
+
+impl<'a> DocBuild<'a> for ArrayInitializer {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let docs = b.to_docs(&self.initializers);
+        result.push(b.surround_with_softline_vary(&docs, ",", "{", "}"));
     }
 }
 
@@ -845,7 +859,7 @@ impl VariableDeclarator {
             //_ => VariableInitializer::Expression(Expression::Primary(Box::new(
             //    PrimaryExpression::Identifier(v.value(source_code())),
             //))),
-            _ => VariableInitializer::Expression(Expression::new(n)),
+            _ => VariableInitializer::Exp(Expression::new(n)),
         });
 
         Self { name, value }
@@ -1920,15 +1934,141 @@ impl DmlType {
 
 #[derive(Debug, Serialize)]
 pub struct ArrayAccess {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+    pub array: PrimaryExpression,
+    pub index: Expression,
 }
 
 impl ArrayAccess {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        let array = PrimaryExpression::new(node.c_by_n("array"));
+        let index = Expression::new(node.c_by_n("index"));
+        Self { array, index }
+    }
 }
 
 impl<'a> DocBuild<'a> for ArrayAccess {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.array.build(b));
+        result.push(b.txt("["));
+        result.push(self.index.build(b));
+        result.push(b.txt("]"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ArrayCreationExpression {
+    pub type_: SimpleType,
+    pub variant: ArrayCreationVariant,
+}
+
+//          choice(
+//            seq(
+//              field("dimensions", repeat1($.dimensions_expr)),
+//              field("dimensions", optional($.dimensions))
+//            ),
+
+impl ArrayCreationExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "array_creation_expression");
+
+        let type_ = SimpleType::new(node.c_by_n("type"));
+
+        let value_node = node.try_c_by_n("value");
+        let dimensions_node = node.try_c_by_n("dimensions");
+
+        let variant = if value_node.is_none() {
+            //DD
+            unimplemented!();
+        } else if dimensions_node.is_none() {
+            //OnlyV
+            let value = ArrayInitializer::new(node.c_by_n("value"));
+            ArrayCreationVariant::OnlyV { value }
+        } else {
+            //DV
+            unimplemented!();
+        };
+
+        Self { type_, variant }
+    }
+}
+
+impl<'a> DocBuild<'a> for ArrayCreationExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("new"));
+        result.push(self.type_.build(b));
+        result.push(self.variant.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum ArrayCreationVariant {
+    DD {
+        dimensions_expr: Vec<DimensionsExpr>,
+        dimensions: Option<Dimensions>,
+    },
+    DV {
+        dimensions: Dimensions,
+        value: ArrayInitializer,
+    },
+    OnlyV {
+        value: ArrayInitializer,
+    },
+}
+
+impl<'a> DocBuild<'a> for ArrayCreationVariant {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::OnlyV { value } => {
+                result.push(value.build(b));
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct Dimensions {
+    value: String,
+}
+
+impl Dimensions {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "dimensions");
+
+        let value: String = node
+            .all_children_vec()
+            .into_iter()
+            .map(|n| n.value(source_code()))
+            .collect();
+
+        Self { value }
+    }
+}
+
+impl<'a> DocBuild<'a> for Dimensions {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.value));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct DimensionsExpr {
+    pub exp: Expression,
+}
+
+impl DimensionsExpr {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "dimensions_expr");
+
+        let exp = Expression::new(node.first_c());
+        Self { exp }
+    }
+}
+
+impl<'a> DocBuild<'a> for DimensionsExpr {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("["));
+        result.push(b.nil());
+        result.push(b.txt("]"));
+    }
 }

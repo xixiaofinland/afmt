@@ -145,15 +145,27 @@ impl<'a> DocBuild<'a> for SimpleType {
 
 #[derive(Debug, Serialize)]
 pub enum VariableInitializer {
-    Expression(Expression),
-    //ArrayInitializer(ArrayInitializer),
+    Exp(Expression),
+    Array(Box<ArrayInitializer>),
+}
+
+impl VariableInitializer {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "array_initializer" => Self::Array(Box::new(ArrayInitializer::new(n))),
+            _ => Self::Exp(Expression::new(n)),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for VariableInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Expression(exp) => {
+            Self::Exp(exp) => {
                 result.push(exp.build(b));
+            }
+            Self::Array(a) => {
+                result.push(a.build(b));
             }
         }
     }
@@ -196,7 +208,8 @@ impl Expression {
             | "method_invocation"
             | "parenthesized_expression"
             | "object_creation_expression"
-            | "array_access" => Self::Primary(Box::new(PrimaryExpression::new(n))),
+            | "array_access"
+            | "array_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             "unary_expression" => Self::Unary(UnaryExpression::new(n)),
             "dml_expression" => Self::Dml(Box::new(DmlExpression::new(n))),
@@ -259,7 +272,8 @@ pub enum PrimaryExpression {
     Parenth(ParenthesizedExpression),
     Obj(ObjectCreationExpression),
     Field(FieldAccess),
-    Array(ArrayAccess),
+    Array(Box<ArrayAccess>),
+    ArrayCreation(ArrayCreationExpression),
 }
 
 impl PrimaryExpression {
@@ -271,7 +285,8 @@ impl PrimaryExpression {
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
             "object_creation_expression" => Self::Obj(ObjectCreationExpression::new(n)),
             "field_access" => Self::Field(FieldAccess::new(n)),
-            "array_access" => Self::Array(ArrayAccess::new(n)),
+            "array_access" => Self::Array(Box::new(ArrayAccess::new(n))),
+            "array_creation_expression" => Self::ArrayCreation(ArrayCreationExpression::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -299,6 +314,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
                 result.push(f.build(b));
             }
             Self::Array(a) => {
+                result.push(a.build(b));
+            }
+            Self::ArrayCreation(a) => {
                 result.push(a.build(b));
             }
         }

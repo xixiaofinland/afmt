@@ -67,6 +67,22 @@ impl<'a> DocBuilder<'a> {
         self.choice(single_line, multi_line)
     }
 
+    pub fn surround_with_softline_vary(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+        open: &str,
+        close: &str,
+    ) -> DocRef<'a> {
+        let single_sep = format!("{} ", sep);
+        let single_open = format!("{} ", open);
+        let single_close = format!(" {}", close);
+        let single_line =
+            self.surround_single_line(elems, &single_sep, &single_open, &single_close);
+        let multi_line = self.surround_with_sep_and_softline(elems, sep, open, close);
+        self.choice(single_line, multi_line)
+    }
+
     pub fn surround_with_maybeline(
         &'a self,
         elems: &[DocRef<'a>],
