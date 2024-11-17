@@ -1814,8 +1814,8 @@ impl<'a> DocBuild<'a> for DmlExpression {
                 result.push(b.txt_(dml_type.as_str()));
                 if let Some(ref s) = security_mode {
                     result.push(s.build(b));
+                    result.push(b.txt(" "));
                 }
-                result.push(b.txt(" "));
                 result.push(exp.build(b));
             }
             Self::Merge {
@@ -1875,7 +1875,7 @@ impl DmlSecurityMode {
 impl<'a> DocBuild<'a> for DmlSecurityMode {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::User => result.push(b.txt("as user")),
+            Self::User => result.push(b.txt("as USER")),
             Self::System => result.push(b.txt("as system")),
         }
     }
