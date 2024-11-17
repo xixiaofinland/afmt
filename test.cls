@@ -1,6 +1,6 @@
 public class Me {
   {
-    update  as user account;
+    UPdate  as user account;
   }
 }
 

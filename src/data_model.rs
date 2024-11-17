@@ -1711,15 +1711,18 @@ impl<'a> DocBuild<'a> for EnumConstant {
 #[derive(Debug, Serialize)]
 pub enum DmlExpression {
     Basic {
+        dml_type: DmlType,
         security_mode: Option<DmlSecurityMode>,
         exp: Expression,
     },
     Upsert {
+        dml_type: DmlType,
         security_mode: Option<DmlSecurityMode>,
         exp: Expression,
         unannotated: Option<Box<UnannotatedType>>,
     },
     Merge {
+        dml_type: DmlType,
         security_mode: Option<DmlSecurityMode>,
         exp: Expression,
         exp_extra: Expression,
@@ -1736,28 +1739,34 @@ impl DmlExpression {
         let (exp_node, second_node) = DmlExpression::get_two_extra_nodes(node)
             .expect("Can't find expected child node in DmlExpression");
 
-        let dml_type = node.c_by_k("dml_type").kind();
-
-        if dml_type == "merge" {
-            return Self::Merge {
-                security_mode,
-                exp: Expression::new(exp_node),
-                exp_extra: Expression::new(
-                    second_node.expect("Second node in DmlExpression::Merge is missing"),
-                ),
-            };
-        } else if dml_type == "upsert" {
-            let unannotated = second_node.map(|n| Box::new(UnannotatedType::new(n)));
-            return Self::Upsert {
-                security_mode,
-                exp: Expression::new(exp_node),
-                unannotated,
-            };
-        } else {
-            return Self::Basic {
-                security_mode,
-                exp: Expression::new(exp_node),
-            };
+        let dml_type = DmlType::from(node.c_by_k("dml_type").first_c().kind());
+        match dml_type {
+            DmlType::Merge => {
+                return Self::Merge {
+                    dml_type,
+                    security_mode,
+                    exp: Expression::new(exp_node),
+                    exp_extra: Expression::new(
+                        second_node.expect("Second node in DmlExpression::Merge is missing"),
+                    ),
+                };
+            }
+            DmlType::Upsert => {
+                let unannotated = second_node.map(|n| Box::new(UnannotatedType::new(n)));
+                return Self::Upsert {
+                    dml_type,
+                    security_mode,
+                    exp: Expression::new(exp_node),
+                    unannotated,
+                };
+            }
+            _ => {
+                return Self::Basic {
+                    dml_type,
+                    security_mode,
+                    exp: Expression::new(exp_node),
+                };
+            }
         }
     }
 
@@ -1796,7 +1805,52 @@ impl DmlExpression {
 
 impl<'a> DocBuild<'a> for DmlExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        eprintln!("gopro[1]: data_model.rs:1799: self={:#?}", self);
+        match self {
+            Self::Basic {
+                dml_type,
+                security_mode,
+                exp,
+            } => {
+                result.push(b.txt_(dml_type.as_str()));
+                if let Some(ref s) = security_mode {
+                    result.push(s.build(b));
+                }
+                result.push(b.txt(" "));
+                result.push(exp.build(b));
+            }
+            Self::Merge {
+                dml_type,
+                security_mode,
+                exp,
+                exp_extra,
+            } => {
+                result.push(b.txt_(dml_type.as_str()));
+                if let Some(ref s) = security_mode {
+                    result.push(s.build(b));
+                    result.push(b.txt(" "));
+                }
+                result.push(exp.build(b));
+                result.push(b.txt(" "));
+                result.push(exp_extra.build(b));
+            }
+            Self::Upsert {
+                dml_type,
+                security_mode,
+                exp,
+                unannotated,
+            } => {
+                result.push(b.txt_(dml_type.as_str()));
+                if let Some(ref s) = security_mode {
+                    result.push(s.build(b));
+                    result.push(b.txt(" "));
+                }
+                result.push(exp.build(b));
+                if let Some(ref u) = unannotated {
+                    result.push(b.txt(" "));
+                    result.push(u.build(b));
+                }
+            }
+        }
         result.push(b.nil());
     }
 }
@@ -1821,8 +1875,45 @@ impl DmlSecurityMode {
 impl<'a> DocBuild<'a> for DmlSecurityMode {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::User => result.push(b.txt("user")),
-            Self::System => result.push(b.txt("system")),
+            Self::User => result.push(b.txt("as user")),
+            Self::System => result.push(b.txt("as system")),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum DmlType {
+    Insert,
+    Update,
+    Delete,
+    Undelete,
+    Merge,
+    Upsert,
+}
+
+impl From<&str> for DmlType {
+    fn from(t: &str) -> Self {
+        match t {
+            "insert" => DmlType::Insert,
+            "update" => DmlType::Update,
+            "delete" => DmlType::Delete,
+            "undelete" => DmlType::Undelete,
+            "merge" => DmlType::Merge,
+            "upsert" => DmlType::Upsert,
+            _ => panic!("## unknown node: {} in DmlExpression dml_type ", t.red()),
+        }
+    }
+}
+
+impl DmlType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            DmlType::Insert => "insert",
+            DmlType::Update => "update",
+            DmlType::Delete => "delete",
+            DmlType::Undelete => "undelete",
+            DmlType::Merge => "merge",
+            DmlType::Upsert => "upsert",
         }
     }
 }
