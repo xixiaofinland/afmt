@@ -472,19 +472,6 @@ impl<'a> DocBuild<'a> for AssignmentExpression {
     }
 }
 
-//#[derive(Debug, Serialize)]
-//pub struct Identifier {
-//    pub value: String,
-//}
-//
-//impl Identifier {
-//    pub fn new(node: Node) -> Self {
-//        Self {
-//            value: node.value(source_code()),
-//        }
-//    }
-//}
-
 #[derive(Debug, Serialize)]
 pub struct VoidType {
     pub value: String,
