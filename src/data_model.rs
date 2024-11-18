@@ -2138,6 +2138,8 @@ pub struct TryStatement {
 
 impl TryStatement {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "try_statement");
+
         let body = Block::new(node.c_by_n("body"));
         let tail = if node.try_c_by_k("finally_clause").is_some() {
             TryStatementTail::CatchesFinally(
@@ -2178,12 +2180,12 @@ impl<'a> DocBuild<'a> for TryStatementTail {
         match self {
             Self::Catches(v) => {
                 let docs = b.to_docs(v);
-                let catches_doc = b.intersperse_single_line(&docs, " ");
+                let catches_doc = b.concat(docs);
                 result.push(catches_doc);
             }
             Self::CatchesFinally(v, f) => {
                 let docs = b.to_docs(v);
-                let catches_doc = b.intersperse_single_line(&docs, " ");
+                let catches_doc = b.concat(docs);
                 result.push(catches_doc);
                 result.push(f.build(b));
             }
@@ -2231,6 +2233,8 @@ pub struct CatchFormalParameter {
 
 impl CatchFormalParameter {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "catch_formal_parameter");
+
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
 
         // TODO: can't locate "UnannotatedType" which is an internal type;
@@ -2273,14 +2277,16 @@ pub struct FinallyClause {
 
 impl FinallyClause {
     pub fn new(node: Node) -> Self {
-        let body = Block::new(node.c_by_n("body"));
+        assert_check(node, "finally_clause");
+
+        let body = Block::new(node.c_by_k("block"));
         Self { body }
     }
 }
 
 impl<'a> DocBuild<'a> for FinallyClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("finally"));
+        result.push(b._txt_("finally"));
         result.push(self.body.build(b));
     }
 }
