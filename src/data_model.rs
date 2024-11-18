@@ -107,7 +107,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(b.txt_("class"));
+        result.push("class ".build(b));
         result.push(b.txt(&self.name));
 
         if let Some(ref n) = self.superclass {
@@ -118,7 +118,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(b.txt(" "));
+        result.push(" ".build(b));
         result.push(self.body.build(b));
     }
 }
