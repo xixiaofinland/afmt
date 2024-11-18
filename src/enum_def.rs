@@ -396,6 +396,13 @@ impl Modifier {
             "override" => Self::Override,
             "static" => Self::Static,
             "final" => Self::Final,
+            "virtual" => Self::Virtual,
+            "abstract" => Self::Abstract,
+            "inherited sharing" => Self::InheritedSharing,
+            "protected" => Self::Protected,
+            "test method" => Self::TestMethod,
+            "transient" => Self::Transient,
+            "webservice" => Self::Webservice,
             _ => panic!("## unknown node: {} in Modifier", kind),
         }
     }
