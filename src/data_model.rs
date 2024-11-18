@@ -2143,7 +2143,7 @@ impl TryStatement {
         let body = Block::new(node.c_by_n("body"));
         let tail = if node.try_c_by_k("finally_clause").is_some() {
             TryStatementTail::CatchesFinally(
-                node.cs_by_k("catch_clause")
+                node.try_cs_by_k("catch_clause")
                     .into_iter()
                     .map(|n| CatchClause::new(n))
                     .collect(),
