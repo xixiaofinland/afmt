@@ -660,7 +660,7 @@ impl MethodInvocation {
         });
 
         let property_navigation = object.as_ref().map(|_| {
-            if node.try_c_by_n("safe_navigation_operator").is_some() {
+            if node.try_c_by_k("safe_navigaion_operator").is_some() {
                 PropertyNavigation::SafeNavigationOperator
             } else {
                 PropertyNavigation::Dot
@@ -1622,7 +1622,7 @@ impl FieldAccess {
             MethodObject::Primary(Box::new(PrimaryExpression::new(obj_node)))
         };
 
-        let property_navigation = if node.try_c_by_n("safe_navigation_operator").is_some() {
+        let property_navigation = if node.try_c_by_k("safe_navigaion_operator").is_some() {
             PropertyNavigation::SafeNavigationOperator
         } else {
             PropertyNavigation::Dot
