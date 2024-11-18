@@ -24,6 +24,7 @@ pub trait Accessor<'t> {
     fn c_by_n(&self, name: &str) -> Node<'t>;
     fn c_by_k(&self, kind: &str) -> Node<'t>;
     fn first_c(&self) -> Node<'t>;
+    fn try_first_c(&self) -> Option<Node<'t>>;
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cvalue_by_n<'a>(&self, name: &str, source_code: &'a str) -> String;
@@ -83,6 +84,10 @@ impl<'t> Accessor<'t> for Node<'t> {
                 kind.red()
             )
         })
+    }
+
+    fn try_first_c(&self) -> Option<Node<'t>> {
+        self.named_child(0)
     }
 
     fn first_c(&self) -> Node<'t> {

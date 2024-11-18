@@ -336,7 +336,7 @@ impl Literal_ {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "boolean" => Self::Bool(n.value(source_code()).to_lowercase()),
-            "null" => Self::Null,
+            "null_literal" => Self::Null,
             "int" => Self::Int(n.value(source_code())),
             _ => panic!("## unknown node: {} in Literal", n.kind().red()),
         }
@@ -478,6 +478,7 @@ pub enum Statement {
     Run(RunAsStatement),
     Do(DoStatement),
     While(WhileStatement),
+    Return(ReturnStatement),
 }
 
 impl Statement {
@@ -492,6 +493,7 @@ impl Statement {
             "run_as_statement" => Self::Run(RunAsStatement::new(n)),
             "do_statement" => Self::Do(DoStatement::new(n)),
             "while_statement" => Self::While(WhileStatement::new(n)),
+            "return_statement" => Self::Return(ReturnStatement::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -532,6 +534,9 @@ impl<'a> DocBuild<'a> for Statement {
             }
             Self::While(w) => {
                 result.push(w.build(b));
+            }
+            Self::Return(r) => {
+                result.push(r.build(b));
             }
         }
     }

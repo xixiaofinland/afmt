@@ -2083,3 +2083,26 @@ impl<'a> DocBuild<'a> for DimensionsExpr {
         result.push(b.txt("]"));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct ReturnStatement {
+    pub exp: Option<Expression>,
+}
+
+impl ReturnStatement {
+    pub fn new(node: Node) -> Self {
+        let exp = node.try_first_c().map(|n| Expression::new(n));
+        Self { exp }
+    }
+}
+
+impl<'a> DocBuild<'a> for ReturnStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("return"));
+        if let Some(ref exp) = self.exp {
+            result.push(b.txt(" "));
+            result.push(exp.build(b));
+        }
+        result.push(b.txt(";"));
+    }
+}
