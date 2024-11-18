@@ -791,7 +791,7 @@ pub struct BinaryExpression {
 impl BinaryExpression {
     pub fn new(node: Node) -> Self {
         let left = Expression::new(node.c_by_n("left"));
-        let op = node.cvalue_by_n("operator", source_code());
+        let op = node.c_by_n("operator").kind().to_string();
         let right = Expression::new(node.c_by_n("right"));
 
         Self { left, op, right }

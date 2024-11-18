@@ -1,6 +1,6 @@
-class LongParam {
-  public static String sayHelloWithModifier(String helloStringA, Integer inte) {
-    return null;
+public class A {
+    {
+    if (i >   = 0) {   
+    }
   }
 }
-
