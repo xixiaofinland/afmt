@@ -210,6 +210,7 @@ impl Expression {
             | "parenthesized_expression"
             | "object_creation_expression"
             | "array_access"
+            | "field_access"
             | "array_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             "unary_expression" => Self::Unary(UnaryExpression::new(n)),
