@@ -358,6 +358,24 @@ impl ClassBody {
             }
         }
 
+        let class_members: Vec<BodyMember<ClassMember>> = node
+            .children_vec()
+            .into_iter()
+            .filter_map(|n| {
+                match n.kind() {
+                    "line_comment" | "block_comment" => None, // Exclude
+                    _ => {
+                        let member = ClassMember::new(n);
+                        let has_trailing_newlines = has_trailing_new_line(&n);
+                        Some(BodyMember {
+                            member,
+                            has_trailing_newlines,
+                        })
+                    }
+                }
+            })
+            .collect();
+
         Self { class_members }
     }
 }
