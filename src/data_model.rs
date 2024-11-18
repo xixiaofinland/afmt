@@ -613,7 +613,7 @@ impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let types_doc = b.to_docs(&self.types);
         let implements_group = b.concat(vec![
-            b.txt(" implements "),
+            b._txt_("implements"),
             b.intersperse_single_line(&types_doc, ", "),
         ]);
         result.push(implements_group);
