@@ -485,6 +485,7 @@ pub enum Statement {
     Do(DoStatement),
     While(WhileStatement),
     Return(ReturnStatement),
+    Try(TryStatement),
 }
 
 impl Statement {
@@ -500,6 +501,7 @@ impl Statement {
             "do_statement" => Self::Do(DoStatement::new(n)),
             "while_statement" => Self::While(WhileStatement::new(n)),
             "return_statement" => Self::Return(ReturnStatement::new(n)),
+            "try_statement" => Self::Try(TryStatement::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -543,6 +545,9 @@ impl<'a> DocBuild<'a> for Statement {
             }
             Self::Return(r) => {
                 result.push(r.build(b));
+            }
+            Self::Try(t) => {
+                result.push(t.build(b));
             }
         }
     }

@@ -1971,12 +1971,6 @@ pub struct ArrayCreationExpression {
     pub variant: ArrayCreationVariant,
 }
 
-//          choice(
-//            seq(
-//              field("dimensions", repeat1($.dimensions_expr)),
-//              field("dimensions", optional($.dimensions))
-//            ),
-
 impl ArrayCreationExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "array_creation_expression");
@@ -2133,5 +2127,160 @@ impl<'a> DocBuild<'a> for TernaryExpression {
         result.push(self.consequence.build(b));
         result.push(b._txt_(":"));
         result.push(self.alternative.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct TryStatement {
+    pub body: Block,
+    pub tail: TryStatementTail,
+}
+
+impl TryStatement {
+    pub fn new(node: Node) -> Self {
+        let body = Block::new(node.c_by_n("body"));
+        let tail = if node.try_c_by_k("finally_clause").is_some() {
+            TryStatementTail::CatchesFinally(
+                node.cs_by_k("catch_clause")
+                    .into_iter()
+                    .map(|n| CatchClause::new(n))
+                    .collect(),
+                FinallyClause::new(node.c_by_k("finally_clause")),
+            )
+        } else {
+            TryStatementTail::Catches(
+                node.cs_by_k("catch_clause")
+                    .into_iter()
+                    .map(|n| CatchClause::new(n))
+                    .collect(),
+            )
+        };
+        Self { body, tail }
+    }
+}
+
+impl<'a> DocBuild<'a> for TryStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("try"));
+        result.push(self.body.build(b));
+        result.push(self.tail.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum TryStatementTail {
+    Catches(Vec<CatchClause>),
+    CatchesFinally(Vec<CatchClause>, FinallyClause),
+}
+
+impl<'a> DocBuild<'a> for TryStatementTail {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Catches(v) => {
+                let docs = b.to_docs(v);
+                let catches_doc = b.intersperse_single_line(&docs, " ");
+                result.push(catches_doc);
+            }
+            Self::CatchesFinally(v, f) => {
+                let docs = b.to_docs(v);
+                let catches_doc = b.intersperse_single_line(&docs, " ");
+                result.push(catches_doc);
+                result.push(f.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct CatchClause {
+    pub formal_parameter: CatchFormalParameter,
+    pub body: Block,
+}
+
+impl CatchClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "catch_clause");
+
+        let formal_parameter = CatchFormalParameter::new(node.c_by_k("catch_formal_parameter"));
+        let body = Block::new(node.c_by_n("body"));
+        Self {
+            formal_parameter,
+            body,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for CatchClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b._txt_("catch"));
+
+        result.push(b.txt("("));
+        result.push(self.formal_parameter.build(b));
+        result.push(b.txt_(")"));
+        result.push(self.body.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct CatchFormalParameter {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnannotatedType,
+    pub name: String,
+    pub dimensions: Option<Dimensions>,
+}
+
+impl CatchFormalParameter {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+
+        // TODO: can't locate "UnannotatedType" which is an internal type;
+        let type_node = node
+            .c_by_n("name")
+            .prev_named_sibling()
+            .expect("missing mandatory type node in CatchFormalParameter");
+        let type_ = UnannotatedType::new(type_node);
+
+        let name = node.cvalue_by_n("name", source_code());
+        let dimensions = node.try_c_by_k("dimensions").map(|n| Dimensions::new(n));
+
+        Self {
+            modifiers,
+            type_,
+            name,
+            dimensions,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for CatchFormalParameter {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+        result.push(self.type_.build(b));
+        result.push(b._txt(&self.name));
+        if let Some(ref d) = self.dimensions {
+            result.push(b.txt(" "));
+            result.push(d.build(b));
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct FinallyClause {
+    pub body: Block,
+}
+
+impl FinallyClause {
+    pub fn new(node: Node) -> Self {
+        let body = Block::new(node.c_by_n("body"));
+        Self { body }
+    }
+}
+
+impl<'a> DocBuild<'a> for FinallyClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("finally"));
+        result.push(self.body.build(b));
     }
 }
