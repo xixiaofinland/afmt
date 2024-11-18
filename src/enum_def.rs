@@ -641,12 +641,3 @@ pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool,
 }
-
-//impl<'a, M: DocBuild<'a>> DocBuild<'a> for BodyMember<M> {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-//        result.push(self.member.build(b));
-//        if self.has_trailing_newlines {
-//            result.push(b.nl());
-//        }
-//    }
-//}
