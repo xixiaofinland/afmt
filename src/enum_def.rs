@@ -34,7 +34,7 @@ pub enum ClassMember {
     //Method(MethodDeclaration<'a>),
     //Interface(InterfaceDeclaration<'a>),
     Enum(EnumDeclaration),
-    //StaticInitializer(StaticInitializer<'a>),
+    Static(StaticInitializer),
     Constructor(ConstructorDeclaration),
     //EmptyStatement, // Represents the ";" case
 }
@@ -48,6 +48,7 @@ impl ClassMember {
             "block" => Self::Block(Box::new(Block::new(n))),
             "constructor_declaration" => Self::Constructor(ConstructorDeclaration::new(n)),
             "enum_declaration" => Self::Enum(EnumDeclaration::new(n)),
+            "static_initializer" => Self::Static(StaticInitializer::new(n)),
             _ => panic!("## unknown node: {} in UnannotatedType ", n.kind().red()),
         }
     }
@@ -74,11 +75,13 @@ impl<'a> DocBuild<'a> for ClassMember {
             Self::Enum(en) => {
                 result.push(en.build(b));
             }
+            Self::Static(s) => {
+                result.push(s.build(b));
+            }
         }
     }
 }
 
-//_unannotated_type: ($) => choice($._simple_type, $.array_type),
 #[derive(Debug, Serialize)]
 pub enum UnannotatedType {
     Simple(SimpleType),

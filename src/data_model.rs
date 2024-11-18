@@ -609,7 +609,7 @@ impl<'a> DocBuild<'a> for Block {
     }
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Interface {
     pub types: Vec<Type>,
 }
@@ -617,15 +617,15 @@ pub struct Interface {
 impl Interface {
     pub fn new(node: Node) -> Self {
         assert_check(node, "interfaces");
-        let mut interface = Interface::default();
 
-        let type_list = node.c_by_k("type_list");
+        let types = node
+            .c_by_k("type_list")
+            .children_vec()
+            .into_iter()
+            .map(|n| Type::new(n))
+            .collect();
 
-        for c in type_list.children_vec() {
-            interface.types.push(Type::new(c));
-        }
-
-        interface
+        Self { types }
     }
 }
 
@@ -2289,4 +2289,118 @@ impl<'a> DocBuild<'a> for FinallyClause {
         result.push(b._txt_("finally"));
         result.push(self.body.build(b));
     }
+}
+
+#[derive(Debug, Serialize)]
+pub struct StaticInitializer {
+    pub block: Block,
+}
+
+impl StaticInitializer {
+    pub fn new(node: Node) -> Self {
+        Self {
+            block: Block::new(node.c_by_k("block")),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for StaticInitializer {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("static"));
+        result.push(self.block.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct InterfaceDeclaration {
+    pub modifiers: Option<Modifiers>,
+    pub name: String,
+    pub type_parameters: Option<TypeParameters>,
+    pub extends: Option<ExtendsInterface>,
+    pub body: InterfaceBody,
+}
+
+impl InterfaceDeclaration {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let name = node.cvalue_by_n("name", source_code());
+        let type_parameters = node
+            .try_c_by_k("type_parameters")
+            .map(|n| TypeParameters::new(n));
+        let extends = node
+            .try_c_by_k("extends_interface")
+            .map(|n| ExtendsInterface::new(n));
+        let body = ClassBody::new(node.c_by_n("body"));
+
+        Self {
+            modifiers,
+            name,
+            type_parameters,
+            extends,
+            body,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for InterfaceDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+
+        result.push(b.txt_("interface"));
+        result.push(b.txt(&self.name));
+
+        if let Some(ref n) = self.type_parameters {
+            result.push(n.build(b));
+        }
+
+        if let Some(ref n) = self.extends {
+            result.push(n.build(b));
+        }
+        result.push(self.body.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ExtendsInterface {
+    pub types: Vec<Type>,
+}
+
+impl ExtendsInterface {
+    pub fn new(node: Node) -> Self {
+        let types = node
+            .c_by_k("type_list")
+            .children_vec()
+            .into_iter()
+            .map(|n| Type::new(n))
+            .collect();
+        Self { types }
+    }
+}
+
+impl<'a> DocBuild<'a> for ExtendsInterface {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let types_doc = b.to_docs(&self.types);
+        let extends_group = b.concat(vec![
+            b._txt_("extends"),
+            b.intersperse_single_line(&types_doc, ", "),
+        ]);
+        result.push(extends_group);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct InterfaceBody {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub variable_declarator_id: VariableDeclaratorId,
+}
+
+impl InterfaceBody {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for InterfaceBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
 }
