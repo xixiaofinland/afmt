@@ -560,20 +560,25 @@ pub enum CommentType {
     Block,
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Block {
-    pub statements: Vec<Statement>,
+    pub statements: Vec<BodyMember<Statement>>,
 }
 
 impl Block {
     pub fn new(node: Node) -> Self {
         assert_check(node, "block");
-        let mut this = Block::default();
 
-        for c in node.children_vec() {
-            this.statements.push(Statement::new(c));
-        }
-        this
+        let statements: Vec<BodyMember<Statement>> = node
+            .children_vec()
+            .into_iter()
+            .map(|n| BodyMember {
+                member: Statement::new(n),
+                has_trailing_newlines: has_trailing_new_line(&n),
+            })
+            .collect();
+
+        Self { statements }
     }
 }
 
@@ -583,8 +588,7 @@ impl<'a> DocBuild<'a> for Block {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
 
-        let statement_docs = b.to_docs(&self.statements);
-        let docs = b.surround_with_newline(&statement_docs, "", "{", "}");
+        let docs = b.surround_with_trailing_newline_considered(&self.statements, "{", "}");
         result.push(docs);
     }
 }
