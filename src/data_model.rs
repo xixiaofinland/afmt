@@ -1861,16 +1861,16 @@ impl<'a> DocBuild<'a> for DmlExpression {
 
 #[derive(Debug, Serialize)]
 pub enum DmlSecurityMode {
-    User,
-    System,
+    User(String),
+    System(String),
 }
 
 impl DmlSecurityMode {
     pub fn new(n: Node) -> Self {
         let child = n.first_c();
         match child.kind() {
-            "user" => Self::User,
-            "system" => Self::System,
+            "user" => Self::User(child.value(source_code())),
+            "system" => Self::System(child.value(source_code())),
             _ => panic!("## unknown node: {} in DmlSecurityMode ", n.kind().red()),
         }
     }
@@ -1878,9 +1878,10 @@ impl DmlSecurityMode {
 
 impl<'a> DocBuild<'a> for DmlSecurityMode {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("as"));
         match self {
-            Self::User => result.push(b.txt("as USER")),
-            Self::System => result.push(b.txt("as system")),
+            Self::User(v) => result.push(b.txt(v)),
+            Self::System(v) => result.push(b.txt(v)),
         }
     }
 }
