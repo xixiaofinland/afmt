@@ -446,11 +446,11 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
     }
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct AssignmentExpression {
     pub left: String,
     pub op: String,
-    pub right: String,
+    pub right: Expression,
 }
 
 impl AssignmentExpression {
@@ -459,14 +459,16 @@ impl AssignmentExpression {
 
         let left = node.cvalue_by_n("left", source_code());
         let op = node.cvalue_by_n("operator", source_code());
-        let right = node.cvalue_by_n("right", source_code());
+        let right = Expression::new(node.c_by_n("right"));
         Self { left, op, right }
     }
 }
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(format!("{} {} {}", self.left, self.op, self.right)));
+        let right = self.right.build(b);
+        result.push(b.txt(format!("{} {} ", self.left, self.op)));
+        result.push(right);
     }
 }
 
@@ -739,11 +741,12 @@ pub struct ArgumentList {
 
 impl ArgumentList {
     pub fn new(node: Node) -> Self {
-        let mut this = ArgumentList::default();
-        for c in node.children_vec() {
-            this.expressions.push(Expression::new(c));
-        }
-        this
+        let expressions = node
+            .children_vec()
+            .into_iter()
+            .map(|n| Expression::new(n))
+            .collect();
+        Self { expressions }
     }
 }
 
@@ -1490,11 +1493,12 @@ impl ObjectCreationExpression {
 
 impl<'a> DocBuild<'a> for ObjectCreationExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("new"));
+        result.push(b.txt("new"));
         if let Some(t) = &self.type_arguments {
             result.push(t.build(b));
         }
 
+        result.push(b.txt(" "));
         result.push(self.type_.build(b));
         result.push(self.arguments.build(b));
 

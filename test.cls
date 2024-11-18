@@ -1,5 +1,5 @@
 public class Me {
   {
-    merge masterContact new List<Contact>{ oldContact1, oldContact2 };
+    insert accMG = new Account (Name    =   'matching gift company1');
   }
 }
