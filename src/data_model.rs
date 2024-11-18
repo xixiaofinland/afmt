@@ -466,9 +466,8 @@ impl AssignmentExpression {
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let right = self.right.build(b);
         result.push(b.txt(format!("{} {} ", self.left, self.op)));
-        result.push(right);
+        result.push(self.right.build(b));
     }
 }
 
