@@ -31,12 +31,11 @@ pub enum ClassMember {
     NestedClass(Box<ClassDeclaration>),
     Method(Box<MethodDeclaration>),
     Block(Box<Block>),
-    //Method(MethodDeclaration<'a>),
-    //Interface(InterfaceDeclaration<'a>),
+    Interface(Box<InterfaceDeclaration>),
     Enum(EnumDeclaration),
     Static(StaticInitializer),
     Constructor(ConstructorDeclaration),
-    //EmptyStatement, // Represents the ";" case
+    //SemiColumn,
 }
 
 impl ClassMember {
@@ -45,6 +44,7 @@ impl ClassMember {
             "field_declaration" => Self::Field(Box::new(FieldDeclaration::new(n))),
             "class_declaration" => Self::NestedClass(Box::new(ClassDeclaration::new(n))),
             "method_declaration" => Self::Method(Box::new(MethodDeclaration::new(n))),
+            "interface_declaration" => Self::Interface(Box::new(InterfaceDeclaration::new(n))),
             "block" => Self::Block(Box::new(Block::new(n))),
             "constructor_declaration" => Self::Constructor(ConstructorDeclaration::new(n)),
             "enum_declaration" => Self::Enum(EnumDeclaration::new(n)),
@@ -65,6 +65,9 @@ impl<'a> DocBuild<'a> for ClassMember {
             }
             Self::Method(method) => {
                 result.push(method.build(b));
+            }
+            Self::Interface(i) => {
+                result.push(i.build(b));
             }
             Self::Block(block) => {
                 result.push(block.build(b));

@@ -150,9 +150,9 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
         result.push(&self.type_.build(b));
         result.push(b._txt(&self.name));
         result.push(self.formal_parameters.build(b));
-        result.push(b.txt(" "));
 
         if let Some(ref n) = self.body {
+            result.push(b.txt(" "));
             let body_doc = n.build(b);
             result.push(body_doc);
         } else {
@@ -341,36 +341,13 @@ pub struct ClassBody {
 impl ClassBody {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_body");
-        let children = node.children_vec();
-        let mut class_members: Vec<BodyMember<ClassMember>> = Vec::new();
 
-        for c in children {
-            match c.kind() {
-                "line_comment" | "block_comment" => continue,
-                _ => {
-                    let member = ClassMember::new(c);
-                    let has_trailing_newline = has_trailing_new_line(&c);
-                    class_members.push(BodyMember {
-                        member,
-                        has_trailing_newline,
-                    });
-                }
-            }
-        }
-
-        let class_members: Vec<BodyMember<ClassMember>> = node
+        let class_members: Vec<_> = node
             .children_vec()
             .into_iter()
-            .filter_map(|n| match n.kind() {
-                "line_comment" | "block_comment" => None,
-                _ => {
-                    let member = ClassMember::new(n);
-                    let has_trailing_newline = has_trailing_new_line(&n);
-                    Some(BodyMember {
-                        member,
-                        has_trailing_newline,
-                    })
-                }
+            .map(|n| BodyMember {
+                member: ClassMember::new(n),
+                has_trailing_newline: has_trailing_new_line(&n),
             })
             .collect();
 
@@ -2330,7 +2307,7 @@ impl InterfaceDeclaration {
         let extends = node
             .try_c_by_k("extends_interface")
             .map(|n| ExtendsInterface::new(n));
-        let body = ClassBody::new(node.c_by_n("body"));
+        let body = InterfaceBody::new(node.c_by_n("body"));
 
         Self {
             modifiers,
@@ -2358,6 +2335,8 @@ impl<'a> DocBuild<'a> for InterfaceDeclaration {
         if let Some(ref n) = self.extends {
             result.push(n.build(b));
         }
+
+        result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
 }
@@ -2392,15 +2371,119 @@ impl<'a> DocBuild<'a> for ExtendsInterface {
 
 #[derive(Debug, Serialize)]
 pub struct InterfaceBody {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+    members: Vec<BodyMember<InterfaceMember>>,
 }
 
 impl InterfaceBody {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "interface_body");
+
+        let members: Vec<_> = node
+            .children_vec()
+            .into_iter()
+            .map(|n| {
+                let member = match n.kind() {
+                    "constant_declaration" => {
+                        InterfaceMember::Constant(ConstantDeclaration::new(n))
+                    }
+                    "enum_declaration" => InterfaceMember::EnumD(EnumDeclaration::new(n)),
+                    "method_declaration" => InterfaceMember::Method(MethodDeclaration::new(n)),
+                    "class_declaration" => InterfaceMember::Class(ClassDeclaration::new(n)),
+                    "interface_declaration" => {
+                        InterfaceMember::Interface(InterfaceDeclaration::new(n))
+                    }
+                    _ => panic!("## unknown node: {} in InterfaceBody", n.kind().red()),
+                };
+
+                BodyMember {
+                    member,
+                    has_trailing_newline: has_trailing_new_line(&n),
+                }
+            })
+            .collect();
+
+        Self { members }
+    }
 }
 
 impl<'a> DocBuild<'a> for InterfaceBody {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.surround_with_trailing_newline_considered(&self.members, "{", "}"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum InterfaceMember {
+    Constant(ConstantDeclaration),
+    EnumD(EnumDeclaration),
+    Method(MethodDeclaration),
+    Class(ClassDeclaration),
+    Interface(InterfaceDeclaration),
+    Semicolon,
+}
+
+impl<'a> DocBuild<'a> for InterfaceMember {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Constant(n) => {
+                result.push(n.build(b));
+            }
+            Self::EnumD(n) => {
+                result.push(n.build(b));
+            }
+            Self::Method(n) => {
+                result.push(n.build(b));
+            }
+            Self::Class(n) => {
+                result.push(n.build(b));
+            }
+            Self::Interface(n) => {
+                result.push(n.build(b));
+            }
+            _ => {
+                unimplemented!()
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ConstantDeclaration {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnannotatedType,
+    pub declarators: Vec<VariableDeclarator>,
+}
+
+impl ConstantDeclaration {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let type_ = UnannotatedType::new(node.c_by_n("type"));
+        let declarators = node
+            .cs_by_n("declarator")
+            .into_iter()
+            .map(|n| VariableDeclarator::new(n))
+            .collect();
+
+        Self {
+            modifiers,
+            type_,
+            declarators,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ConstantDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+
+        result.push(self.type_.build(b));
+        result.push(b.txt(" "));
+
+        let docs = b.to_docs(&self.declarators);
+        let declarators_doc = b.group_elems_with_softline(&docs, ",");
+        result.push(declarators_doc);
+        result.push(b.txt(";"));
+    }
 }
