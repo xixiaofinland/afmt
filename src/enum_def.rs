@@ -639,7 +639,7 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 #[derive(Debug, Serialize)]
 pub struct BodyMember<M> {
     pub member: M,
-    pub has_trailing_newlines: bool,
+    pub has_trailing_newline: bool,
 }
 
 //impl<'a, M: DocBuild<'a>> DocBuild<'a> for BodyMember<M> {

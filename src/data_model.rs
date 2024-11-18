@@ -349,10 +349,10 @@ impl ClassBody {
                 "line_comment" | "block_comment" => continue,
                 _ => {
                     let member = ClassMember::new(c);
-                    let has_trailing_newlines = has_trailing_new_line(&c);
+                    let has_trailing_newline = has_trailing_new_line(&c);
                     class_members.push(BodyMember {
                         member,
-                        has_trailing_newlines,
+                        has_trailing_newline,
                     });
                 }
             }
@@ -361,17 +361,15 @@ impl ClassBody {
         let class_members: Vec<BodyMember<ClassMember>> = node
             .children_vec()
             .into_iter()
-            .filter_map(|n| {
-                match n.kind() {
-                    "line_comment" | "block_comment" => None, // Exclude
-                    _ => {
-                        let member = ClassMember::new(n);
-                        let has_trailing_newlines = has_trailing_new_line(&n);
-                        Some(BodyMember {
-                            member,
-                            has_trailing_newlines,
-                        })
-                    }
+            .filter_map(|n| match n.kind() {
+                "line_comment" | "block_comment" => None,
+                _ => {
+                    let member = ClassMember::new(n);
+                    let has_trailing_newline = has_trailing_new_line(&n);
+                    Some(BodyMember {
+                        member,
+                        has_trailing_newline,
+                    })
                 }
             })
             .collect();
@@ -592,7 +590,7 @@ impl Block {
             .into_iter()
             .map(|n| BodyMember {
                 member: Statement::new(n),
-                has_trailing_newlines: has_trailing_new_line(&n),
+                has_trailing_newline: has_trailing_new_line(&n),
             })
             .collect();
 
@@ -1301,17 +1299,17 @@ impl ConstructorBody {
         for (i, c) in node.children_vec().into_iter().enumerate() {
             if i == 0 && c.kind() == "explicit_constructor_invocation" {
                 let member = ConstructInvocation::new(c);
-                let has_trailing_newlines = has_trailing_new_line(&c);
+                let has_trailing_newline = has_trailing_new_line(&c);
                 constructor_invocation = Some(BodyMember {
                     member,
-                    has_trailing_newlines,
+                    has_trailing_newline,
                 });
             } else {
                 let member = Statement::new(c);
-                let has_trailing_newlines = has_trailing_new_line(&c);
+                let has_trailing_newline = has_trailing_new_line(&c);
                 statements.push(BodyMember {
                     member,
-                    has_trailing_newlines,
+                    has_trailing_newline,
                 });
             }
         }
@@ -1337,7 +1335,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             result.push(b.txt(";"));
 
             if !self.statements.is_empty() {
-                if c.has_trailing_newlines {
+                if c.has_trailing_newline {
                     result.push(b.nl_with_no_indent());
                 }
                 result.push(b.nl());
