@@ -793,7 +793,6 @@ impl BinaryExpression {
         let left = Expression::new(node.c_by_n("left"));
         let op = node.c_by_n("operator").kind().to_string();
         let right = Expression::new(node.c_by_n("right"));
-
         Self { left, op, right }
     }
 }
@@ -2104,5 +2103,35 @@ impl<'a> DocBuild<'a> for ReturnStatement {
             result.push(exp.build(b));
         }
         result.push(b.txt(";"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct TernaryExpression {
+    pub condition: Expression,
+    pub consequence: Expression,
+    pub alternative: Expression,
+}
+
+impl TernaryExpression {
+    pub fn new(node: Node) -> Self {
+        let condition = Expression::new(node.c_by_n("condition"));
+        let consequence = Expression::new(node.c_by_n("consequence"));
+        let alternative = Expression::new(node.c_by_n("alternative"));
+        Self {
+            condition,
+            consequence,
+            alternative,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for TernaryExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.condition.build(b));
+        result.push(b._txt_("?"));
+        result.push(self.consequence.build(b));
+        result.push(b._txt_(":"));
+        result.push(self.alternative.build(b));
     }
 }

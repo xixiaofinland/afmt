@@ -193,6 +193,7 @@ pub enum Expression {
     Update(UpdateExpression),
     Unary(UnaryExpression),
     Dml(Box<DmlExpression>),
+    Te(Box<TernaryExpression>),
 }
 
 impl Expression {
@@ -213,6 +214,7 @@ impl Expression {
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             "unary_expression" => Self::Unary(UnaryExpression::new(n)),
             "dml_expression" => Self::Dml(Box::new(DmlExpression::new(n))),
+            "ternary_expression" => Self::Te(Box::new(TernaryExpression::new(n))),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
     }
@@ -241,6 +243,9 @@ impl<'a> DocBuild<'a> for Expression {
             }
             Self::Dml(d) => {
                 result.push(d.build(b));
+            }
+            Self::Te(t) => {
+                result.push(t.build(b));
             }
         }
     }
