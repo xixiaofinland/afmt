@@ -20,6 +20,18 @@ pub trait DocBuild<'a> {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
 }
 
+impl<'a> DocBuild<'a> for &str {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(*self));
+    }
+}
+
+impl<'a> DocBuild<'a> for String {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(self));
+    }
+}
+
 #[derive(Debug, Default, Serialize)]
 pub struct Root {
     pub members: Vec<RootMember>,
