@@ -118,6 +118,5 @@ pub fn has_trailing_new_line(node: &Node) -> bool {
         }
     }
 
-    // Return true if there are two or more consecutive newlines
-    newline_count >= 2
+    newline_count >= 2 // Return true if there are two or more consecutive newlines
 }
