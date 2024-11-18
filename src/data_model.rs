@@ -20,18 +20,6 @@ pub trait DocBuild<'a> {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
 }
 
-impl<'a> DocBuild<'a> for &str {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(*self));
-    }
-}
-
-impl<'a> DocBuild<'a> for String {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(self));
-    }
-}
-
 #[derive(Debug, Default, Serialize)]
 pub struct Root {
     pub members: Vec<RootMember>,
@@ -107,7 +95,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(n.build(b));
         }
 
-        result.push("class ".build(b));
+        result.push(b.txt_("class"));
         result.push(b.txt(&self.name));
 
         if let Some(ref n) = self.superclass {
@@ -118,7 +106,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(" ".build(b));
+        result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
 }
