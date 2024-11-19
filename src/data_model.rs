@@ -367,6 +367,7 @@ pub struct FieldDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
+    pub accessor_list: Option<AccessorList>,
     pub range: DataRange,
 }
 
@@ -386,11 +387,16 @@ impl FieldDeclaration {
             .map(|n| VariableDeclarator::new(n))
             .collect();
 
+        let accessor_list = node
+            .try_c_by_k("accessor_list")
+            .map(|n| AccessorList::new(n));
+
         Self {
             buckets,
             modifiers,
             type_,
             declarators,
+            accessor_list,
             range: DataRange::from(node.range()),
         }
     }
@@ -409,7 +415,12 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         let decision = b.group_elems_with_softline(&decl_docs, ",");
         result.push(decision);
 
-        result.push(b.txt(";"));
+        if let Some(ref n) = self.accessor_list {
+            result.push(b.txt(" "));
+            result.push(n.build(b));
+        } else {
+            result.push(b.txt(";"));
+        }
     }
 }
 
@@ -2485,5 +2496,66 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
         let declarators_doc = b.group_elems_with_softline(&docs, ",");
         result.push(declarators_doc);
         result.push(b.txt(";"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct AccessorList {
+    pub accessor_declarations: Vec<AccessorDeclaration>,
+}
+
+impl AccessorList {
+    pub fn new(node: Node) -> Self {
+        let accessor_declarations = node
+            .cs_by_k("accessor_declaration")
+            .into_iter()
+            .map(|n| AccessorDeclaration::new(n))
+            .collect();
+
+        Self {
+            accessor_declarations,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AccessorList {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let docs = b.to_docs(&self.accessor_declarations);
+        result.push(b.surround_with_softline_vary(&docs, "", "{", "}"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct AccessorDeclaration {
+    pub modifiers: Option<Modifiers>,
+    pub accessor: String,
+    pub body: Option<Block>,
+}
+
+impl AccessorDeclaration {
+    pub fn new(node: Node) -> Self {
+        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let accessor = node.cvalue_by_n("accessor", source_code());
+        let body = node.try_c_by_n("body").map(|n| Block::new(n));
+        Self {
+            modifiers,
+            accessor,
+            body,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AccessorDeclaration {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.modifiers {
+            result.push(n.build(b));
+        }
+        result.push(b.txt(&self.accessor));
+
+        if let Some(ref n) = self.body {
+            result.push(n.build(b));
+        } else {
+            result.push(b.txt(";"));
+        }
     }
 }

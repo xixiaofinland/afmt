@@ -1,6 +1,3 @@
 class BlockMember {
-  interface InnerInterface {
-    void interfaceMethod();
-    String s;
-  }
+  String propertyMemberWithGetSet { get; set; }
 }
