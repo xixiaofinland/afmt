@@ -2588,3 +2588,18 @@ impl<'a> DocBuild<'a> for CastExpression {
         result.push(self.value.build(b));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct ThrowStatement {
+    pub modifiers: Option<Modifiers>,
+    pub type_: UnnanotatedType,
+    pub variable_declarator_id: VariableDeclaratorId,
+}
+
+impl ThrowStatement {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for ThrowStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}

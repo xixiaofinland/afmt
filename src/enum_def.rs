@@ -508,6 +508,7 @@ pub enum Statement {
     While(WhileStatement),
     Return(ReturnStatement),
     Try(TryStatement),
+    Throw(ThrowStatement),
 }
 
 impl Statement {
@@ -524,6 +525,7 @@ impl Statement {
             "while_statement" => Self::While(WhileStatement::new(n)),
             "return_statement" => Self::Return(ReturnStatement::new(n)),
             "try_statement" => Self::Try(TryStatement::new(n)),
+            "throw_statement" => Self::Throw(ThrowStatement::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -536,40 +538,43 @@ impl Statement {
 impl<'a> DocBuild<'a> for Statement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::If(i) => {
-                result.push(i.build(b));
+            Self::If(n) => {
+                result.push(n.build(b));
             }
-            Self::Exp(exp) => {
-                result.push(exp.build(b));
+            Self::Exp(n) => {
+                result.push(n.build(b));
                 result.push(b.txt(";"));
             }
-            Self::Local(l) => {
-                result.push(l.build(b));
+            Self::Local(n) => {
+                result.push(n.build(b));
                 result.push(b.txt(";"));
             }
-            Self::Block(v) => {
-                result.push(v.build(b));
+            Self::Block(n) => {
+                result.push(n.build(b));
             }
-            Self::For(f) => {
-                result.push(f.build(b));
+            Self::For(n) => {
+                result.push(n.build(b));
             }
-            Self::EnhancedFor(f) => {
-                result.push(f.build(b));
+            Self::EnhancedFor(n) => {
+                result.push(n.build(b));
             }
-            Self::Run(r) => {
-                result.push(r.build(b));
+            Self::Run(n) => {
+                result.push(n.build(b));
             }
-            Self::Do(d) => {
-                result.push(d.build(b));
+            Self::Do(n) => {
+                result.push(n.build(b));
             }
-            Self::While(w) => {
-                result.push(w.build(b));
+            Self::While(n) => {
+                result.push(n.build(b));
             }
-            Self::Return(r) => {
-                result.push(r.build(b));
+            Self::Return(n) => {
+                result.push(n.build(b));
             }
-            Self::Try(t) => {
-                result.push(t.build(b));
+            Self::Try(n) => {
+                result.push(n.build(b));
+            }
+            Self::Throw(n) => {
+                result.push(n.build(b));
             }
         }
     }
