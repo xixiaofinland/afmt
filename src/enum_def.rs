@@ -204,6 +204,7 @@ pub enum Expression {
     Unary(UnaryExpression),
     Dml(Box<DmlExpression>),
     Te(Box<TernaryExpression>),
+    Cast(Box<CastExpression>),
 }
 
 impl Expression {
@@ -226,6 +227,7 @@ impl Expression {
             "unary_expression" => Self::Unary(UnaryExpression::new(n)),
             "dml_expression" => Self::Dml(Box::new(DmlExpression::new(n))),
             "ternary_expression" => Self::Te(Box::new(TernaryExpression::new(n))),
+            "cast_expression" => Self::Cast(Box::new(CastExpression::new(n))),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
     }
@@ -234,29 +236,32 @@ impl Expression {
 impl<'a> DocBuild<'a> for Expression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Assignment(a) => {
-                result.push(a.build(b));
+            Self::Assignment(n) => {
+                result.push(n.build(b));
             }
-            Self::StringLiteral(s) => {
-                result.push(b.txt(s));
+            Self::StringLiteral(n) => {
+                result.push(b.txt(n));
             }
-            Self::Binary(binary) => {
-                result.push(binary.build(b));
+            Self::Binary(n) => {
+                result.push(n.build(b));
             }
-            Self::Primary(p) => {
-                result.push(p.build(b));
+            Self::Primary(n) => {
+                result.push(n.build(b));
             }
-            Self::Update(u) => {
-                result.push(u.build(b));
+            Self::Update(n) => {
+                result.push(n.build(b));
             }
-            Self::Unary(u) => {
-                result.push(u.build(b));
+            Self::Unary(n) => {
+                result.push(n.build(b));
             }
-            Self::Dml(d) => {
-                result.push(d.build(b));
+            Self::Dml(n) => {
+                result.push(n.build(b));
             }
-            Self::Te(t) => {
-                result.push(t.build(b));
+            Self::Te(n) => {
+                result.push(n.build(b));
+            }
+            Self::Cast(n) => {
+                result.push(n.build(b));
             }
         }
     }
