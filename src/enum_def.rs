@@ -10,16 +10,20 @@ use crate::{
 pub enum RootMember {
     Class(Box<ClassDeclaration>),
     Enum(Box<EnumDeclaration>),
+    Interface(Box<InterfaceDeclaration>),
 }
 
 impl<'a> DocBuild<'a> for RootMember {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            RootMember::Class(class) => {
-                result.push(class.build(b));
+            RootMember::Class(n) => {
+                result.push(n.build(b));
             }
-            RootMember::Enum(en) => {
-                result.push(en.build(b));
+            RootMember::Enum(n) => {
+                result.push(n.build(b));
+            }
+            RootMember::Interface(n) => {
+                result.push(n.build(b));
             }
         }
     }

@@ -1,3 +1,1 @@
-class BlockMember {
-  String propertyMemberWithGetSet { get; set; }
-}
+interface EmptyInterface {}

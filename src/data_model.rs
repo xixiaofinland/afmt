@@ -38,6 +38,12 @@ impl Root {
                 "enum_declaration" => root
                     .members
                     .push(RootMember::Enum(Box::new(EnumDeclaration::new(c)))),
+                "interface_declaration" => {
+                    root.members
+                        .push(RootMember::Interface(Box::new(InterfaceDeclaration::new(
+                            c,
+                        ))))
+                }
                 _ => panic!("## unknown node: {} in Root ", c.kind().red()),
             }
         }
