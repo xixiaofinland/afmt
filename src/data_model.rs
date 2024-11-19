@@ -2660,3 +2660,140 @@ impl<'a> DocBuild<'a> for ContinueStatement {
         result.push(b.txt(";"));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct SwitchExpression {
+    pub condition: Expression,
+    pub body: SwitchBlock,
+}
+
+impl SwitchExpression {
+    pub fn new(node: Node) -> Self {
+        let condition = Expression::new(node.c_by_n("condition"));
+        let body = SwitchBlock::new(node.c_by_n("body"));
+        Self { condition, body }
+    }
+}
+
+impl<'a> DocBuild<'a> for SwitchExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("swithc on"));
+        result.push(self.condition.build(b));
+        result.push(self.body.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SwitchBlock {
+    pub rules: Vec<SwitchRule>,
+}
+
+impl SwitchBlock {
+    pub fn new(node: Node) -> Self {
+        let rules = node
+            .cs_by_k("switch_rule")
+            .into_iter()
+            .map(|n| SwitchRule::new(n))
+            .collect();
+        Self { rules }
+    }
+}
+
+impl<'a> DocBuild<'a> for SwitchBlock {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let docs = b.to_docs(&self.rules);
+        result.push(b.surround_with_softline_vary(&docs, ",", "{", "}"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SwitchRule {
+    pub label: SwitchLabel,
+    pub block: Block,
+}
+
+impl SwitchRule {
+    // TODO: update parser
+    pub fn new(node: Node) -> Self {
+        let label_node = node.c_by_k("switch_label");
+
+        let label = if label_node.children_vec().len() == 0 {
+            SwitchLabel::Else
+        } else if label_node.try_c_by_k("identifier").is_some() {
+            let mut sobjects = Vec::new();
+            let mut current_type: Option<UnannotatedType> = None;
+
+            for child in label_node.children_vec() {
+                match child.kind() {
+                    "identifier" => {
+                        sobjects.push(SObjectVar {
+                            unannotated_type: current_type.take(),
+                            identifier: child.value(source_code()),
+                        });
+                    }
+                    _ => {
+                        current_type = Some(UnannotatedType::new(child));
+                    }
+                }
+            }
+
+            SwitchLabel::SObjects(sobjects)
+        } else {
+            let expressions = label_node
+                .children_vec()
+                .into_iter()
+                .map(|n| Expression::new(n))
+                .collect();
+
+            SwitchLabel::Expressions(expressions)
+        };
+        let block = Block::new(node.c_by_k("block"));
+        Self { label, block }
+    }
+}
+
+impl<'a> DocBuild<'a> for SwitchRule {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.label.build(b));
+        result.push(self.block.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum SwitchLabel {
+    SObjects(Vec<SObjectVar>),
+    Expressions(Vec<Expression>),
+    Else,
+}
+
+impl<'a> DocBuild<'a> for SwitchLabel {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("when"));
+        match self {
+            Self::SObjects(vec) => {
+                vec.iter().map(|n| n.build(b));
+            }
+            Self::Expressions(vec) => {
+                vec.iter().map(|n| n.build(b));
+            }
+            Self::Else => {
+                result.push(b.txt_("else"));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SObjectVar {
+    pub unannotated_type: Option<UnannotatedType>,
+    pub identifier: String,
+}
+
+impl<'a> DocBuild<'a> for SObjectVar {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if let Some(ref n) = self.unannotated_type {
+            result.push(n.build(b));
+        }
+        result.push(b.txt(&self.identifier));
+    }
+}

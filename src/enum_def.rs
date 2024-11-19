@@ -511,6 +511,7 @@ pub enum Statement {
     Throw(ThrowStatement),
     Break(BreakStatement),
     Continue(ContinueStatement),
+    Switch(Box<SwitchExpression>),
 }
 
 impl Statement {
@@ -530,6 +531,7 @@ impl Statement {
             "throw_statement" => Self::Throw(ThrowStatement::new(n)),
             "break_statement" => Self::Break(BreakStatement::new(n)),
             "continue_statement" => Self::Continue(ContinueStatement::new(n)),
+            "switch_expression" => Self::Switch(Box::new(SwitchExpression::new(n))),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -583,6 +585,9 @@ impl<'a> DocBuild<'a> for Statement {
                 result.push(n.build(b));
             }
             Self::Continue(n) => {
+                result.push(n.build(b));
+            }
+            Self::Switch(n) => {
                 result.push(n.build(b));
             }
         }
