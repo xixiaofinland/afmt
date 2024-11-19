@@ -509,6 +509,8 @@ pub enum Statement {
     Return(ReturnStatement),
     Try(Box<TryStatement>),
     Throw(ThrowStatement),
+    Break(BreakStatement),
+    Continue(ContinueStatement),
 }
 
 impl Statement {
@@ -526,6 +528,8 @@ impl Statement {
             "return_statement" => Self::Return(ReturnStatement::new(n)),
             "try_statement" => Self::Try(Box::new(TryStatement::new(n))),
             "throw_statement" => Self::Throw(ThrowStatement::new(n)),
+            "break_statement" => Self::Break(BreakStatement::new(n)),
+            "continue_statement" => Self::Continue(ContinueStatement::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -573,6 +577,12 @@ impl<'a> DocBuild<'a> for Statement {
                 result.push(n.build(b));
             }
             Self::Throw(n) => {
+                result.push(n.build(b));
+            }
+            Self::Break(n) => {
+                result.push(n.build(b));
+            }
+            Self::Continue(n) => {
                 result.push(n.build(b));
             }
         }

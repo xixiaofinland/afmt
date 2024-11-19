@@ -2608,3 +2608,55 @@ impl<'a> DocBuild<'a> for ThrowStatement {
         result.push(b.txt(";"));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct BreakStatement {
+    pub identifier: Option<String>,
+}
+
+impl BreakStatement {
+    pub fn new(node: Node) -> Self {
+        let identifier = node
+            .try_c_by_k("identifier")
+            .map(|n| n.value(source_code()));
+        Self { identifier }
+    }
+}
+
+impl<'a> DocBuild<'a> for BreakStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("break"));
+
+        if let Some(ref n) = self.identifier {
+            result.push(b.txt(" "));
+            result.push(b.txt(&n));
+        }
+        result.push(b.txt(";"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ContinueStatement {
+    pub identifier: Option<String>,
+}
+
+impl ContinueStatement {
+    pub fn new(node: Node) -> Self {
+        let identifier = node
+            .try_c_by_k("identifier")
+            .map(|n| n.value(source_code()));
+        Self { identifier }
+    }
+}
+
+impl<'a> DocBuild<'a> for ContinueStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("continue"));
+
+        if let Some(ref n) = self.identifier {
+            result.push(b.txt(" "));
+            result.push(b.txt(&n));
+        }
+        result.push(b.txt(";"));
+    }
+}

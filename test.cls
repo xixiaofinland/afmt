@@ -1,5 +1,15 @@
 public class Me {
-    void throwStatement() {
-    throw a;
-     }
+  void breakStatement() {
+    while (true) {
+      break;
+
+      break
+        ;
+
+      break;
+      break;
+
+
+    }
+  }
 }
