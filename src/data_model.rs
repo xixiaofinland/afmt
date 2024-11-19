@@ -2591,15 +2591,20 @@ impl<'a> DocBuild<'a> for CastExpression {
 
 #[derive(Debug, Serialize)]
 pub struct ThrowStatement {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+    pub exp: Expression,
 }
 
 impl ThrowStatement {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        let exp = Expression::new(node.first_c());
+        Self { exp }
+    }
 }
 
 impl<'a> DocBuild<'a> for ThrowStatement {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("throw "));
+        result.push(self.exp.build(b));
+        result.push(b.txt(";"));
+    }
 }

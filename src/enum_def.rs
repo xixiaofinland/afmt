@@ -500,14 +500,14 @@ pub enum Statement {
     If(Box<IfStatement>),
     Exp(Expression),
     Local(LocalVariableDeclaration),
-    Block(Block),
+    Block(Box<Block>),
     For(Box<ForStatement>),
     EnhancedFor(Box<EnhancedForStatement>),
     Run(RunAsStatement),
-    Do(DoStatement),
-    While(WhileStatement),
+    Do(Box<DoStatement>),
+    While(Box<WhileStatement>),
     Return(ReturnStatement),
-    Try(TryStatement),
+    Try(Box<TryStatement>),
     Throw(ThrowStatement),
 }
 
@@ -517,19 +517,18 @@ impl Statement {
             "if_statement" => Self::If(Box::new(IfStatement::new(n))),
             "expression_statement" => Self::Exp(Expression::new(n.first_c())),
             "local_variable_declaration" => Self::Local(LocalVariableDeclaration::new(n)),
-            "block" => Self::Block(Block::new(n)),
+            "block" => Self::Block(Box::new(Block::new(n))),
             "for_statement" => Self::For(Box::new(ForStatement::new(n))),
             "enhanced_for_statement" => Self::EnhancedFor(Box::new(EnhancedForStatement::new(n))),
             "run_as_statement" => Self::Run(RunAsStatement::new(n)),
-            "do_statement" => Self::Do(DoStatement::new(n)),
-            "while_statement" => Self::While(WhileStatement::new(n)),
+            "do_statement" => Self::Do(Box::new(DoStatement::new(n))),
+            "while_statement" => Self::While(Box::new(WhileStatement::new(n))),
             "return_statement" => Self::Return(ReturnStatement::new(n)),
-            "try_statement" => Self::Try(TryStatement::new(n)),
+            "try_statement" => Self::Try(Box::new(TryStatement::new(n))),
             "throw_statement" => Self::Throw(ThrowStatement::new(n)),
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
-
     pub fn is_block(&self) -> bool {
         matches!(self, Statement::Block(_))
     }
