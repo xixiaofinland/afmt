@@ -1,1 +1,7 @@
-interface EmptyInterface {}
+public class Me {
+  {
+    Account a = new Account(NumberOfEmployees = 7);
+    Object objA = a;
+    Integer totalRecords = ((Account) objA).NumberOfEmployees;
+  }
+}

@@ -2568,15 +2568,23 @@ impl<'a> DocBuild<'a> for AccessorDeclaration {
 
 #[derive(Debug, Serialize)]
 pub struct CastExpression {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnnanotatedType,
-    pub variable_declarator_id: VariableDeclaratorId,
+    pub type_: Type,
+    pub value: Expression,
 }
 
 impl CastExpression {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        let type_ = Type::new(node.c_by_n("type"));
+        let value = Expression::new(node.c_by_n("value"));
+        Self { type_, value }
+    }
 }
 
 impl<'a> DocBuild<'a> for CastExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("("));
+        result.push(self.type_.build(b));
+        result.push(b.txt_(")"));
+        result.push(self.value.build(b));
+    }
 }
