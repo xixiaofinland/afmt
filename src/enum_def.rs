@@ -441,7 +441,7 @@ impl Modifier {
             "final" => Self::Final,
             "virtual" => Self::Virtual,
             "abstract" => Self::Abstract,
-            "inherited sharing" => Self::InheritedSharing,
+            "inherited_sharing" => Self::InheritedSharing,
             "protected" => Self::Protected,
             "test method" => Self::TestMethod,
             "transient" => Self::Transient,
