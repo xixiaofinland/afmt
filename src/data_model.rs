@@ -773,7 +773,7 @@ impl TypeArguments {
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let types_doc = b.to_docs(&self.types);
-        result.push(b.surround_with_maybeline(&types_doc, ",", "<", ">"));
+        result.push(b.surround_with_softline(&types_doc, ",", "<", ">"));
     }
 }
 
