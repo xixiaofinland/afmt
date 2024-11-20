@@ -8,11 +8,8 @@ class ExceptionClass {
 
   void tryCatchTest() {
     try {
-
     } catch (Exception e) {
-
     } finally {
-
     }
 
     try {
@@ -49,7 +46,8 @@ class ExceptionClass {
     }
   }
 
-  class CustomException extends Exception {}
-  class AnotherCustomException extends Exception {}
+  class CustomException extends Exception {
+  }
+  class AnotherCustomException extends Exception {
+  }
 }
-
