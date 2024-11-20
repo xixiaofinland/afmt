@@ -2677,8 +2677,9 @@ impl SwitchExpression {
 
 impl<'a> DocBuild<'a> for SwitchExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("swithc on"));
+        result.push(b.txt_("switch on"));
         result.push(self.condition.build(b));
+        result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
 }
@@ -2702,7 +2703,7 @@ impl SwitchBlock {
 impl<'a> DocBuild<'a> for SwitchBlock {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.rules);
-        result.push(b.surround_with_softline_vary(&docs, ",", "{", "}"));
+        result.push(b.surround_with_newline(&docs, ",", "{", "}"));
     }
 }
 
@@ -2755,6 +2756,7 @@ impl SwitchRule {
 impl<'a> DocBuild<'a> for SwitchRule {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(self.label.build(b));
+        result.push(b.txt(" "));
         result.push(self.block.build(b));
     }
 }
@@ -2770,12 +2772,8 @@ impl<'a> DocBuild<'a> for SwitchLabel {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt_("when"));
         match self {
-            Self::SObjects(vec) => {
-                vec.iter().map(|n| n.build(b));
-            }
-            Self::Expressions(vec) => {
-                vec.iter().map(|n| n.build(b));
-            }
+            Self::SObjects(vec) => vec.into_iter().for_each(|n| result.push(n.build(b))),
+            Self::Expressions(vec) => vec.into_iter().for_each(|n| result.push(n.build(b))),
             Self::Else => {
                 result.push(b.txt_("else"));
             }

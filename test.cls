@@ -1,15 +1,9 @@
-public class Me {
-  void breakStatement() {
-    while (true) {
-      break;
-
-      break
-        ;
-
-      break;
-      break;
-
-
+Class A{
+  void switchStatement() {
+    switch on i {
+      when 1 {
+        System.debug('One');
+      }
+    }
     }
   }
-}
