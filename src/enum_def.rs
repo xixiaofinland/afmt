@@ -471,7 +471,7 @@ impl<'a> DocBuild<'a> for Modifier {
                 result.push(b.txt("private"));
             }
             Self::Protected => {
-                result.push(b.txt("Protected"));
+                result.push(b.txt("protected"));
             }
             Self::Public => {
                 result.push(b.txt("public"));

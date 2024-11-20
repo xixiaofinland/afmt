@@ -1,0 +1,3 @@
+public class Me {
+  public transient final static Integer TEST = 0;
+}
