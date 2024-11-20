@@ -11,6 +11,7 @@ pub enum RootMember {
     Class(Box<ClassDeclaration>),
     Enum(Box<EnumDeclaration>),
     Interface(Box<InterfaceDeclaration>),
+    Trigger(Box<TriggerDeclaration>),
 }
 
 impl<'a> DocBuild<'a> for RootMember {
@@ -23,6 +24,9 @@ impl<'a> DocBuild<'a> for RootMember {
                 result.push(n.build(b));
             }
             RootMember::Interface(n) => {
+                result.push(n.build(b));
+            }
+            RootMember::Trigger(n) => {
                 result.push(n.build(b));
             }
         }
@@ -732,4 +736,58 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool,
+}
+
+#[derive(Debug, Serialize)]
+pub enum TriggerEvent {
+    BeforeInsert,
+    BeforeUpdate,
+    BeforeDelete,
+    AfterInsert,
+    AfterUpdate,
+    AfterDelete,
+    AfterUndelete,
+}
+
+impl TriggerEvent {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "before_insert" => Self::BeforeInsert,
+            "before_Update" => Self::BeforeUpdate,
+            "before_delete" => Self::BeforeDelete,
+            "after_insert" => Self::AfterInsert,
+            "after_update" => Self::AfterUpdate,
+            "after_delete" => Self::AfterDelete,
+            "after_undelete" => Self::AfterUndelete,
+            _ => panic!("## unknown node: {} in TriggerEvent", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for TriggerEvent {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::BeforeInsert => {
+                result.push(b.txt("before insert"));
+            }
+            Self::BeforeUpdate => {
+                result.push(b.txt("before update"));
+            }
+            Self::BeforeDelete => {
+                result.push(b.txt("before delete"));
+            }
+            Self::AfterInsert => {
+                result.push(b.txt("after insert"));
+            }
+            Self::AfterUpdate => {
+                result.push(b.txt("after update"));
+            }
+            Self::AfterDelete => {
+                result.push(b.txt("after delete"));
+            }
+            Self::AfterUndelete => {
+                result.push(b.txt("after undelete"));
+            }
+        }
+    }
 }

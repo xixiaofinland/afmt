@@ -38,9 +38,6 @@ impl Root {
                 "enum_declaration" => root
                     .members
                     .push(RootMember::Enum(Box::new(EnumDeclaration::new(c)))),
-                "trigger_declaration" => root
-                    .members
-                    .push(RootMember::Trigger(Box::new(TriggerDeclaration::new(c)))),
                 "interface_declaration" => {
                     root.members
                         .push(RootMember::Interface(Box::new(InterfaceDeclaration::new(
@@ -2991,59 +2988,14 @@ impl<'a> DocBuild<'a> for ArrayType {
 pub struct TriggerDeclaration {
     pub name: String,
     pub object: String,
-    pub events: Vec<TriggerEvent>,
-    pub body: TriggerBody,
+    pub events: Option<Modifiers>,
+    pub body: UnnanotatedType,
 }
 
 impl TriggerDeclaration {
-    pub fn new(node: Node) -> Self {
-        let name = node.cvalue_by_n("name", source_code());
-        let object = node.cvalue_by_n("object", source_code());
-        let events = node
-            .cs_by_n("events")
-            .into_iter()
-            .map(|n| TriggerEvent::new(n.first_c()))
-            .collect();
-        let body = TriggerBody::new(node.c_by_n("body"));
-        Self {
-            name,
-            object,
-            events,
-            body,
-        }
-    }
+    pub fn new(node: Node) -> Self {}
 }
 
 impl<'a> DocBuild<'a> for TriggerDeclaration {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("trigger"));
-        result.push(b.txt(&self.name));
-        result.push(b._txt_("on"));
-        result.push(b.txt(&self.object));
-
-        let doc = b.to_docs(&self.events);
-        let events = b.surround_with_softline(&doc, ",", "(", ")");
-        result.push(events);
-
-        result.push(b.txt(" "));
-        result.push(self.body.build(b));
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct TriggerBody {
-    pub block: Block,
-}
-
-impl TriggerBody {
-    pub fn new(node: Node) -> Self {
-        let block = Block::new(node.c_by_k("block"));
-        Self { block }
-    }
-}
-
-impl<'a> DocBuild<'a> for TriggerBody {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.block.build(b));
-    }
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
 }
