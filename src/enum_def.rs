@@ -98,9 +98,11 @@ pub enum UnannotatedType {
 impl UnannotatedType {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" | "void_type" | "generic_type" | "scoped_type_identifier" => {
-                Self::Simple(SimpleType::new(n))
-            }
+            "type_identifier"
+            | "void_type"
+            | "generic_type"
+            | "java_type"
+            | "scoped_type_identifier" => Self::Simple(SimpleType::new(n)),
             _ => panic!("## unknown node: {} in UnannotatedType ", n.kind().red()),
         }
     }
@@ -120,6 +122,7 @@ pub enum SimpleType {
     Void(VoidType),
     Generic(GenericType),
     Scoped(ScopedTypeIdentifier),
+    Java(JavaType),
 }
 
 impl SimpleType {
@@ -127,6 +130,7 @@ impl SimpleType {
         match n.kind() {
             "type_identifier" => Self::Identifier(n.value(source_code())),
             "void_type" => Self::Void(VoidType::new(n)),
+            "java_type" => Self::Java(JavaType::new(n)),
             "generic_type" => Self::Generic(GenericType::new(n)),
             "scoped_type_identifier" => Self::Scoped(ScopedTypeIdentifier::new(n)),
             _ => panic!("## unknown node: {} in SimpleType", n.kind().red()),
@@ -137,17 +141,20 @@ impl SimpleType {
 impl<'a> DocBuild<'a> for SimpleType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Identifier(i) => {
-                result.push(b.txt(i));
+            Self::Identifier(n) => {
+                result.push(b.txt(n));
             }
-            Self::Void(v) => {
-                result.push(b.txt(&v.value));
+            Self::Java(n) => {
+                result.push(n.build(b));
             }
-            Self::Generic(g) => {
-                result.push(g.build(b));
+            Self::Void(n) => {
+                result.push(b.txt(&n.value));
             }
-            Self::Scoped(g) => {
-                result.push(g.build(b));
+            Self::Generic(n) => {
+                result.push(n.build(b));
+            }
+            Self::Scoped(n) => {
+                result.push(n.build(b));
             }
         }
     }
@@ -211,6 +218,7 @@ impl Expression {
             | "field_access"
             | "string_literal"
             | "version_expression"
+            | "java_field_access"
             | "this"
             | "array_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
@@ -288,6 +296,7 @@ pub enum PrimaryExpression {
     ArrayCreation(ArrayCreationExpression),
     Version(VersionExpression),
     This(This),
+    Java(JavaFieldAccess),
 }
 
 impl PrimaryExpression {
@@ -306,6 +315,7 @@ impl PrimaryExpression {
             "array_access" => Self::Array(Box::new(ArrayAccess::new(n))),
             "array_creation_expression" => Self::ArrayCreation(ArrayCreationExpression::new(n)),
             "version_expression" => Self::Version(VersionExpression::new(n)),
+            "java_field_access" => Self::Java(JavaFieldAccess::new(n)),
             "this" => Self::This(This::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
@@ -340,6 +350,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
                 result.push(n.build(b));
             }
             Self::Version(n) => {
+                result.push(n.build(b));
+            }
+            Self::Java(n) => {
                 result.push(n.build(b));
             }
             Self::This(n) => {
@@ -615,10 +628,12 @@ pub enum Type {
 impl Type {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" | "void_type" | "generic_type" | "scoped_type_identifier" => {
-                Self::Unannotated(UnannotatedType::Simple(SimpleType::new(n)))
-            }
-            _ => panic!("## unknown node: {} in Type ", n.kind().red()),
+            "type_identifier"
+            | "void_type"
+            | "generic_type"
+            | "scoped_type_identifier"
+            | "java_type" => Self::Unannotated(UnannotatedType::Simple(SimpleType::new(n))),
+            _ => panic!("## unknown node: {} in Type", n.kind().red()),
         }
     }
 }

@@ -2881,3 +2881,44 @@ impl<'a> DocBuild<'a> for VersionExpression {
         result.push(b.txt("Package.Version.Request"));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct JavaFieldAccess {
+    pub field_access: FieldAccess,
+}
+
+impl JavaFieldAccess {
+    pub fn new(node: Node) -> Self {
+        let field_access = FieldAccess::new(node.c_by_k("field_access"));
+        Self { field_access }
+    }
+}
+
+impl<'a> DocBuild<'a> for JavaFieldAccess {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("java:"));
+        result.push(self.field_access.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct JavaType {
+    pub scoped_type_identifier: ScopedTypeIdentifier,
+}
+
+impl JavaType {
+    pub fn new(node: Node) -> Self {
+        let scoped_type_identifier =
+            ScopedTypeIdentifier::new(node.c_by_k("scoped_type_identifier"));
+        Self {
+            scoped_type_identifier,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for JavaType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("java:"));
+        result.push(self.scoped_type_identifier.build(b));
+    }
+}
