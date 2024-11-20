@@ -1115,8 +1115,13 @@ impl<'a> DocBuild<'a> for ForStatement {
         let docs = vec![init, condition, update];
 
         result.push(b.surround_with_maybeline(&docs, ";", "(", ")"));
-        result.push(b.txt(" "));
-        result.push(self.body.build(b));
+        match self.body {
+            Statement::SemiColumn => result.push(b.txt(";")),
+            _ => {
+                result.push(b.txt(" "));
+                result.push(self.body.build(b));
+            }
+        }
     }
 }
 
@@ -1156,8 +1161,14 @@ impl<'a> DocBuild<'a> for EnhancedForStatement {
         result.push(b._txt(&self.name));
         result.push(b._txt_(":"));
         result.push(self.value.build(b));
-        result.push(b.txt_(")"));
-        result.push(self.body.build(b));
+        result.push(b.txt(")"));
+        match self.body {
+            Statement::SemiColumn => result.push(b.txt(";")),
+            _ => {
+                result.push(b.txt(" "));
+                result.push(self.body.build(b));
+            }
+        }
     }
 }
 #[derive(Debug, Serialize)]
