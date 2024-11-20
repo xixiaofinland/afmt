@@ -2870,6 +2870,7 @@ impl<'a> DocBuild<'a> for SObjectVar {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         if let Some(ref n) = self.unannotated_type {
             result.push(n.build(b));
+            result.push(b.txt(" "));
         }
         result.push(b.txt(&self.identifier));
     }
