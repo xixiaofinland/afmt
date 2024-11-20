@@ -92,7 +92,7 @@ impl<'a> DocBuild<'a> for ClassMember {
 #[derive(Debug, Serialize)]
 pub enum UnannotatedType {
     Simple(SimpleType),
-    //Array(ArrayType),
+    Array(Box<ArrayType>),
 }
 
 impl UnannotatedType {
@@ -103,6 +103,7 @@ impl UnannotatedType {
             | "generic_type"
             | "java_type"
             | "scoped_type_identifier" => Self::Simple(SimpleType::new(n)),
+            "array_type" => Self::Array(Box::new(ArrayType::new(n))),
             _ => panic!("## unknown node: {} in UnannotatedType ", n.kind().red()),
         }
     }
@@ -111,7 +112,8 @@ impl UnannotatedType {
 impl<'a> DocBuild<'a> for UnannotatedType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Simple(s) => result.push(s.build(b)),
+            Self::Simple(n) => result.push(n.build(b)),
+            Self::Array(n) => result.push(n.build(b)),
         }
     }
 }

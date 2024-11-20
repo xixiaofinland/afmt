@@ -2944,3 +2944,29 @@ impl<'a> DocBuild<'a> for JavaType {
         result.push(self.scoped_type_identifier.build(b));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct ArrayType {
+    pub element: UnannotatedType,
+    pub dimensions: Dimensions,
+}
+
+impl ArrayType {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "array_type");
+
+        let element = UnannotatedType::new(node.c_by_n("element"));
+        let dimensions = Dimensions::new(node.c_by_n("dimensions"));
+        Self {
+            element,
+            dimensions,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ArrayType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.element.build(b));
+        result.push(self.dimensions.build(b));
+    }
+}
