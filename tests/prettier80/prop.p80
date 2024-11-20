@@ -1,7 +1,4 @@
 public class Me {
-  @AuraEnabled
-  public String someProperty { get; set; }
-
   public integer prop {
     get {
       return prop;
@@ -11,4 +8,3 @@ public class Me {
     }
   }
 }
-
