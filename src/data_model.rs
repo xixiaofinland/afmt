@@ -1066,7 +1066,7 @@ impl ParenthesizedExpression {
 
 impl<'a> DocBuild<'a> for ParenthesizedExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        // this logic is built to be align with prettier apex
+        // to align with prettier apex
         result.push(b.txt("("));
         let doc = b.concat(vec![
             b.add_indent_level(b.maybeline()),
@@ -2604,18 +2604,22 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
 #[derive(Debug, Serialize)]
 pub struct AccessorList {
     pub accessor_declarations: Vec<AccessorDeclaration>,
+    pub child_has_body_section: bool,
 }
 
 impl AccessorList {
     pub fn new(node: Node) -> Self {
-        let accessor_declarations = node
+        let accessor_declarations: Vec<_> = node
             .cs_by_k("accessor_declaration")
             .into_iter()
             .map(|n| AccessorDeclaration::new(n))
             .collect();
 
+        let child_has_body_section = accessor_declarations.iter().any(|n| n.body.is_some());
+
         Self {
             accessor_declarations,
+            child_has_body_section,
         }
     }
 }
@@ -2623,7 +2627,13 @@ impl AccessorList {
 impl<'a> DocBuild<'a> for AccessorList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.accessor_declarations);
-        result.push(b.surround_with_softline_vary(&docs, "", "{", "}"));
+
+        // to align with prettier apex;
+        if self.child_has_body_section {
+            result.push(b.surround_with_newline(&docs, "", "{", "}"));
+        } else {
+            result.push(b.surround_with_softline_vary(&docs, "", "{", "}"));
+        }
     }
 }
 
@@ -2655,6 +2665,7 @@ impl<'a> DocBuild<'a> for AccessorDeclaration {
         result.push(b.txt(&self.accessor));
 
         if let Some(ref n) = self.body {
+            result.push(b.txt(" "));
             result.push(n.build(b));
         } else {
             result.push(b.txt(";"));
