@@ -2370,7 +2370,7 @@ impl InterfaceDeclaration {
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
         let extends = node
-            .try_c_by_k("extends_interface")
+            .try_c_by_k("extends_interfaces")
             .map(|n| ExtendsInterface::new(n));
         let body = InterfaceBody::new(node.c_by_n("body"));
 
