@@ -2023,8 +2023,17 @@ impl ArrayCreationExpression {
         let dimensions_node = node.try_c_by_n("dimensions");
 
         let variant = if value_node.is_none() {
-            //DD
-            unimplemented!();
+            // DD
+            let dimensions_exprs = node
+                .cs_by_k("dimensions_expr")
+                .into_iter()
+                .map(|n| DimensionsExpr::new(n))
+                .collect();
+            let dimensions = node.try_c_by_k("dimensions").map(|n| Dimensions::new(n));
+            ArrayCreationVariant::DD {
+                dimensions_exprs,
+                dimensions,
+            }
         } else if dimensions_node.is_none() {
             //OnlyV
             let value = ArrayInitializer::new(node.c_by_n("value"));
@@ -2049,7 +2058,7 @@ impl<'a> DocBuild<'a> for ArrayCreationExpression {
 #[derive(Debug, Serialize)]
 pub enum ArrayCreationVariant {
     DD {
-        dimensions_expr: Vec<DimensionsExpr>,
+        dimensions_exprs: Vec<DimensionsExpr>,
         dimensions: Option<Dimensions>,
     },
     DV {
@@ -2066,6 +2075,19 @@ impl<'a> DocBuild<'a> for ArrayCreationVariant {
         match self {
             Self::OnlyV { value } => {
                 result.push(value.build(b));
+            }
+            Self::DD {
+                dimensions_exprs,
+                dimensions,
+            } => {
+                dimensions_exprs
+                    .iter()
+                    .for_each(|n| result.push(n.build(b)));
+
+                if let Some(ref n) = dimensions {
+                    result.push(b.txt(" "));
+                    result.push(n.build(b));
+                }
             }
             _ => unimplemented!(),
         }
@@ -2114,7 +2136,7 @@ impl DimensionsExpr {
 impl<'a> DocBuild<'a> for DimensionsExpr {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("["));
-        result.push(b.nil());
+        result.push(self.exp.build(b));
         result.push(b.txt("]"));
     }
 }
