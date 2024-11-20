@@ -1067,7 +1067,12 @@ impl ParenthesizedExpression {
 impl<'a> DocBuild<'a> for ParenthesizedExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("("));
-        result.push(self.exp.build(b));
+        let doc = b.concat(vec![
+            b.add_indent_level(b.maybeline()),
+            b.add_indent_level(self.exp.build(b)),
+            b.maybeline(),
+        ]);
+        result.push(b.group(doc));
         result.push(b.txt(")"));
     }
 }
