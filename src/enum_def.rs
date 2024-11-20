@@ -495,7 +495,7 @@ impl<'a> DocBuild<'a> for Modifier {
                 result.push(b.txt("virtual"));
             }
             Self::Webservice => {
-                result.push(b.txt("webserivce"));
+                result.push(b.txt("webService"));
             }
             Self::WithSharing => {
                 result.push(b.txt("with sharing"));
