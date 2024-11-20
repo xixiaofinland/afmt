@@ -1,8 +1,5 @@
-class ExceptionClass {
-  class InnerClass extends ExpressionClass {
-    void dottedExprMethod() {
-      i ^= 3;
-    }
-}
-}
+class GenericOuterClass<T> extends AnotherClass<T> {
+  class InnerClass<K, V> {}
 
+  interface InnerGenericInterface<K, V> {}
+}

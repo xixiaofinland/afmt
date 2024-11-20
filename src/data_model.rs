@@ -65,6 +65,7 @@ pub struct ClassDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
     pub name: String,
+    pub type_parameters: Option<TypeParameters>,
     pub superclass: Option<SuperClass>,
     pub interface: Option<Interface>,
     pub body: ClassBody,
@@ -78,6 +79,9 @@ impl ClassDeclaration {
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let name = node.cvalue_by_n("name", source_code());
+        let type_parameters = node
+            .try_c_by_k("type_parameters")
+            .map(|n| TypeParameters::new(n));
         let superclass = node.try_c_by_k("superclass").map(|n| SuperClass::new(n));
         let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
         let body = ClassBody::new(node.c_by_n("body"));
@@ -87,6 +91,7 @@ impl ClassDeclaration {
             buckets,
             modifiers,
             name,
+            type_parameters,
             superclass,
             interface,
             body,
@@ -104,6 +109,9 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.txt_("class"));
         result.push(b.txt(&self.name));
 
+        if let Some(ref n) = self.type_parameters {
+            result.push(n.build(b));
+        }
         if let Some(ref n) = self.superclass {
             result.push(n.build(b));
         }
@@ -1468,9 +1476,8 @@ impl TypeParameters {
 
 impl<'a> DocBuild<'a> for TypeParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        self.type_parameters
-            .iter()
-            .for_each(|t| result.push(t.build(b)));
+        let docs = b.to_docs(&self.type_parameters);
+        result.push(b.surround_with_softline(&docs, ",", "<", ">"));
     }
 }
 
