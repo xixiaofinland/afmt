@@ -1607,13 +1607,13 @@ impl<'a> DocBuild<'a> for DoStatement {
 #[derive(Debug, Serialize)]
 pub struct WhileStatement {
     pub condition: ParenthesizedExpression,
-    pub body: Block,
+    pub body: Statement,
 }
 
 impl WhileStatement {
     pub fn new(node: Node) -> Self {
         let condition = ParenthesizedExpression::new(node.c_by_n("condition"));
-        let body = Block::new(node.c_by_n("body"));
+        let body = Statement::new(node.c_by_n("body"));
         Self { condition, body }
     }
 }
@@ -1622,8 +1622,14 @@ impl<'a> DocBuild<'a> for WhileStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt_("while"));
         result.push(self.condition.build(b));
-        result.push(b.txt(" "));
-        result.push(self.body.build(b));
+
+        match self.body {
+            Statement::SemiColumn => result.push(b.txt(";")),
+            _ => {
+                result.push(b.txt(" "));
+                result.push(self.body.build(b));
+            }
+        }
     }
 }
 

@@ -540,6 +540,7 @@ pub enum Statement {
     Break(BreakStatement),
     Continue(ContinueStatement),
     Switch(Box<SwitchExpression>),
+    SemiColumn,
 }
 
 impl Statement {
@@ -560,6 +561,7 @@ impl Statement {
             "break_statement" => Self::Break(BreakStatement::new(n)),
             "continue_statement" => Self::Continue(ContinueStatement::new(n)),
             "switch_expression" => Self::Switch(Box::new(SwitchExpression::new(n))),
+            ";" => Self::SemiColumn,
             _ => panic!("## unknown node: {} in Statement", n.kind().red()),
         }
     }
@@ -617,6 +619,9 @@ impl<'a> DocBuild<'a> for Statement {
             }
             Self::Switch(n) => {
                 result.push(n.build(b));
+            }
+            Self::SemiColumn => {
+                result.push(b.txt(";"));
             }
         }
     }
