@@ -1066,6 +1066,7 @@ impl ParenthesizedExpression {
 
 impl<'a> DocBuild<'a> for ParenthesizedExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        // this logic is built to be align with prettier apex
         result.push(b.txt("("));
         let doc = b.concat(vec![
             b.add_indent_level(b.maybeline()),
