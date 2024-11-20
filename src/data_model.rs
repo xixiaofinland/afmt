@@ -2848,7 +2848,10 @@ impl<'a> DocBuild<'a> for SwitchLabel {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt_("when"));
         match self {
-            Self::SObjects(vec) => vec.into_iter().for_each(|n| result.push(n.build(b))),
+            Self::SObjects(vec) => {
+                let doc = b.to_docs(vec);
+                result.push(b.intersperse_single_line(&doc, ", "));
+            }
             Self::Expressions(vec) => {
                 let doc = b.to_docs(vec);
                 result.push(b.intersperse_single_line(&doc, ", "));
