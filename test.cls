@@ -1,12 +1,8 @@
 class ExceptionClass {
   class InnerClass extends ExpressionClass {
-    InnerClass() {
-      this(1);
+    void dottedExprMethod() {
+      i ^= 3;
     }
-
-    InnerClass(Integer i) {
-      super(i);
-    }
-  }
+}
 }
 

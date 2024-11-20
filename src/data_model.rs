@@ -458,7 +458,7 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
 
 #[derive(Debug, Serialize)]
 pub struct AssignmentExpression {
-    pub left: String,
+    pub left: AssignmentLeft,
     pub op: String,
     pub right: Expression,
 }
@@ -467,7 +467,7 @@ impl AssignmentExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "assignment_expression");
 
-        let left = node.cvalue_by_n("left", source_code());
+        let left = AssignmentLeft::new(node.c_by_n("left"));
         let op = node.cvalue_by_n("operator", source_code());
         let right = Expression::new(node.c_by_n("right"));
         Self { left, op, right }
@@ -476,8 +476,43 @@ impl AssignmentExpression {
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(format!("{} {} ", self.left, self.op)));
+        result.push(self.left.build(b));
+        result.push(b._txt_(&self.op));
         result.push(self.right.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum AssignmentLeft {
+    Identifier(String),
+    Field(FieldAccess),
+    Array(ArrayAccess),
+}
+
+impl AssignmentLeft {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "identifier" => Self::Identifier(n.value(source_code())),
+            "field_access" => Self::Field(FieldAccess::new(n)),
+            "array_access" => Self::Array(ArrayAccess::new(n)),
+            _ => panic!("## unknown node: {} in AssignmentLeft", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AssignmentLeft {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Identifier(n) => {
+                result.push(b.txt(&n));
+            }
+            Self::Field(n) => {
+                result.push(n.build(b));
+            }
+            Self::Array(n) => {
+                result.push(n.build(b));
+            }
+        }
     }
 }
 
@@ -2819,7 +2854,7 @@ impl InstanceOfExpression {
 impl<'a> DocBuild<'a> for InstanceOfExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(self.left.build(b));
-        result.push(b.txt("instanceof"));
+        result.push(b._txt_("instanceof"));
         result.push(self.right.build(b));
     }
 }

@@ -200,6 +200,7 @@ impl Expression {
             "assignment_expression" => Self::Assignment(Box::new(AssignmentExpression::new(n))),
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
             "int"
+            | "decimal_floating_point_literal"
             | "boolean"
             | "identifier"
             | "null_literal"
@@ -292,9 +293,11 @@ pub enum PrimaryExpression {
 impl PrimaryExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "int" | "boolean" | "null_literal" | "string_literal" => {
-                Self::Literal(Literal_::new(n))
-            }
+            "int"
+            | "decimal_floating_point_literal"
+            | "boolean"
+            | "null_literal"
+            | "string_literal" => Self::Literal(Literal_::new(n)),
             "identifier" => Self::Identifier(n.value(source_code())),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
@@ -351,7 +354,7 @@ pub enum Literal_ {
     Bool(String),
     Null,
     Int(String),
-    //Decimal(String),
+    Decimal(String),
     Str(String),
 }
 
@@ -362,6 +365,7 @@ impl Literal_ {
             "null_literal" => Self::Null,
             "int" => Self::Int(n.value(source_code())),
             "string_literal" => Self::Str(n.value(source_code())),
+            "decimal_floating_point_literal" => Self::Decimal(n.value(source_code())),
             _ => panic!("## unknown node: {} in Literal", n.kind().red()),
         }
     }
@@ -377,6 +381,9 @@ impl<'a> DocBuild<'a> for Literal_ {
                 result.push(b.txt("null"));
             }
             Self::Int(n) => {
+                result.push(b.txt(n));
+            }
+            Self::Decimal(n) => {
                 result.push(b.txt(n));
             }
             Self::Str(n) => {
