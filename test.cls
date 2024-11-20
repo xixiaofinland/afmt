@@ -1,55 +1,12 @@
 class ExceptionClass {
-  void throwTestTest() {
-    throw new CustomException('Custom Exception');
-
-    Exception e = new Exception();
-    throw new CustomException('Custom Inner Exception', e);
-  }
-
-  void tryCatchTest() {
-    try {
-
-    } catch (Exception e) {
-
-    } finally {
-
+  class InnerClass extends ExpressionClass {
+    InnerClass() {
+      this(1);
     }
 
-    try {
-      Integer i = 0;
-      i++;
-    } catch (CustomException e) {
-      System.debug('Oh no');
-      throw new AnotherCustomException('Yikes', e);
-    } finally {
-      System.debug('It has been dealt with');
-    }
-
-    try {
-      Integer i = 0;
-      i++;
-    } catch (CustomException e) {
-      System.debug('first custom exception');
-      throw new AnotherCustomException('Yikes', e);
-    } catch (Exception e) {
-      System.debug('general exception');
-    } finally {
-      System.debug('It has been dealt with');
-    }
-
-    try {
-      System.debug('try without catch');
-    } finally {
-      System.debug('finally without catch');
-    }
-    try {
-      System.debug('try without finally');
-    } catch (Exception ex) {
-      System.debug('catch without finally');
+    InnerClass(Integer i) {
+      super(i);
     }
   }
-
-  class CustomException extends Exception {}
-  class AnotherCustomException extends Exception {}
 }
 

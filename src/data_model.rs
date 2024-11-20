@@ -769,6 +769,12 @@ impl<'a> DocBuild<'a> for Super {
 #[derive(Debug, Serialize)]
 pub struct This {}
 
+impl This {
+    pub fn new(_: Node) -> Self {
+        Self {}
+    }
+}
+
 impl<'a> DocBuild<'a> for This {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("this"))
@@ -2793,5 +2799,43 @@ impl<'a> DocBuild<'a> for SObjectVar {
             result.push(n.build(b));
         }
         result.push(b.txt(&self.identifier));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct InstanceOfExpression {
+    pub left: Expression,
+    pub right: Type,
+}
+
+impl InstanceOfExpression {
+    pub fn new(node: Node) -> Self {
+        let left = Expression::new(node.c_by_n("left"));
+        let right = Type::new(node.c_by_n("right"));
+        Self { left, right }
+    }
+}
+
+impl<'a> DocBuild<'a> for InstanceOfExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.left.build(b));
+        result.push(b.txt("instanceof"));
+        result.push(self.right.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct VersionExpression {}
+
+impl VersionExpression {
+    pub fn new(_node: Node) -> Self {
+        Self {}
+    }
+}
+
+impl<'a> DocBuild<'a> for VersionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        // TODO: when it's major.minor? No corresponding nodes from parser
+        result.push(b.txt("Package.Version.Request"));
     }
 }

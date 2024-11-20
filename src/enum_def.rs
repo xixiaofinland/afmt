@@ -181,23 +181,9 @@ impl<'a> DocBuild<'a> for VariableInitializer {
     }
 }
 
-//expression: ($) =>
-//  choice(
-//    $.assignment_expression,
-//    $.binary_expression,
-//    $.instanceof_expression,
-//    $.ternary_expression,
-//    $.update_expression,
-//    $.primary_expression,
-//    $.unary_expression,
-//    $.cast_expression,
-//    $.dml_expression
-//  ),
-
 #[derive(Debug, Serialize)]
 pub enum Expression {
     Assignment(Box<AssignmentExpression>),
-    StringLiteral(String),
     Binary(Box<BinaryExpression>),
     Primary(Box<PrimaryExpression>),
     Update(UpdateExpression),
@@ -205,13 +191,13 @@ pub enum Expression {
     Dml(Box<DmlExpression>),
     Te(Box<TernaryExpression>),
     Cast(Box<CastExpression>),
+    Instance(Box<InstanceOfExpression>),
 }
 
 impl Expression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "assignment_expression" => Self::Assignment(Box::new(AssignmentExpression::new(n))),
-            "string_literal" => Self::StringLiteral(n.value(source_code())),
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
             "int"
             | "boolean"
@@ -222,12 +208,16 @@ impl Expression {
             | "object_creation_expression"
             | "array_access"
             | "field_access"
+            | "string_literal"
+            | "version_expression"
+            | "this"
             | "array_creation_expression" => Self::Primary(Box::new(PrimaryExpression::new(n))),
             "update_expression" => Self::Update(UpdateExpression::new(n)),
             "unary_expression" => Self::Unary(UnaryExpression::new(n)),
             "dml_expression" => Self::Dml(Box::new(DmlExpression::new(n))),
             "ternary_expression" => Self::Te(Box::new(TernaryExpression::new(n))),
             "cast_expression" => Self::Cast(Box::new(CastExpression::new(n))),
+            "instanceof_expression" => Self::Instance(Box::new(InstanceOfExpression::new(n))),
             _ => panic!("## unknown node: {} in Expression", n.kind().red()),
         }
     }
@@ -238,9 +228,6 @@ impl<'a> DocBuild<'a> for Expression {
         match self {
             Self::Assignment(n) => {
                 result.push(n.build(b));
-            }
-            Self::StringLiteral(n) => {
-                result.push(b.txt(n));
             }
             Self::Binary(n) => {
                 result.push(n.build(b));
@@ -261,6 +248,9 @@ impl<'a> DocBuild<'a> for Expression {
                 result.push(n.build(b));
             }
             Self::Cast(n) => {
+                result.push(n.build(b));
+            }
+            Self::Instance(n) => {
                 result.push(n.build(b));
             }
         }
@@ -295,12 +285,16 @@ pub enum PrimaryExpression {
     Field(FieldAccess),
     Array(Box<ArrayAccess>),
     ArrayCreation(ArrayCreationExpression),
+    Version(VersionExpression),
+    This(This),
 }
 
 impl PrimaryExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "int" | "boolean" | "null_literal" => Self::Literal(Literal_::new(n)),
+            "int" | "boolean" | "null_literal" | "string_literal" => {
+                Self::Literal(Literal_::new(n))
+            }
             "identifier" => Self::Identifier(n.value(source_code())),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
@@ -308,6 +302,8 @@ impl PrimaryExpression {
             "field_access" => Self::Field(FieldAccess::new(n)),
             "array_access" => Self::Array(Box::new(ArrayAccess::new(n))),
             "array_creation_expression" => Self::ArrayCreation(ArrayCreationExpression::new(n)),
+            "version_expression" => Self::Version(VersionExpression::new(n)),
+            "this" => Self::This(This::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
         }
     }
@@ -316,29 +312,35 @@ impl PrimaryExpression {
 impl<'a> DocBuild<'a> for PrimaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Literal(l) => {
-                result.push(l.build(b));
+            Self::Literal(n) => {
+                result.push(n.build(b));
             }
-            Self::Identifier(i) => {
-                result.push(b.txt(i));
+            Self::Identifier(n) => {
+                result.push(b.txt(n));
             }
-            Self::Method(m) => {
-                result.push(m.build(b));
+            Self::Method(n) => {
+                result.push(n.build(b));
             }
-            Self::Parenth(p) => {
-                result.push(p.build(b));
+            Self::Parenth(n) => {
+                result.push(n.build(b));
             }
-            Self::Obj(o) => {
-                result.push(o.build(b));
+            Self::Obj(n) => {
+                result.push(n.build(b));
             }
-            Self::Field(f) => {
-                result.push(f.build(b));
+            Self::Field(n) => {
+                result.push(n.build(b));
             }
-            Self::Array(a) => {
-                result.push(a.build(b));
+            Self::Array(n) => {
+                result.push(n.build(b));
             }
-            Self::ArrayCreation(a) => {
-                result.push(a.build(b));
+            Self::ArrayCreation(n) => {
+                result.push(n.build(b));
+            }
+            Self::Version(n) => {
+                result.push(n.build(b));
+            }
+            Self::This(n) => {
+                result.push(n.build(b));
             }
         }
     }
@@ -350,7 +352,7 @@ pub enum Literal_ {
     Null,
     Int(String),
     //Decimal(String),
-    //Str(String),
+    Str(String),
 }
 
 impl Literal_ {
@@ -359,6 +361,7 @@ impl Literal_ {
             "boolean" => Self::Bool(n.value(source_code()).to_lowercase()),
             "null_literal" => Self::Null,
             "int" => Self::Int(n.value(source_code())),
+            "string_literal" => Self::Str(n.value(source_code())),
             _ => panic!("## unknown node: {} in Literal", n.kind().red()),
         }
     }
@@ -367,14 +370,17 @@ impl Literal_ {
 impl<'a> DocBuild<'a> for Literal_ {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Bool(v) => {
-                result.push(b.txt(v));
+            Self::Bool(n) => {
+                result.push(b.txt(n));
             }
             Self::Null => {
                 result.push(b.txt("null"));
             }
-            Self::Int(s) => {
-                result.push(b.txt(s));
+            Self::Int(n) => {
+                result.push(b.txt(n));
+            }
+            Self::Str(n) => {
+                result.push(b.txt(n));
             }
         }
     }
