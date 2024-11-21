@@ -3080,3 +3080,61 @@ impl<'a> DocBuild<'a> for TriggerBody {
         result.push(self.block.build(b));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct QueryExpression {
+    pub query_body: QueryBody,
+}
+
+impl QueryExpression {
+    pub fn new(node: Node) -> Self {
+        let query_body = QueryBody::SOQL(SoqlQueryBody::new(node));
+        Self { query_body }
+    }
+}
+
+impl<'a> DocBuild<'a> for QueryExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
+
+#[derive(Debug, Serialize)]
+pub enum QueryBody {
+    SOQL(SoqlQueryBody),
+    SOSL,
+}
+
+impl QueryBody {
+    pub fn QueryBody(node: Node) -> Self {
+        match node.kind() {
+            "soql_query_body" => Self::SOQL(SoqlQueryBody::new(node)),
+            "sosl_query_body" => unimplemented!(),
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for QueryBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::SOQL(n) => {
+                result.push(n.build(b));
+            }
+            Self::SOSL => {
+                unimplemented!()
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SoqlQueryBody {}
+
+impl SoqlQueryBody {
+    pub fn new(node: Node) -> Self {
+        Self {}
+    }
+}
+
+impl<'a> DocBuild<'a> for SoqlQueryBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}

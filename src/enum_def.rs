@@ -214,6 +214,7 @@ impl Expression {
             "binary_expression" => Self::Binary(Box::new(BinaryExpression::new(n))),
             "int"
             | "decimal_floating_point_literal"
+            | "query_expression"
             | "boolean"
             | "identifier"
             | "null_literal"
@@ -301,6 +302,7 @@ pub enum PrimaryExpression {
     Array(Box<ArrayAccess>),
     ArrayCreation(ArrayCreationExpression),
     Version(VersionExpression),
+    Query(QueryExpression),
     This(This),
     Java(JavaFieldAccess),
 }
@@ -321,6 +323,7 @@ impl PrimaryExpression {
             "array_access" => Self::Array(Box::new(ArrayAccess::new(n))),
             "array_creation_expression" => Self::ArrayCreation(ArrayCreationExpression::new(n)),
             "version_expression" => Self::Version(VersionExpression::new(n)),
+            "query_expression" => Self::Query(QueryExpression::new(n)),
             "java_field_access" => Self::Java(JavaFieldAccess::new(n)),
             "this" => Self::This(This::new(n)),
             _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
@@ -356,6 +359,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
                 result.push(n.build(b));
             }
             Self::Version(n) => {
+                result.push(n.build(b));
+            }
+            Self::Query(n) => {
                 result.push(n.build(b));
             }
             Self::Java(n) => {
