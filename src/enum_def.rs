@@ -996,3 +996,32 @@ impl<'a> DocBuild<'a> for StorageIdentifier {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub enum LimitValue {
+    Int(String),
+    Bound(BoundApexExpression),
+}
+
+impl LimitValue {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "int" => Self::Int(n.value(source_code())),
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
+            _ => panic!("## unknown node: {} in LimitValue", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for LimitValue {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Int(n) => {
+                result.push(b.txt(&n));
+            }
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}

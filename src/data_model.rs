@@ -3134,15 +3134,19 @@ impl<'a> DocBuild<'a> for QueryBody {
 pub struct SoqlQueryBody {
     pub select_clause: SelectClause,
     pub from_clause: FromClause,
+    pub limit_clause: Option<LimitClause>,
 }
 
 impl SoqlQueryBody {
     pub fn new(node: Node) -> Self {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
         let from_clause = FromClause::new(node.c_by_n("from_clause"));
+        let limit_clause = node.try_c_by_k("limit_clause").map(|n| LimitClause::new(n));
+
         Self {
             select_clause,
             from_clause,
+            limit_clause,
         }
     }
 }
@@ -3151,6 +3155,9 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(self.select_clause.build(b));
         result.push(self.from_clause.build(b));
+        if let Some(ref n) = self.limit_clause {
+            result.push(n.build(b));
+        }
     }
 }
 
@@ -3197,5 +3204,44 @@ impl<'a> DocBuild<'a> for StorageAlias {
         result.push(self.storage_alias.build(b));
         result.push(b._txt_("AS"));
         result.push(b.txt(&self.identifier));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct LimitClause {
+    pub limit_value: LimitValue,
+}
+
+impl LimitClause {
+    pub fn new(node: Node) -> Self {
+        let limit_value = LimitValue::new(node.first_c());
+        Self { limit_value }
+    }
+}
+
+impl<'a> DocBuild<'a> for LimitClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b._txt_("LIMIT"));
+        result.push(self.limit_value.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct BoundApexExpression {
+    pub exp: Box<Expression>,
+}
+
+impl BoundApexExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "bound_apex_expression");
+        let exp = Box::new(Expression::new(node.first_c()));
+        Self { exp }
+    }
+}
+
+impl<'a> DocBuild<'a> for BoundApexExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(":"));
+        result.push(self.exp.build(b));
     }
 }
