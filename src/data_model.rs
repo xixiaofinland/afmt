@@ -3135,6 +3135,7 @@ pub struct SoqlQueryBody {
     pub select_clause: SelectClause,
     pub from_clause: FromClause,
     pub limit_clause: Option<LimitClause>,
+    pub where_clause: Option<WhereClause>,
 }
 
 impl SoqlQueryBody {
@@ -3142,11 +3143,13 @@ impl SoqlQueryBody {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
         let from_clause = FromClause::new(node.c_by_n("from_clause"));
         let limit_clause = node.try_c_by_k("limit_clause").map(|n| LimitClause::new(n));
+        let where_clause = node.try_c_by_k("where_clause").map(|n| WhereClause::new(n));
 
         Self {
             select_clause,
             from_clause,
             limit_clause,
+            where_clause,
         }
     }
 }
@@ -3156,6 +3159,9 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         result.push(self.select_clause.build(b));
         result.push(self.from_clause.build(b));
         if let Some(ref n) = self.limit_clause {
+            result.push(n.build(b));
+        }
+        if let Some(ref n) = self.where_clause {
             result.push(n.build(b));
         }
     }
@@ -3244,4 +3250,52 @@ impl<'a> DocBuild<'a> for BoundApexExpression {
         result.push(b.txt(":"));
         result.push(self.exp.build(b));
     }
+}
+
+#[derive(Debug, Serialize)]
+pub struct WhereClause {
+    pub boolean_exp: BooleanExpression,
+}
+
+impl WhereClause {
+    pub fn new(node: Node) -> Self {
+        let boolean_exp = BooleanExpression::new(node.first_c());
+        Self { boolean_exp }
+    }
+}
+
+impl<'a> DocBuild<'a> for WhereClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b._txt_("WHERE"));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct FunctionExpression {
+    pub function_variant: FunctionVariant,
+}
+
+//impl FunctionExpression {
+//    pub fn new(node: Node) -> Self {}
+//}
+
+impl<'a> DocBuild<'a> for FunctionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
+
+#[derive(Debug, Serialize)]
+pub struct ComparisonExpression {
+    pub value: Box<ValueExpression>,
+    //pub comparison: Box<ComparisonExpression>,
+}
+
+impl ComparisonExpression {
+    pub fn new(node: Node) -> Self {
+        let value = Box::new(ValueExpression::new(node));
+        Self { value }
+    }
+}
+
+impl<'a> DocBuild<'a> for ComparisonExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
 }

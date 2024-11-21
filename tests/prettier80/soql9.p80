@@ -4,7 +4,7 @@ public class Me {
     List<Account> accs = [
       SELECT Id
       FROM Account
-      WHERE Name = 'NOPE'
+      WHERE Name = :'N' + a + 'M' + 'E' AND Name = 'NOPE'
     ];
   }
 }

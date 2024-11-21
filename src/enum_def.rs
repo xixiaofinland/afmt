@@ -866,33 +866,6 @@ impl<'a> DocBuild<'a> for SelectableExpression {
 }
 
 #[derive(Debug, Serialize)]
-pub enum ValueExpression {
-    //Function(FunctionExpression),
-    Field(FieldIdentifier),
-}
-
-//impl ValueExpression {
-//    pub fn new(n: Node) -> Self {
-//        match n.kind() {
-//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
-//                SimpleType::Identifier(n.value(source_code())),
-//            )),
-//            _ => panic!("## unknown node: {} in Type", n.kind().red()),
-//        }
-//    }
-//}
-
-impl<'a> DocBuild<'a> for ValueExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        match self {
-            Self::Field(n) => {
-                result.push(n.build(b));
-            }
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
 pub enum FieldIdentifier {
     Identifier(String),
     Dotted(Vec<String>),
@@ -1023,5 +996,206 @@ impl<'a> DocBuild<'a> for LimitValue {
                 result.push(n.build(b));
             }
         }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum BooleanExpression {
+    And(Vec<ConditionExpression>),
+    Or(Vec<ConditionExpression>),
+    Not(ConditionExpression),
+    Condition(Box<ConditionExpression>),
+}
+
+impl BooleanExpression {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "and_expression" => Self::And(
+                node.children_vec()
+                    .into_iter()
+                    .map(|n| ConditionExpression::new(n))
+                    .collect(),
+            ),
+            "or_expression" => Self::Or(
+                node.children_vec()
+                    .into_iter()
+                    .map(|n| ConditionExpression::new(n))
+                    .collect(),
+            ),
+            "not_expression" => Self::Not(ConditionExpression::new(node.first_c())),
+            _ => Self::Condition(Box::new(ConditionExpression::new(node))),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for BooleanExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::And(vec) => {
+                let doc = b.to_docs(vec);
+                b.intersperse_single_line(&doc, " AND ");
+            }
+            Self::Or(vec) => {
+                let doc = b.to_docs(vec);
+                b.intersperse_single_line(&doc, " OR ");
+            }
+            Self::Not(n) => {
+                result.push(n.build(b));
+            }
+            Self::Condition(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum ConditionExpression {
+    Bool(Box<BooleanExpression>),
+    Comparison(ComparisonExpression),
+}
+
+impl ConditionExpression {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "comparison_expression" => Self::Comparison(ComparisonExpression::new(node)),
+            _ => Self::Bool(Box::new(BooleanExpression::new(node))),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ConditionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Comparison(n) => {
+                result.push(n.build(b));
+            }
+            Self::Bool(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum ValueExpression {
+    //Function(FunctionExpression),
+    Field(FieldIdentifier),
+}
+
+impl ValueExpression {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "field_identifier" => Self::Field(FieldIdentifier::new(n)),
+            _ => panic!("## unknown node: {} in ValueExpression", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ValueExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Field(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum FunctionVariant {
+    Complex {
+        function_name: String,
+        choice: FunctionChoice,
+        //geo_location_type: GeoLocationType,
+        value: String,
+    },
+    Simple {
+        function_name: String,
+        value_exps: Vec<ValueExpression>,
+    },
+}
+
+//impl FunctionVariant {
+//    pub fn new(n: Node) -> Self {
+//        match n.kind() {
+//            "field_identifier" => Self::Field(n.value(source_code())),
+//            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
+//            _ => panic!("## unknown node: {} in FuncVariant", n.kind().red()),
+//        }
+//    }
+//}
+
+impl<'a> DocBuild<'a> for FunctionVariant {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        //match self {
+        //    Self::Compelex(n) => {
+        //        result.push(b.txt(&n));
+        //    }
+        //    Self::Simple(n) => {
+        //        result.push(n.build(b));
+        //    }
+        //}
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum FunctionChoice {
+    Field(String),
+    Bound(BoundApexExpression),
+}
+
+impl FunctionChoice {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "field_identifier" => Self::Field(n.value(source_code())),
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
+            _ => panic!("## unknown node: {} in FunctionChoice", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FunctionChoice {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Field(n) => {
+                result.push(b.txt(&n));
+            }
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum GeoLocationType {
+    Field(FieldIdentifier),
+    Bound(BoundApexExpression),
+    Func {
+        function_name: String,
+        decimal1: String,
+        decimal2: String,
+    },
+}
+
+//impl GeoLocationType {
+//    pub fn new(n: Node) -> Self {
+//        match n.kind() {
+//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
+//                SimpleType::Identifier(n.value(source_code())),
+//            )),
+//            _ => panic!("## unknown node: {} in GeoLocationType", n.kind().red()),
+//        }
+//    }
+//}
+
+impl<'a> DocBuild<'a> for GeoLocationType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        //match self {
+        //    Self::Unnanotated(u) => {
+        //        result.push(u.build(b));
+        //    }
+        //}
     }
 }
