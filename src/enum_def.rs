@@ -3,7 +3,11 @@ use serde::Serialize;
 use tree_sitter::Node;
 
 use crate::{
-    accessor::Accessor, data_model::*, doc::DocRef, doc_builder::DocBuilder, utility::source_code,
+    accessor::Accessor,
+    data_model::*,
+    doc::DocRef,
+    doc_builder::DocBuilder,
+    utility::{assert_check, source_code},
 };
 
 #[derive(Debug, Serialize)]
@@ -793,6 +797,128 @@ impl<'a> DocBuild<'a> for TriggerEvent {
             }
             Self::AfterUndelete => {
                 result.push(b.txt("after undelete"));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum SelectClause {
+    //Count(CountExpression),
+    Selectable(SelectableExpression),
+}
+
+impl SelectClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "select_clause");
+
+        if node.try_c_by_n("count_expression").is_some() {
+            unimplemented!()
+        } else {
+            Self::Selectable(SelectableExpression::new(node.first_c()))
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for SelectClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("SELECT"));
+        match self {
+            Self::Selectable(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum SelectableExpression {
+    Value(ValueExpression),
+    //Alias(AliasExpression),
+    //Type(TypeOfClause),
+    //Fields(FieldsExpression),
+    //Sub(SubQuery),
+}
+
+impl SelectableExpression {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifier::new(node))),
+            _ => panic!("## unknown node: {} in Type", node.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for SelectableExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Value(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum ValueExpression {
+    //Function(FunctionExpression),
+    Field(FieldIdentifier),
+}
+
+//impl ValueExpression {
+//    pub fn new(n: Node) -> Self {
+//        match n.kind() {
+//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
+//                SimpleType::Identifier(n.value(source_code())),
+//            )),
+//            _ => panic!("## unknown node: {} in Type", n.kind().red()),
+//        }
+//    }
+//}
+
+impl<'a> DocBuild<'a> for ValueExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Field(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum FieldIdentifier {
+    Identifier(String),
+    Dotted(Vec<String>),
+}
+
+impl FieldIdentifier {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "field_identifier");
+        let c = node.first_c();
+
+        match c.kind() {
+            "identifier" => Self::Identifier(c.value(source_code())),
+            "dotted_identifier" => Self::Dotted(
+                c.cs_by_k("identifier")
+                    .into_iter()
+                    .map(|n| n.value(source_code()))
+                    .collect(),
+            ),
+            _ => panic!("## unknown node: {} in FieldIdentifier", c.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FieldIdentifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Identifier(n) => {
+                result.push(b.txt(&n));
+            }
+            Self::Dotted(vec) => {
+                let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
+                result.push(b.intersperse_single_line(&docs, "."));
             }
         }
     }

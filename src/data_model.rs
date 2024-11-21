@@ -3088,13 +3088,15 @@ pub struct QueryExpression {
 
 impl QueryExpression {
     pub fn new(node: Node) -> Self {
-        let query_body = QueryBody::SOQL(SoqlQueryBody::new(node));
+        let query_body = QueryBody::SOQL(SoqlQueryBody::new(node.first_c()));
         Self { query_body }
     }
 }
 
 impl<'a> DocBuild<'a> for QueryExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.query_body.build(b));
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -3117,7 +3119,9 @@ impl<'a> DocBuild<'a> for QueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::SOQL(n) => {
+                result.push(b.txt("["));
                 result.push(n.build(b));
+                result.push(b.txt("]"));
             }
             Self::SOSL => {
                 unimplemented!()
@@ -3127,14 +3131,21 @@ impl<'a> DocBuild<'a> for QueryBody {
 }
 
 #[derive(Debug, Serialize)]
-pub struct SoqlQueryBody {}
+pub struct SoqlQueryBody {
+    pub select_clause: SelectClause,
+    //pub from_clause: FromClause,
+}
 
 impl SoqlQueryBody {
     pub fn new(node: Node) -> Self {
-        Self {}
+        let select_clause = SelectClause::new(node.c_by_n("select_clause"));
+        //let from_clause = FromClause::new(node.c_by_n("from_clause"));
+        Self { select_clause }
     }
 }
 
 impl<'a> DocBuild<'a> for SoqlQueryBody {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.select_clause.build(b));
+    }
 }
