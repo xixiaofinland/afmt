@@ -3153,3 +3153,48 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         result.push(self.from_clause.build(b));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct FromClause {
+    pub content: StorageVariant,
+}
+
+impl FromClause {
+    pub fn new(node: Node) -> Self {
+        let content = StorageVariant::new(node.first_c());
+        Self { content }
+    }
+}
+
+impl<'a> DocBuild<'a> for FromClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.content.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct StorageAlias {
+    pub storage_alias: StorageIdentifier,
+    pub identifier: String,
+}
+
+impl StorageAlias {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "storage_alias");
+
+        let storage_alias = StorageIdentifier::new(node.c_by_k("storage_alias"));
+        let identifier = node.cvalue_by_k("identifier", source_code());
+        Self {
+            storage_alias,
+            identifier,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for StorageAlias {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.storage_alias.build(b));
+        result.push(b._txt_("AS"));
+        result.push(b.txt(&self.identifier));
+    }
+}

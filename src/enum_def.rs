@@ -929,3 +929,70 @@ impl<'a> DocBuild<'a> for FieldIdentifier {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub enum StorageVariant {
+    Identifier(StorageIdentifier),
+    Alias(StorageAlias),
+}
+
+impl StorageVariant {
+    pub fn new(n: Node) -> StorageVariant {
+        match n.kind() {
+            "storage_alias" => Self::Alias(StorageAlias::new(n)),
+            "storage_identifier" => {
+                Self::Alias(StorageAlias::StorageIdentifier(StorageIdentifier::new(n)))
+            }
+            "identifier" => Self::Alias(StorageAlias::Identifier(n.value(source_code()))),
+            _ => panic!("## unknown node: {} in Type", n.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for StorageVariant {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Unnanotated(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum StorageIdentifier {
+    Identifier(String),
+    Dotted(Vec<String>),
+}
+
+impl StorageIdentifier {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "storage_identifier");
+        let c = node.first_c();
+
+        match c.kind() {
+            "identifier" => Self::Identifier(c.value(source_code())),
+            "dotted_identifier" => Self::Dotted(
+                c.cs_by_k("identifier")
+                    .into_iter()
+                    .map(|n| n.value(source_code()))
+                    .collect(),
+            ),
+            _ => panic!("## unknown node: {} in StorageIdentifier", c.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for StorageIdentifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Identifier(n) => {
+                result.push(b.txt(&n));
+            }
+            Self::Dotted(vec) => {
+                let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
+                result.push(b.intersperse_single_line(&docs, "."));
+            }
+        }
+    }
+}
