@@ -805,7 +805,7 @@ impl<'a> DocBuild<'a> for TriggerEvent {
 #[derive(Debug, Serialize)]
 pub enum SelectClause {
     //Count(CountExpression),
-    Selectable(SelectableExpression),
+    Selectable(Vec<SelectableExpression>),
 }
 
 impl SelectClause {
@@ -815,7 +815,12 @@ impl SelectClause {
         if node.try_c_by_n("count_expression").is_some() {
             unimplemented!()
         } else {
-            Self::Selectable(SelectableExpression::new(node.first_c()))
+            Self::Selectable(
+                node.children_vec()
+                    .into_iter()
+                    .map(|n| SelectableExpression::new(n))
+                    .collect(),
+            )
         }
     }
 }
@@ -824,8 +829,9 @@ impl<'a> DocBuild<'a> for SelectClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt_("SELECT"));
         match self {
-            Self::Selectable(n) => {
-                result.push(n.build(b));
+            Self::Selectable(vec) => {
+                let doc = b.to_docs(vec);
+                result.push(b.intersperse_single_line(&doc, ", "));
             }
         }
     }

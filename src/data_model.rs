@@ -3133,19 +3133,23 @@ impl<'a> DocBuild<'a> for QueryBody {
 #[derive(Debug, Serialize)]
 pub struct SoqlQueryBody {
     pub select_clause: SelectClause,
-    //pub from_clause: FromClause,
+    pub from_clause: FromClause,
 }
 
 impl SoqlQueryBody {
     pub fn new(node: Node) -> Self {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
-        //let from_clause = FromClause::new(node.c_by_n("from_clause"));
-        Self { select_clause }
+        let from_clause = FromClause::new(node.c_by_n("from_clause"));
+        Self {
+            select_clause,
+            from_clause,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SoqlQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(self.select_clause.build(b));
+        result.push(self.from_clause.build(b));
     }
 }
