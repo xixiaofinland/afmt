@@ -1199,3 +1199,109 @@ impl<'a> DocBuild<'a> for GeoLocationType {
         //}
     }
 }
+
+#[derive(Debug, Serialize)]
+pub enum Comparison {
+    Value(ValueComparison),
+    //Set(SetComparsion),
+}
+
+//impl Comparison {
+//    pub fn new(n: Node) -> Self {
+//        match n.kind() {
+//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
+//                SimpleType::Identifier(n.value(source_code())),
+//            )),
+//            _ => panic!("## unknown node: {} in Comparison", n.kind().red()),
+//        }
+//    }
+//}
+
+impl<'a> DocBuild<'a> for Comparison {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Value(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum ValueComparedWith {
+    Literal(String),
+    Bound(BoundApexExpression),
+}
+
+//impl ValueComparediWith {
+//    pub fn new(n: Node) -> Self {
+//        match n.kind() {
+//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
+//                SimpleType::Identifier(n.value(source_code())),
+//            )),
+//            _ => panic!(
+//                "## unknown node: {} in ValueComparisonChoice",
+//                n.kind().red()
+//            ),
+//        }
+//    }
+//}
+
+impl<'a> DocBuild<'a> for ValueComparedWith {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Literal(n) => {
+                result.push(b.txt(&n));
+            }
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+//#[derive(Debug, Serialize)]
+//pub enum SoqlLiteral {
+//    Int(String),
+//    Decimal(String),
+//    StringLiteral(String),
+//    Date(String),
+//    DateTime(String),
+//    Boolean(String),
+//    DateLiteral(String),
+//    DateLiteralWithParam(String),
+//    CurrentLiteral(String),
+//    NullLiteral(String),
+//}
+
+//impl SoqlLiteral {
+//    pub fn new(n: Node) -> Self {}
+//}
+
+//impl<'a> DocBuild<'a> for SoqlLiteral {
+//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+//}
+
+//impl ValueComparisionOperator {
+//    pub fn new(n: Node) -> Self {
+//        match n.kind() {
+//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
+//                SimpleType::Identifier(n.value(source_code())),
+//            )),
+//            _ => panic!(
+//                "## unknown node: {} in ValueComparisionOperator",
+//                n.kind().red()
+//            ),
+//        }
+//    }
+//}
+//
+//impl<'a> DocBuild<'a> for ValueComparisionOperator {
+//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+//        match self {
+//            Self::Unnanotated(u) => {
+//                result.push(u.build(b));
+//            }
+//        }
+//    }
+//}

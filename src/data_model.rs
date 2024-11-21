@@ -3259,6 +3259,7 @@ pub struct WhereClause {
 
 impl WhereClause {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "where_clause");
         let boolean_exp = BooleanExpression::new(node.first_c());
         Self { boolean_exp }
     }
@@ -3286,16 +3287,51 @@ impl<'a> DocBuild<'a> for FunctionExpression {
 #[derive(Debug, Serialize)]
 pub struct ComparisonExpression {
     pub value: Box<ValueExpression>,
-    //pub comparison: Box<ComparisonExpression>,
+    pub comparison: Comparison,
 }
 
 impl ComparisonExpression {
     pub fn new(node: Node) -> Self {
-        let value = Box::new(ValueExpression::new(node));
-        Self { value }
+        assert_check(node, "comparison_expression");
+
+        let value = Box::new(ValueExpression::new(node.first_c()));
+
+        let comparison = node.try_c_by_k("value_comparison_operator").map_or_else(
+            || unimplemented!(),
+            |operator_node| {
+                let next_node = operator_node.next_named();
+                let compared_with = match next_node.kind() {
+                    "bound_apex_expression" => {
+                        ValueComparedWith::Bound(BoundApexExpression::new(next_node))
+                    }
+                    _ => ValueComparedWith::Literal(next_node.value(source_code())),
+                };
+
+                Comparison::Value(ValueComparison {
+                    operator: operator_node.value(source_code()),
+                    compared_with,
+                })
+            },
+        );
+
+        Self { value, comparison }
     }
 }
 
 impl<'a> DocBuild<'a> for ComparisonExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
+
+#[derive(Debug, Serialize)]
+pub struct ValueComparison {
+    pub operator: String,
+    pub compared_with: ValueComparedWith,
+}
+
+//impl ValueComparsion {
+//    pub fn new(node: Node) -> Self {}
+//}
+
+impl<'a> DocBuild<'a> for ValueComparison {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
 }

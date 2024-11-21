@@ -32,10 +32,16 @@ pub trait Accessor<'t> {
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
+    fn next_named(&self) -> Node<'t>;
     fn is_comment(&self) -> bool;
 }
 
 impl<'t> Accessor<'t> for Node<'t> {
+    fn next_named(&self) -> Node<'t> {
+        self.next_named_sibling()
+            .unwrap_or_else(|| panic!("{}: next_named node missing.", self.kind().red()))
+    }
+
     fn v<'a>(&self, source_code: &'a str) -> &'a str {
         self.utf8_text(source_code.as_bytes())
             .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind().red()))
