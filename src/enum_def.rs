@@ -937,14 +937,11 @@ pub enum StorageVariant {
 }
 
 impl StorageVariant {
-    pub fn new(n: Node) -> StorageVariant {
-        match n.kind() {
-            "storage_alias" => Self::Alias(StorageAlias::new(n)),
-            "storage_identifier" => {
-                Self::Alias(StorageAlias::StorageIdentifier(StorageIdentifier::new(n)))
-            }
-            "identifier" => Self::Alias(StorageAlias::Identifier(n.value(source_code()))),
-            _ => panic!("## unknown node: {} in Type", n.kind().red()),
+    pub fn new(node: Node) -> StorageVariant {
+        match node.kind() {
+            "storage_alias" => Self::Alias(StorageAlias::new(node)),
+            "storage_identifier" => Self::Identifier(StorageIdentifier::new(node)),
+            _ => panic!("## unknown node: {} in StorageVariant", node.kind().red()),
         }
     }
 }
@@ -952,7 +949,10 @@ impl StorageVariant {
 impl<'a> DocBuild<'a> for StorageVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Unnanotated(n) => {
+            Self::Identifier(n) => {
+                result.push(n.build(b));
+            }
+            Self::Alias(n) => {
                 result.push(n.build(b));
             }
         }

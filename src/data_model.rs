@@ -3168,6 +3168,7 @@ impl FromClause {
 
 impl<'a> DocBuild<'a> for FromClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b._txt_("FROM"));
         result.push(self.content.build(b));
     }
 }
