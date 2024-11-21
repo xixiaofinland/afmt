@@ -2066,7 +2066,9 @@ impl ArrayCreationExpression {
             ArrayCreationVariant::OnlyV { value }
         } else {
             //DV
-            unimplemented!();
+            ArrayCreationVariant::OnlyV {
+                value: ArrayInitializer::new(value_node.unwrap()),
+            }
         };
 
         Self { type_, variant }
@@ -2115,7 +2117,10 @@ impl<'a> DocBuild<'a> for ArrayCreationVariant {
                     result.push(n.build(b));
                 }
             }
-            _ => unimplemented!(),
+            Self::DV { dimensions, value } => {
+                result.push(dimensions.build(b));
+                result.push(value.build(b));
+            }
         }
     }
 }
