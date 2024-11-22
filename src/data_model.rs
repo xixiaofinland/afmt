@@ -3119,9 +3119,11 @@ impl<'a> DocBuild<'a> for QueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::SOQL(n) => {
-                result.push(b.txt("["));
-                result.push(n.build(b));
-                result.push(b.txt("]"));
+                let surrounded = b.surround_with_softline_vary(&vec![n.build(b)], "", "[", "]");
+                result.push(surrounded);
+                //result.push(b.txt("["));
+                //result.push(n.build(b));
+                //result.push(b.txt("]"));
             }
             Self::SOSL => {
                 unimplemented!()

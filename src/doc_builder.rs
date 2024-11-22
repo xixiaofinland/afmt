@@ -177,6 +177,17 @@ impl<'a> DocBuilder<'a> {
         single_line
     }
 
+    pub fn group_elems_with_surrounded_softline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+    ) -> DocRef<'a> {
+        let interspersed = self.intersperse_with_sep_and_softline(&elems, &sep);
+        let soft = self.softline();
+        let choice = self.concat(vec![soft, interspersed, soft]);
+        self.add_indent_level(self.group(choice))
+    }
+
     pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         let choice = self.intersperse_with_sep_and_softline(&elems, &sep);
         self.add_indent_level(self.group(choice))
