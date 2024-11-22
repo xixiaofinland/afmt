@@ -3095,7 +3095,9 @@ impl QueryExpression {
 
 impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.query_body.build(b));
+        let surrounded =
+            b.surround_with_softline_vary(&vec![self.query_body.build(b)], "", "[", "]");
+        result.push(surrounded);
     }
 }
 
@@ -3119,8 +3121,7 @@ impl<'a> DocBuild<'a> for QueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::SOQL(n) => {
-                let surrounded = b.surround_with_softline_vary(&vec![n.build(b)], "", "[", "]");
-                result.push(surrounded);
+                result.push(n.build(b));
                 //result.push(b.txt("["));
                 //result.push(n.build(b));
                 //result.push(b.txt("]"));
@@ -3168,7 +3169,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
             doc_vec.push(n.build(b));
         }
 
-        let grouped = b.group_elems_with_softline(&doc_vec, " ");
+        let grouped = b.group_elems_with_softline(&doc_vec, "");
         result.push(grouped);
     }
 }

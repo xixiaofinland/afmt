@@ -188,6 +188,11 @@ impl<'a> DocBuilder<'a> {
         self.add_indent_level(self.group(choice))
     }
 
+    pub fn group_elems_with_maybeline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+        let choice = self.intersperse_with_sep_and_maybeline(&elems, &sep);
+        self.add_indent_level(self.group(choice))
+    }
+
     pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         let choice = self.intersperse_with_sep_and_softline(&elems, &sep);
         self.add_indent_level(self.group(choice))
