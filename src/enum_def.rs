@@ -830,8 +830,9 @@ impl<'a> DocBuild<'a> for SelectClause {
         result.push(b.txt_("SELECT"));
         match self {
             Self::Selectable(vec) => {
-                let doc = b.to_docs(vec);
-                result.push(b.group_elems_with_surrounded_softline(&doc, ","));
+                let docs = b.to_docs(vec);
+                let empty_surrounded = b.surround_with_softline(&docs, ",", "", "");
+                result.push(empty_surrounded);
             }
         }
     }
