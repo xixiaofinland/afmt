@@ -3122,9 +3122,6 @@ impl<'a> DocBuild<'a> for QueryBody {
         match self {
             Self::SOQL(n) => {
                 result.push(n.build(b));
-                //result.push(b.txt("["));
-                //result.push(n.build(b));
-                //result.push(b.txt("]"));
             }
             Self::SOSL => {
                 unimplemented!()
