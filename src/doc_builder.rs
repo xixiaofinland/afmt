@@ -185,12 +185,12 @@ impl<'a> DocBuilder<'a> {
         let interspersed = self.intersperse_with_sep_and_softline(&elems, &sep);
         let soft = self.softline();
         let choice = self.concat(vec![soft, interspersed, soft]);
-        self.indent(self.group(choice))
+        self.group(choice)
     }
 
     pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         let choice = self.intersperse_with_sep_and_softline(&elems, &sep);
-        self.indent(self.group(choice))
+        self.group(choice)
     }
 
     pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {

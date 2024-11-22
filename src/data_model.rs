@@ -429,7 +429,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(b.txt(" "));
 
         let decl_docs = b.to_docs(&self.declarators);
-        let decision = b.group_elems_with_softline(&decl_docs, ",");
+        let decision = b.indent(b.group_elems_with_softline(&decl_docs, ","));
         result.push(decision);
 
         if let Some(ref n) = self.accessor_list {
@@ -889,7 +889,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(b.txt(" "));
 
         let docs_vec = b.to_docs(&self.declarators);
-        let decision = b.group_elems_with_softline(&docs_vec, ",");
+        let decision = b.indent(b.group_elems_with_softline(&docs_vec, ","));
         result.push(decision);
     }
 }
@@ -3324,7 +3324,6 @@ impl ComparisonExpression {
 
 impl<'a> DocBuild<'a> for ComparisonExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        eprintln!("gopro[2]: data_model.rs:3323: self={:#?}", self);
         result.push(self.value.build(b));
         result.push(self.comparison.build(b));
     }
