@@ -3158,14 +3158,18 @@ impl SoqlQueryBody {
 
 impl<'a> DocBuild<'a> for SoqlQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.select_clause.build(b));
-        result.push(self.from_clause.build(b));
+        let mut doc_vec = vec![];
+        doc_vec.push(self.select_clause.build(b));
+        doc_vec.push(self.from_clause.build(b));
         if let Some(ref n) = self.limit_clause {
-            result.push(n.build(b));
+            doc_vec.push(n.build(b));
         }
         if let Some(ref n) = self.where_clause {
-            result.push(n.build(b));
+            doc_vec.push(n.build(b));
         }
+
+        let grouped = b.group_elems_with_softline(&doc_vec, " ");
+        result.push(grouped);
     }
 }
 
