@@ -46,8 +46,8 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.add_indent_level(self.nl()),
-            self.add_indent_level(self.split_with_trailing_newline_considered(elems)),
+            self.indent(self.nl()),
+            self.indent(self.split_with_trailing_newline_considered(elems)),
             self.nl(),
             self.txt(close),
         ]);
@@ -108,8 +108,8 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.add_indent_level(self.softline()),
-            self.add_indent_level(self.intersperse_with_sep_and_newline(elems, sep)),
+            self.indent(self.softline()),
+            self.indent(self.intersperse_with_sep_and_newline(elems, sep)),
             self.softline(),
             self.txt(close),
         ]);
@@ -129,8 +129,8 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.add_indent_level(self.softline()),
-            self.add_indent_level(self.intersperse_with_sep_and_softline(elems, sep)),
+            self.indent(self.softline()),
+            self.indent(self.intersperse_with_sep_and_softline(elems, sep)),
             self.softline(),
             self.txt(close),
         ]);
@@ -150,8 +150,8 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.add_indent_level(self.softline()),
-            self.add_indent_level(self.intersperse_with_sep_and_maybeline(elems, sep)),
+            self.indent(self.softline()),
+            self.indent(self.intersperse_with_sep_and_maybeline(elems, sep)),
             self.softline(),
             self.txt(close),
         ]);
@@ -185,17 +185,12 @@ impl<'a> DocBuilder<'a> {
         let interspersed = self.intersperse_with_sep_and_softline(&elems, &sep);
         let soft = self.softline();
         let choice = self.concat(vec![soft, interspersed, soft]);
-        self.add_indent_level(self.group(choice))
-    }
-
-    pub fn group_elems_with_maybeline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
-        let choice = self.intersperse_with_sep_and_maybeline(&elems, &sep);
-        self.add_indent_level(self.group(choice))
+        self.indent(self.group(choice))
     }
 
     pub fn group_elems_with_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
         let choice = self.intersperse_with_sep_and_softline(&elems, &sep);
-        self.add_indent_level(self.group(choice))
+        self.indent(self.group(choice))
     }
 
     pub fn intersperse_single_line(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
@@ -350,7 +345,7 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Flat(doc_ref))
     }
 
-    pub fn add_indent_level(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn indent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
     }

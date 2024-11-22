@@ -1011,8 +1011,8 @@ impl<'a> DocBuild<'a> for IfStatement {
             result.push(b.txt(" "));
             result.push(self.consequence.build(b));
         } else {
-            result.push(b.add_indent_level(b.nl()));
-            result.push(b.add_indent_level(self.consequence.build(b)));
+            result.push(b.indent(b.nl()));
+            result.push(b.indent(self.consequence.build(b)));
         }
 
         // Handle the 'else' part
@@ -1043,7 +1043,7 @@ impl<'a> DocBuild<'a> for IfStatement {
                     } else {
                         result.push(b.nl());
                         result.push(b.txt("else"));
-                        result.push(b.add_indent_level(b.nl()));
+                        result.push(b.indent(b.nl()));
                     }
                     result.push(a.build(b)); // Build the else statement
                 }
@@ -1069,8 +1069,8 @@ impl<'a> DocBuild<'a> for ParenthesizedExpression {
         // to align with prettier apex
         result.push(b.txt("("));
         let doc = b.concat(vec![
-            b.add_indent_level(b.maybeline()),
-            b.add_indent_level(self.exp.build(b)),
+            b.indent(b.maybeline()),
+            b.indent(self.exp.build(b)),
             b.maybeline(),
         ]);
         result.push(b.group(doc));
@@ -1390,7 +1390,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
         }
 
         result.push(b.txt("{"));
-        result.push(b.add_indent_level(b.nl()));
+        result.push(b.indent(b.nl()));
 
         if let Some(c) = &self.constructor_invocation {
             result.push(c.member.build(b));
@@ -1404,7 +1404,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             }
         }
 
-        result.push(b.add_indent_level(b.split_with_trailing_newline_considered(&self.statements)));
+        result.push(b.indent(b.split_with_trailing_newline_considered(&self.statements)));
         result.push(b.nl());
         result.push(b.txt("}"));
     }
@@ -3095,8 +3095,7 @@ impl QueryExpression {
 
 impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let surrounded =
-            b.surround_with_softline_vary(&vec![self.query_body.build(b)], "", "[", "]");
+        let surrounded = b.surround_with_softline(&vec![self.query_body.build(b)], "", "[", "]");
         result.push(surrounded);
     }
 }
@@ -3185,7 +3184,7 @@ impl FromClause {
 
 impl<'a> DocBuild<'a> for FromClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b._txt_("FROM"));
+        result.push(b.txt_("FROM"));
         result.push(self.content.build(b));
     }
 }
@@ -3231,7 +3230,7 @@ impl LimitClause {
 
 impl<'a> DocBuild<'a> for LimitClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b._txt_("LIMIT"));
+        result.push(b.txt_("LIMIT"));
         result.push(self.limit_value.build(b));
     }
 }
@@ -3271,7 +3270,7 @@ impl WhereClause {
 
 impl<'a> DocBuild<'a> for WhereClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b._txt_("WHERE"));
+        result.push(b.txt_("WHERE"));
         result.push(self.boolean_exp.build(b));
     }
 }

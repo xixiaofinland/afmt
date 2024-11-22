@@ -828,10 +828,11 @@ impl SelectClause {
 impl<'a> DocBuild<'a> for SelectClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt_("SELECT"));
+        result.push(b.indent(b.maybeline()));
         match self {
             Self::Selectable(vec) => {
                 let docs = b.to_docs(vec);
-                let empty_surrounded = b.surround_with_softline(&docs, ",", "", "");
+                let empty_surrounded = b.group_elems_with_softline(&docs, ",");
                 result.push(empty_surrounded);
             }
         }
