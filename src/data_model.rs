@@ -3268,6 +3268,7 @@ impl WhereClause {
 impl<'a> DocBuild<'a> for WhereClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b._txt_("WHERE"));
+        result.push(self.boolean_exp.build(b));
     }
 }
 
@@ -3319,7 +3320,11 @@ impl ComparisonExpression {
 }
 
 impl<'a> DocBuild<'a> for ComparisonExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        eprintln!("gopro[2]: data_model.rs:3323: self={:#?}", self);
+        result.push(self.value.build(b));
+        result.push(self.comparison.build(b));
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -3333,5 +3338,8 @@ pub struct ValueComparison {
 //}
 
 impl<'a> DocBuild<'a> for ValueComparison {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b._txt_(&self.operator));
+        result.push(self.compared_with.build(b));
+    }
 }

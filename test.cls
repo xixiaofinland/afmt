@@ -1,10 +1,7 @@
 public class Me {
   {
     String a = 'A';
-    List<Account> accs = [
-      SELECT Id
-      FROM Account
-      WHERE Name = 'NOPE'
-    ];
+    List<Account> accs = [SELECT Id FROM Account WHERE Name = 'hellooooooooooo'];
   }
 }
+
