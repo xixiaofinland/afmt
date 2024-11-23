@@ -21,36 +21,33 @@ impl<'a> DocBuilder<'a> {
     fn surround(
         &'a self,
         elems: &[DocRef<'a>],
-        sep: Insertable<'a>,
-        open: Insertable<'a>,
-        close: Insertable<'a>,
+        sep_str: &str,
+        sep_doc: DocRef<'a>,
+        open_str: &str,
+        open_doc: DocRef<'a>,
+        close_str: &str,
+        close_doc: DocRef<'a>,
     ) -> DocRef<'a> {
         if elems.is_empty() {
-            return self.concat(vec![open.build(self), close.build(self)]);
+            return self.txt(format!("{}{}", open, close));
         }
 
-        let mut docs = Vec::new();
-
-        if let Some(o_str) = open.str {
-            docs.push(self.txt(o_str));
-        }
-        if let Some(o_doc) = open.doc {
-            docs.push(self.indent(o_doc));
-        }
-
-        docs.push(self.intersperse(elems, sep));
-
-        if let Some(c_doc) = close.doc {
-            docs.push(c_doc);
-        }
-        if let Some(c_str) = close.str {
-            docs.push(self.txt(c_str));
-        }
-
-        self.concat(docs)
+        let multi_line = self.concat(vec![
+            self.txt(open),
+            self.indent(self.softline()),
+            self.indent(self.intersperse_with_sep_and_newline(elems, sep_str)),
+            self.softline(),
+            self.txt(close),
+        ]);
+        multi_line
     }
 
-    pub fn intersperse(&'a self, elems: &[DocRef<'a>], sep: Insertable<'a>) -> DocRef<'a> {
+    pub fn intersperse(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep_str: &str,
+        sep_doc: DocRef<'a>,
+    ) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
         }
@@ -58,12 +55,10 @@ impl<'a> DocBuilder<'a> {
         let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
         for (i, &elem) in elems.iter().enumerate() {
             if i > 0 {
-                if let Some(ref sep_str) = sep.str {
+                if !sep_str.is_empty() {
                     parts.push(self.txt(sep_str));
                 }
-                if let Some(sep_doc) = sep.doc {
-                    parts.push(sep_doc);
-                }
+                parts.push(sep_doc);
             }
             parts.push(elem);
         }
@@ -423,46 +418,22 @@ impl<'a> DocBuilder<'a> {
         self.group(self.concat(doc_refs))
     }
 
-    //pub fn to_doc(&'a self, insertable: Insertable<'a>) -> DocRef<'a> {
-    //    let mut docs = Vec::new();
-    //    docs.push(self.txt(insertable.str));
-    //    if let Some(d) = insertable.doc {
-    //        docs.push(d);
-    //    }
-    //    self.concat(docs)
-    //}
+    pub fn to_insertable_doc(&'a self, str: impl ToString, doc: Option<DocRef<'a>){
+        let mut docs = Vec::new();
+        let s = str.to_string();
+        if !s.is_empty(){
+            docs.push(s);
+        }
+        if doc.is_some() {
+            docs.push(doc)
+        }
 
-    //pub fn build_insertable(
-    //    &'a self,
-    //    str: impl ToString,
-    //    doc_ref: Option<DocRef<'a>>,
-    //) -> DocRef<'a> {
-    //    let mut docs = Vec::new();
-    //
-    //    let s = str.to_string();
-    //    if !s.is_empty() {
-    //        docs.push(self.txt(s));
-    //    }
-    //
-    //    if let Some(d) = doc_ref {
-    //        docs.push(d);
-    //    }
-    //    self.concat(docs)
-    //}
+        self.concat(docs);
+    }
+
 }
 
 pub struct Insertable<'a> {
-    pub str: Option<String>,
-    pub doc: Option<DocRef<'a>>,
-}
-
-impl<'a> DocBuild<'a> for Insertable<'a> {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref s) = self.str {
-            result.push(b.txt(s));
-        }
-        if let Some(d) = self.doc {
-            result.push(d);
-        }
-    }
+    str: String,
+    doc: Option<DocRef<'a>>,
 }
