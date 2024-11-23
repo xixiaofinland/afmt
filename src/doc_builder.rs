@@ -201,33 +201,6 @@ impl<'a> DocBuilder<'a> {
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
         self.choice(self.flat(doc), doc)
     }
-
-    //pub fn to_doc(&'a self, insertable: Insertable<'a>) -> DocRef<'a> {
-    //    let mut docs = Vec::new();
-    //    docs.push(self.txt(insertable.str));
-    //    if let Some(d) = insertable.doc {
-    //        docs.push(d);
-    //    }
-    //    self.concat(docs)
-    //}
-
-    //pub fn build_insertable(
-    //    &'a self,
-    //    str: impl ToString,
-    //    doc_ref: Option<DocRef<'a>>,
-    //) -> DocRef<'a> {
-    //    let mut docs = Vec::new();
-    //
-    //    let s = str.to_string();
-    //    if !s.is_empty() {
-    //        docs.push(self.txt(s));
-    //    }
-    //
-    //    if let Some(d) = doc_ref {
-    //        docs.push(d);
-    //    }
-    //    self.concat(docs)
-    //}
 }
 
 pub struct Insertable<'a> {
