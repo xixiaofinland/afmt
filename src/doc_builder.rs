@@ -53,6 +53,14 @@ impl<'a> DocBuilder<'a> {
         self.concat(docs)
     }
 
+    pub fn group_then_indent(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
+        self.indent(self.group(doc))
+    }
+
+    pub fn group_iter(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+        self.group(self.concat(doc_refs))
+    }
+
     pub fn intersperse(&'a self, elems: &[DocRef<'a>], sep: Insertable<'a>) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
@@ -195,10 +203,6 @@ impl<'a> DocBuilder<'a> {
 
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
         self.choice(self.flat(doc), doc)
-    }
-
-    pub fn group_iter(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
-        self.group(self.concat(doc_refs))
     }
 
     //pub fn to_doc(&'a self, insertable: Insertable<'a>) -> DocRef<'a> {

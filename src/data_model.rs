@@ -437,8 +437,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 
         let decl_docs = b.to_docs(&self.declarators);
         let sep = Insertable::new(Some(","), Some(b.softline()));
-        let grouped = b.group(b.intersperse(&decl_docs, sep));
-        let doc = b.indent(grouped);
+        let doc = b.group_then_indent(b.intersperse(&decl_docs, sep));
         result.push(doc);
 
         if let Some(ref n) = self.accessor_list {
@@ -871,8 +870,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(vec![&self.left, &self.right]);
         let sep = Insertable::new(Some(format!(" {}", &self.op)), Some(b.softline()));
-        let grouped = b.group(b.intersperse(&docs, sep));
-        let doc = b.indent(grouped);
+        let doc = b.group_then_indent(b.intersperse(&docs, sep));
         result.push(doc);
     }
 }
