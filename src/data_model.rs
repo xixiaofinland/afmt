@@ -1,7 +1,7 @@
 use crate::{
     accessor::Accessor,
     doc::DocRef,
-    doc_builder::DocBuilder,
+    doc_builder::{DocBuilder, Insertable},
     enum_def::*,
     utility::{assert_check, has_trailing_new_line, source_code},
 };
@@ -198,7 +198,16 @@ impl FormalParameters {
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let modifiers_doc = b.to_docs(&self.formal_parameters);
-        result.push(b.surround_with_softline(&modifiers_doc, ",", "(", ")"));
+
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let open = Insertable::new(Some("("), Some(b.maybeline()));
+        let close = Insertable::new(Some(")"), Some(b.maybeline()));
+        //result.push(b.surround_with_softline(&modifiers_doc, ",", "(", ")"));
+        let doc = b.group(b.surround(&modifiers_doc, sep, open, close));
+        result.push(doc);
+
+        //let sep = Insertable{}
+        //b.surround(&modifiers_doc);
     }
 }
 

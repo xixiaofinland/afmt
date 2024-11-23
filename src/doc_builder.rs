@@ -18,7 +18,7 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    fn surround(
+    pub fn surround(
         &'a self,
         elems: &[DocRef<'a>],
         sep: Insertable<'a>,
@@ -26,7 +26,10 @@ impl<'a> DocBuilder<'a> {
         close: Insertable<'a>,
     ) -> DocRef<'a> {
         if elems.is_empty() {
-            return self.concat(vec![open.build(self), close.build(self)]);
+            return self.concat(vec![
+                self.txt(open.str.unwrap()),
+                self.txt(close.str.unwrap()),
+            ]);
         }
 
         let mut docs = Vec::new();
@@ -38,7 +41,7 @@ impl<'a> DocBuilder<'a> {
             docs.push(self.indent(o_doc));
         }
 
-        docs.push(self.intersperse(elems, sep));
+        docs.push(self.indent(self.intersperse(elems, sep)));
 
         if let Some(c_doc) = close.doc {
             docs.push(c_doc);
@@ -454,6 +457,15 @@ impl<'a> DocBuilder<'a> {
 pub struct Insertable<'a> {
     pub str: Option<String>,
     pub doc: Option<DocRef<'a>>,
+}
+
+impl<'a> Insertable<'a> {
+    pub fn new<S: ToString>(s: Option<S>, doc: Option<DocRef<'a>>) -> Self {
+        Self {
+            str: s.map(|s_value| s_value.to_string()),
+            doc,
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for Insertable<'a> {
