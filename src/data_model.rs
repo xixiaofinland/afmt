@@ -913,8 +913,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
 
         let docs = b.to_docs(&self.declarators);
         let sep = Insertable::new(Some(","), Some(b.softline()));
-        let grouped = b.group(b.intersperse(&docs, sep));
-        let doc = b.indent(grouped);
+        let doc = b.group_then_indent(b.intersperse(&docs, sep));
         result.push(doc);
     }
 }
@@ -2647,8 +2646,7 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
 
         let docs = b.to_docs(&self.declarators);
         let sep = Insertable::new(Some(","), Some(b.softline()));
-        let grouped = b.group(b.intersperse(&docs, sep));
-        let doc = b.indent(grouped);
+        let doc = b.group_then_indent(b.intersperse(&docs, sep));
         result.push(doc);
         result.push(b.txt(";"));
     }
@@ -3240,8 +3238,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         }
 
         let sep = Insertable::new::<&str>(None, Some(b.softline()));
-        let grouped = b.group(b.intersperse(&docs, sep));
-        let doc = b.indent(grouped);
+        let doc = b.group_then_indent(b.intersperse(&docs, sep));
         result.push(doc);
     }
 }
