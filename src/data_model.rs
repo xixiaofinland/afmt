@@ -468,7 +468,13 @@ impl ArrayInitializer {
 impl<'a> DocBuild<'a> for ArrayInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.initializers);
-        result.push(b.surround_with_softline_vary(&docs, ",", "{", "}"));
+        //result.push(b.surround_with_softline_vary(&docs, ",", "{", "}"));
+
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let open = Insertable::new(Some("{"), Some(b.softline()));
+        let close = Insertable::new(Some("}"), Some(b.softline()));
+        let doc = b.group(b.surround(&docs, sep, open, close));
+        result.push(doc);
     }
 }
 
