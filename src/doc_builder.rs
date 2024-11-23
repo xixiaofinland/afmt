@@ -229,7 +229,11 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    fn intersperse_with_sep_and_softline(&'a self, elems: &[DocRef<'a>], sep: &str) -> DocRef<'a> {
+    pub fn intersperse_with_sep_and_softline(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: &str,
+    ) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
         }
@@ -361,5 +365,9 @@ impl<'a> DocBuilder<'a> {
 
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
         self.choice(self.flat(doc), doc)
+    }
+
+    pub fn group_iter(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+        self.group(self.concat(doc_refs))
     }
 }

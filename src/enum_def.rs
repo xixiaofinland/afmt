@@ -827,16 +827,20 @@ impl SelectClause {
 
 impl<'a> DocBuild<'a> for SelectClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("SELECT"));
-        result.push(b.indent(b.softline()));
+        let mut doc_vec = Vec::new();
+        doc_vec.push(b.txt("SELECT"));
+        doc_vec.push(b.indent(b.softline()));
+
         match self {
             Self::Selectable(vec) => {
                 let docs = b.to_docs(vec);
-                let grouped = b.group_elems_with_softline(&docs, ",");
-                let indented_group = b.indent(grouped);
-                result.push(indented_group);
+                let joined = b.intersperse_with_sep_and_softline(&docs, ",");
+                let indented_join = b.indent(joined);
+                doc_vec.push(indented_join);
             }
         }
+
+        result.push(b.group_iter(doc_vec));
     }
 }
 
@@ -1035,12 +1039,14 @@ impl<'a> DocBuild<'a> for BooleanExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::And(vec) => {
-                let doc = b.to_docs(vec);
-                b.intersperse_single_line(&doc, " AND ");
+                let docs = b.to_docs(vec);
+                let doc = b.intersperse_single_line(&docs, " AND ");
+                result.push(doc);
             }
             Self::Or(vec) => {
-                let doc = b.to_docs(vec);
-                b.intersperse_single_line(&doc, " OR ");
+                let docs = b.to_docs(vec);
+                let doc = b.intersperse_single_line(&docs, " OR ");
+                result.push(doc);
             }
             Self::Not(n) => {
                 result.push(n.build(b));

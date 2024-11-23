@@ -1,6 +1,10 @@
-class MeClass {
-
-public String aaaaaa, bbbbbbbb, cccccc, dddd, eeeeee, ffffff = 'a long good string';
-
+public class Me {
+  {
+    String a = 'A';
+    List<Account> accs = [
+      SELECT Id
+      FROM Account
+      WHERE Name = :'N' + a + 'M' + 'E' AND Name = 'NOPE'
+    ];
+  }
 }
-
