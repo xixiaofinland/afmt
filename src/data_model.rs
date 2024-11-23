@@ -436,8 +436,10 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(b.txt(" "));
 
         let decl_docs = b.to_docs(&self.declarators);
-        let decision = b.indent(b.group_elems_with_softline(&decl_docs, ","));
-        result.push(decision);
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let grouped = b.group(b.intersperse(&decl_docs, sep));
+        let doc = b.indent(grouped);
+        result.push(doc);
 
         if let Some(ref n) = self.accessor_list {
             result.push(b.txt(" "));
