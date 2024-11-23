@@ -2680,9 +2680,14 @@ impl<'a> DocBuild<'a> for AccessorList {
             let close = Insertable::new(Some("}"), Some(b.nl()));
             let doc = b.group(b.surround(&docs, sep, open, close));
             result.push(doc);
-            //result.push(b.surround_with_newline(&docs, "", "{", "}"));
         } else {
-            result.push(b.surround_with_softline_vary(&docs, "", "{", "}"));
+            let sep = Insertable::new(Some(" "), None);
+            let open = Insertable::new(Some("{"), Some(b.softline()));
+            let close = Insertable::new(Some("}"), Some(b.softline()));
+            let doc = b.group(b.surround(&docs, sep, open, close));
+            result.push(doc);
+
+            //result.push(b.surround_with_softline_vary(&docs, "", "{", "}"));
         }
     }
 }
