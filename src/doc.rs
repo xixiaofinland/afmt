@@ -5,7 +5,7 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
     printer.print()
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Doc<'a> {
     Newline,
     NewlineWithNoIndent,

@@ -18,6 +18,30 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
+    pub fn intersperse(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep_str: &str,
+        sep_doc: DocRef<'a>,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                if !sep_str.is_empty() {
+                    parts.push(self.txt(sep_str));
+                }
+                parts.push(sep_doc);
+            }
+            parts.push(elem);
+        }
+
+        self.concat(parts)
+    }
+
     pub fn surround_with_newline(
         &'a self,
         elems: &[DocRef<'a>],
