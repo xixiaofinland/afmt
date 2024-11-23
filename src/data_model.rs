@@ -202,12 +202,8 @@ impl<'a> DocBuild<'a> for FormalParameters {
         let sep = Insertable::new(Some(","), Some(b.softline()));
         let open = Insertable::new(Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(")"), Some(b.maybeline()));
-        //result.push(b.surround_with_softline(&modifiers_doc, ",", "(", ")"));
         let doc = b.group(b.surround(&modifiers_doc, sep, open, close));
         result.push(doc);
-
-        //let sep = Insertable{}
-        //b.surround(&modifiers_doc);
     }
 }
 
