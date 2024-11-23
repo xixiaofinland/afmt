@@ -468,7 +468,6 @@ impl ArrayInitializer {
 impl<'a> DocBuild<'a> for ArrayInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.initializers);
-        //result.push(b.surround_with_softline_vary(&docs, ",", "{", "}"));
 
         let sep = Insertable::new(Some(","), Some(b.softline()));
         let open = Insertable::new(Some("{"), Some(b.softline()));
@@ -786,8 +785,13 @@ impl TypeArguments {
 
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let types_doc = b.to_docs(&self.types);
-        result.push(b.surround_with_softline(&types_doc, ",", "<", ">"));
+        let doc = b.to_docs(&self.types);
+
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let open = Insertable::new(Some("<"), Some(b.maybeline()));
+        let close = Insertable::new(Some(">"), Some(b.maybeline()));
+        let doc = b.group(b.surround(&doc, sep, open, close));
+        result.push(doc);
     }
 }
 
