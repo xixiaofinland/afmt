@@ -81,7 +81,7 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn surround_with_trailing_newline_considered<M>(
+    pub fn surround_body<M>(
         &'a self,
         elems: &[BodyMember<M>],
         open: &str,
@@ -97,17 +97,14 @@ impl<'a> DocBuilder<'a> {
         let multi_line = self.concat(vec![
             self.txt(open),
             self.indent(self.nl()),
-            self.indent(self.split_with_trailing_newline_considered(elems)),
+            self.indent(self.intersperse_body_members(elems)),
             self.nl(),
             self.txt(close),
         ]);
         multi_line
     }
 
-    pub fn split_with_trailing_newline_considered<'b, M>(
-        &'a self,
-        members: &[BodyMember<M>],
-    ) -> DocRef<'a>
+    pub fn intersperse_body_members<'b, M>(&'a self, members: &[BodyMember<M>]) -> DocRef<'a>
     where
         M: DocBuild<'a>,
     {

@@ -381,7 +381,7 @@ impl ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.surround_with_trailing_newline_considered(&self.class_members, "{", "}"));
+        result.push(b.surround_body(&self.class_members, "{", "}"));
     }
 }
 
@@ -657,7 +657,7 @@ impl<'a> DocBuild<'a> for Block {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
 
-        let docs = b.surround_with_trailing_newline_considered(&self.statements, "{", "}");
+        let docs = b.surround_body(&self.statements, "{", "}");
         result.push(docs);
     }
 }
@@ -1434,8 +1434,8 @@ impl<'a> DocBuild<'a> for ConstructorBody {
                 result.push(b.nl());
             }
         }
+        result.push(b.indent(b.intersperse_body_members(&self.statements)));
 
-        result.push(b.indent(b.split_with_trailing_newline_considered(&self.statements)));
         result.push(b.nl());
         result.push(b.txt("}"));
     }
@@ -2571,7 +2571,7 @@ impl InterfaceBody {
 
 impl<'a> DocBuild<'a> for InterfaceBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.surround_with_trailing_newline_considered(&self.members, "{", "}"));
+        result.push(b.surround_body(&self.members, "{", "}"));
     }
 }
 
