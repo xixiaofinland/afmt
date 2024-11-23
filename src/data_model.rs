@@ -1140,7 +1140,12 @@ impl<'a> DocBuild<'a> for ForStatement {
         };
         let docs = vec![init, condition, update];
 
-        result.push(b.surround_with_maybeline(&docs, ";", "(", ")"));
+        let sep = Insertable::new(Some(";"), Some(b.maybeline()));
+        let open = Insertable::new(Some("("), Some(b.maybeline()));
+        let close = Insertable::new(Some(")"), Some(b.maybeline()));
+        let doc = b.group(b.surround(&docs, sep, open, close));
+        result.push(doc);
+
         match self.body {
             Statement::SemiColumn => result.push(b.txt(";")),
             _ => {
