@@ -1802,7 +1802,6 @@ impl EnumBody {
 impl<'a> DocBuild<'a> for EnumBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.enum_constants);
-        //result.push(b.surround_with_newline(&docs, ",", "{", "}"));
 
         if docs.is_empty() {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
@@ -2674,8 +2673,14 @@ impl<'a> DocBuild<'a> for AccessorList {
         let docs = b.to_docs(&self.accessor_declarations);
 
         // to align with prettier apex;
+
         if self.child_has_body_section {
-            result.push(b.surround_with_newline(&docs, "", "{", "}"));
+            let sep = Insertable::new::<String>(None, Some(b.nl()));
+            let open = Insertable::new(Some("{"), Some(b.nl()));
+            let close = Insertable::new(Some("}"), Some(b.nl()));
+            let doc = b.group(b.surround(&docs, sep, open, close));
+            result.push(doc);
+            //result.push(b.surround_with_newline(&docs, "", "{", "}"));
         } else {
             result.push(b.surround_with_softline_vary(&docs, "", "{", "}"));
         }
