@@ -801,7 +801,7 @@ impl<'a> DocBuild<'a> for TriggerEvent {
 
 #[derive(Debug, Serialize)]
 pub enum SelectClause {
-    //Count(CountExpression),
+    Count(String),
     Selectable(Vec<SelectableExpression>),
 }
 
@@ -809,8 +809,8 @@ impl SelectClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "select_clause");
 
-        if node.try_c_by_n("count_expression").is_some() {
-            unimplemented!()
+        if let Some(count_node) = node.try_c_by_k("count_expression") {
+            Self::Count(count_node.cvalue_by_n("function_name", source_code()))
         } else {
             Self::Selectable(
                 node.children_vec()
@@ -829,6 +829,10 @@ impl<'a> DocBuild<'a> for SelectClause {
         doc_vec.push(b.indent(b.softline()));
 
         match self {
+            Self::Count(n) => {
+                doc_vec.push(b.txt(n));
+                doc_vec.push(b.txt("()"));
+            }
             Self::Selectable(vec) => {
                 let docs = b.to_docs(vec);
                 let sep = Insertable::new(Some(","), Some(b.softline()));
@@ -855,7 +859,10 @@ impl SelectableExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifier::new(node))),
-            _ => panic!("## unknown node: {} in Type", node.kind().red()),
+            _ => panic!(
+                "## unknown node: {} in SelectableExpression",
+                node.kind().red()
+            ),
         }
     }
 }

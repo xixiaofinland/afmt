@@ -913,7 +913,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
 
         let docs = b.to_docs(&self.declarators);
 
-        // this is to prevent unnessary indentation handling for possible inner nested grouping;
+        // prevent unnessary indentation when only one element;
         let doc = if docs.len() == 1 {
             docs[0]
         } else {
