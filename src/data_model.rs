@@ -912,8 +912,15 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(b.txt(" "));
 
         let docs = b.to_docs(&self.declarators);
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let doc = b.group_then_indent(b.intersperse(&docs, sep));
+
+        // this is to prevent unnessary indentation handling for possible inner nested grouping;
+        let doc = if docs.len() == 1 {
+            docs[0]
+        } else {
+            let sep = Insertable::new(Some(","), Some(b.softline()));
+            b.group_then_indent(b.intersperse(&docs, sep))
+        };
+
         result.push(doc);
     }
 }
@@ -3162,12 +3169,10 @@ impl QueryExpression {
 
 impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![self.query_body.build(b)];
+        let docs_to_indent = vec![b.txt("["), b.maybeline(), self.query_body.build(b)];
+        let first_part = b.indent(b.concat(docs_to_indent));
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("["), Some(b.maybeline()));
-        let close = Insertable::new(Some("]"), Some(b.maybeline()));
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.concat(vec![first_part, b.maybeline(), b.txt("]")]));
         result.push(doc);
     }
 }
@@ -3238,7 +3243,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         }
 
         let sep = Insertable::new::<&str>(None, Some(b.softline()));
-        let doc = b.group_then_indent(b.intersperse(&docs, sep));
+        let doc = b.intersperse(&docs, sep); // to align with prettier apex, no group_then_indent()
         result.push(doc);
     }
 }
@@ -3381,7 +3386,7 @@ impl ComparisonExpression {
                     "bound_apex_expression" => {
                         ValueComparedWith::Bound(BoundApexExpression::new(next_node))
                     }
-                    _ => ValueComparedWith::Literal(next_node.value(source_code())),
+                    _ => ValueComparedWith::Literal(SoqlLiteral::new(next_node)),
                 };
 
                 Comparison::Value(ValueComparison {

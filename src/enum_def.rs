@@ -1242,7 +1242,7 @@ impl<'a> DocBuild<'a> for Comparison {
 
 #[derive(Debug, Serialize)]
 pub enum ValueComparedWith {
-    Literal(String),
+    Literal(SoqlLiteral),
     Bound(BoundApexExpression),
 }
 
@@ -1264,7 +1264,7 @@ impl<'a> DocBuild<'a> for ValueComparedWith {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Literal(n) => {
-                result.push(b.txt(&n));
+                result.push(n.build(b));
             }
             Self::Bound(n) => {
                 result.push(n.build(b));
@@ -1273,27 +1273,69 @@ impl<'a> DocBuild<'a> for ValueComparedWith {
     }
 }
 
-//#[derive(Debug, Serialize)]
-//pub enum SoqlLiteral {
-//    Int(String),
-//    Decimal(String),
-//    StringLiteral(String),
-//    Date(String),
-//    DateTime(String),
-//    Boolean(String),
-//    DateLiteral(String),
-//    DateLiteralWithParam(String),
-//    CurrentLiteral(String),
-//    NullLiteral(String),
-//}
+#[derive(Debug, Serialize)]
+pub enum SoqlLiteral {
+    Int(String),
+    Decimal(String),
+    StringLiteral(String),
+    Date(String),
+    DateTime(String),
+    Boolean(String),
+    DateLiteral(String),
+    DWithParam(DateLiteralWithParam),
+    CurrentLiteral(String),
+    NullLiteral(String),
+}
 
-//impl SoqlLiteral {
-//    pub fn new(n: Node) -> Self {}
-//}
+impl SoqlLiteral {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
+            _ => panic!("## unknown node: {} in SoqlLiteral", node.kind().red()),
+        }
+    }
+}
 
-//impl<'a> DocBuild<'a> for SoqlLiteral {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
-//}
+impl<'a> DocBuild<'a> for SoqlLiteral {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::DWithParam(n) => {
+                result.push(n.build(b));
+            }
+            _ => {
+                unimplemented!()
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct DateLiteralWithParam {
+    date_literal: String,
+    param: String,
+}
+
+impl DateLiteralWithParam {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "date_literal_with_param");
+
+        let date_literal = node
+            .cvalue_by_k("date_literal", source_code())
+            .to_uppercase();
+        let param = node.cvalue_by_k("int", source_code());
+
+        Self {
+            date_literal,
+            param,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for DateLiteralWithParam {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(format!("{}:{}", &self.date_literal, &self.param)));
+    }
+}
 
 //impl ValueComparisionOperator {
 //    pub fn new(n: Node) -> Self {
