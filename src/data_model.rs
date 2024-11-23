@@ -869,14 +869,8 @@ impl BinaryExpression {
 
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //let docs_vec = b.to_docs(vec![&self.left, &self.right]);
-        //let sep = format!(" {}", &self.op);
-        //let decision = b.group_elems_with_softline(&docs_vec, &sep);
-        //result.push(decision);
-
         let docs = b.to_docs(vec![&self.left, &self.right]);
-        let sep_str = format!(" {}", &self.op);
-        let sep = Insertable::new(Some(sep_str), Some(b.softline()));
+        let sep = Insertable::new(Some(format!(" {}", &self.op)), Some(b.softline()));
         let grouped = b.group(b.intersperse(&docs, sep));
         let doc = b.indent(grouped);
         result.push(doc);
@@ -919,9 +913,11 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         result.push(self.type_.build(b));
         result.push(b.txt(" "));
 
-        let docs_vec = b.to_docs(&self.declarators);
-        let decision = b.indent(b.group_elems_with_softline(&docs_vec, ","));
-        result.push(decision);
+        let docs = b.to_docs(&self.declarators);
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let grouped = b.group(b.intersperse(&docs, sep));
+        let doc = b.indent(grouped);
+        result.push(doc);
     }
 }
 
@@ -2652,8 +2648,10 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
         result.push(b.txt(" "));
 
         let docs = b.to_docs(&self.declarators);
-        let declarators_doc = b.group_elems_with_softline(&docs, ",");
-        result.push(declarators_doc);
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let grouped = b.group(b.intersperse(&docs, sep));
+        let doc = b.indent(grouped);
+        result.push(doc);
         result.push(b.txt(";"));
     }
 }
@@ -3233,18 +3231,20 @@ impl SoqlQueryBody {
 
 impl<'a> DocBuild<'a> for SoqlQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut doc_vec = vec![];
-        doc_vec.push(self.select_clause.build(b));
-        doc_vec.push(self.from_clause.build(b));
+        let mut docs = vec![];
+        docs.push(self.select_clause.build(b));
+        docs.push(self.from_clause.build(b));
         if let Some(ref n) = self.limit_clause {
-            doc_vec.push(n.build(b));
+            docs.push(n.build(b));
         }
         if let Some(ref n) = self.where_clause {
-            doc_vec.push(n.build(b));
+            docs.push(n.build(b));
         }
 
-        let grouped = b.group_elems_with_softline(&doc_vec, "");
-        result.push(grouped);
+        let sep = Insertable::new::<&str>(None, Some(b.softline()));
+        let grouped = b.group(b.intersperse(&docs, sep));
+        let doc = b.indent(grouped);
+        result.push(doc);
     }
 }
 
