@@ -813,8 +813,13 @@ impl ArgumentList {
 
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let exp_doc = b.to_docs(&self.expressions);
-        result.push(b.surround_with_softline(&exp_doc, ",", "(", ")"));
+        let doc = b.to_docs(&self.expressions);
+
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let open = Insertable::new(Some("("), Some(b.maybeline()));
+        let close = Insertable::new(Some(")"), Some(b.maybeline()));
+        let doc = b.group(b.surround(&doc, sep, open, close));
+        result.push(doc);
     }
 }
 
