@@ -1522,7 +1522,12 @@ impl TypeParameters {
 impl<'a> DocBuild<'a> for TypeParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.type_parameters);
-        result.push(b.surround_with_softline(&docs, ",", "<", ">"));
+
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let open = Insertable::new(Some("<"), Some(b.maybeline()));
+        let close = Insertable::new(Some(">"), Some(b.maybeline()));
+        let doc = b.group(b.surround(&docs, sep, open, close));
+        result.push(doc);
     }
 }
 
@@ -1797,7 +1802,17 @@ impl EnumBody {
 impl<'a> DocBuild<'a> for EnumBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.enum_constants);
-        result.push(b.surround_with_newline(&docs, ",", "{", "}"));
+        //result.push(b.surround_with_newline(&docs, ",", "{", "}"));
+
+        if docs.is_empty() {
+            return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+        }
+
+        let sep = Insertable::new(Some(","), Some(b.nl()));
+        let open = Insertable::new(Some("{"), Some(b.nl()));
+        let close = Insertable::new(Some("}"), Some(b.nl()));
+        let doc = b.group(b.surround(&docs, sep, open, close));
+        result.push(doc);
     }
 }
 
