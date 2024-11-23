@@ -2862,7 +2862,12 @@ impl SwitchBlock {
 impl<'a> DocBuild<'a> for SwitchBlock {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.rules);
-        result.push(b.surround_with_newline(&docs, "", "{", "}"));
+
+        let sep = Insertable::new(Some(""), Some(b.nl()));
+        let open = Insertable::new(Some("{"), Some(b.nl()));
+        let close = Insertable::new(Some("}"), Some(b.nl()));
+        let doc = b.surround(&docs, sep, open, close);
+        result.push(doc);
     }
 }
 
