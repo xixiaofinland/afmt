@@ -3212,20 +3212,23 @@ pub struct SoqlQueryBody {
     pub from_clause: FromClause,
     pub limit_clause: Option<LimitClause>,
     pub where_clause: Option<WhereClause>,
+    pub all_rows_clause: Option<()>,
 }
 
 impl SoqlQueryBody {
     pub fn new(node: Node) -> Self {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
         let from_clause = FromClause::new(node.c_by_n("from_clause"));
-        let limit_clause = node.try_c_by_k("limit_clause").map(|n| LimitClause::new(n));
-        let where_clause = node.try_c_by_k("where_clause").map(|n| WhereClause::new(n));
+        let limit_clause = node.try_c_by_n("limit_clause").map(|n| LimitClause::new(n));
+        let where_clause = node.try_c_by_n("where_clause").map(|n| WhereClause::new(n));
+        let all_rows_clause = node.try_c_by_n("all_rows_clause").map(|_| ());
 
         Self {
             select_clause,
             from_clause,
             limit_clause,
             where_clause,
+            all_rows_clause,
         }
     }
 }
@@ -3240,6 +3243,9 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         }
         if let Some(ref n) = self.where_clause {
             docs.push(n.build(b));
+        }
+        if let Some(_) = self.all_rows_clause {
+            docs.push(b.txt("ALL ROWS"));
         }
 
         let sep = Insertable::new::<&str>(None, Some(b.softline()));
