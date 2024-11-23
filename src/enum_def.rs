@@ -839,7 +839,6 @@ impl<'a> DocBuild<'a> for SelectClause {
                 doc_vec.push(indented_join);
             }
         }
-
         result.push(b.group_iter(doc_vec));
     }
 }

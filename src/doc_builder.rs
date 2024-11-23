@@ -63,7 +63,7 @@ impl<'a> DocBuilder<'a> {
     ) -> DocRef<'a> {
         let single_sep = format!("{} ", sep);
         let single_line = self.surround_single_line(elems, &single_sep, open, close);
-        let multi_line = self.surround_with_sep_and_softline(elems, sep, open, close);
+        let multi_line = self.surround_intersperse_sep_softline(elems, sep, open, close);
         self.choice(single_line, multi_line)
     }
 
@@ -79,7 +79,7 @@ impl<'a> DocBuilder<'a> {
         let single_close = format!(" {}", close);
         let single_line =
             self.surround_single_line(elems, &single_sep, &single_open, &single_close);
-        let multi_line = self.surround_with_sep_and_softline(elems, sep, open, close);
+        let multi_line = self.surround_intersperse_sep_softline(elems, sep, open, close);
         self.choice(single_line, multi_line)
     }
 
@@ -116,7 +116,7 @@ impl<'a> DocBuilder<'a> {
         multi_line
     }
 
-    fn surround_with_sep_and_softline(
+    fn surround_intersperse_sep_softline(
         &'a self,
         elems: &[DocRef<'a>],
         sep: &str,
