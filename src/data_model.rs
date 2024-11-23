@@ -2673,7 +2673,6 @@ impl<'a> DocBuild<'a> for AccessorList {
         let docs = b.to_docs(&self.accessor_declarations);
 
         // to align with prettier apex;
-
         if self.child_has_body_section {
             let sep = Insertable::new::<String>(None, Some(b.nl()));
             let open = Insertable::new(Some("{"), Some(b.nl()));
@@ -2686,8 +2685,6 @@ impl<'a> DocBuild<'a> for AccessorList {
             let close = Insertable::new(Some(" }"), None);
             let doc = b.group(b.surround(&docs, sep, open, close));
             result.push(doc);
-
-            //result.push(b.surround_with_softline_vary(&docs, "", "{", "}"));
         }
     }
 }
