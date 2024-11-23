@@ -6,7 +6,7 @@ use crate::{
     accessor::Accessor,
     data_model::*,
     doc::DocRef,
-    doc_builder::DocBuilder,
+    doc_builder::{DocBuilder, Insertable},
     utility::{assert_check, source_code},
 };
 
@@ -727,13 +727,10 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
             Self::KeyValues(vec) => {
                 if !vec.is_empty() {
                     let docs = b.to_docs(vec);
-
-                    let doc = b.concat(vec![
-                        b.txt("("),
-                        b.intersperse_single_line(&docs, " "),
-                        b.txt(")"),
-                    ]);
-
+                    let sep = Insertable::new(Some(" "), None);
+                    let open = Insertable::new(Some("("), None);
+                    let close = Insertable::new(Some(")"), None);
+                    let doc = b.group(b.surround(&docs, sep, open, close));
                     result.push(doc);
                 }
             }
@@ -834,8 +831,10 @@ impl<'a> DocBuild<'a> for SelectClause {
         match self {
             Self::Selectable(vec) => {
                 let docs = b.to_docs(vec);
-                let joined = b.intersperse_with_sep_and_softline(&docs, ",");
-                let indented_join = b.indent(joined);
+                let sep = Insertable::new(Some(","), Some(b.softline()));
+                let doc = b.intersperse(&docs, sep);
+
+                let indented_join = b.indent(doc);
                 doc_vec.push(indented_join);
             }
         }
@@ -903,7 +902,9 @@ impl<'a> DocBuild<'a> for FieldIdentifier {
             }
             Self::Dotted(vec) => {
                 let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
-                result.push(b.intersperse_single_line(&docs, "."));
+                let sep = Insertable::new(Some(","), None);
+                let doc = b.intersperse(&docs, sep);
+                result.push(doc);
             }
         }
     }
@@ -970,7 +971,9 @@ impl<'a> DocBuild<'a> for StorageIdentifier {
             }
             Self::Dotted(vec) => {
                 let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
-                result.push(b.intersperse_single_line(&docs, "."));
+                let sep = Insertable::new(Some("."), None);
+                let doc = b.intersperse(&docs, sep);
+                result.push(doc);
             }
         }
     }
