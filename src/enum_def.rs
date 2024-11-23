@@ -1042,12 +1042,14 @@ impl<'a> DocBuild<'a> for BooleanExpression {
         match self {
             Self::And(vec) => {
                 let docs = b.to_docs(vec);
-                let doc = b.intersperse_single_line(&docs, " AND ");
+                let sep = Insertable::new(Some(" AND "), None);
+                let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
             Self::Or(vec) => {
                 let docs = b.to_docs(vec);
-                let doc = b.intersperse_single_line(&docs, " OR ");
+                let sep = Insertable::new(Some(" OR "), None);
+                let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
             Self::Not(n) => {
