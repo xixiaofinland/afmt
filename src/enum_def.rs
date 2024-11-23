@@ -1297,6 +1297,7 @@ pub enum SoqlLiteral {
 impl SoqlLiteral {
     pub fn new(node: Node) -> Self {
         match node.kind() {
+            "boolean" => Self::Boolean(node.value(source_code())),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
             _ => panic!("## unknown node: {} in SoqlLiteral", node.kind().red()),
         }
@@ -1306,6 +1307,9 @@ impl SoqlLiteral {
 impl<'a> DocBuild<'a> for SoqlLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::Boolean(n) => {
+                result.push(b.txt(n));
+            }
             Self::DWithParam(n) => {
                 result.push(n.build(b));
             }

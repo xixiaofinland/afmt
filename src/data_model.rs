@@ -3213,6 +3213,7 @@ pub struct SoqlQueryBody {
     pub limit_clause: Option<LimitClause>,
     pub where_clause: Option<WhereClause>,
     pub all_rows_clause: Option<()>,
+    pub for_clause: Vec<String>,
 }
 
 impl SoqlQueryBody {
@@ -3222,6 +3223,11 @@ impl SoqlQueryBody {
         let limit_clause = node.try_c_by_n("limit_clause").map(|n| LimitClause::new(n));
         let where_clause = node.try_c_by_n("where_clause").map(|n| WhereClause::new(n));
         let all_rows_clause = node.try_c_by_n("all_rows_clause").map(|_| ());
+        let for_clause = node
+            .try_cs_by_k("for_clause")
+            .into_iter()
+            .map(|n| n.cvalue_by_k("for_type", source_code()))
+            .collect();
 
         Self {
             select_clause,
@@ -3229,6 +3235,7 @@ impl SoqlQueryBody {
             limit_clause,
             where_clause,
             all_rows_clause,
+            for_clause,
         }
     }
 }
@@ -3238,14 +3245,22 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         let mut docs = vec![];
         docs.push(self.select_clause.build(b));
         docs.push(self.from_clause.build(b));
-        if let Some(ref n) = self.limit_clause {
+        if let Some(ref n) = self.where_clause {
             docs.push(n.build(b));
         }
-        if let Some(ref n) = self.where_clause {
+        if let Some(ref n) = self.limit_clause {
             docs.push(n.build(b));
         }
         if let Some(_) = self.all_rows_clause {
             docs.push(b.txt("ALL ROWS"));
+        }
+        if !self.for_clause.is_empty() {
+            let for_types: Vec<DocRef<'_>> = self.for_clause.iter().map(|n| b.txt(n)).collect();
+            let sep = Insertable::new(Some(", "), None);
+            let for_types_doc = b.intersperse(&for_types, sep);
+
+            let for_clause_doc = b.concat(vec![b.txt_("FOR"), for_types_doc]);
+            docs.push(for_clause_doc);
         }
 
         let sep = Insertable::new::<&str>(None, Some(b.softline()));
