@@ -1,6 +1,6 @@
 @isTest
 class RunAsClass {
-  static testmethod void runAsTest() {
+  static testMethod void runAsTest() {
     User userOne = [SELECT Id FROM User LIMIT 1];
     User userTwo = [SELECT Id FROM User LIMIT 1 OFFSET 1];
 
@@ -16,7 +16,6 @@ class RunAsClass {
     }
 
     System.runAs([SELECT Id FROM User LIMIT 1]) {
-
     }
 
     System.runAs(new Version(1, 0)) {
@@ -29,4 +28,3 @@ class RunAsClass {
     }
   }
 }
-

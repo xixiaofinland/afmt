@@ -459,7 +459,7 @@ impl Modifier {
             "abstract" => Self::Abstract,
             "inherited_sharing" => Self::InheritedSharing,
             "protected" => Self::Protected,
-            "test method" => Self::TestMethod,
+            "testMethod" => Self::TestMethod,
             "transient" => Self::Transient,
             "webservice" => Self::Webservice,
             _ => panic!("## unknown node: {} in Modifier", kind),
