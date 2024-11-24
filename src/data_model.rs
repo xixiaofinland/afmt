@@ -695,8 +695,8 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug, Serialize)]
 pub struct MethodInvocation {
-    pub is_simple: bool,       // no nested method_invocation nodes;
-    pub is_deepest_nest: bool, // align to pretty apex;
+    pub is_root_node: bool,     // the top layer method_invocation node;
+    pub has_method_child: bool, // to align with prettier apex
     pub object: Option<MethodObject>,
     pub property_navigation: Option<PropertyNavigation>,
     pub type_arguments: Option<TypeArguments>,
@@ -708,30 +708,21 @@ impl MethodInvocation {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_invocation");
 
-        let is_simple = if let Some(parent) = node.parent() {
+        let is_root_node = if let Some(parent) = node.parent() {
             parent.kind() != "method_invocation"
         } else {
             unreachable!("Node should always have a parent");
         };
 
-        let is_deepest_nest = if let Some(parent) = node.parent() {
-            if parent.kind() == "method_invocation" {
-                if let Some(object_child) = node.try_c_by_n("object") {
-                    object_child.kind() != "method_invocation"
-                } else {
-                    true
-                }
-            } else {
-                true
-            }
-        } else {
-            unreachable!("Node should always have a parent");
-        };
+        let mut has_method_child = false;
 
         let object = node.try_c_by_n("object").map(|n| {
             if n.kind() == "super" {
                 MethodObject::Super(Super {})
             } else {
+                if n.kind() == "method_invocation" {
+                    has_method_child = true;
+                }
                 MethodObject::Primary(Box::new(PrimaryExpression::new(n)))
             }
         });
@@ -752,8 +743,8 @@ impl MethodInvocation {
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         Self {
-            is_simple,
-            is_deepest_nest,
+            is_root_node,
+            has_method_child,
             object,
             property_navigation,
             type_arguments,
@@ -765,18 +756,12 @@ impl MethodInvocation {
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        eprintln!("gopro[9]: data_model.rs:767: self={:#?}", self.name);
-        eprintln!(
-            "gopro[9]: data_model.rs:767: self={:#?}",
-            self.is_deepest_nest
-        );
-
         let mut docs = vec![];
 
         if let Some(ref o) = self.object {
             docs.push(o.build(b));
 
-            if !self.is_deepest_nest {
+            if self.has_method_child {
                 docs.push(b.maybeline());
             }
         }
@@ -790,7 +775,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
 
         let mut doc = b.concat(docs);
 
-        if self.is_simple {
+        if self.is_root_node {
             doc = b.group_then_indent(doc);
         }
         result.push(doc);
