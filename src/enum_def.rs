@@ -1300,6 +1300,7 @@ pub enum SoqlLiteral {
 impl SoqlLiteral {
     pub fn new(node: Node) -> Self {
         match node.kind() {
+            "string_literal" => Self::StringLiteral(node.value(source_code())),
             "boolean" => Self::Boolean(node.value(source_code())),
             "date" => Self::Boolean(node.value(source_code())),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
@@ -1311,6 +1312,9 @@ impl SoqlLiteral {
 impl<'a> DocBuild<'a> for SoqlLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::StringLiteral(n) => {
+                result.push(b.txt(n));
+            }
             Self::Date(n) => {
                 result.push(b.txt(n));
             }
