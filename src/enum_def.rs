@@ -735,9 +735,9 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
             Self::KeyValues(vec) => {
                 if !vec.is_empty() {
                     let docs = b.to_docs(vec);
-                    let sep = Insertable::new(Some(" "), None);
-                    let open = Insertable::new(Some("("), None);
-                    let close = Insertable::new(Some(")"), None);
+                    let sep = Insertable::new(None, Some(" "), None);
+                    let open = Insertable::new(None, Some("("), None);
+                    let close = Insertable::new(None, Some(")"), None);
                     let doc = b.group(b.surround(&docs, sep, open, close));
                     result.push(doc);
                 }
@@ -843,7 +843,7 @@ impl<'a> DocBuild<'a> for SelectClause {
             }
             Self::Selectable(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(Some(","), Some(b.softline()));
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
                 let doc = b.intersperse(&docs, sep);
 
                 let indented_join = b.indent(doc);
@@ -917,7 +917,7 @@ impl<'a> DocBuild<'a> for FieldIdentifier {
             }
             Self::Dotted(vec) => {
                 let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
-                let sep = Insertable::new(Some("."), None);
+                let sep = Insertable::new(None, Some("."), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
@@ -986,7 +986,7 @@ impl<'a> DocBuild<'a> for StorageIdentifier {
             }
             Self::Dotted(vec) => {
                 let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
-                let sep = Insertable::new(Some("."), None);
+                let sep = Insertable::new(None, Some("."), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
@@ -1057,13 +1057,13 @@ impl<'a> DocBuild<'a> for BooleanExpression {
         match self {
             Self::And(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(Some(" AND "), None);
+                let sep = Insertable::new(None, Some(" AND "), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
             Self::Or(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(Some(" OR "), None);
+                let sep = Insertable::new(None, Some(" OR "), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }

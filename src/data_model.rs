@@ -57,7 +57,7 @@ impl Root {
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.members);
-        let sep = Insertable::new::<&str>(None, Some(b.nl()));
+        let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
         let doc = b.intersperse(&docs, sep);
         result.push(doc);
         result.push(b.nl());
@@ -200,9 +200,9 @@ impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let modifiers_doc = b.to_docs(&self.formal_parameters);
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(")"), Some(b.maybeline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+        let close = Insertable::new(None, Some(")"), Some(b.maybeline()));
         let doc = b.group(b.surround(&modifiers_doc, sep, open, close));
         result.push(doc);
     }
@@ -296,7 +296,7 @@ impl<'a> DocBuild<'a> for Modifiers {
 
         if !self.modifiers.is_empty() {
             let docs = b.to_docs(&self.modifiers);
-            let sep = Insertable::new(Some(" "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             result.push(b.intersperse(&docs, sep));
             result.push(b.txt(" "));
         }
@@ -436,7 +436,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(b.txt(" "));
 
         let decl_docs = b.to_docs(&self.declarators);
-        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let doc = b.group_then_indent(b.intersperse(&decl_docs, sep));
         result.push(doc);
 
@@ -472,9 +472,9 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.initializers);
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("{"), Some(b.softline()));
-        let close = Insertable::new(Some("}"), Some(b.softline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("{"), Some(b.softline()));
+        let close = Insertable::new(None, Some("}"), Some(b.softline()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
@@ -685,7 +685,7 @@ impl Interface {
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.types);
-        let sep = Insertable::new(Some(", "), None);
+        let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
 
         let implements_group = b.concat(vec![b._txt_("implements"), doc]);
@@ -790,9 +790,9 @@ impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.types);
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("<"), Some(b.maybeline()));
-        let close = Insertable::new(Some(">"), Some(b.maybeline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
+        let close = Insertable::new(None, Some(">"), Some(b.maybeline()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
@@ -818,9 +818,9 @@ impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.expressions);
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(")"), Some(b.maybeline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+        let close = Insertable::new(None, Some(")"), Some(b.maybeline()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
@@ -869,7 +869,7 @@ impl BinaryExpression {
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(vec![&self.left, &self.right]);
-        let sep = Insertable::new(Some(format!(" {}", &self.op)), Some(b.softline()));
+        let sep = Insertable::new(None, Some(format!(" {}", &self.op)), Some(b.softline()));
         let doc = b.group_then_indent(b.intersperse(&docs, sep));
         result.push(doc);
     }
@@ -917,7 +917,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
         let doc = if docs.len() == 1 {
             docs[0]
         } else {
-            let sep = Insertable::new(Some(","), Some(b.softline()));
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
             b.group_then_indent(b.intersperse(&docs, sep))
         };
 
@@ -1151,9 +1151,9 @@ impl<'a> DocBuild<'a> for ForStatement {
         };
         let docs = vec![init, condition, update];
 
-        let sep = Insertable::new(Some(";"), Some(b.maybeline()));
-        let open = Insertable::new(Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(")"), Some(b.maybeline()));
+        let sep = Insertable::new(None, Some(";"), Some(b.maybeline()));
+        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+        let close = Insertable::new(None, Some(")"), Some(b.maybeline()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
 
@@ -1310,7 +1310,7 @@ impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
         if !self.annotations.is_empty() {
             let docs = b.to_docs(&self.annotations);
 
-            let sep = Insertable::new(Some(" "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             result.push(b.intersperse(&docs, sep));
             result.push(b.txt(" "));
         }
@@ -1536,9 +1536,9 @@ impl<'a> DocBuild<'a> for TypeParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.type_parameters);
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("<"), Some(b.maybeline()));
-        let close = Insertable::new(Some(">"), Some(b.maybeline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
+        let close = Insertable::new(None, Some(">"), Some(b.maybeline()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
@@ -1820,9 +1820,9 @@ impl<'a> DocBuild<'a> for EnumBody {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
 
-        let sep = Insertable::new(Some(","), Some(b.nl()));
-        let open = Insertable::new(Some("{"), Some(b.nl()));
-        let close = Insertable::new(Some("}"), Some(b.nl()));
+        let sep = Insertable::new(None, Some(","), Some(b.nl()));
+        let open = Insertable::new(None, Some("{"), Some(b.nl()));
+        let close = Insertable::new(None, Some("}"), Some(b.nl()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
@@ -1974,7 +1974,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
                 }
 
                 let docs = b.to_docs(vec![exp, exp_extra]);
-                let sep = Insertable::new::<&str>(None, Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 let doc = b.group_then_indent(b.intersperse(&docs, sep));
                 result.push(doc);
             }
@@ -1997,7 +1997,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
                     docs.push(u.build(b));
                 }
 
-                let sep = Insertable::new::<&str>(None, Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 let doc = b.group_then_indent(b.intersperse(&docs, sep));
                 result.push(doc);
             }
@@ -2531,7 +2531,7 @@ impl ExtendsInterface {
 impl<'a> DocBuild<'a> for ExtendsInterface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.types);
-        let sep = Insertable::new(Some(", "), None);
+        let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
 
         let extends_group = b.concat(vec![b._txt_("extends"), doc]);
@@ -2652,7 +2652,7 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
         result.push(b.txt(" "));
 
         let docs = b.to_docs(&self.declarators);
-        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let doc = b.group_then_indent(b.intersperse(&docs, sep));
         result.push(doc);
         result.push(b.txt(";"));
@@ -2688,15 +2688,15 @@ impl<'a> DocBuild<'a> for AccessorList {
 
         // to align with prettier apex;
         if self.child_has_body_section {
-            let sep = Insertable::new::<&str>(None, Some(b.nl()));
-            let open = Insertable::new(Some("{"), Some(b.nl()));
-            let close = Insertable::new(Some("}"), Some(b.nl()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
+            let open = Insertable::new(None, Some("{"), Some(b.nl()));
+            let close = Insertable::new(None, Some("}"), Some(b.nl()));
             let doc = b.group(b.surround(&docs, sep, open, close));
             result.push(doc);
         } else {
-            let sep = Insertable::new(Some(" "), None);
-            let open = Insertable::new(Some("{ "), None);
-            let close = Insertable::new(Some(" }"), None);
+            let sep = Insertable::new(None, Some(" "), None);
+            let open = Insertable::new(None, Some("{ "), None);
+            let close = Insertable::new(None, Some(" }"), None);
             let doc = b.group(b.surround(&docs, sep, open, close));
             result.push(doc);
         }
@@ -2877,9 +2877,9 @@ impl<'a> DocBuild<'a> for SwitchBlock {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.rules);
 
-        let sep = Insertable::new(Some(""), Some(b.nl()));
-        let open = Insertable::new(Some("{"), Some(b.nl()));
-        let close = Insertable::new(Some("}"), Some(b.nl()));
+        let sep = Insertable::new(None, Some(""), Some(b.nl()));
+        let open = Insertable::new(None, Some("{"), Some(b.nl()));
+        let close = Insertable::new(None, Some("}"), Some(b.nl()));
         let doc = b.surround(&docs, sep, open, close);
         result.push(doc);
     }
@@ -2952,13 +2952,13 @@ impl<'a> DocBuild<'a> for SwitchLabel {
         match self {
             Self::SObjects(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(Some(", "), None);
+                let sep = Insertable::new(None, Some(", "), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
             Self::Expressions(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(Some(", "), None);
+                let sep = Insertable::new(None, Some(", "), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
@@ -3126,9 +3126,9 @@ impl<'a> DocBuild<'a> for TriggerDeclaration {
 
         let docs = b.to_docs(&self.events);
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(")"), Some(b.maybeline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+        let close = Insertable::new(None, Some(")"), Some(b.maybeline()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
 
@@ -3277,14 +3277,14 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         }
         if !self.for_clause.is_empty() {
             let for_types: Vec<DocRef<'_>> = self.for_clause.iter().map(|n| b.txt(n)).collect();
-            let sep = Insertable::new(Some(", "), None);
+            let sep = Insertable::new(None, Some(", "), None);
             let for_types_doc = b.intersperse(&for_types, sep);
 
             let for_clause_doc = b.concat(vec![b.txt_("FOR"), for_types_doc]);
             docs.push(for_clause_doc);
         }
 
-        let sep = Insertable::new::<&str>(None, Some(b.softline()));
+        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
         let doc = b.intersperse(&docs, sep); // to align with prettier apex, no group_then_indent()
         result.push(doc);
     }
@@ -3502,9 +3502,9 @@ impl<'a> DocBuild<'a> for ComparableList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.values);
 
-        let open = Insertable::new(Some("("), None);
-        let close = Insertable::new(Some(")"), None);
-        let sep = Insertable::new(Some(", "), None);
+        let open = Insertable::new(None, Some("("), None);
+        let close = Insertable::new(None, Some(")"), None);
+        let sep = Insertable::new(None, Some(", "), None);
         let doc = b.surround(&docs, sep, open, close);
         result.push(doc);
     }
@@ -3532,7 +3532,7 @@ impl<'a> DocBuild<'a> for OrderByClause {
         result.push(b.txt_("ORDER BY"));
 
         let docs = b.to_docs(&self.exps);
-        let sep = Insertable::new(Some(", "), None);
+        let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
         result.push(doc);
     }
@@ -3645,9 +3645,9 @@ impl<'a> DocBuild<'a> for MapInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.initializers);
 
-        let sep = Insertable::new(Some(","), Some(b.softline()));
-        let open = Insertable::new(Some("{"), Some(b.softline()));
-        let close = Insertable::new(Some("}"), Some(b.softline()));
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("{"), Some(b.softline()));
+        let close = Insertable::new(None, Some("}"), Some(b.softline()));
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
