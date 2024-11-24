@@ -1,2 +1,5 @@
-public class A {
-  public String veryLongPropertyNameThatWillExceedTheDefaultOfCharacterAndWillBreak { get; set; }}
+class NewObject {
+{
+    Map<String, String[]> d = new Map<String, String[]>{ };
+  }
+}

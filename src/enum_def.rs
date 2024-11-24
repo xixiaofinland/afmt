@@ -112,7 +112,7 @@ impl UnannotatedType {
             | "java_type"
             | "scoped_type_identifier" => Self::Simple(SimpleType::new(n)),
             "array_type" => Self::Array(Box::new(ArrayType::new(n))),
-            _ => panic!("## unknown node: {} in UnannotatedType ", n.kind().red()),
+            _ => panic!("## unknown node: {} in UnannotatedType", n.kind().red()),
         }
     }
 }
@@ -662,6 +662,7 @@ impl Type {
             | "generic_type"
             | "scoped_type_identifier"
             | "java_type" => Self::Unannotated(UnannotatedType::Simple(SimpleType::new(n))),
+            "array_type" => Self::Unannotated(UnannotatedType::Array(Box::new(ArrayType::new(n)))),
             _ => panic!("## unknown node: {} in Type", n.kind().red()),
         }
     }
