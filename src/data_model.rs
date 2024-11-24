@@ -1538,7 +1538,7 @@ impl<'a> DocBuild<'a> for TypeParameters {
 
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
-        let close = Insertable::new(None, Some(">"), Some(b.maybeline()));
+        let close = Insertable::new(Some(b.maybeline()), Some(">"), None);
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
@@ -1822,7 +1822,7 @@ impl<'a> DocBuild<'a> for EnumBody {
 
         let sep = Insertable::new(None, Some(","), Some(b.nl()));
         let open = Insertable::new(None, Some("{"), Some(b.nl()));
-        let close = Insertable::new(None, Some("}"), Some(b.nl()));
+        let close = Insertable::new(Some(b.nl()), Some("}"), None);
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
