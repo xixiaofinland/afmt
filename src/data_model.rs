@@ -1989,15 +1989,19 @@ impl<'a> DocBuild<'a> for DmlExpression {
                 unannotated,
             } => {
                 result.push(b.txt_(dml_type.as_str()));
+
+                let mut docs = vec![];
                 if let Some(ref s) = security_mode {
-                    result.push(s.build(b));
-                    result.push(b.txt(" "));
+                    docs.push(s.build(b));
                 }
-                result.push(exp.build(b));
+                docs.push(exp.build(b));
                 if let Some(ref u) = unannotated {
-                    result.push(b.txt(" "));
-                    result.push(u.build(b));
+                    docs.push(u.build(b));
                 }
+
+                let sep = Insertable::new::<&str>(None, Some(b.softline()));
+                let doc = b.group_then_indent(b.intersperse(&docs, sep));
+                result.push(doc);
             }
         }
         result.push(b.nil());

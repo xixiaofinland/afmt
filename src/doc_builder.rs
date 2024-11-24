@@ -53,6 +53,41 @@ impl<'a> DocBuilder<'a> {
         self.concat(docs)
     }
 
+    pub fn surround_without_indent(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.concat(vec![
+                self.txt(open.str.unwrap()),
+                self.txt(close.str.unwrap()),
+            ]);
+        }
+
+        let mut docs = Vec::new();
+
+        if let Some(o_str) = open.str {
+            docs.push(self.txt(o_str));
+        }
+        if let Some(o_doc) = open.doc {
+            docs.push(o_doc);
+        }
+
+        docs.push(self.intersperse(elems, sep));
+
+        if let Some(c_doc) = close.doc {
+            docs.push(c_doc);
+        }
+        if let Some(c_str) = close.str {
+            docs.push(self.txt(c_str));
+        }
+
+        self.concat(docs)
+    }
+
     pub fn group_then_indent(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
         self.indent(self.group(doc))
     }

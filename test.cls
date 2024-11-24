@@ -1,5 +1,8 @@
-class A {
-  {
-    Integer[] b = new List<Integer>{a=>1, b=>2};
+class HelloWorld {
+  void hello() {
+    upsert new List<Account>{
+      new Account(Name = 'Inner Acme Three'),
+      new Account(Id = accountId, Name = 'Inner Acme Four')
+    } Account.Fields.External_Id__c;
   }
 }

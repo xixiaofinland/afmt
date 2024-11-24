@@ -25,7 +25,7 @@ class DMLClass {
     update account;
     update accounts;
     update new Account(Id = accountId, Name='Acme One');
-    update new Account[]{
+    update new List<Account>{
       new Account(Id = accountId, Name = 'Inner Acme Three'),
       new Account(Id = accountId, Name = 'Inner Acme Four')
     };
