@@ -909,7 +909,7 @@ impl<'a> DocBuild<'a> for FieldIdentifier {
             }
             Self::Dotted(vec) => {
                 let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
-                let sep = Insertable::new(Some(","), None);
+                let sep = Insertable::new(Some("."), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }
