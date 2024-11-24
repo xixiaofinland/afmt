@@ -2694,9 +2694,9 @@ impl<'a> DocBuild<'a> for AccessorList {
             let doc = b.group(b.surround(&docs, sep, open, close));
             result.push(doc);
         } else {
-            let sep = Insertable::new(None, Some(" "), None);
-            let open = Insertable::new(None, Some("{ "), None);
-            let close = Insertable::new(None, Some(" }"), None);
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+            let open = Insertable::new(None, Some("{"), Some(b.softline()));
+            let close = Insertable::new(Some(b.softline()), Some("}"), None);
             let doc = b.group(b.surround(&docs, sep, open, close));
             result.push(doc);
         }
