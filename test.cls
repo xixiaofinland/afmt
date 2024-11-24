@@ -1,5 +1,6 @@
 class NewObject {
-{
-    Map<String, String[]> d = new Map<String, String[]>{ };
+  {
+    List<String> aCopy = new List<String>(superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet().getAnotherSet().getYetAnotherSet());
+    List<String> aCopy = new List<String>(superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak && anotherSuperDuperVeryInsanelyLongVariableNameThatWillSurelyBreak);
   }
 }
