@@ -1223,7 +1223,7 @@ impl<'a> DocBuild<'a> for GeoLocationType {
 #[derive(Debug, Serialize)]
 pub enum Comparison {
     Value(ValueComparison),
-    //Set(SetComparsion),
+    Set(SetComparison),
 }
 
 //impl Comparison {
@@ -1241,6 +1241,9 @@ impl<'a> DocBuild<'a> for Comparison {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Value(n) => {
+                result.push(n.build(b));
+            }
+            Self::Set(n) => {
                 result.push(n.build(b));
             }
         }
@@ -1298,6 +1301,7 @@ impl SoqlLiteral {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "boolean" => Self::Boolean(node.value(source_code())),
+            "date" => Self::Boolean(node.value(source_code())),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
             _ => panic!("## unknown node: {} in SoqlLiteral", node.kind().red()),
         }
@@ -1307,6 +1311,9 @@ impl SoqlLiteral {
 impl<'a> DocBuild<'a> for SoqlLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::Date(n) => {
+                result.push(b.txt(n));
+            }
             Self::Boolean(n) => {
                 result.push(b.txt(n));
             }
@@ -1348,26 +1355,60 @@ impl<'a> DocBuild<'a> for DateLiteralWithParam {
     }
 }
 
-//impl ValueComparisionOperator {
-//    pub fn new(n: Node) -> Self {
-//        match n.kind() {
-//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
-//                SimpleType::Identifier(n.value(source_code())),
-//            )),
-//            _ => panic!(
-//                "## unknown node: {} in ValueComparisionOperator",
-//                n.kind().red()
-//            ),
-//        }
-//    }
-//}
-//
-//impl<'a> DocBuild<'a> for ValueComparisionOperator {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-//        match self {
-//            Self::Unnanotated(u) => {
-//                result.push(u.build(b));
-//            }
-//        }
-//    }
-//}
+#[derive(Debug, Serialize)]
+pub enum SetValue {
+    //Sub(SubQuery),
+    List(ComparableList),
+    Bound(BoundApexExpression),
+}
+
+impl SetValue {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "comparable_list" => Self::List(ComparableList::new(node)),
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
+            _ => panic!("## unknown node: {} in SetValue", node.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for SetValue {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::List(n) => {
+                result.push(n.build(b));
+            }
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum ComparableListValue {
+    Literal(SoqlLiteral),
+    Bound(BoundApexExpression),
+}
+
+impl ComparableListValue {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
+            _ => Self::Literal(SoqlLiteral::new(node)),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ComparableListValue {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+            Self::Literal(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}

@@ -3210,18 +3210,27 @@ impl<'a> DocBuild<'a> for QueryBody {
 pub struct SoqlQueryBody {
     pub select_clause: SelectClause,
     pub from_clause: FromClause,
-    pub limit_clause: Option<LimitClause>,
+    //using_clause;
     pub where_clause: Option<WhereClause>,
-    pub all_rows_clause: Option<()>,
+    //with_c;
+    //group_by_c;
+    pub order_by_clause: Option<OrderByClause>,
+    pub limit_clause: Option<LimitClause>,
+    //offset_c;
     pub for_clause: Vec<String>,
+    //update_c;
+    pub all_rows_clause: Option<()>,
 }
 
 impl SoqlQueryBody {
     pub fn new(node: Node) -> Self {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
         let from_clause = FromClause::new(node.c_by_n("from_clause"));
-        let limit_clause = node.try_c_by_n("limit_clause").map(|n| LimitClause::new(n));
         let where_clause = node.try_c_by_n("where_clause").map(|n| WhereClause::new(n));
+        let order_by_clause = node
+            .try_c_by_n("order_by_clause")
+            .map(|n| OrderByClause::new(n));
+        let limit_clause = node.try_c_by_n("limit_clause").map(|n| LimitClause::new(n));
         let all_rows_clause = node.try_c_by_n("all_rows_clause").map(|_| ());
         let for_clause = node
             .try_cs_by_k("for_clause")
@@ -3232,10 +3241,11 @@ impl SoqlQueryBody {
         Self {
             select_clause,
             from_clause,
-            limit_clause,
             where_clause,
-            all_rows_clause,
+            order_by_clause,
+            limit_clause,
             for_clause,
+            all_rows_clause,
         }
     }
 }
@@ -3245,7 +3255,11 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         let mut docs = vec![];
         docs.push(self.select_clause.build(b));
         docs.push(self.from_clause.build(b));
+
         if let Some(ref n) = self.where_clause {
+            docs.push(n.build(b));
+        }
+        if let Some(ref n) = self.order_by_clause {
             docs.push(n.build(b));
         }
         if let Some(ref n) = self.limit_clause {
@@ -3398,26 +3412,33 @@ impl ComparisonExpression {
         assert_check(node, "comparison_expression");
 
         let value = Box::new(ValueExpression::new(node.first_c()));
-
-        let comparison = node.try_c_by_k("value_comparison_operator").map_or_else(
-            || unimplemented!(),
-            |operator_node| {
-                let next_node = operator_node.next_named();
-                let compared_with = match next_node.kind() {
-                    "bound_apex_expression" => {
-                        ValueComparedWith::Bound(BoundApexExpression::new(next_node))
-                    }
-                    _ => ValueComparedWith::Literal(SoqlLiteral::new(next_node)),
-                };
-
-                Comparison::Value(ValueComparison {
-                    operator: operator_node.value(source_code()),
-                    compared_with,
-                })
-            },
-        );
-
+        let comparison = ComparisonExpression::get_comparsion(&node);
         Self { value, comparison }
+    }
+
+    fn get_comparsion(node: &Node) -> Comparison {
+        if let Some(operator_node) = node.try_c_by_k("value_comparison_operator") {
+            let next_node = operator_node.next_named();
+            let compared_with = match next_node.kind() {
+                "bound_apex_expression" => {
+                    ValueComparedWith::Bound(BoundApexExpression::new(next_node))
+                }
+                _ => ValueComparedWith::Literal(SoqlLiteral::new(next_node)),
+            };
+
+            Comparison::Value(ValueComparison {
+                operator: operator_node.value(source_code()),
+                compared_with,
+            })
+        } else if let Some(operator_node) = node.try_c_by_k("set_comparison_operator") {
+            let next_node = operator_node.next_named();
+            Comparison::Set(SetComparison {
+                operator: operator_node.value(source_code()),
+                set_value: SetValue::new(next_node),
+            })
+        } else {
+            unreachable!()
+        }
     }
 }
 
@@ -3434,13 +3455,118 @@ pub struct ValueComparison {
     pub compared_with: ValueComparedWith,
 }
 
-//impl ValueComparsion {
-//    pub fn new(node: Node) -> Self {}
-//}
-
 impl<'a> DocBuild<'a> for ValueComparison {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b._txt_(&self.operator));
         result.push(self.compared_with.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SetComparison {
+    pub operator: String,
+    pub set_value: SetValue,
+}
+
+impl<'a> DocBuild<'a> for SetComparison {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b._txt_(&self.operator));
+        result.push(self.set_value.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ComparableList {
+    pub values: Vec<ComparableListValue>,
+}
+
+impl ComparableList {
+    pub fn new(node: Node) -> Self {
+        let values = node
+            .children_vec()
+            .into_iter()
+            .map(|n| ComparableListValue::new(n))
+            .collect();
+        Self { values }
+    }
+}
+
+impl<'a> DocBuild<'a> for ComparableList {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let docs = b.to_docs(&self.values);
+
+        let open = Insertable::new(Some("("), None);
+        let close = Insertable::new(Some(")"), None);
+        let sep = Insertable::new(Some(", "), None);
+        let doc = b.surround(&docs, sep, open, close);
+        result.push(doc);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct OrderByClause {
+    pub exps: Vec<OrderExpression>,
+}
+
+impl OrderByClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "order_by_clause");
+        let exps = node
+            .cs_by_k("order_expression")
+            .into_iter()
+            .map(|n| OrderExpression::new(n))
+            .collect();
+        Self { exps }
+    }
+}
+
+impl<'a> DocBuild<'a> for OrderByClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("ORDER BY"));
+
+        let docs = b.to_docs(&self.exps);
+        let sep = Insertable::new(Some(", "), None);
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct OrderExpression {
+    pub value_expression: ValueExpression,
+    pub direction: Option<String>,
+    pub null_direction: Option<String>,
+}
+
+impl OrderExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "order_expression");
+
+        let value_expression = ValueExpression::new(node.first_c());
+        let direction = node
+            .try_c_by_k("order_direction")
+            .map(|n| n.value(source_code()));
+        let null_direction = node
+            .try_c_by_k("order_null_direction")
+            .map(|n| n.value(source_code()));
+
+        Self {
+            value_expression,
+            direction,
+            null_direction,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for OrderExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.value_expression.build(b));
+
+        if let Some(ref n) = self.direction {
+            result.push(b._txt(n));
+        }
+        if let Some(ref n) = self.null_direction {
+            result.push(b._txt(n));
+        }
     }
 }

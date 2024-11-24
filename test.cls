@@ -1,11 +1,10 @@
 class UTIL_SortContact_TEST {
   {
-    List<AutoNumber__c> autoNumbers = [
-      SELECT Starting_Number__c
-      FROM AutoNumber__c
-      WHERE IsActive__c = TRUE
-      LIMIT 1
-      FOR UPDATE
+    [
+      SELECT Id
+      FROM AuthSession
+      WHERE UsersId IN :userIds AND IsCurrent = TRUE
+      ORDER BY ParentId NULLS FIRST
     ];
   }
 }
