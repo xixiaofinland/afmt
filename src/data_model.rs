@@ -1977,10 +1977,6 @@ impl<'a> DocBuild<'a> for DmlExpression {
                 let sep = Insertable::new::<&str>(None, Some(b.softline()));
                 let doc = b.group_then_indent(b.intersperse(&docs, sep));
                 result.push(doc);
-
-                //result.push(exp.build(b));
-                //result.push(b.txt(" "));
-                //result.push(exp_extra.build(b));
             }
             Self::Upsert {
                 dml_type,
