@@ -1057,7 +1057,7 @@ impl<'a> DocBuild<'a> for BooleanExpression {
         match self {
             Self::And(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(None, Some(" AND "), None);
+                let sep = Insertable::new(Some(b.softline()), Some("AND "), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
             }

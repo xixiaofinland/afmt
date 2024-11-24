@@ -1,8 +1,10 @@
-class HelloWorld {
-  void hello() {
-    upsert new List<Account>{
-      new Account(Name = 'Inner Acme Three'),
-      new Account(Id = accountId, Name = 'Inner Acme Four')
-    } Account.Fields.External_Id__c;
+public class A {
+  {
+    String s = [
+            SELECT AccountId
+            FROM Contact
+            WHERE AccountId IN :accountIdsToUpdate and Deceased__c != TRUE AND
+            Exclude_from_Household_Name__c != TRUE
+        ];
   }
 }
