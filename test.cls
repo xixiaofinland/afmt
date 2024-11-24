@@ -1,6 +1,5 @@
-@isTest
-class RunAsClass {
-  static testmethod void runAsTest() {
-    User userTwo = [SELECT Id FROM User LIMIT 1 OFFSET 1];
+class DMLClass {
+  void t() {
+    new Id[]{'0010B00001kL7i0QAC'};
+  }
 }
-

@@ -1972,9 +1972,15 @@ impl<'a> DocBuild<'a> for DmlExpression {
                     result.push(s.build(b));
                     result.push(b.txt(" "));
                 }
-                result.push(exp.build(b));
-                result.push(b.txt(" "));
-                result.push(exp_extra.build(b));
+
+                let docs = b.to_docs(vec![exp, exp_extra]);
+                let sep = Insertable::new::<&str>(None, Some(b.softline()));
+                let doc = b.group_then_indent(b.intersperse(&docs, sep));
+                result.push(doc);
+
+                //result.push(exp.build(b));
+                //result.push(b.txt(" "));
+                //result.push(exp_extra.build(b));
             }
             Self::Upsert {
                 dml_type,
@@ -2118,8 +2124,9 @@ impl ArrayCreationExpression {
             ArrayCreationVariant::OnlyV { value }
         } else {
             //DV
-            ArrayCreationVariant::OnlyV {
+            ArrayCreationVariant::DV {
                 value: ArrayInitializer::new(value_node.unwrap()),
+                dimensions: Dimensions::new(dimensions_node.unwrap()),
             }
         };
 
@@ -2178,27 +2185,18 @@ impl<'a> DocBuild<'a> for ArrayCreationVariant {
 }
 
 #[derive(Debug, Serialize)]
-pub struct Dimensions {
-    value: String,
-}
+pub struct Dimensions {}
 
 impl Dimensions {
     pub fn new(node: Node) -> Self {
         assert_check(node, "dimensions");
-
-        let value: String = node
-            .all_children_vec()
-            .into_iter()
-            .map(|n| n.value(source_code()))
-            .collect();
-
-        Self { value }
+        Self {}
     }
 }
 
 impl<'a> DocBuild<'a> for Dimensions {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.value));
+        result.push(b.txt("[]"));
     }
 }
 
