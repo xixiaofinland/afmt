@@ -394,7 +394,9 @@ impl Literal_ {
             "null_literal" => Self::Null,
             "int" => Self::Int(n.value(source_code())),
             "string_literal" => Self::Str(n.value(source_code())),
-            "decimal_floating_point_literal" => Self::Decimal(n.value(source_code())),
+            "decimal_floating_point_literal" => {
+                Self::Decimal(n.value(source_code()).to_lowercase())
+            }
             _ => panic!("## unknown node: {} in Literal", n.kind().red()),
         }
     }
