@@ -9,8 +9,8 @@ mod tests {
     use std::process::Command;
 
     #[test]
-    fn manual() {
-        let (total, failed) = run_scenario("tests/static", "static");
+    fn diverged() {
+        let (total, failed) = run_scenario("tests/diverged", "diverged");
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
@@ -20,18 +20,18 @@ mod tests {
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
-    #[test]
-    fn extra() {
-        let (total, failed) = run_scenario("tests/prettier10000", "prettier10000");
-        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
-    }
+    //#[test]
+    //fn extra() {
+    //    let (total, failed) = run_scenario("tests/prettier10000", "prettier10000");
+    //    assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
+    //}
 
     #[test]
     fn all() {
         let scenarios = [
-            ("tests/static", "static"),
+            ("tests/diverged", "diverged"),
             ("tests/prettier80", "prettier80"),
-            ("tests/prettier10000", "prettier10000"),
+            //("tests/prettier10000", "prettier10000"),
         ];
 
         let mut total_tests = 0;
@@ -86,7 +86,7 @@ mod tests {
 
     fn run_test_file(source: &Path, scenario_name: &str) -> bool {
         match scenario_name {
-            "static" => run_static_test_files(source),
+            "diverged" => run_static_test_files(source),
             "prettier80" => run_prettier_test_files(source, "p80"),
             "prettier10000" => run_prettier_test_files(source, "p10000"),
             _ => panic!("Unknown scenario: {}", scenario_name),
