@@ -3184,7 +3184,7 @@ pub enum QueryBody {
 }
 
 impl QueryBody {
-    pub fn QueryBody(node: Node) -> Self {
+    pub fn new(node: Node) -> Self {
         match node.kind() {
             "soql_query_body" => Self::SOQL(SoqlQueryBody::new(node)),
             "sosl_query_body" => unimplemented!(),
@@ -3568,5 +3568,25 @@ impl<'a> DocBuild<'a> for OrderExpression {
         if let Some(ref n) = self.null_direction {
             result.push(b._txt(n));
         }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SubQuery {
+    pub soql_query_body: Box<SoqlQueryBody>,
+}
+
+impl SubQuery {
+    pub fn new(node: Node) -> Self {
+        let soql_query_body = Box::new(SoqlQueryBody::new(node.c_by_k("soql_query_body")));
+        Self { soql_query_body }
+    }
+}
+
+impl<'a> DocBuild<'a> for SubQuery {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("("));
+        result.push(b.flat(self.soql_query_body.build(b)));
+        result.push(b.txt(")"));
     }
 }

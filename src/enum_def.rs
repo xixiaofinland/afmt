@@ -1357,7 +1357,7 @@ impl<'a> DocBuild<'a> for DateLiteralWithParam {
 
 #[derive(Debug, Serialize)]
 pub enum SetValue {
-    //Sub(SubQuery),
+    Sub(SubQuery),
     List(ComparableList),
     Bound(BoundApexExpression),
 }
@@ -1365,6 +1365,7 @@ pub enum SetValue {
 impl SetValue {
     pub fn new(node: Node) -> Self {
         match node.kind() {
+            "subquery" => Self::Sub(SubQuery::new(node)),
             "comparable_list" => Self::List(ComparableList::new(node)),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
             _ => panic!("## unknown node: {} in SetValue", node.kind().red()),
@@ -1375,6 +1376,9 @@ impl SetValue {
 impl<'a> DocBuild<'a> for SetValue {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::Sub(n) => {
+                result.push(n.build(b));
+            }
             Self::List(n) => {
                 result.push(n.build(b));
             }
