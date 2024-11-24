@@ -202,7 +202,7 @@ impl<'a> DocBuild<'a> for FormalParameters {
 
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(None, Some(")"), Some(b.maybeline()));
+        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
         let doc = b.group(b.surround(&modifiers_doc, sep, open, close));
         result.push(doc);
     }
@@ -474,7 +474,7 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
 
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("{"), Some(b.softline()));
-        let close = Insertable::new(None, Some("}"), Some(b.softline()));
+        let close = Insertable::new(Some(b.softline()), Some("}"), None);
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
