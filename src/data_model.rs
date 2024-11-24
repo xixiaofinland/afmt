@@ -695,7 +695,7 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug, Serialize)]
 pub struct MethodInvocation {
-    pub is_base: bool,         // whehter it's the top layer or the nested;
+    pub is_simple: bool,       // no nested method_invocation nodes;
     pub is_deepest_nest: bool, // align to pretty apex;
     pub object: Option<MethodObject>,
     pub property_navigation: Option<PropertyNavigation>,
@@ -708,37 +708,24 @@ impl MethodInvocation {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_invocation");
 
-        //let mut is_base = false;
-        //
-        //let is_deepest_nest = if let Some(parent) = node.parent() {
-        //    if parent.kind() == "method_invocation" {
-        //        if let Some(object_child) = node.try_c_by_n("object") {
-        //            object_child.kind() != "method_invocation"
-        //        } else {
-        //            true
-        //        }
-        //    } else {
-        //        is_base = true;
-        //        false
-        //    }
-        //} else {
-        //    unreachable!("Node should always have a parent");
-        //};
-
-        let is_base = if let Some(parent) = node.parent() {
+        let is_simple = if let Some(parent) = node.parent() {
             parent.kind() != "method_invocation"
         } else {
             unreachable!("Node should always have a parent");
         };
 
-        let is_deepest_nest = if !is_base {
-            if let Some(object_child) = node.try_c_by_n("object") {
-                object_child.kind() != "method_invocation"
+        let is_deepest_nest = if let Some(parent) = node.parent() {
+            if parent.kind() == "method_invocation" {
+                if let Some(object_child) = node.try_c_by_n("object") {
+                    object_child.kind() != "method_invocation"
+                } else {
+                    true
+                }
             } else {
-                true // No "object" child means it's the deepest
+                true
             }
         } else {
-            false // Base nodes are not considered deepest nested
+            unreachable!("Node should always have a parent");
         };
 
         let object = node.try_c_by_n("object").map(|n| {
@@ -765,7 +752,7 @@ impl MethodInvocation {
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         Self {
-            is_base,
+            is_simple,
             is_deepest_nest,
             object,
             property_navigation,
@@ -778,12 +765,18 @@ impl MethodInvocation {
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        eprintln!("gopro[9]: data_model.rs:767: self={:#?}", self.name);
+        eprintln!(
+            "gopro[9]: data_model.rs:767: self={:#?}",
+            self.is_deepest_nest
+        );
+
         let mut docs = vec![];
 
         if let Some(ref o) = self.object {
             docs.push(o.build(b));
 
-            if !self.is_base && !self.is_deepest_nest {
+            if !self.is_deepest_nest {
                 docs.push(b.maybeline());
             }
         }
@@ -797,7 +790,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
 
         let mut doc = b.concat(docs);
 
-        if self.is_base {
+        if self.is_simple {
             doc = b.group_then_indent(doc);
         }
         result.push(doc);
