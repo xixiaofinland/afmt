@@ -2690,7 +2690,7 @@ impl<'a> DocBuild<'a> for AccessorList {
         if self.child_has_body_section {
             let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
             let open = Insertable::new(None, Some("{"), Some(b.nl()));
-            let close = Insertable::new(None, Some("}"), Some(b.nl()));
+            let close = Insertable::new(Some(b.nl()), Some("}"), None);
             let doc = b.group(b.surround(&docs, sep, open, close));
             result.push(doc);
         } else {
