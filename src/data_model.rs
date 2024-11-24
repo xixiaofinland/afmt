@@ -695,7 +695,8 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug, Serialize)]
 pub struct MethodInvocation {
-    pub is_base: bool, // whehter it's the top layer or the nested;
+    pub is_base: bool,         // whehter it's the top layer or the nested;
+    pub is_deepest_nest: bool, // align to pretty apex;
     pub object: Option<MethodObject>,
     pub property_navigation: Option<PropertyNavigation>,
     pub type_arguments: Option<TypeArguments>,
@@ -707,7 +708,38 @@ impl MethodInvocation {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_invocation");
 
-        let is_base = node.parent().unwrap().kind() != "method_invocation";
+        //let mut is_base = false;
+        //
+        //let is_deepest_nest = if let Some(parent) = node.parent() {
+        //    if parent.kind() == "method_invocation" {
+        //        if let Some(object_child) = node.try_c_by_n("object") {
+        //            object_child.kind() != "method_invocation"
+        //        } else {
+        //            true
+        //        }
+        //    } else {
+        //        is_base = true;
+        //        false
+        //    }
+        //} else {
+        //    unreachable!("Node should always have a parent");
+        //};
+
+        let is_base = if let Some(parent) = node.parent() {
+            parent.kind() != "method_invocation"
+        } else {
+            unreachable!("Node should always have a parent");
+        };
+
+        let is_deepest_nest = if !is_base {
+            if let Some(object_child) = node.try_c_by_n("object") {
+                object_child.kind() != "method_invocation"
+            } else {
+                true // No "object" child means it's the deepest
+            }
+        } else {
+            false // Base nodes are not considered deepest nested
+        };
 
         let object = node.try_c_by_n("object").map(|n| {
             if n.kind() == "super" {
@@ -734,6 +766,7 @@ impl MethodInvocation {
 
         Self {
             is_base,
+            is_deepest_nest,
             object,
             property_navigation,
             type_arguments,
@@ -746,9 +779,13 @@ impl MethodInvocation {
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut docs = vec![];
+
         if let Some(ref o) = self.object {
             docs.push(o.build(b));
-            docs.push(b.maybeline());
+
+            if !self.is_base && !self.is_deepest_nest {
+                docs.push(b.maybeline());
+            }
         }
 
         if let Some(ref p) = self.property_navigation {
