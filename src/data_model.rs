@@ -695,6 +695,7 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug, Serialize)]
 pub struct MethodInvocation {
+    pub is_base: bool, // whehter it's the top layer or the nested;
     pub object: Option<MethodObject>,
     pub property_navigation: Option<PropertyNavigation>,
     pub type_arguments: Option<TypeArguments>,
@@ -704,6 +705,10 @@ pub struct MethodInvocation {
 
 impl MethodInvocation {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "method_invocation");
+
+        let is_base = node.parent().unwrap().kind() != "method_invocation";
+
         let object = node.try_c_by_n("object").map(|n| {
             if n.kind() == "super" {
                 MethodObject::Super(Super {})
@@ -728,6 +733,7 @@ impl MethodInvocation {
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         Self {
+            is_base,
             object,
             property_navigation,
             type_arguments,
@@ -739,16 +745,25 @@ impl MethodInvocation {
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let mut docs = vec![];
         if let Some(ref o) = self.object {
-            result.push(o.build(b));
+            docs.push(o.build(b));
+            docs.push(b.maybeline());
         }
 
         if let Some(ref p) = self.property_navigation {
-            result.push(p.build(b));
+            docs.push(p.build(b));
         }
 
-        result.push(b.txt(&self.name));
-        result.push(self.arguments.build(b));
+        docs.push(b.txt(&self.name));
+        docs.push(self.arguments.build(b));
+
+        let mut doc = b.concat(docs);
+
+        if self.is_base {
+            doc = b.group_then_indent(doc);
+        }
+        result.push(doc);
     }
 }
 
