@@ -1153,7 +1153,7 @@ impl<'a> DocBuild<'a> for ForStatement {
 
         let sep = Insertable::new(None, Some(";"), Some(b.maybeline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(None, Some(")"), Some(b.maybeline()));
+        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
         let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
 
