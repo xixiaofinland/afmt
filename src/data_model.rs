@@ -3216,7 +3216,7 @@ pub struct SoqlQueryBody {
     //group_by_c;
     pub order_by_clause: Option<OrderByClause>,
     pub limit_clause: Option<LimitClause>,
-    //offset_c;
+    pub offset_clause: Option<OffsetClause>,
     pub for_clause: Vec<String>,
     //update_c;
     pub all_rows_clause: Option<()>,
@@ -3231,6 +3231,9 @@ impl SoqlQueryBody {
             .try_c_by_n("order_by_clause")
             .map(|n| OrderByClause::new(n));
         let limit_clause = node.try_c_by_n("limit_clause").map(|n| LimitClause::new(n));
+        let offset_clause = node
+            .try_c_by_n("offset_clause")
+            .map(|n| OffsetClause::new(n));
         let all_rows_clause = node.try_c_by_n("all_rows_clause").map(|_| ());
         let for_clause = node
             .try_cs_by_k("for_clause")
@@ -3244,6 +3247,7 @@ impl SoqlQueryBody {
             where_clause,
             order_by_clause,
             limit_clause,
+            offset_clause,
             for_clause,
             all_rows_clause,
         }
@@ -3263,6 +3267,9 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
             docs.push(n.build(b));
         }
         if let Some(ref n) = self.limit_clause {
+            docs.push(n.build(b));
+        }
+        if let Some(ref n) = self.offset_clause {
             docs.push(n.build(b));
         }
         if let Some(_) = self.all_rows_clause {

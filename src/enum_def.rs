@@ -498,7 +498,7 @@ impl<'a> DocBuild<'a> for Modifier {
                 result.push(b.txt("static"));
             }
             Self::TestMethod => {
-                result.push(b.txt("testmethod"));
+                result.push(b.txt("testMethod"));
             }
             Self::Transient => {
                 result.push(b.txt("transient"));
@@ -1417,6 +1417,38 @@ impl<'a> DocBuild<'a> for ComparableListValue {
                 result.push(n.build(b));
             }
             Self::Literal(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum OffsetClause {
+    Int(String),
+    Bound(BoundApexExpression),
+}
+
+impl OffsetClause {
+    pub fn new(node: Node) -> Self {
+        let first_c = node.first_c();
+        match first_c.kind() {
+            "int" => Self::Int(first_c.value(source_code())),
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(first_c)),
+            _ => panic!("## unknown node: {} in OffsetClause", first_c.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for OffsetClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("OFFSET"));
+
+        match self {
+            Self::Int(n) => {
+                result.push(b.txt(n));
+            }
+            Self::Bound(n) => {
                 result.push(n.build(b));
             }
         }
