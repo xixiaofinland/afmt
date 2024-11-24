@@ -224,6 +224,11 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
+    pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let relative_indent = self.config.indent_size;
+        self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
+    }
+
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
         let n_vec = doc_refs.into_iter().collect::<Vec<_>>();
         self.arena.alloc(Doc::Concat(n_vec))

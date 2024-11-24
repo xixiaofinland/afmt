@@ -1994,7 +1994,9 @@ impl<'a> DocBuild<'a> for DmlExpression {
                 if let Some(ref s) = security_mode {
                     docs.push(s.build(b));
                 }
-                docs.push(exp.build(b));
+
+                docs.push(b.dedent(exp.build(b)));
+
                 if let Some(ref u) = unannotated {
                     docs.push(u.build(b));
                 }

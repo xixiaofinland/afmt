@@ -14,6 +14,7 @@ pub enum Doc<'a> {
     Softline,  // a space or a newline
     Maybeline, // empty or a newline
     Indent(u32, DocRef<'a>),
+    Dedent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
 }
@@ -58,6 +59,14 @@ impl<'a> Chunk<'a> {
         Chunk {
             doc_ref,
             indent: self.indent + indent,
+            flat: self.flat,
+        }
+    }
+
+    fn dedented(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
+        Chunk {
+            doc_ref,
+            indent: self.indent.saturating_sub(indent),
             flat: self.flat,
         }
     }
@@ -129,6 +138,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
+                Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         self.chunks.push(chunk.with_doc(n));
@@ -189,6 +199,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
+                Doc::Dedent(i, x) => stack.push(chunk.dedented(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         stack.push(chunk.with_doc(n));
