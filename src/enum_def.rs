@@ -225,6 +225,7 @@ impl Expression {
             | "method_invocation"
             | "parenthesized_expression"
             | "object_creation_expression"
+            | "map_creation_expression"
             | "array_access"
             | "field_access"
             | "string_literal"
@@ -302,6 +303,7 @@ pub enum PrimaryExpression {
     Method(MethodInvocation),
     Parenth(ParenthesizedExpression),
     Obj(ObjectCreationExpression),
+    Map(MapCreationExpression),
     Field(FieldAccess),
     Array(Box<ArrayAccess>),
     ArrayCreation(ArrayCreationExpression),
@@ -323,6 +325,7 @@ impl PrimaryExpression {
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
             "object_creation_expression" => Self::Obj(ObjectCreationExpression::new(n)),
+            "map_creation_expression" => Self::Map(MapCreationExpression::new(n)),
             "field_access" => Self::Field(FieldAccess::new(n)),
             "array_access" => Self::Array(Box::new(ArrayAccess::new(n))),
             "array_creation_expression" => Self::ArrayCreation(ArrayCreationExpression::new(n)),
@@ -351,6 +354,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
                 result.push(n.build(b));
             }
             Self::Obj(n) => {
+                result.push(n.build(b));
+            }
+            Self::Map(n) => {
                 result.push(n.build(b));
             }
             Self::Field(n) => {

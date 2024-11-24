@@ -3595,3 +3595,86 @@ impl<'a> DocBuild<'a> for SubQuery {
         result.push(b.txt(")"));
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct MapCreationExpression {
+    type_: SimpleType,
+    value: MapInitializer,
+}
+
+impl MapCreationExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "map_creation_expression");
+
+        let type_ = SimpleType::new(node.c_by_n("type"));
+        let value = MapInitializer::new(node.c_by_n("value"));
+        Self { type_, value }
+    }
+}
+
+impl<'a> DocBuild<'a> for MapCreationExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("new"));
+        result.push(self.type_.build(b));
+        result.push(self.value.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct MapInitializer {
+    initializers: Vec<MapKeyInitializer>,
+}
+
+impl MapInitializer {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "map_initializer");
+
+        let initializers: Vec<_> = node
+            .children_vec()
+            .into_iter()
+            .map(|n| MapKeyInitializer::new(n))
+            .collect();
+
+        Self { initializers }
+    }
+}
+
+impl<'a> DocBuild<'a> for MapInitializer {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let docs = b.to_docs(&self.initializers);
+
+        let sep = Insertable::new(Some(","), Some(b.softline()));
+        let open = Insertable::new(Some("{"), Some(b.softline()));
+        let close = Insertable::new(Some("}"), Some(b.softline()));
+        let doc = b.group(b.surround(&docs, sep, open, close));
+        result.push(doc);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct MapKeyInitializer {
+    pub exp1: Box<Expression>,
+    pub exp2: Box<Expression>,
+}
+
+impl MapKeyInitializer {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "map_key_initializer");
+
+        let children = node.children_vec();
+        if children.len() != 2 {
+            panic!("### must be exactly 2 child nodes in MapKeyInitializer");
+        }
+        let exp1 = Box::new(Expression::new(children[0]));
+        let exp2 = Box::new(Expression::new(children[1]));
+        Self { exp1, exp2 }
+    }
+}
+
+impl<'a> DocBuild<'a> for MapKeyInitializer {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.exp1.build(b));
+        result.push(b._txt_("=>"));
+        result.push(self.exp2.build(b));
+    }
+}
