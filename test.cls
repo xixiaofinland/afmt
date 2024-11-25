@@ -1,9 +1,10 @@
-class A {
+public class A {
   {
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet().getAnotherSet().getYetAnotherSet();
-
-    t.a();
-
-    System.debug('Matches count: ' + city?.countMatches('San Francisco') ?? 100000000);
+    String s = [
+            SELECT AccountId
+            FROM Contact
+            WHERE AccountId IN :accountIdsToUpdate and (Deceased__c != TRUE AND
+            Exclude_from_Household_Name__c != TRUE)
+        ];
   }
 }

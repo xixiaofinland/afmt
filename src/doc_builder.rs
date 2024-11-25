@@ -59,8 +59,45 @@ impl<'a> DocBuilder<'a> {
         self.concat(docs)
     }
 
-    pub fn group_then_indent(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
-        self.indent(self.group(doc))
+    pub fn surround_no_indent(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.concat(vec![
+                self.txt(open.str.unwrap()),
+                self.txt(close.str.unwrap()),
+            ]);
+        }
+
+        let mut docs = Vec::new();
+
+        if let Some(n) = open.pre {
+            docs.push(n);
+        }
+        if let Some(n) = open.str {
+            docs.push(self.txt(n));
+        }
+        if let Some(n) = open.suf {
+            docs.push(n);
+        }
+
+        docs.push(self.intersperse(elems, sep));
+
+        if let Some(n) = close.pre {
+            docs.push(self.dedent(n));
+        }
+        if let Some(n) = close.str {
+            docs.push(self.txt(n));
+        }
+        if let Some(n) = close.suf {
+            docs.push(n);
+        }
+
+        self.concat(docs)
     }
 
     pub fn group_iter(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
@@ -215,6 +252,10 @@ impl<'a> DocBuilder<'a> {
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
         self.choice(self.flat(doc), doc)
     }
+
+    pub fn group_no_indent(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
+        self.choice(self.flat(doc), doc)
+    }
 }
 
 pub struct Insertable<'a> {
@@ -249,4 +290,9 @@ impl<'a> DocBuild<'a> for Insertable<'a> {
             result.push(n);
         }
     }
+}
+
+enum IndentMode {
+    Indent,
+    NoIndent,
 }

@@ -437,7 +437,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 
         let decl_docs = b.to_docs(&self.declarators);
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let doc = b.group_then_indent(b.intersperse(&decl_docs, sep));
+        let doc = b.group(b.indent(b.intersperse(&decl_docs, sep)));
         result.push(doc);
 
         if let Some(ref n) = self.accessor_list {
@@ -776,7 +776,8 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         let mut doc = b.concat(docs);
 
         if self.is_root_node {
-            doc = b.group_then_indent(doc);
+            doc = b.group(doc);
+            //doc = b.choice(b.flat(doc), doc)
         }
         result.push(doc);
     }
@@ -851,7 +852,8 @@ impl<'a> DocBuild<'a> for ArgumentList {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let surrounded = b.surround(&docs, sep, open, close);
+        let doc = b.group(surrounded);
         result.push(doc);
     }
 }
@@ -900,7 +902,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(vec![&self.left, &self.right]);
         let sep = Insertable::new(None, Some(format!(" {}", &self.op)), Some(b.softline()));
-        let doc = b.group_then_indent(b.intersperse(&docs, sep));
+        let doc = b.group(b.intersperse(&docs, sep));
         result.push(doc);
     }
 }
@@ -948,7 +950,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
             docs[0]
         } else {
             let sep = Insertable::new(None, Some(","), Some(b.softline()));
-            b.group_then_indent(b.intersperse(&docs, sep))
+            b.group(b.indent(b.intersperse(&docs, sep)))
         };
 
         result.push(doc);
@@ -2005,7 +2007,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
 
                 let docs = b.to_docs(vec![exp, exp_extra]);
                 let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-                let doc = b.group_then_indent(b.intersperse(&docs, sep));
+                let doc = b.group(b.intersperse(&docs, sep));
                 result.push(doc);
             }
             Self::Upsert {
@@ -2021,14 +2023,14 @@ impl<'a> DocBuild<'a> for DmlExpression {
                     docs.push(s.build(b));
                 }
 
-                docs.push(b.dedent(exp.build(b)));
+                docs.push(exp.build(b));
 
                 if let Some(ref u) = unannotated {
                     docs.push(u.build(b));
                 }
 
                 let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-                let doc = b.group_then_indent(b.intersperse(&docs, sep));
+                let doc = b.group(b.intersperse(&docs, sep));
                 result.push(doc);
             }
         }
@@ -2683,7 +2685,7 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
 
         let docs = b.to_docs(&self.declarators);
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let doc = b.group_then_indent(b.intersperse(&docs, sep));
+        let doc = b.group(b.intersperse(&docs, sep));
         result.push(doc);
         result.push(b.txt(";"));
     }
@@ -3202,7 +3204,7 @@ impl<'a> DocBuild<'a> for QueryExpression {
         let docs_to_indent = vec![b.txt("["), b.maybeline(), self.query_body.build(b)];
         let first_part = b.indent(b.concat(docs_to_indent));
 
-        let doc = b.group(b.concat(vec![first_part, b.maybeline(), b.txt("]")]));
+        let doc = b.group_no_indent(b.concat(vec![first_part, b.maybeline(), b.txt("]")]));
         result.push(doc);
     }
 }
@@ -3315,7 +3317,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         }
 
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let doc = b.intersperse(&docs, sep); // to align with prettier apex, no group_then_indent()
+        let doc = b.intersperse(&docs, sep); // to align with prettier apex, no group()
         result.push(doc);
     }
 }
@@ -3425,7 +3427,7 @@ impl<'a> DocBuild<'a> for WhereClause {
         docs.push(b.softline());
         docs.push(self.boolean_exp.build(b));
 
-        result.push(b.group_then_indent(b.concat(docs)));
+        result.push(b.group(b.concat(docs)));
     }
 }
 
