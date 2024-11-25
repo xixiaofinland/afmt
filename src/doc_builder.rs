@@ -45,7 +45,7 @@ impl<'a> DocBuilder<'a> {
             docs.push(self.indent(n));
         }
 
-        docs.push(self.indent(self.intersperse(elems, sep)));
+        docs.push(self.indent_no_flag(self.intersperse(elems, sep)));
 
         if let Some(n) = close.pre {
             docs.push(n);
