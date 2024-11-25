@@ -1059,13 +1059,13 @@ impl<'a> DocBuild<'a> for BooleanExpression {
             Self::And(vec) => {
                 let docs = b.to_docs(vec);
                 let sep = Insertable::new(Some(b.softline()), Some("AND "), None);
-                let doc = b.intersperse(&docs, sep);
+                let doc = b.indent(b.intersperse(&docs, sep));
                 result.push(doc);
             }
             Self::Or(vec) => {
                 let docs = b.to_docs(vec);
                 let sep = Insertable::new(None, Some(" OR "), None);
-                let doc = b.intersperse(&docs, sep);
+                let doc = b.indent(b.intersperse(&docs, sep));
                 result.push(doc);
             }
             Self::Not(n) => {
