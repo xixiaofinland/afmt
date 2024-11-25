@@ -1,10 +1,8 @@
-public class A {
+class A {
   {
-    String s = [
-            SELECT AccountId
-            FROM Contact
-            WHERE AccountId IN :accountIdsToUpdate and (Deceased__c != TRUE AND
-            Exclude_from_Household_Name__c != TRUE)
-        ];
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet().getAnotherSet().getYetAnotherSet();
+
+    t.a().b().c().d();
   }
 }
+

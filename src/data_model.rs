@@ -776,7 +776,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         let mut doc = b.concat(docs);
 
         if self.is_root_node {
-            doc = b.group(doc);
+            doc = b.group(b.indent(doc));
             //doc = b.choice(b.flat(doc), doc)
         }
         result.push(doc);
