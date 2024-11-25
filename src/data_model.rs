@@ -203,7 +203,7 @@ impl<'a> DocBuild<'a> for FormalParameters {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group(b.surround(&modifiers_doc, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&modifiers_doc, sep, open, close));
         result.push(doc);
     }
 }
@@ -475,7 +475,7 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("{"), Some(b.softline()));
         let close = Insertable::new(Some(b.softline()), Some("}"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
     }
 }
@@ -823,7 +823,7 @@ impl<'a> DocBuild<'a> for TypeArguments {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(">"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
     }
 }
@@ -851,7 +851,7 @@ impl<'a> DocBuild<'a> for ArgumentList {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
     }
 }
@@ -1184,7 +1184,7 @@ impl<'a> DocBuild<'a> for ForStatement {
         let sep = Insertable::new(None, Some(";"), Some(b.maybeline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
 
         match self.body {
@@ -1569,7 +1569,7 @@ impl<'a> DocBuild<'a> for TypeParameters {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(">"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
     }
 }
@@ -1853,7 +1853,7 @@ impl<'a> DocBuild<'a> for EnumBody {
         let sep = Insertable::new(None, Some(","), Some(b.nl()));
         let open = Insertable::new(None, Some("{"), Some(b.nl()));
         let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
     }
 }
@@ -2721,13 +2721,13 @@ impl<'a> DocBuild<'a> for AccessorList {
             let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
             let open = Insertable::new(None, Some("{"), Some(b.nl()));
             let close = Insertable::new(Some(b.nl()), Some("}"), None);
-            let doc = b.group(b.surround(&docs, sep, open, close));
+            let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
             result.push(doc);
         } else {
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("{"), Some(b.softline()));
             let close = Insertable::new(Some(b.softline()), Some("}"), None);
-            let doc = b.group(b.surround(&docs, sep, open, close));
+            let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
             result.push(doc);
         }
     }
@@ -2910,7 +2910,7 @@ impl<'a> DocBuild<'a> for SwitchBlock {
         let sep = Insertable::new(None, Some(""), Some(b.nl()));
         let open = Insertable::new(None, Some("{"), Some(b.nl()));
         let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.surround(&docs, sep, open, close);
+        let doc = b.surround_with_indent(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -3159,7 +3159,7 @@ impl<'a> DocBuild<'a> for TriggerDeclaration {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
 
         result.push(b.txt(" "));
@@ -3539,7 +3539,7 @@ impl<'a> DocBuild<'a> for ComparableList {
         let sep = Insertable::new(None, Some(", "), None);
         let open = Insertable::new(None, Some("("), None);
         let close = Insertable::new(None, Some(")"), None);
-        let doc = b.surround(&docs, sep, open, close);
+        let doc = b.surround_with_indent(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -3682,7 +3682,7 @@ impl<'a> DocBuild<'a> for MapInitializer {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("{"), Some(b.softline()));
         let close = Insertable::new(Some(b.softline()), Some("}"), None);
-        let doc = b.group(b.surround(&docs, sep, open, close));
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
     }
 }
