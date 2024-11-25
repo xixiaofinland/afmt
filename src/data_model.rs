@@ -777,7 +777,6 @@ impl<'a> DocBuild<'a> for MethodInvocation {
 
         if self.is_root_node {
             doc = b.group(b.indent(doc));
-            //doc = b.choice(b.flat(doc), doc)
         }
         result.push(doc);
     }
@@ -852,8 +851,7 @@ impl<'a> DocBuild<'a> for ArgumentList {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let surrounded = b.surround(&docs, sep, open, close);
-        let doc = b.group(surrounded);
+        let doc = b.group(b.surround(&docs, sep, open, close));
         result.push(doc);
     }
 }
@@ -3204,7 +3202,7 @@ impl<'a> DocBuild<'a> for QueryExpression {
         let docs_to_indent = vec![b.txt("["), b.maybeline(), self.query_body.build(b)];
         let first_part = b.indent(b.concat(docs_to_indent));
 
-        let doc = b.group_no_indent(b.concat(vec![first_part, b.maybeline(), b.txt("]")]));
+        let doc = b.group(b.concat(vec![first_part, b.maybeline(), b.txt("]")]));
         result.push(doc);
     }
 }

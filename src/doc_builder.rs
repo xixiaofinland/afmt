@@ -18,7 +18,8 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    pub fn surround(
+    // to be used when group() is not applied right after.
+    pub fn surround_with_indent(
         &'a self,
         elems: &[DocRef<'a>],
         sep: Insertable<'a>,
@@ -59,7 +60,8 @@ impl<'a> DocBuilder<'a> {
         self.concat(docs)
     }
 
-    pub fn surround_no_indent(
+    // to be used before group()
+    pub fn surround(
         &'a self,
         elems: &[DocRef<'a>],
         sep: Insertable<'a>,
@@ -246,10 +248,6 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
-        self.choice(self.flat(doc), doc)
-    }
-
-    pub fn group_no_indent(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
         self.choice(self.flat(doc), doc)
     }
 
