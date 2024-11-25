@@ -141,7 +141,7 @@ impl<'a> DocBuilder<'a> {
         let multi_line = self.concat(vec![
             self.txt(open),
             self.indent(self.nl()),
-            self.indent(self.intersperse_body_members(elems)),
+            self.indent_no_flag(self.intersperse_body_members(elems)),
             self.nl(),
             self.txt(close),
         ]);
@@ -231,6 +231,12 @@ impl<'a> DocBuilder<'a> {
     pub fn indent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
+    }
+
+    pub fn indent_no_flag(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let relative_indent = self.config.indent_size;
+        self.arena
+            .alloc(Doc::IndentNoFlag(relative_indent, doc_ref))
     }
 
     pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {

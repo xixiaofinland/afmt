@@ -14,6 +14,7 @@ pub enum Doc<'a> {
     Softline,  // a space or a newline
     Maybeline, // empty or a newline
     Indent(u32, DocRef<'a>),
+    IndentNoFlag(u32, DocRef<'a>), // Indent but not set the indented flag
     Dedent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
@@ -44,6 +45,7 @@ struct Chunk<'a> {
     doc_ref: DocRef<'a>,
     indent: u32,
     flat: bool,
+    indented: bool,
 }
 
 impl<'a> Chunk<'a> {
@@ -52,22 +54,49 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: self.indent,
             flat: self.flat,
+            indented: self.indented,
         }
     }
 
     fn indented(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
+        let new_indent = if self.indented {
+            self.indent
+        } else {
+            self.indent + indent
+        };
         Chunk {
             doc_ref,
-            indent: self.indent + indent,
+            indent: new_indent,
             flat: self.flat,
+            indented: true, // Set flag to true;
+        }
+    }
+
+    fn indented_no_flag_set(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
+        let new_indent = if self.indented {
+            self.indent
+        } else {
+            self.indent + indent
+        };
+        Chunk {
+            doc_ref,
+            indent: new_indent,
+            flat: self.flat,
+            indented: self.indented, // Keep the flag as it is
         }
     }
 
     fn dedented(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
+        let new_indent = if self.indented {
+            self.indent.saturating_sub(indent)
+        } else {
+            self.indent
+        };
         Chunk {
             doc_ref,
-            indent: self.indent.saturating_sub(indent),
+            indent: new_indent,
             flat: self.flat,
+            indented: false, // Reset indented flag
         }
     }
 
@@ -76,6 +105,7 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: self.indent,
             flat: true,
+            indented: self.indented,
         }
     }
 }
@@ -86,6 +116,7 @@ impl<'a> PrettyPrinter<'a> {
             doc_ref,
             indent: 0,
             flat: false,
+            indented: false,
         };
 
         Self {
@@ -138,6 +169,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
+                Doc::IndentNoFlag(i, x) => self.chunks.push(chunk.indented_no_flag_set(*i, x)),
                 Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
@@ -199,6 +231,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
+                Doc::IndentNoFlag(i, x) => stack.push(chunk.indented_no_flag_set(*i, x)),
                 Doc::Dedent(i, x) => stack.push(chunk.dedented(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
