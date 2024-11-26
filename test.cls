@@ -1,13 +1,9 @@
-class S {
+class A {
   {
-    System.debug('1111111111111111111111111111111111111111111111111111111111111111111111111');
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
 
-    Account account = new Account(
-    Id = accountId,
-    Name = 'Acme',
-    Desc = 'hello there'
-  );
+    t.a().b().c().d();
   }
 }
-
-

@@ -695,8 +695,7 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug, Serialize)]
 pub struct MethodInvocation {
-    pub is_root_node: bool,     // the top layer method_invocation node;
-    pub has_method_child: bool, // to align with prettier apex
+    pub has_method_child: bool,
     pub object: Option<MethodObject>,
     pub property_navigation: Option<PropertyNavigation>,
     pub type_arguments: Option<TypeArguments>,
@@ -708,14 +707,7 @@ impl MethodInvocation {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_invocation");
 
-        let is_root_node = if let Some(parent) = node.parent() {
-            parent.kind() != "method_invocation"
-        } else {
-            unreachable!("Node should always have a parent");
-        };
-
-        let mut has_method_child = false;
-
+        let mut has_method_child = false; // to align with prettier apex
         let object = node.try_c_by_n("object").map(|n| {
             if n.kind() == "super" {
                 MethodObject::Super(Super {})
@@ -743,7 +735,6 @@ impl MethodInvocation {
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         Self {
-            is_root_node,
             has_method_child,
             object,
             property_navigation,
@@ -773,12 +764,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         docs.push(b.txt(&self.name));
         docs.push(self.arguments.build(b));
 
-        let mut doc = b.concat(docs);
-
-        if self.is_root_node {
-            doc = b.group(b.indent(doc));
-        }
-        result.push(doc);
+        result.push(b.group(b.indent(b.concat(docs))));
     }
 }
 
