@@ -1,16 +1,17 @@
 class SafeNavigationOperator {
   {
-    c = veryLongVariableThatWillHelpBreakTheExpression[insideFieldThatIsLong]
-      ?.aVeryLongMethod()
-      .anotherVeryLongField;
-    d = veryLongVariableThatWillHelpBreakTheExpression[insideFieldThatIsLong]
-      .aVeryLongMethod()
-      ?.anotherVeryLongField;
-    String g = [
-      SELECT Id, Name, One_Field__c, Another_Field__c
-      FROM Account
-      WHERE Id = :accId
-    ]
-    ?.Name;
+    switch on
+      SwitchCaseGenerator.setType('Switch Type')
+        .setMessage('The Most Important Message')
+        .setSeverity('High')
+        .getInstance() {
+      when 1 {
+        System.debug('1');
+      }
+      when else {
+        System.debug('Else');
+      }
+    }
   }
 }
+

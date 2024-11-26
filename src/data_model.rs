@@ -2889,8 +2889,9 @@ impl SwitchExpression {
 
 impl<'a> DocBuild<'a> for SwitchExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("switch on"));
-        result.push(self.condition.build(b));
+        let docs = vec![b.txt("switch on"), b.softline(), self.condition.build(b) ];
+        let doc = b.group(b.indent(b.concat(docs)));
+        result.push(doc);
         result.push(b.txt(" "));
         result.push(self.body.build(b));
     }
@@ -2991,14 +2992,14 @@ impl<'a> DocBuild<'a> for SwitchLabel {
         match self {
             Self::SObjects(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(None, Some(", "), None);
-                let doc = b.intersperse(&docs, sep);
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let doc = b.group(b.indent(b.intersperse(&docs, sep)));
                 result.push(doc);
             }
             Self::Expressions(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(None, Some(", "), None);
-                let doc = b.intersperse(&docs, sep);
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let doc = b.group(b.indent(b.intersperse(&docs, sep)));
                 result.push(doc);
             }
             Self::Else => {

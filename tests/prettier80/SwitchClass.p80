@@ -1,5 +1,18 @@
 class SwitchClass {
-  enum Month {JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER}
+  enum Month {
+    JANUARY,
+    FEBRUARY,
+    MARCH,
+    APRIL,
+    MAY,
+    JUNE,
+    JULY,
+    AUGUST,
+    SEPTEMBER,
+    OCTOBER,
+    NOVEMBER,
+    DECEMBER
+  }
 
   public void switchTest() {
     Integer i = 1;
@@ -25,7 +38,17 @@ class SwitchClass {
       when JANUARY {
         System.debug('January');
       }
-      when FEBRUARY, MARCH, APRIL, MAY, JUNE, JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER {
+      when FEBRUARY,
+        MARCH,
+        APRIL,
+        MAY,
+        JUNE,
+        JULY,
+        AUGUST,
+        SEPTEMBER,
+        OCTOBER,
+        NOVEMBER,
+        DECEMBER {
         System.debug('Other months');
       }
     }
@@ -54,7 +77,11 @@ class SwitchClass {
       }
     }
 
-    switch on SwitchCaseGenerator.setType('Switch Type').setMessage('The Most Important Message').setSeverity('High').getInstance() {
+    switch on
+      SwitchCaseGenerator.setType('Switch Type')
+        .setMessage('The Most Important Message')
+        .setSeverity('High')
+        .getInstance() {
       when 1 {
         System.debug('1');
       }
@@ -73,15 +100,5 @@ class SwitchClass {
         System.debug('Everything Else');
       }
     }
-
-    switch on [SELECT Id, Name FROM Contact WHERE Name = 'Super Long Name That Will Break The Line' LIMIT 1].Name {
-      when 'Test Name' {
-        System.debug('Test Name');
-      }
-      when else {
-        System.debug('Everything Else');
-      }
-    }
   }
 }
-
