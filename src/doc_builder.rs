@@ -18,8 +18,7 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    // to be used when group() is not applied right after.
-    pub fn surround_with_indent(
+    pub fn surround(
         &'a self,
         elems: &[DocRef<'a>],
         sep: Insertable<'a>,
@@ -46,48 +45,6 @@ impl<'a> DocBuilder<'a> {
         }
 
         docs.push(self.indent_no_flag(self.intersperse(elems, sep)));
-
-        if let Some(n) = close.pre {
-            docs.push(self.dedent(n));
-        }
-        if let Some(n) = close.str {
-            docs.push(self.txt(n));
-        }
-        if let Some(n) = close.suf {
-            docs.push(n);
-        }
-
-        self.concat(docs)
-    }
-
-    // to be used before group()
-    pub fn surround(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: Insertable<'a>,
-        open: Insertable<'a>,
-        close: Insertable<'a>,
-    ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.concat(vec![
-                self.txt(open.str.unwrap()),
-                self.txt(close.str.unwrap()),
-            ]);
-        }
-
-        let mut docs = Vec::new();
-
-        if let Some(n) = open.pre {
-            docs.push(n);
-        }
-        if let Some(n) = open.str {
-            docs.push(self.txt(n));
-        }
-        if let Some(n) = open.suf {
-            docs.push(n);
-        }
-
-        docs.push(self.intersperse(elems, sep));
 
         if let Some(n) = close.pre {
             docs.push(self.dedent(n));
