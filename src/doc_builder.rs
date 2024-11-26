@@ -230,13 +230,14 @@ impl<'a> DocBuilder<'a> {
 
     pub fn indent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
+        self.arena
+            .alloc(Doc::IndentWithMark(relative_indent, doc_ref))
     }
 
     pub fn indent_no_flag(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena
-            .alloc(Doc::IndentNoFlag(relative_indent, doc_ref))
+            .alloc(Doc::IndentWithoutMark(relative_indent, doc_ref))
     }
 
     pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
