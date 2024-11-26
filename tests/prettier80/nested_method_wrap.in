@@ -9,10 +9,6 @@ class A {
     b(
       '1111111111111111111111111111111111111111111111111111111111111111111111111111'
     );
-
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet().getAnotherSet().getYetAnotherSet();
-    t.a().b().c().d();
-
   }
 }
 

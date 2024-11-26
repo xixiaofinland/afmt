@@ -197,6 +197,10 @@ impl<'a> DocBuilder<'a> {
             .alloc(Doc::IndentWithoutMark(relative_indent, doc_ref))
     }
 
+    pub fn mark_indented(&'a self, flag: bool, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.arena.alloc(Doc::MarkIndented(flag, doc_ref))
+    }
+
     pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
