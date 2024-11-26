@@ -35,19 +35,19 @@ impl<'a> DocBuilder<'a> {
         let mut docs = Vec::new();
 
         if let Some(n) = open.pre {
-            docs.push(self.indent_with_mark(n));
+            docs.push(self.indent_and_mark(n));
         }
         if let Some(n) = open.str {
             docs.push(self.txt(n));
         }
         if let Some(n) = open.suf {
-            docs.push(self.indent_with_mark(n));
+            docs.push(self.indent_and_mark(n));
         }
 
-        docs.push(self.indent_without_mark(self.intersperse(elems, sep)));
+        docs.push(self.indent(self.intersperse(elems, sep)));
 
         if let Some(n) = close.pre {
-            docs.push(self.dedent(n));
+            docs.push(self.dedent_and_unmark(n));
         }
         if let Some(n) = close.str {
             docs.push(self.txt(n));
@@ -97,8 +97,8 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.indent_with_mark(self.nl()),
-            self.indent_without_mark(self.intersperse_body_members(elems)),
+            self.indent_and_mark(self.nl()),
+            self.indent(self.intersperse_body_members(elems)),
             self.nl(),
             self.txt(close),
         ]);
@@ -185,25 +185,25 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Flat(doc_ref))
     }
 
-    pub fn indent_with_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let relative_indent = self.config.indent_size;
-        self.arena
-            .alloc(Doc::IndentAndMark(relative_indent, doc_ref))
-    }
-
-    pub fn indent_without_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn indent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena
             .alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
-    pub fn set_mark(&'a self, flag: bool, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        self.arena.alloc(Doc::SetMark(flag, doc_ref))
+    pub fn indent_and_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let relative_indent = self.config.indent_size;
+        self.arena
+            .alloc(Doc::IndentAndMark(relative_indent, doc_ref))
     }
 
-    pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn dedent_and_unmark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.arena.alloc(Doc::DedentAndMark(relative_indent, doc_ref))
+        self.arena.alloc(Doc::DedentAndUnmark(relative_indent, doc_ref))
+    }
+
+    pub fn set_mark_value(&'a self, flag: bool, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.arena.alloc(Doc::SetMark(flag, doc_ref))
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {

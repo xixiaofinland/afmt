@@ -16,7 +16,7 @@ pub enum Doc<'a> {
     IndentAndMark(u32, DocRef<'a>),
     Indent(u32, DocRef<'a>),
     SetMark(bool, DocRef<'a>),
-    DedentAndMark(u32, DocRef<'a>),
+    DedentAndUnmark(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
 }
@@ -87,7 +87,7 @@ impl<'a> Chunk<'a> {
         }
     }
 
-    fn mark_indented(self, flag: bool, doc_ref: DocRef<'a>) -> Self {
+    fn mark_allow_indent_value(self, flag: bool, doc_ref: DocRef<'a>) -> Self {
         Chunk {
             doc_ref,
             indent: self.indent,
@@ -178,12 +178,12 @@ impl<'a> PrettyPrinter<'a> {
                     self.col += width;
                 }
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
-                Doc::SetMark(flag, x) => self.chunks.push(chunk.mark_indented(*flag, x)),
+                Doc::SetMark(flag, x) => self.chunks.push(chunk.mark_allow_indent_value(*flag, x)),
                 Doc::IndentAndMark(i, x) => self.chunks.push(chunk.indent_and_mark(*i, x)),
                 Doc::Indent(i, x) => {
                     self.chunks.push(chunk.indent(*i, x))
                 }
-                Doc::DedentAndMark(i, x) => self.chunks.push(chunk.dedent_and_unmark(*i, x)),
+                Doc::DedentAndUnmark(i, x) => self.chunks.push(chunk.dedent_and_unmark(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         self.chunks.push(chunk.with_doc(n));
@@ -243,10 +243,10 @@ impl<'a> PrettyPrinter<'a> {
                     }
                 }
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
-                Doc::SetMark(flag, x) => stack.push(chunk.mark_indented(*flag, x)),
+                Doc::SetMark(flag, x) => stack.push(chunk.mark_allow_indent_value(*flag, x)),
                 Doc::IndentAndMark(i, x) => stack.push(chunk.indent_and_mark(*i, x)),
                 Doc::Indent(i, x) => stack.push(chunk.indent_and_mark(*i, x)),
-                Doc::DedentAndMark(i, x) => stack.push(chunk.dedent_and_unmark(*i, x)),
+                Doc::DedentAndUnmark(i, x) => stack.push(chunk.dedent_and_unmark(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         stack.push(chunk.with_doc(n));

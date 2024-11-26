@@ -835,7 +835,7 @@ impl<'a> DocBuild<'a> for SelectClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut doc_vec = Vec::new();
         doc_vec.push(b.txt("SELECT"));
-        doc_vec.push(b.indent_with_mark(b.softline()));
+        doc_vec.push(b.indent_and_mark(b.softline()));
 
         match self {
             Self::Count(n) => {
@@ -847,7 +847,7 @@ impl<'a> DocBuild<'a> for SelectClause {
                 let sep = Insertable::new(None, Some(","), Some(b.softline()));
                 let doc = b.intersperse(&docs, sep);
 
-                let indented_join = b.indent_with_mark(doc);
+                let indented_join = b.indent_and_mark(doc);
                 doc_vec.push(indented_join);
             }
         }
@@ -1059,13 +1059,13 @@ impl<'a> DocBuild<'a> for BooleanExpression {
             Self::And(vec) => {
                 let docs = b.to_docs(vec);
                 let sep = Insertable::new(Some(b.softline()), Some("AND "), None);
-                let doc = b.indent_with_mark(b.intersperse(&docs, sep));
+                let doc = b.indent_and_mark(b.intersperse(&docs, sep));
                 result.push(doc);
             }
             Self::Or(vec) => {
                 let docs = b.to_docs(vec);
                 let sep = Insertable::new(None, Some(" OR "), None);
-                let doc = b.indent_with_mark(b.intersperse(&docs, sep));
+                let doc = b.indent_and_mark(b.intersperse(&docs, sep));
                 result.push(doc);
             }
             Self::Not(n) => {
