@@ -15,7 +15,7 @@ pub enum Doc<'a> {
     Maybeline, // nil or a newline
     IndentAndMark(u32, DocRef<'a>),
     Indent(u32, DocRef<'a>),
-    MarkIndented(bool, DocRef<'a>),
+    SetMark(bool, DocRef<'a>),
     DedentAndMark(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
@@ -178,7 +178,7 @@ impl<'a> PrettyPrinter<'a> {
                     self.col += width;
                 }
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
-                Doc::MarkIndented(flag, x) => self.chunks.push(chunk.mark_indented(*flag, x)),
+                Doc::SetMark(flag, x) => self.chunks.push(chunk.mark_indented(*flag, x)),
                 Doc::IndentAndMark(i, x) => self.chunks.push(chunk.indent_and_mark(*i, x)),
                 Doc::Indent(i, x) => {
                     self.chunks.push(chunk.indent(*i, x))
@@ -243,7 +243,7 @@ impl<'a> PrettyPrinter<'a> {
                     }
                 }
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
-                Doc::MarkIndented(flag, x) => stack.push(chunk.mark_indented(*flag, x)),
+                Doc::SetMark(flag, x) => stack.push(chunk.mark_indented(*flag, x)),
                 Doc::IndentAndMark(i, x) => stack.push(chunk.indent_and_mark(*i, x)),
                 Doc::Indent(i, x) => stack.push(chunk.indent_and_mark(*i, x)),
                 Doc::DedentAndMark(i, x) => stack.push(chunk.dedent_and_unmark(*i, x)),

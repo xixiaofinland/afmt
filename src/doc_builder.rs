@@ -197,8 +197,8 @@ impl<'a> DocBuilder<'a> {
             .alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
-    pub fn mark_indented(&'a self, flag: bool, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        self.arena.alloc(Doc::MarkIndented(flag, doc_ref))
+    pub fn set_mark(&'a self, flag: bool, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.arena.alloc(Doc::SetMark(flag, doc_ref))
     }
 
     pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
