@@ -871,6 +871,7 @@ pub struct BinaryExpression {
     pub left: Expression,
     pub op: String,
     pub right: Expression,
+    pub is_nested: bool,
 }
 
 impl BinaryExpression {
@@ -878,7 +879,18 @@ impl BinaryExpression {
         let left = Expression::new(node.c_by_n("left"));
         let op = node.c_by_n("operator").kind().to_string();
         let right = Expression::new(node.c_by_n("right"));
-        Self { left, op, right }
+        let is_nested = if let Some(n) = node.parent() {
+            n.kind() == "binary_expression"
+        } else {
+            unreachable!("Node should always have a parent.");
+        };
+
+        Self {
+            left,
+            op,
+            right,
+            is_nested,
+        }
     }
 }
 
@@ -886,7 +898,13 @@ impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(vec![&self.left, &self.right]);
         let sep = Insertable::new(None, Some(format!(" {}", &self.op)), Some(b.softline()));
-        let doc = b.group(b.intersperse(&docs, sep));
+
+        let doc = if self.is_nested {
+            b.intersperse(&docs, sep)
+        } else {
+            b.group(b.intersperse(&docs, sep))
+        };
+
         result.push(doc);
     }
 }
