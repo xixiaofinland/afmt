@@ -1,4 +1,4 @@
-class A {
+class UTIL_SortContact_TEST {
   {
     list<AggregateResult> queryAggResult = [
       SELECT count_distinct(Id), General_Accounting_Unit__r.Name
@@ -9,4 +9,3 @@ class A {
     ];
   }
 }
-
