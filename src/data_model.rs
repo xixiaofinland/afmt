@@ -762,6 +762,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         }
 
         docs.push(b.txt(&self.name));
+        // manage possible nested indent
         docs.push(b.dedent(self.arguments.build(b)));
 
         // manage chained method indent: t.a().b().c().d();

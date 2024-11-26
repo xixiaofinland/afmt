@@ -9,7 +9,11 @@ class A {
     a(
       b(
         '1111111111111111111111111111111111111111111111111111111111111111111111111111'
-      )
+      ),     t.a().b().c().d(),
+          superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet()
+
     );
 
     b(
