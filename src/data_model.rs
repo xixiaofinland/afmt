@@ -908,7 +908,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
         let doc = if self.is_nested {
             b.intersperse(&docs, sep)
         } else {
-            b.group(b.intersperse(&docs, sep))
+            b.group(b.indent(b.intersperse(&docs, sep)))
         };
 
         result.push(doc);

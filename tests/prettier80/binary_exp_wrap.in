@@ -1,7 +1,0 @@
-class Conditional {
-  {
-    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBBBB()) {
-      System.debug('true');
-    }
-  }
-}
