@@ -1,0 +1,15 @@
+class A {
+  {
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+      .getAnotherSet(
+        superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+          .getAnotherSet(
+            superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+              .getAnotherSet(),
+            b,
+            c
+          ),
+        b
+      );
+  }
+}

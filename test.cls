@@ -24,6 +24,13 @@ class A {
       .getAnotherSet()
       .getYetAnotherSet();
     t.a().b().c().d();
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne(
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbb
+    );
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne()
+    .getTwo(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbb);
   }
 }
 
