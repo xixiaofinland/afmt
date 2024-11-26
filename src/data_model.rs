@@ -3142,7 +3142,7 @@ impl TriggerDeclaration {
         let name = node.cvalue_by_n("name", source_code());
         let object = node.cvalue_by_n("object", source_code());
         let events = node
-            .cs_by_n("events")
+            .cs_by_k("trigger_event")
             .into_iter()
             .map(|n| TriggerEvent::new(n.first_c()))
             .collect();

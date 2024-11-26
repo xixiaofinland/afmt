@@ -769,7 +769,7 @@ impl TriggerEvent {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "before_insert" => Self::BeforeInsert,
-            "before_Update" => Self::BeforeUpdate,
+            "before_update" => Self::BeforeUpdate,
             "before_delete" => Self::BeforeDelete,
             "after_insert" => Self::AfterInsert,
             "after_update" => Self::AfterUpdate,
