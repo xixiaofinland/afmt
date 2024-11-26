@@ -13,10 +13,10 @@ pub enum Doc<'a> {
     Flat(DocRef<'a>),
     Softline,  // a space or a newline
     Maybeline, // nil or a newline
-    IndentWithMark(u32, DocRef<'a>),
-    IndentWithoutMark(u32, DocRef<'a>),
+    IndentAndMark(u32, DocRef<'a>),
+    Indent(u32, DocRef<'a>),
     MarkIndented(bool, DocRef<'a>),
-    Dedent(u32, DocRef<'a>),
+    DedentAndMark(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
 }
@@ -59,7 +59,7 @@ impl<'a> Chunk<'a> {
         }
     }
 
-    fn indent_with_mark(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
+    fn indent_and_mark(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
         let new_indent = if self.indented {
             self.indent
         } else {
@@ -73,7 +73,7 @@ impl<'a> Chunk<'a> {
         }
     }
 
-    fn indent_without_mark(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
+    fn indent(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
         let new_indent = if self.indented {
             self.indent
         } else {
@@ -179,11 +179,11 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::MarkIndented(flag, x) => self.chunks.push(chunk.mark_indented(*flag, x)),
-                Doc::IndentWithMark(i, x) => self.chunks.push(chunk.indent_with_mark(*i, x)),
-                Doc::IndentWithoutMark(i, x) => {
-                    self.chunks.push(chunk.indent_without_mark(*i, x))
+                Doc::IndentAndMark(i, x) => self.chunks.push(chunk.indent_and_mark(*i, x)),
+                Doc::Indent(i, x) => {
+                    self.chunks.push(chunk.indent(*i, x))
                 }
-                Doc::Dedent(i, x) => self.chunks.push(chunk.dedent_and_unmark(*i, x)),
+                Doc::DedentAndMark(i, x) => self.chunks.push(chunk.dedent_and_unmark(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         self.chunks.push(chunk.with_doc(n));
@@ -244,9 +244,9 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
                 Doc::MarkIndented(flag, x) => stack.push(chunk.mark_indented(*flag, x)),
-                Doc::IndentWithMark(i, x) => stack.push(chunk.indent_with_mark(*i, x)),
-                Doc::IndentWithoutMark(i, x) => stack.push(chunk.indent_with_mark(*i, x)),
-                Doc::Dedent(i, x) => stack.push(chunk.dedent_and_unmark(*i, x)),
+                Doc::IndentAndMark(i, x) => stack.push(chunk.indent_and_mark(*i, x)),
+                Doc::Indent(i, x) => stack.push(chunk.indent_and_mark(*i, x)),
+                Doc::DedentAndMark(i, x) => stack.push(chunk.dedent_and_unmark(*i, x)),
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         stack.push(chunk.with_doc(n));

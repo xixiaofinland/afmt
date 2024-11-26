@@ -188,13 +188,13 @@ impl<'a> DocBuilder<'a> {
     pub fn indent_with_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena
-            .alloc(Doc::IndentWithMark(relative_indent, doc_ref))
+            .alloc(Doc::IndentAndMark(relative_indent, doc_ref))
     }
 
     pub fn indent_without_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena
-            .alloc(Doc::IndentWithoutMark(relative_indent, doc_ref))
+            .alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
     pub fn mark_indented(&'a self, flag: bool, doc_ref: DocRef<'a>) -> DocRef<'a> {
@@ -203,7 +203,7 @@ impl<'a> DocBuilder<'a> {
 
     pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
+        self.arena.alloc(Doc::DedentAndMark(relative_indent, doc_ref))
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
