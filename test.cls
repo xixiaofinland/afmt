@@ -1,15 +1,6 @@
-class Conditional {
-  {
-    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBBBB()) {
-      System.debug('true');
-    }
-
-    return 'a long string ' +
-      'from concatenating ' +
-      'many other strings ' +
-      'together.';
-
-    System.debug('111111111111111111111111111111111111111111111111111111111111111111111111111111111111' + '22222222222222222222222222222222222222222222222222222222222');
-    System.debug('111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111');
+class PackageVersion {
+  void packageVersionTest() {
+    Object v = Package.Version.1.0;
+    v = Package.Version.Request;
   }
 }
