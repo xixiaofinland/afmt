@@ -1,36 +1,15 @@
 class A {
   {
-    t.a(
-        k(
-          '1111111111111111111111111111111111111111111111111111111111111111111111111111'
-        )
-      ) ;
-
-    a(
-      b(
-        '1111111111111111111111111111111111111111111111111111111111111111111111111111'
-      ),     t.a().b().c().d(),
-          superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
-      .getAnotherSet()
-      .getYetAnotherSet()
-
-    );
-
-    b(
-      '1111111111111111111111111111111111111111111111111111111111111111111111111111'
-    );
-
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
-      .getAnotherSet()
-      .getYetAnotherSet();
-    t.a().b().c().d();
-
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne(
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbb
-    );
-
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne()
-    .getTwo(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbb);
+    return 'a long string ' +
+      'from concatenating ' +
+      'many other strings ' +
+      'together.';
   }
+
+    @InvocableMethod(label='Insert Accounts' description='Inserts the accounts specified and returns the IDs of the new accounts.')
+  public static List<ID> insertAccounts(List<Account> accounts) {
+    return null;
+  }
+
 }
 

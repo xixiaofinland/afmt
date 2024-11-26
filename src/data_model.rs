@@ -313,10 +313,9 @@ impl Annotation {
     pub fn new(node: Node) -> Self {
         let name = node.cvalue_by_n("name", source_code());
 
-        let mut arguments = None;
-        node.try_c_by_n("arguments").map(|n| {
-            arguments = Some(AnnotationArgumentList::new(n));
-        });
+        let arguments = node
+            .try_c_by_n("arguments")
+            .map(|n| AnnotationArgumentList::new(n));
 
         Self { name, arguments }
     }
@@ -769,7 +768,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         if self.has_method_child {
             // manage chained method indent: t.a().b().c().d();
             result.push(b.group(b.indent_and_mark(b.concat(docs))));
-        }else{
+        } else {
             result.push(b.concat(docs));
         }
     }
