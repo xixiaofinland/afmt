@@ -46,7 +46,7 @@ struct Chunk<'a> {
     doc_ref: DocRef<'a>,
     indent: u32,
     flat: bool,
-    indented: bool,
+    allow_indent: bool,
 }
 
 impl<'a> Chunk<'a> {
@@ -55,12 +55,12 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: self.indent,
             flat: self.flat,
-            indented: self.indented,
+            allow_indent: self.allow_indent,
         }
     }
 
     fn indent_and_mark(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
-        let new_indent = if self.indented {
+        let new_indent = if self.allow_indent {
             self.indent
         } else {
             self.indent + indent
@@ -69,12 +69,12 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: new_indent,
             flat: self.flat,
-            indented: true, // Set flag to true;
+            allow_indent: true, // Set flag to true;
         }
     }
 
     fn indent(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
-        let new_indent = if self.indented {
+        let new_indent = if self.allow_indent {
             self.indent
         } else {
             self.indent + indent
@@ -83,7 +83,7 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: new_indent,
             flat: self.flat,
-            indented: self.indented, // Keep the flag as it is
+            allow_indent: self.allow_indent, // Keep the flag as it is
         }
     }
 
@@ -92,12 +92,12 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: self.indent,
             flat: self.flat,
-            indented: flag,
+            allow_indent: flag,
         }
     }
 
     fn dedent_and_unmark(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
-        let new_indent = if self.indented {
+        let new_indent = if self.allow_indent {
             self.indent.saturating_sub(indent)
         } else {
             self.indent
@@ -106,7 +106,7 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: new_indent,
             flat: self.flat,
-            indented: false, // Reset indented flag
+            allow_indent: false, // Reset indented flag
         }
     }
 
@@ -115,7 +115,7 @@ impl<'a> Chunk<'a> {
             doc_ref,
             indent: self.indent,
             flat: true,
-            indented: self.indented,
+            allow_indent: self.allow_indent,
         }
     }
 }
@@ -126,7 +126,7 @@ impl<'a> PrettyPrinter<'a> {
             doc_ref,
             indent: 0,
             flat: false,
-            indented: false,
+            allow_indent: false,
         };
 
         Self {
