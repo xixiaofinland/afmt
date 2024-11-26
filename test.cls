@@ -1,8 +1,17 @@
-class Conditional {
+class MapList {
   {
-    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBBBB() || isC()) {
-      System.debug('true');
-    }
+    Map<String, String> a = new Map<String, String>{
+      'Content' => 'Hello',
+      'World' => 'There',
+      'Hi' => 'Yes'
+    };
+
+    JSON.serialize(
+      new Map<String, Object>{
+        'Content' => 'Hello',
+        'World' => 'There',
+        'Hi' => 'Yes'
+      }
+    );
   }
 }
-

@@ -437,7 +437,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 
         let decl_docs = b.to_docs(&self.declarators);
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let doc = b.group(b.indent(b.intersperse(&decl_docs, sep)));
+        let doc = b.group(b.indent_with_mark(b.intersperse(&decl_docs, sep)));
         result.push(doc);
 
         if let Some(ref n) = self.accessor_list {
@@ -764,7 +764,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         docs.push(b.txt(&self.name));
         docs.push(self.arguments.build(b));
 
-        result.push(b.group(b.indent(b.concat(docs))));
+        result.push(b.group(b.indent_with_mark(b.concat(docs))));
     }
 }
 
@@ -952,7 +952,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
             docs[0]
         } else {
             let sep = Insertable::new(None, Some(","), Some(b.softline()));
-            b.group(b.indent(b.intersperse(&docs, sep)))
+            b.group(b.indent_with_mark(b.intersperse(&docs, sep)))
         };
 
         result.push(doc);
@@ -1076,8 +1076,8 @@ impl<'a> DocBuild<'a> for IfStatement {
             result.push(b.txt(" "));
             result.push(self.consequence.build(b));
         } else {
-            result.push(b.indent(b.nl()));
-            result.push(b.indent(self.consequence.build(b)));
+            result.push(b.indent_with_mark(b.nl()));
+            result.push(b.indent_with_mark(self.consequence.build(b)));
         }
 
         // Handle the 'else' part
@@ -1108,7 +1108,7 @@ impl<'a> DocBuild<'a> for IfStatement {
                     } else {
                         result.push(b.nl());
                         result.push(b.txt("else"));
-                        result.push(b.indent(b.nl()));
+                        result.push(b.indent_with_mark(b.nl()));
                     }
                     result.push(a.build(b)); // Build the else statement
                 }
@@ -1134,8 +1134,8 @@ impl<'a> DocBuild<'a> for ParenthesizedExpression {
         // to align with prettier apex
         result.push(b.txt("("));
         let doc = b.concat(vec![
-            b.indent(b.maybeline()),
-            b.indent(self.exp.build(b)),
+            b.indent_with_mark(b.maybeline()),
+            b.indent_with_mark(self.exp.build(b)),
             b.maybeline(),
         ]);
         result.push(b.group(doc));
@@ -1462,7 +1462,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
         }
 
         result.push(b.txt("{"));
-        result.push(b.indent(b.nl()));
+        result.push(b.indent_with_mark(b.nl()));
 
         if let Some(c) = &self.constructor_invocation {
             result.push(c.member.build(b));
@@ -1475,7 +1475,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
                 result.push(b.nl());
             }
         }
-        result.push(b.indent(b.intersperse_body_members(&self.statements)));
+        result.push(b.indent_with_mark(b.intersperse_body_members(&self.statements)));
 
         result.push(b.nl());
         result.push(b.txt("}"));
@@ -3431,7 +3431,7 @@ impl<'a> DocBuild<'a> for WhereClause {
         docs.push(b.softline());
         docs.push(self.boolean_exp.build(b));
 
-        result.push(b.group(b.indent(b.concat(docs))));
+        result.push(b.group(b.indent_with_mark(b.concat(docs))));
     }
 }
 

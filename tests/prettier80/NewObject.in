@@ -74,7 +74,6 @@ class NewObject {
       }
     };
     Map<String, List<String>> b = new Map<String, List<String>> {
-      'a' => new List<String>(5),
       'b' => new List<String> {'c','d','e'}
     };
     Map<List<String>, List<String>> c = new Map<List<String>, List<String>> {

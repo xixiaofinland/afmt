@@ -35,16 +35,16 @@ impl<'a> DocBuilder<'a> {
         let mut docs = Vec::new();
 
         if let Some(n) = open.pre {
-            docs.push(self.indent(n));
+            docs.push(self.indent_with_mark(n));
         }
         if let Some(n) = open.str {
             docs.push(self.txt(n));
         }
         if let Some(n) = open.suf {
-            docs.push(self.indent(n));
+            docs.push(self.indent_with_mark(n));
         }
 
-        docs.push(self.indent_no_flag(self.intersperse(elems, sep)));
+        docs.push(self.indent_without_mark(self.intersperse(elems, sep)));
 
         if let Some(n) = close.pre {
             docs.push(self.dedent(n));
@@ -97,8 +97,8 @@ impl<'a> DocBuilder<'a> {
 
         let multi_line = self.concat(vec![
             self.txt(open),
-            self.indent(self.nl()),
-            self.indent_no_flag(self.intersperse_body_members(elems)),
+            self.indent_with_mark(self.nl()),
+            self.indent_without_mark(self.intersperse_body_members(elems)),
             self.nl(),
             self.txt(close),
         ]);
@@ -185,13 +185,13 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Flat(doc_ref))
     }
 
-    pub fn indent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn indent_with_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena
             .alloc(Doc::IndentWithMark(relative_indent, doc_ref))
     }
 
-    pub fn indent_no_flag(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn indent_without_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena
             .alloc(Doc::IndentWithoutMark(relative_indent, doc_ref))
