@@ -3185,10 +3185,18 @@ impl QueryExpression {
 
 impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs_to_indent = vec![b.txt("["), b.maybeline(), self.query_body.build(b)];
-        let first_part = b.indent(b.concat(docs_to_indent));
+        //let docs_to_indent = vec![b.txt("["), b.maybeline(), self.query_body.build(b)];
+        //let first_part = b.indent(b.concat(docs_to_indent));
+        //
+        //let doc = b.group(b.concat(vec![first_part, b.maybeline(), b.txt("]")]));
+        //result.push(doc);
 
-        let doc = b.group(b.concat(vec![first_part, b.maybeline(), b.txt("]")]));
+        let docs = vec![self.query_body.build(b)];
+
+        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+        let open = Insertable::new(None, Some("["), Some(b.maybeline()));
+        let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
+        let doc = b.group(b.surround_with_indent(&docs, sep, open, close));
         result.push(doc);
     }
 }
@@ -3411,7 +3419,7 @@ impl<'a> DocBuild<'a> for WhereClause {
         docs.push(b.softline());
         docs.push(self.boolean_exp.build(b));
 
-        result.push(b.group(b.concat(docs)));
+        result.push(b.group(b.indent(b.concat(docs))));
     }
 }
 
