@@ -3303,7 +3303,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         }
 
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let doc = b.intersperse(&docs, sep); // to align with prettier apex, no group()
+        let doc = b.intersperse(&docs, sep);
         result.push(doc);
     }
 }
