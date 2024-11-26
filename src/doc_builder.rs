@@ -253,8 +253,3 @@ impl<'a> DocBuild<'a> for Insertable<'a> {
         }
     }
 }
-
-enum IndentMode {
-    Indent,
-    NoIndent,
-}
