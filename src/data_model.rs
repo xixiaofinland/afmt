@@ -7,7 +7,7 @@ use crate::{
 };
 use colored::Colorize;
 use serde::Serialize;
-use std::{collections::HashSet, fmt::Debug};
+use std::{collections::HashSet, fmt::Debug, intrinsics::unreachable};
 use tree_sitter::{Node, Point, Range};
 
 pub trait DocBuild<'a> {
@@ -3772,104 +3772,185 @@ impl<'a> DocBuild<'a> for GroupByExpression {
     }
 }
 
-//#[derive(Debug, Serialize)]
-//pub struct HavingClause {
-//    pub exp: HavingBooleanExpression,
-//}
-//
-//impl HavingClause {
-//    pub fn new(node: Node) -> Self {
-//        assert_check(node, "order_by_clause");
-//        let exps = node
-//            .cs_by_k("order_expression")
-//            .into_iter()
-//            .map(|n| OrderExpression::new(n))
-//            .collect();
-//        Self { exps }
-//    }
-//}
-//
-//impl<'a> DocBuild<'a> for HavingClause {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-//        result.push(b.txt_("GROUP BY"));
-//
-//        let docs = b.to_docs(&self.exps);
-//
-//        let sep = Insertable::new(None, Some(" "), None);
-//        let doc = b.intersperse(&docs, sep);
-//        result.push(doc);
-//
-//        if let Some(n) = self.have {
-//            result.push(n.build(b));
-//        }
-//    }
-//}
-//
-//#[derive(Debug, Serialize)]
-//pub struct HavingBooleanExpression {
-//    pub value_expression: ValueExpression,
-//    pub direction: Option<String>,
-//    pub null_direction: Option<String>,
-//}
-//
-//impl HavingBooleanExpression {
-//    pub fn new(node: Node) -> Self {
-//        assert_check(node, "order_expression");
-//
-//        let value_expression = ValueExpression::new(node.first_c());
-//        let direction = node
-//            .try_c_by_k("order_direction")
-//            .map(|n| n.value(source_code()));
-//        let null_direction = node
-//            .try_c_by_k("order_null_direction")
-//            .map(|n| n.value(source_code()));
-//
-//        Self {
-//            value_expression,
-//            direction,
-//            null_direction,
-//        }
-//    }
-//}
-//
-//impl<'a> DocBuild<'a> for HavingBooleanExpression {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-//        result.push(self.value_expression.build(b));
-//
-//        if let Some(ref n) = self.direction {
-//            result.push(b._txt(n));
-//        }
-//        if let Some(ref n) = self.null_direction {
-//            result.push(b._txt(n));
-//        }
-//    }
-//}
-//
-//#[derive(Debug, Serialize)]
-//pub enum GroupByChoice {
-//    Field(FieldIdentifier),
-//    Func(FunctionExpression),
-//}
-//
-//impl GroupByChoice {
-//    pub fn new(node: Node) -> Self {
-//        match node.kind() {
-//            "field_identifier" => Self::Field(FieldIdentifier::new(node)),
-//            "function_expression" => Self::Func(FunctionExpression::new(node)),
-//            _ => panic!("## unknown node: {} in FunctionExpression", node.kind().red()),
-//        }
-//    }
-//}
-//
-//impl<'a> DocBuild<'a> for GroupByChoice {
-//    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-//        match self {
-//            Self::Field(n) => {
-//                result.push(n.build(b));
-//            }
-//            Self::Func(n) => {
-//                result.push(n.build(b));
-//            }
-//        }
-//    }
-//}
+#[derive(Debug, Serialize)]
+pub struct HavingClause {
+    pub exp: HavingBooleanExpression,
+}
+
+impl HavingClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "having_clause");
+
+        let child = node.first_c();
+        match child.kind(){
+            "having_and_expression" => HavingAndExpression::new(child),
+        }
+        Self { exp }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("HAVING"));
+        result.push(self.exp.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum HavingBooleanExpression {
+    And(HavingAndExpression),
+    Or(HavingOrExpression),
+    Not(HavingNotExpression),
+    Condition(HavingConditionExpression),
+}
+
+impl<'a> DocBuild<'a> for HavingBooleanExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
+
+#[derive(Debug, Serialize)]
+pub struct HavingAndExpression {
+    pub left: Box<HavingConditionExpression>,
+    pub others: Vec<HavingConditionExpression>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct HavingOrExpression {
+    pub left: Box<HavingConditionExpression>,
+    pub others: Vec<HavingConditionExpression>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct HavingNotExpression {
+    pub expression: Box<HavingConditionExpression>,
+}
+
+#[derive(Debug, Serialize)]
+pub enum HavingConditionExpression {
+    Parenthesized(Box<HavingBooleanExpression>),
+    Comparison(HavingComparisonExpression),
+}
+
+#[derive(Debug, Serialize)]
+pub struct HavingComparisonExpression {
+    pub function: FunctionExpression,
+    pub comparison: HavingComparison,
+}
+
+impl HavingComparisonExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "having_comparison_expression");
+
+        let child = node.first_c();
+        let function = FunctionExpression::new(child.clone());
+        let comparison = if let Some(n) = node.try_c_by_k("value_comparison_operator") {
+            HavingComparison::Value {
+                operator: n.value(source_code()),
+                value: HavingValue::new(n.next_named()),
+            }
+        } else if let Some(n) = node.try_c_by_k("set_comparison_operator") {
+            HavingComparison::Set {
+                operator: n.value(source_code()),
+                set: HavingSet::new(n.next_named()),
+            }
+        } else {
+            unreachable!("code should not reach here in HavingComparisonExpression");
+        };
+
+        Self {
+            function,
+            comparison,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingComparisonExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.function.build(b));
+        result.push(self.comparison.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum HavingComparison {
+    Value {
+        operator: String,
+        value: HavingValue,
+    },
+    Set {
+        operator: String,
+        set: HavingSet,
+    },
+}
+
+impl<'a> DocBuild<'a> for HavingComparison {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Value { operator, value } => {
+                result.push(b.txt(operator));
+                result.push(value.build(b));
+            }
+            Self::Set { operator, set } => {
+                result.push(b.txt(operator));
+                result.push(set.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum HavingValue {
+    Soql(SoqlLiteral),
+    Bound(BoundApexExpression),
+}
+
+impl HavingValue {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
+            _ => Self::Soql(SoqlLiteral::new(n)),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingValue {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+            Self::Soql(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum HavingSet {
+    Comparable(ComparableList),
+    Bound(BoundApexExpression),
+}
+
+impl HavingSet {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "Comparable_list" => Self::Comparable(ComparableList::new(node)),
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
+            _ => panic!("## unknown node: {} in HavingSet", node.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingSet {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+            Self::Comparable(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
