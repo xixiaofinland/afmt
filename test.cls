@@ -1,12 +1,9 @@
-class A {
-  {
-    list<AggregateResult> queryAggResult = [
-      SELECT count_distinct(Id), General_Accounting_Unit__r.Name
-      FROM Allocation__c
-      WHERE Opportunity__r.Name LIKE 'opp%'
-      GROUP BY General_Accounting_Unit__r.Name
-      ORDER BY count_distinct(Id)
-    ];
-  }
+public class Me {
+     {
+          Integer i = 1;
+            List<Account> accs = [
+            SELECT Id  FROM Account    OFFSET 
+            :i
+            ];
+     }
 }
-
