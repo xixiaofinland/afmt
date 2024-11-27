@@ -165,7 +165,7 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(&self.type_.build(b));
+        result.push(self.type_.build(b));
         result.push(b._txt(&self.name));
         result.push(self.formal_parameters.build(b));
 
@@ -527,7 +527,7 @@ impl<'a> DocBuild<'a> for AssignmentLeft {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
-                result.push(b.txt(&n));
+                result.push(b.txt(n));
             }
             Self::Field(n) => {
                 result.push(n.build(b));
@@ -1541,7 +1541,7 @@ impl<'a> DocBuild<'a> for ConstructInvocation {
 }
 
 #[derive(Debug, Serialize)]
-enum Constructor {
+pub enum Constructor {
     This,
     Super,
 }
@@ -1924,30 +1924,30 @@ impl DmlExpression {
         let dml_type = DmlType::from(node.c_by_k("dml_type").first_c().kind());
         match dml_type {
             DmlType::Merge => {
-                return Self::Merge {
+                Self::Merge {
                     dml_type,
                     security_mode,
                     exp: Expression::new(exp_node),
                     exp_extra: Expression::new(
                         second_node.expect("Second node in DmlExpression::Merge is missing"),
                     ),
-                };
+                }
             }
             DmlType::Upsert => {
                 let unannotated = second_node.map(|n| Box::new(UnannotatedType::new(n)));
-                return Self::Upsert {
+                Self::Upsert {
                     dml_type,
                     security_mode,
                     exp: Expression::new(exp_node),
                     unannotated,
-                };
+                }
             }
             _ => {
-                return Self::Basic {
+                Self::Basic {
                     dml_type,
                     security_mode,
                     exp: Expression::new(exp_node),
-                };
+                }
             }
         }
     }
@@ -2841,7 +2841,7 @@ impl<'a> DocBuild<'a> for BreakStatement {
 
         if let Some(ref n) = self.identifier {
             result.push(b.txt(" "));
-            result.push(b.txt(&n));
+            result.push(b.txt(n));
         }
         result.push(b.txt(";"));
     }
@@ -2867,7 +2867,7 @@ impl<'a> DocBuild<'a> for ContinueStatement {
 
         if let Some(ref n) = self.identifier {
             result.push(b.txt(" "));
-            result.push(b.txt(&n));
+            result.push(b.txt(n));
         }
         result.push(b.txt(";"));
     }
@@ -3314,7 +3314,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         if let Some(ref n) = self.offset_clause {
             docs.push(n.build(b));
         }
-        if let Some(_) = self.all_rows_clause {
+        if  self.all_rows_clause.is_some() {
             docs.push(b.txt("ALL ROWS"));
         }
         if !self.for_clause.is_empty() {
@@ -3432,11 +3432,7 @@ impl WhereClause {
 
 impl<'a> DocBuild<'a> for WhereClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![];
-        docs.push(b.txt("WHERE"));
-        docs.push(b.softline());
-        docs.push(self.boolean_exp.build(b));
-
+        let docs = vec![b.txt("WHERE"),b.softline(),self.boolean_exp.build(b) ];
         result.push(b.group(b.indent_and_mark(b.concat(docs))));
     }
 }
@@ -3724,5 +3720,73 @@ impl<'a> DocBuild<'a> for MapKeyInitializer {
         result.push(self.exp1.build(b));
         result.push(b._txt_("=>"));
         result.push(self.exp2.build(b));
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct GroupByClause {
+    pub exps: Vec<OrderExpression>,
+}
+
+impl GroupByClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "order_by_clause");
+        let exps = node
+            .cs_by_k("order_expression")
+            .into_iter()
+            .map(|n| OrderExpression::new(n))
+            .collect();
+        Self { exps }
+    }
+}
+
+impl<'a> DocBuild<'a> for GroupByClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("ORDER BY"));
+
+        let docs = b.to_docs(&self.exps);
+        let sep = Insertable::new(None, Some(", "), None);
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct GroupByExpression {
+    pub value_expression: ValueExpression,
+    pub direction: Option<String>,
+    pub null_direction: Option<String>,
+}
+
+impl GroupByExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "order_expression");
+
+        let value_expression = ValueExpression::new(node.first_c());
+        let direction = node
+            .try_c_by_k("order_direction")
+            .map(|n| n.value(source_code()));
+        let null_direction = node
+            .try_c_by_k("order_null_direction")
+            .map(|n| n.value(source_code()));
+
+        Self {
+            value_expression,
+            direction,
+            null_direction,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for GroupByExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.value_expression.build(b));
+
+        if let Some(ref n) = self.direction {
+            result.push(b._txt(n));
+        }
+        if let Some(ref n) = self.null_direction {
+            result.push(b._txt(n));
+        }
     }
 }
