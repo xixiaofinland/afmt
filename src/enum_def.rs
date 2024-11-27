@@ -1108,7 +1108,7 @@ impl<'a> DocBuild<'a> for ConditionExpression {
 
 #[derive(Debug, Serialize)]
 pub enum ValueExpression {
-    //Function(FunctionExpression),
+    Function(FunctionExpression),
     Field(FieldIdentifier),
 }
 
@@ -1116,6 +1116,7 @@ impl ValueExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "field_identifier" => Self::Field(FieldIdentifier::new(n)),
+            "function_expression" => Self::Function(FunctionExpression::new(n)),
             _ => panic!("## unknown node: {} in ValueExpression", n.kind().red()),
         }
     }
@@ -1208,24 +1209,55 @@ pub enum GeoLocationType {
     },
 }
 
-//impl GeoLocationType {
-//    pub fn new(n: Node) -> Self {
-//        match n.kind() {
-//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
-//                SimpleType::Identifier(n.value(source_code())),
-//            )),
-//            _ => panic!("## unknown node: {} in GeoLocationType", n.kind().red()),
-//        }
-//    }
-//}
+impl GeoLocationType {
+    pub fn new(node: Node) -> Self {
+        let child = node.first_c();
+        match child.kind() {
+            "field_identifier" => Self::Field(FieldIdentifier::new(child)),
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
+            "function_name" => {
+                let decimals = node.cs_by_k("decimal");
+                if decimals.len() != 2 {
+                    panic!(
+                        "expect 2 decimal nodes, found {} in GeoLocationType",
+                        decimals.len()
+                    );
+                }
+
+                Self::Func {
+                    function_name: child.value(source_code()),
+                    decimal1: decimals[0].value(source_code()),
+                    decimal2: decimals[1].value(source_code()),
+                }
+            }
+
+            _ => panic!("## unknown node: {} in GeoLocationType", child.kind().red()),
+        }
+    }
+}
 
 impl<'a> DocBuild<'a> for GeoLocationType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //match self {
-        //    Self::Unnanotated(u) => {
-        //        result.push(u.build(b));
-        //    }
-        //}
+        match self {
+            Self::Field(n) => {
+                result.push(n.build(b));
+            }
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+            Self::Func {
+                function_name,
+                decimal1,
+                decimal2,
+            } => {
+                result.push(b.txt(function_name));
+                result.push(b.txt("("));
+                result.push(b.txt(decimal1));
+                result.push(b.txt(","));
+                result.push(b.txt(decimal2));
+                result.push(b.txt(")"));
+            }
+        }
     }
 }
 
@@ -1454,6 +1486,87 @@ impl<'a> DocBuild<'a> for OffsetClause {
         match self {
             Self::Int(n) => {
                 result.push(b.txt(n));
+            }
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum FunctionExpression {
+    WithGEO {
+        function_name: String,
+        field: Option<FieldIdentifier>,
+        bound: Option<BoundApexExpression>,
+        geo: GeoLocationType,
+        string_literal: String,
+    },
+    Simple {
+        function_name: String,
+        value_exps: Vec<ValueExpression>,
+    },
+}
+
+impl FunctionExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "function_expression");
+
+        let function_expression = if node.try_c_by_k("geo_location_type").is_some() {
+            FunctionExpression::WithGEO {
+                function_name: node.cvalue_by_n("function_name", source_code()),
+                field: node
+                    .try_c_by_k("field_identifier")
+                    .map(|n| FieldIdentifier::new(n)),
+                bound: node
+                    .try_c_by_k("bound_apex_expression")
+                    .map(|n| BoundApexExpression::new(n)),
+                geo: GeoLocationType::new(node.c_by_k("geo_location_type")),
+                string_literal: node.cvalue_by_k("string_literal", source_code()),
+            }
+        } else {
+            PropertyNavigation::Dot
+        };
+
+        function_expression
+    }
+}
+
+impl<'a> DocBuild<'a> for FunctionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Unnanotated(u) => {
+                result.push(u.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub enum FunctionExpressionChoice {
+    Field(FieldIdentifier),
+    Bound(BoundApexExpression),
+}
+
+impl FunctionExpressionChoice {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "field_identifier" => Self::Field(FieldIdentifier::new(node)),
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
+            _ => panic!(
+                "## unknown node: {} in FunctionExpressionChoice",
+                node.kind().red()
+            ),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FunctionExpressionChoice {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Field(n) => {
+                result.push(n.build(b));
             }
             Self::Bound(n) => {
                 result.push(n.build(b));
