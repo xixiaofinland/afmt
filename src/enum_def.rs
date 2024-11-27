@@ -1,5 +1,6 @@
 use colored::Colorize;
 use serde::Serialize;
+use serde_json::Value;
 use tree_sitter::Node;
 
 use crate::{
@@ -868,6 +869,9 @@ impl SelectableExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifier::new(node))),
+            "function_expression" => Self::Value(ValueExpression::Function(Box::new(
+                FunctionExpression::new(node),
+            ))),
             _ => panic!(
                 "## unknown node: {} in SelectableExpression",
                 node.kind().red()
@@ -1108,15 +1112,15 @@ impl<'a> DocBuild<'a> for ConditionExpression {
 
 #[derive(Debug, Serialize)]
 pub enum ValueExpression {
-    Function(FunctionExpression),
     Field(FieldIdentifier),
+    Function(Box<FunctionExpression>),
 }
 
 impl ValueExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "field_identifier" => Self::Field(FieldIdentifier::new(n)),
-            "function_expression" => Self::Function(FunctionExpression::new(n)),
+            "function_expression" => Self::Function(Box::new(FunctionExpression::new(n))),
             _ => panic!("## unknown node: {} in ValueExpression", n.kind().red()),
         }
     }
@@ -1126,6 +1130,9 @@ impl<'a> DocBuild<'a> for ValueExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Field(n) => {
+                result.push(n.build(b));
+            }
+            Self::Function(n) => {
                 result.push(n.build(b));
             }
         }
@@ -1503,7 +1510,7 @@ pub enum FunctionExpression {
         geo: GeoLocationType,
         string_literal: String,
     },
-    Simple {
+    WithoutGEO {
         function_name: String,
         value_exps: Vec<ValueExpression>,
     },
@@ -1514,7 +1521,7 @@ impl FunctionExpression {
         assert_check(node, "function_expression");
 
         let function_expression = if node.try_c_by_k("geo_location_type").is_some() {
-            FunctionExpression::WithGEO {
+            Self::WithGEO {
                 function_name: node.cvalue_by_n("function_name", source_code()),
                 field: node
                     .try_c_by_k("field_identifier")
@@ -1526,7 +1533,15 @@ impl FunctionExpression {
                 string_literal: node.cvalue_by_k("string_literal", source_code()),
             }
         } else {
-            PropertyNavigation::Dot
+            Self::WithoutGEO {
+                function_name: node.cvalue_by_n("function_name", source_code()),
+                value_exps: node
+                    .children_vec()
+                    .into_iter()
+                    .skip(1)
+                    .map(|n| ValueExpression::new(n))
+                    .collect(),
+            }
         };
 
         function_expression
@@ -1536,8 +1551,39 @@ impl FunctionExpression {
 impl<'a> DocBuild<'a> for FunctionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Unnanotated(u) => {
-                result.push(u.build(b));
+            Self::WithGEO {
+                function_name,
+                field,
+                bound,
+                geo,
+                string_literal,
+            } => {
+                result.push(b.txt(function_name));
+                result.push(b.txt("("));
+                if let Some(ref n) = field {
+                    result.push(n.build(b));
+                }
+                if let Some(ref n) = bound {
+                    result.push(n.build(b));
+                }
+                result.push(b.txt(","));
+                result.push(geo.build(b));
+                result.push(b.txt(","));
+                result.push(b.txt(string_literal));
+                result.push(b.txt(")"));
+            }
+            Self::WithoutGEO {
+                function_name,
+                value_exps,
+            } => {
+                result.push(b.txt(function_name));
+
+                let doc = b.to_docs(value_exps);
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+                let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+                let doc = b.group(b.surround(&doc, sep, open, close));
+                result.push(doc);
             }
         }
     }
