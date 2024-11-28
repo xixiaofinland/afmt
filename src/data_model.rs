@@ -3716,7 +3716,7 @@ impl<'a> DocBuild<'a> for MapKeyInitializer {
 #[derive(Debug, Serialize)]
 pub struct GroupByClause {
     pub exps: Vec<GroupByExpression>,
-    pub have: Option<HavingClause>,
+    pub have_clause: Option<HavingClause>,
 }
 
 impl GroupByClause {
@@ -3724,7 +3724,7 @@ impl GroupByClause {
         assert_check(node, "group_by_clause");
 
         let mut exps = Vec::new();
-        let mut have = None;
+        let mut have_clause = None;
 
         for child in node.children_vec() {
             match child.kind() {
@@ -3735,14 +3735,14 @@ impl GroupByClause {
                     exps.push(GroupByExpression::Func(FunctionExpression::new(child)));
                 }
                 "having_clause" => {
-                    have = Some(HavingClause::new(child));
+                    have_clause = Some(HavingClause::new(child));
                 }
                 other => {
                     panic!("## unknown node: {} in GroupByClause", other.red());
                 }
             }
         }
-        Self { exps, have }
+        Self { exps, have_clause }
     }
 }
 
@@ -3752,13 +3752,13 @@ impl<'a> DocBuild<'a> for GroupByClause {
 
         let docs = b.to_docs(&self.exps);
 
-        let sep = Insertable::new(None, Some(" "), None);
+        let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
         result.push(doc);
 
-        //if let Some(n) = self.have {
-        //    result.push(n.build(b));
-        //}
+        if let Some(ref n) = self.have_clause {
+            result.push(n.build(b));
+        }
     }
 }
 
@@ -3798,7 +3798,7 @@ impl HavingClause {
 
 impl<'a> DocBuild<'a> for HavingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("HAVING"));
+        result.push(b._txt_("HAVING"));
         result.push(self.exp.build(b));
     }
 }
@@ -3828,7 +3828,15 @@ impl HavingBooleanExpression {
 }
 
 impl<'a> DocBuild<'a> for HavingBooleanExpression {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let doc = match self{
+            Self::And(n) => n.build(b),
+            Self::Or(n) => n.build(b),
+            Self::Not(n) => n.build(b),
+            Self::Condition(n) => n.build(b),
+        };
+        result.push(doc);
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -3992,11 +4000,11 @@ impl<'a> DocBuild<'a> for HavingComparison {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Value { operator, value } => {
-                result.push(b.txt(operator));
+                result.push(b._txt_(operator));
                 result.push(value.build(b));
             }
             Self::Set { operator, set } => {
-                result.push(b.txt(operator));
+                result.push(b._txt_(operator));
                 result.push(set.build(b));
             }
         }

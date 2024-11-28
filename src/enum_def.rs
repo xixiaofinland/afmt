@@ -1362,6 +1362,12 @@ impl SoqlLiteral {
 impl<'a> DocBuild<'a> for SoqlLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::Decimal(n) => {
+                result.push(b.txt(n));
+            }
+            Self::Int(n) => {
+                result.push(b.txt(n));
+            }
             Self::StringLiteral(n) => {
                 result.push(b.txt(n));
             }
