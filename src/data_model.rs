@@ -3805,12 +3805,15 @@ pub enum HavingBooleanExpression {
 impl HavingBooleanExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "having_and_expression" => HavingBooleanExpression::And(HavingAndExpression::new(node)),
-            "having_or_expression" => HavingBooleanExpression::Or(HavingOrExpression::new(node)),
-            "having_not_expression" => HavingBooleanExpression::Not(HavingNotExpression::new(node)),
-            "having_comparison_expression" => HavingBooleanExpression::Condition(
+            "having_and_expression" => Self::And(HavingAndExpression::new(node)),
+            "having_or_expression" => Self::Or(HavingOrExpression::new(node)),
+            "having_not_expression" => Self::Not(HavingNotExpression::new(node)),
+            "having_comparison_expression" => Self::Condition(
                 HavingConditionExpression::Comparison(HavingComparisonExpression::new(node)),
             ),
+            _ => Self::Condition(HavingConditionExpression::Parenthesized(Box::new(
+                HavingBooleanExpression::new(node),
+            ))),
         }
     }
 }
@@ -3828,30 +3831,22 @@ impl HavingAndExpression {
     pub fn new(node: Node) -> Self {
         assert_eq!(node.kind(), "having_and_expression");
 
-        let mut exps = Vec::new();
-        let mut cursor = node.walk();
-        let mut child_iter = node.children(&mut cursor);
-
-        while let Some(child) = child_iter.next() {
-            if child.is_named() {
-                let exp = HavingConditionExpression::new(child);
-                exps.push(exp);
-            } else if child.kind().to_uppercase() == "AND" {
-                // Skip 'AND'
-            }
-        }
-
+        let exps = node
+            .children_vec()
+            .into_iter()
+            .map(|n| HavingConditionExpression::new(n))
+            .collect();
         Self { exps }
     }
 }
 
 impl<'a> DocBuild<'a> for HavingAndExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        for (i, expr) in self.expressions.iter().enumerate() {
+        for (i, exp) in self.exps.iter().enumerate() {
             if i > 0 {
-                result.push(b.txt(" AND "));
+                result.push(b._txt_("AND"));
             }
-            result.push(expr.build(b));
+            result.push(exp.build(b));
         }
     }
 }
@@ -3906,21 +3901,9 @@ impl HavingConditionExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "having_comparison_expression" => {
-                HavingConditionExpression::Comparison(HavingComparisonExpression::new(node))
+                Self::Comparison(HavingComparisonExpression::new(node))
             }
-            "(" => {
-                // Parenthesized expression
-                let inner_node = node.named_child(0).unwrap();
-                let inner_expr = HavingBooleanExpression::new(inner_node);
-                HavingConditionExpression::Parenthesized(Box::new(inner_expr))
-            }
-            _ => {
-                if node.named_child_count() == 1 {
-                    //having_comparison_expression
-                } else {
-                    panic!("Unexpected node kind: {}", node.kind());
-                }
-            }
+            _ => Self::Parenthesized(Box::new(HavingBooleanExpression::new(node))),
         }
     }
 }
