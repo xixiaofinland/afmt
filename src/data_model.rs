@@ -3782,9 +3782,7 @@ impl HavingClause {
         assert_check(node, "having_clause");
 
         let child = node.first_c();
-        match child.kind(){
-            "having_and_expression" => HavingAndExpression::new(child),
-        }
+        let exp = HavingBooleanExpression::new(child);
         Self { exp }
     }
 }
@@ -3804,20 +3802,93 @@ pub enum HavingBooleanExpression {
     Condition(HavingConditionExpression),
 }
 
+impl HavingBooleanExpression {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "having_and_expression" => HavingBooleanExpression::And(HavingAndExpression::new(node)),
+            "having_or_expression" => HavingBooleanExpression::Or(HavingOrExpression::new(node)),
+            "having_not_expression" => HavingBooleanExpression::Not(HavingNotExpression::new(node)),
+            "having_comparison_expression" => HavingBooleanExpression::Condition(
+                HavingConditionExpression::Comparison(HavingComparisonExpression::new(node)),
+            ),
+        }
+    }
+}
+
 impl<'a> DocBuild<'a> for HavingBooleanExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
 }
 
 #[derive(Debug, Serialize)]
 pub struct HavingAndExpression {
-    pub left: Box<HavingConditionExpression>,
-    pub others: Vec<HavingConditionExpression>,
+    pub exps: Vec<HavingConditionExpression>,
+}
+
+impl HavingAndExpression {
+    pub fn new(node: Node) -> Self {
+        assert_eq!(node.kind(), "having_and_expression");
+
+        let mut exps = Vec::new();
+        let mut cursor = node.walk();
+        let mut child_iter = node.children(&mut cursor);
+
+        while let Some(child) = child_iter.next() {
+            if child.is_named() {
+                let exp = HavingConditionExpression::new(child);
+                exps.push(exp);
+            } else if child.kind().to_uppercase() == "AND" {
+                // Skip 'AND'
+            }
+        }
+
+        Self { exps }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingAndExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        for (i, expr) in self.expressions.iter().enumerate() {
+            if i > 0 {
+                result.push(b.txt(" AND "));
+            }
+            result.push(expr.build(b));
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
 pub struct HavingOrExpression {
-    pub left: Box<HavingConditionExpression>,
-    pub others: Vec<HavingConditionExpression>,
+    pub exps: Vec<HavingConditionExpression>,
+}
+
+impl HavingOrExpression {
+    pub fn new(node: Node) -> Self {
+        assert_eq!(node.kind(), "having_or_expression");
+
+        let mut expressions = Vec::new();
+        let mut cursor = node.walk();
+        let children = node.named_children(&mut cursor);
+
+        for child in children {
+            if child.is_named() {
+                let expr = HavingConditionExpression::new(child);
+                expressions.push(expr);
+            }
+        }
+
+        Self { expressions }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingOrExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        for (i, expr) in self.expressions.iter().enumerate() {
+            if i > 0 {
+                result.push(b.txt(" OR "));
+            }
+            result.push(expr.build(b));
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -3829,6 +3900,29 @@ pub struct HavingNotExpression {
 pub enum HavingConditionExpression {
     Parenthesized(Box<HavingBooleanExpression>),
     Comparison(HavingComparisonExpression),
+}
+
+impl HavingConditionExpression {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "having_comparison_expression" => {
+                HavingConditionExpression::Comparison(HavingComparisonExpression::new(node))
+            }
+            "(" => {
+                // Parenthesized expression
+                let inner_node = node.named_child(0).unwrap();
+                let inner_expr = HavingBooleanExpression::new(inner_node);
+                HavingConditionExpression::Parenthesized(Box::new(inner_expr))
+            }
+            _ => {
+                if node.named_child_count() == 1 {
+                    //having_comparison_expression
+                } else {
+                    panic!("Unexpected node kind: {}", node.kind());
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
