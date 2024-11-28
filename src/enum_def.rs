@@ -1348,6 +1348,8 @@ pub enum SoqlLiteral {
 impl SoqlLiteral {
     pub fn new(node: Node) -> Self {
         match node.kind() {
+            "decimal" => Self::Decimal(node.value(source_code())),
+            "int" => Self::Int(node.value(source_code())),
             "string_literal" => Self::StringLiteral(node.value(source_code())),
             "boolean" => Self::Boolean(node.value(source_code())),
             "date" => Self::Boolean(node.value(source_code())),

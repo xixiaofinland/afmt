@@ -7,7 +7,7 @@ use crate::{
 };
 use colored::Colorize;
 use serde::Serialize;
-use std::{collections::HashSet, fmt::Debug, intrinsics::unreachable};
+use std::{collections::HashSet, fmt::Debug};
 use tree_sitter::{Node, Point, Range};
 
 pub trait DocBuild<'a> {
@@ -3716,24 +3716,33 @@ impl<'a> DocBuild<'a> for MapKeyInitializer {
 #[derive(Debug, Serialize)]
 pub struct GroupByClause {
     pub exps: Vec<GroupByExpression>,
-    //pub have: Option<HavingClause>,
+    pub have: Option<HavingClause>,
 }
 
 impl GroupByClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "group_by_clause");
 
-        let exps = node
-            .children_vec()
-            .into_iter()
-            .map(|n| match n.kind() {
-                "field_identifier" => GroupByExpression::Field(FieldIdentifier::new(n)),
-                "function_expression" => GroupByExpression::Func(FunctionExpression::new(n)),
-                //"having_clause" => HavingClause::new(n),
-                _ => panic!("## unknown node: {} in GroupByClause", n.kind().red()),
-            })
-            .collect();
-        Self { exps }
+        let mut exps = Vec::new();
+        let mut have = None;
+
+        for child in node.children_vec() {
+            match child.kind() {
+                "field_identifier" => {
+                    exps.push(GroupByExpression::Field(FieldIdentifier::new(child)));
+                }
+                "function_expression" => {
+                    exps.push(GroupByExpression::Func(FunctionExpression::new(child)));
+                }
+                "having_clause" => {
+                    have = Some(HavingClause::new(child));
+                }
+                other => {
+                    panic!("## unknown node: {} in GroupByClause", other.red());
+                }
+            }
+        }
+        Self { exps, have }
     }
 }
 
@@ -3860,35 +3869,45 @@ impl HavingOrExpression {
     pub fn new(node: Node) -> Self {
         assert_eq!(node.kind(), "having_or_expression");
 
-        let mut expressions = Vec::new();
-        let mut cursor = node.walk();
-        let children = node.named_children(&mut cursor);
-
-        for child in children {
-            if child.is_named() {
-                let expr = HavingConditionExpression::new(child);
-                expressions.push(expr);
-            }
-        }
-
-        Self { expressions }
+        let exps = node
+            .children_vec()
+            .into_iter()
+            .map(|n| HavingConditionExpression::new(n))
+            .collect();
+        Self { exps }
     }
 }
 
 impl<'a> DocBuild<'a> for HavingOrExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        for (i, expr) in self.expressions.iter().enumerate() {
+        for (i, exp) in self.exps.iter().enumerate() {
             if i > 0 {
-                result.push(b.txt(" OR "));
+                result.push(b._txt_("OR"));
             }
-            result.push(expr.build(b));
+            result.push(exp.build(b));
         }
     }
 }
 
 #[derive(Debug, Serialize)]
 pub struct HavingNotExpression {
-    pub expression: Box<HavingConditionExpression>,
+    pub exp: Box<HavingConditionExpression>,
+}
+
+impl HavingNotExpression {
+    pub fn new(node: Node) -> Self {
+        assert_eq!(node.kind(), "having_not_expression");
+
+        let exp = Box::new(HavingConditionExpression::new(node.first_c()));
+        Self { exp }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingNotExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("NOT"));
+        result.push(self.exp.build(b));
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -3904,6 +3923,15 @@ impl HavingConditionExpression {
                 Self::Comparison(HavingComparisonExpression::new(node))
             }
             _ => Self::Parenthesized(Box::new(HavingBooleanExpression::new(node))),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for HavingConditionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Parenthesized(n) => result.push(n.build(b)),
+            Self::Comparison(n) => result.push(n.build(b)),
         }
     }
 }
