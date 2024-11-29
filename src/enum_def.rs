@@ -1044,12 +1044,14 @@ impl BooleanExpression {
                     .into_iter()
                     .map(|n| ConditionExpression::new(n))
                     .collect(),
+                    //node.parent().unwrap().kind() == "and_expression"
             ),
             "or_expression" => Self::Or(
                 node.children_vec()
                     .into_iter()
                     .map(|n| ConditionExpression::new(n))
                     .collect(),
+                    //node.parent().unwrap().kind() == "or_expression"
             ),
             "not_expression" => Self::Not(ConditionExpression::new(node.first_c())),
             _ => Self::Condition(Box::new(ConditionExpression::new(node))),
@@ -1356,6 +1358,7 @@ impl SoqlLiteral {
             "boolean" => Self::Boolean(node.value(source_code())),
             "date" => Self::Boolean(node.value(source_code())),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
+            "null_literal" => Self::NullLiteral(node.value(source_code())),
             _ => panic!("## unknown node: {} in SoqlLiteral", node.kind().red()),
         }
     }
@@ -1382,8 +1385,11 @@ impl<'a> DocBuild<'a> for SoqlLiteral {
             Self::DWithParam(n) => {
                 result.push(n.build(b));
             }
+            Self::NullLiteral(n) => {
+                result.push(b.txt(n));
+            }
             _ => {
-                unimplemented!()
+                unimplemented!();
             }
         }
     }
