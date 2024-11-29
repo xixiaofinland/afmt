@@ -1068,7 +1068,7 @@ impl<'a> DocBuild<'a> for BooleanExpression {
             }
             Self::Or(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(None, Some(" OR "), None);
+                let sep = Insertable::new(Some(b.softline()), Some("OR "), None);
                 let doc = b.indent_and_mark(b.intersperse(&docs, sep));
                 result.push(doc);
             }
@@ -1104,7 +1104,9 @@ impl<'a> DocBuild<'a> for ConditionExpression {
                 result.push(n.build(b));
             }
             Self::Bool(n) => {
+                result.push(b.txt("("));
                 result.push(n.build(b));
+                result.push(b.txt(")"));
             }
         }
     }

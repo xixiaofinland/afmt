@@ -3250,7 +3250,7 @@ pub struct SoqlQueryBody {
     pub from_clause: FromClause,
     //using_clause;
     pub where_clause: Option<WhereClause>,
-    //with_c;
+    pub with_clause: Option<WithClause>,
     pub group_by_clause: Option<GroupByClause>,
     pub order_by_clause: Option<OrderByClause>,
     pub limit_clause: Option<LimitClause>,
@@ -3265,6 +3265,7 @@ impl SoqlQueryBody {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
         let from_clause = FromClause::new(node.c_by_n("from_clause"));
         let where_clause = node.try_c_by_n("where_clause").map(|n| WhereClause::new(n));
+        let with_clause = node.try_c_by_n("with_clause").map(|n| WithClause::new(n));
         let group_by_clause = node
             .try_c_by_n("group_by_clause")
             .map(|n| GroupByClause::new(n));
@@ -3286,6 +3287,7 @@ impl SoqlQueryBody {
             select_clause,
             from_clause,
             where_clause,
+            with_clause,
             group_by_clause,
             order_by_clause,
             limit_clause,
@@ -3303,6 +3305,9 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
         docs.push(self.from_clause.build(b));
 
         if let Some(ref n) = self.where_clause {
+            docs.push(n.build(b));
+        }
+        if let Some(ref n) = self.with_clause {
             docs.push(n.build(b));
         }
         if let Some(ref n) = self.group_by_clause {
@@ -4074,11 +4079,17 @@ pub struct WithClause {
 }
 
 impl WithClause {
-    pub fn new(node: Node) -> Self {}
+    pub fn new(node: Node) -> Self {
+        let with_type = WithType::new(node.c_by_k("with_type"));
+        Self { with_type }
+    }
 }
 
 impl<'a> DocBuild<'a> for WithClause {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("WITH"));
+        result.push(self.with_type.build(b));
+    }
 }
 
 #[derive(Debug, Serialize)]
