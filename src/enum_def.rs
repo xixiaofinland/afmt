@@ -1044,43 +1044,58 @@ impl BooleanExpression {
                     .into_iter()
                     .map(|n| ConditionExpression::new(n))
                     .collect(),
-                    //node.parent().unwrap().kind() == "and_expression"
             ),
             "or_expression" => Self::Or(
                 node.children_vec()
                     .into_iter()
                     .map(|n| ConditionExpression::new(n))
                     .collect(),
-                    //node.parent().unwrap().kind() == "or_expression"
             ),
             "not_expression" => Self::Not(ConditionExpression::new(node.first_c())),
             _ => Self::Condition(Box::new(ConditionExpression::new(node))),
+        }
+    }
+
+    fn operator(&self) -> Option<&str> {
+        match self {
+            Self::And(_) => Some("AND"),
+            Self::Or(_) => Some("OR"),
+            Self::Not(_) => Some("NOT"),
+            Self::Condition(_) => None,
+        }
+    }
+
+    pub fn build_with_parent<'a>(&self, b: &'a DocBuilder<'a>, parent_op: Option<&str>) -> DocRef<'a> {
+        match self {
+            Self::And(vec) => {
+                let docs: Vec<DocRef> = vec
+                    .iter()
+                    .map(|expr| expr.build_with_parent(b, Some("AND")))
+                    .collect();
+                let sep = Insertable::new(Some(b.softline()), Some("AND "), None);
+                b.intersperse(&docs, sep)
+            }
+            Self::Or(vec) => {
+                let docs: Vec<DocRef> = vec
+                    .iter()
+                    .map(|expr| expr.build_with_parent(b, Some("OR")))
+                    .collect();
+                let sep = Insertable::new(Some(b.softline()), Some("OR "), None);
+                b.intersperse(&docs, sep)
+            }
+            Self::Not(expr) => {
+                let expr_doc = expr.build_with_parent(b, Some("NOT"));
+                b.concat(vec![b.txt("NOT "), expr_doc])
+            }
+            Self::Condition(expr) => expr.build_with_parent(b, parent_op),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for BooleanExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        match self {
-            Self::And(vec) => {
-                let docs = b.to_docs(vec);
-                let sep = Insertable::new(Some(b.softline()), Some("AND "), None);
-                let doc = b.indent_and_mark(b.intersperse(&docs, sep));
-                result.push(doc);
-            }
-            Self::Or(vec) => {
-                let docs = b.to_docs(vec);
-                let sep = Insertable::new(Some(b.softline()), Some("OR "), None);
-                let doc = b.indent_and_mark(b.intersperse(&docs, sep));
-                result.push(doc);
-            }
-            Self::Not(n) => {
-                result.push(n.build(b));
-            }
-            Self::Condition(n) => {
-                result.push(n.build(b));
-            }
-        }
+        let doc = self.build_with_parent(b, None);
+        result.push(doc);
     }
 }
 
@@ -1097,20 +1112,33 @@ impl ConditionExpression {
             _ => Self::Bool(Box::new(BooleanExpression::new(node))),
         }
     }
+
+    fn build_with_parent<'a>(&self, b: &'a DocBuilder<'a>, parent_op: Option<&str>) -> DocRef<'a> {
+        match self {
+            Self::Comparison(n) => n.build(b),
+            //in SOQL where_clause: "A AND (B AND C)" should become "A AND B AND C"
+            Self::Bool(n) => {
+                let need_parens = match (parent_op, n.operator()) {
+                    (Some(parent), Some(child)) if parent == child => false,
+                    _ => true,
+                };
+
+                let expr_doc = n.build_with_parent(b, n.operator());
+
+                if need_parens {
+                    b.concat(vec![b.txt("("), expr_doc, b.txt(")")])
+                } else {
+                    expr_doc
+                }
+            }
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for ConditionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        match self {
-            Self::Comparison(n) => {
-                result.push(n.build(b));
-            }
-            Self::Bool(n) => {
-                result.push(b.txt("("));
-                result.push(n.build(b));
-                result.push(b.txt(")"));
-            }
-        }
+        let doc = self.build_with_parent(b, None);
+        result.push(doc);
     }
 }
 

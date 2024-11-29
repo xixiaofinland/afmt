@@ -3440,7 +3440,7 @@ impl WhereClause {
 
 impl<'a> DocBuild<'a> for WhereClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![b.txt("WHERE"), b.softline(), self.boolean_exp.build(b)];
+        let docs = vec![b.txt("WHERE"), b.softline(), self.boolean_exp.build_with_parent(b, None)];
         result.push(b.group(b.indent_and_mark(b.concat(docs))));
     }
 }
