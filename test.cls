@@ -1,10 +1,6 @@
-public class A {
-  {
-    String s = [
-            SELECT AccountId
-            FROM Contact
-            WHERE AccountId IN :accountIdsToUpdate and (Deceased__c != TRUE or
-            Exclude_from_Household_Name__c != TRUE) and AccountId != null
-        ];
+class PackageVersion {
+  void packageVersionTest() {
+    Object v = Package.Version.1.0;
+    v = Package.Version.Request;
   }
 }
