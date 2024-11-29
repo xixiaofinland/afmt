@@ -1,5 +1,10 @@
-class T {
+class UTIL_SortContact_TEST {
   {
-    [SELECT Id FROM Account GROUP BY Id, Name HAVING COUNT(Id) > 2];
+    [
+      SELECT OpportunityId
+      FROM OpportunityContactRole
+      GROUP BY OpportunityId
+      HAVING COUNT(Id) > 1
+    ];
   }
 }

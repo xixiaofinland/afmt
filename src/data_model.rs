@@ -3751,12 +3751,12 @@ impl<'a> DocBuild<'a> for GroupByClause {
         result.push(b.txt_("GROUP BY"));
 
         let docs = b.to_docs(&self.exps);
-
         let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
         result.push(doc);
 
         if let Some(ref n) = self.have_clause {
+            result.push(b.softline());
             result.push(n.build(b));
         }
     }
@@ -3798,7 +3798,7 @@ impl HavingClause {
 
 impl<'a> DocBuild<'a> for HavingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b._txt_("HAVING"));
+        result.push(b.txt_("HAVING"));
         result.push(self.exp.build(b));
     }
 }
@@ -3829,7 +3829,7 @@ impl HavingBooleanExpression {
 
 impl<'a> DocBuild<'a> for HavingBooleanExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let doc = match self{
+        let doc = match self {
             Self::And(n) => n.build(b),
             Self::Or(n) => n.build(b),
             Self::Not(n) => n.build(b),
