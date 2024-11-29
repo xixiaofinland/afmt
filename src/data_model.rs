@@ -4067,3 +4067,59 @@ impl<'a> DocBuild<'a> for HavingSet {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct WithClause {
+    pub with_type: WithType,
+}
+
+impl WithClause {
+    pub fn new(node: Node) -> Self {}
+}
+
+impl<'a> DocBuild<'a> for WithClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {}
+}
+
+#[derive(Debug, Serialize)]
+pub enum WithType {
+    SimpleType(String), // Security_Enforced, User_Mode, and System_Mode
+    //RecordVisibility(WithRecordVisibilityExpression),
+    //DataCategory(WithDataCatExpression),
+    UserId(String),
+}
+
+impl WithType {
+    pub fn new(node: Node) -> Self {
+        let with_type = if node.named_child_count() == 0 {
+            return Self::SimpleType(node.value(source_code()));
+        } else {
+            let child = node.first_c();
+            match child.kind() {
+                "with_user_id_type" => {
+                    Self::UserId(child.cvalue_by_k("string_literal", source_code()))
+                }
+                _ => panic!("## unknown node: {} in WithType", node.kind().red()),
+            }
+        };
+        with_type
+    }
+}
+
+impl<'a> DocBuild<'a> for WithType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::SimpleType(n) => {
+                result.push(b.txt(n));
+            }
+            Self::UserId(n) => {
+                result.push(b.txt_("UserId ="));
+                result.push(b.txt(n));
+            }
+        }
+    }
+}
+
+//pub struct WithRecordVisibilityExpression {
+//    pub params: WithRecordVisibilityParams,
+//}

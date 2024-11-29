@@ -1,8 +1,7 @@
 public class A {
   {
     return [
-      SELECT
-        Id 
+      SELECT Id
       FROM property__c
       WHERE
         (title__c LIKE :key
