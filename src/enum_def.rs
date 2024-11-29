@@ -1065,7 +1065,11 @@ impl BooleanExpression {
         }
     }
 
-    pub fn build_with_parent<'a>(&self, b: &'a DocBuilder<'a>, parent_op: Option<&str>) -> DocRef<'a> {
+    pub fn build_with_parent<'a>(
+        &self,
+        b: &'a DocBuilder<'a>,
+        parent_op: Option<&str>,
+    ) -> DocRef<'a> {
         match self {
             Self::And(vec) => {
                 let docs: Vec<DocRef> = vec
@@ -1116,22 +1120,24 @@ impl ConditionExpression {
     fn build_with_parent<'a>(&self, b: &'a DocBuilder<'a>, parent_op: Option<&str>) -> DocRef<'a> {
         match self {
             Self::Comparison(n) => n.build(b),
-            //in SOQL where_clause: "A AND (B AND C)" should become "A AND B AND C"
             Self::Bool(n) => {
-                let need_parens = match (parent_op, n.operator()) {
-                    (Some(parent), Some(child)) if parent == child => false,
-                    _ => true,
-                };
+                let child_op = n.operator();
+                let doc = n.build_with_parent(b, child_op);
 
-                let expr_doc = n.build_with_parent(b, n.operator());
-
-                if need_parens {
-                    b.concat(vec![b.txt("("), expr_doc, b.txt(")")])
+                if Self::should_parenthesize(parent_op, child_op) {
+                    b.concat(vec![b.txt("("), doc, b.txt(")")])
                 } else {
-                    expr_doc
+                    // No parentheses needed
+                    doc
                 }
             }
         }
+    }
+
+    fn should_parenthesize(parent_op: Option<&str>, child_op: Option<&str>) -> bool {
+        // Parentheses are NOT needed if both parent and child operators are the same.
+        // Otherwise, parentheses are needed to maintain correct logical grouping.
+        !matches!((parent_op, child_op), (Some(parent), Some(child)) if parent == child)
     }
 }
 
