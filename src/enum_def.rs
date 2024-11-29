@@ -1087,9 +1087,9 @@ impl BooleanExpression {
                 let sep = Insertable::new(Some(b.softline()), Some("OR "), None);
                 b.intersperse(&docs, sep)
             }
-            Self::Not(expr) => {
-                let expr_doc = expr.build_with_parent(b, Some("NOT"));
-                b.concat(vec![b.txt("NOT "), expr_doc])
+            Self::Not(n) => {
+                let expr_doc = n.build_with_parent(b, Some("NOT"));
+                b.concat(vec![b.txt_("NOT"), expr_doc])
             }
             Self::Condition(expr) => expr.build_with_parent(b, parent_op),
         }
@@ -1127,7 +1127,6 @@ impl ConditionExpression {
                 if Self::should_parenthesize(parent_op, child_op) {
                     b.concat(vec![b.txt("("), doc, b.txt(")")])
                 } else {
-                    // No parentheses needed
                     doc
                 }
             }
