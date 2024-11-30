@@ -939,10 +939,6 @@ impl BinaryExpression {
             && is_right_node_binary
             && get_precedence(left_child.cv_by_n("operator", source_code()))
                 == get_precedence(right_child.cv_by_n("operator", source_code()));
-        eprintln!(
-            "gopro[10]: data_model.rs:932: left_child_same_precedence_as_right_child={:#?}",
-            left_child_same_precedence_as_right_child
-        );
 
         //a = b > c > d -> the node (b > c > d);
         let is_top_most_parent_node_without_grouping =

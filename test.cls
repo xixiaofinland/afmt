@@ -1,6 +1,6 @@
 class HelloWorld {
   {
-    Boolean a = b > c > d;
+    Boolean a = b > 1 && c > 1;
   }
 }
 

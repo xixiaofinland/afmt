@@ -45,8 +45,7 @@
 
   // This variable signifies that the left node and right has the same
   // precedence, and thus they should be laid out on the same indent level, e.g.:
-  // a = b > 1 &&
-  //   c > 1
+  // a = b > 1 && c > 1
   const leftChildNodeSamePrecedenceAsRightChildNode =
     isLeftNodeBinaryish &&
     isRightNodeBinaryish &&
