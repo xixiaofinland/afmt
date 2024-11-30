@@ -914,7 +914,11 @@ impl BinaryExpression {
         // struct properties below;
 
         // If this expression is directly inside parentheses, we want to give it
-        // an extra level indentation
+        // an extra level indentation, e.g.:
+        // createObject(
+        //   firstBoolean &&
+        //      secondBoolean
+        // );
         let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
 
         // a = b > c > d -> the "b > c" node;
