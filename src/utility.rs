@@ -90,19 +90,19 @@ pub fn has_trailing_new_line(node: &Node) -> bool {
 pub fn get_precedence(op: &str) -> u8 {
     match op {
         "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" => 1, // Assignment
-        "?" | ":" => 2,                              // Ternary
-        "||" => 3,                                   // Logical OR
-        "??" => 3, // Null-coalescing
-        "&&" => 5,                                   // Logical AND
-        "|" => 6,                                    // Bitwise OR
-        "^" => 7,                                    // Bitwise XOR
-        "&" => 8,                                    // Bitwise AND
-        "==" | "!=" | "===" | "!==" | "<>" => 9,     // Equality
+        "?" | ":" => 2,                               // Ternary
+        "||" => 3,                                    // Logical OR
+        "??" => 3,                                    // Null-coalescing
+        "&&" => 5,                                    // Logical AND
+        "|" => 6,                                     // Bitwise OR
+        "^" => 7,                                     // Bitwise XOR
+        "&" => 8,                                     // Bitwise AND
+        "==" | "!=" | "===" | "!==" | "<>" => 9,      // Equality
         ">" | "<" | ">=" | "<=" | "instanceof" => 10, // Relational
-        "<<" | ">>" | ">>>" => 11,                   // Shift
-        "+" | "-" => 12,                             // Additive
-        "*" | "/" | "%" => 13,                       // Multiplicative
-        "!" | "~" | "++" | "--" => 14,               // Unary operators
+        "<<" | ">>" | ">>>" => 11,                    // Shift
+        "+" | "-" => 12,                              // Additive
+        "*" | "/" | "%" => 13,                        // Multiplicative
+        "!" | "~" | "++" | "--" => 14,                // Unary operators
         _ => panic!("## Not supported operator: {}", op),
     }
 }
