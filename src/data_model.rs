@@ -916,6 +916,10 @@ impl BinaryExpression {
             context,
         }
     }
+
+    fn build_context(node: &Node) -> BinaryExpressionContext{
+
+    }
 }
 
 impl<'a> DocBuild<'a> for BinaryExpression {

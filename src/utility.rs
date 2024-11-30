@@ -86,3 +86,14 @@ pub fn has_trailing_new_line(node: &Node) -> bool {
 
     newline_count >= 2 // Return true if there are two or more consecutive newlines
 }
+
+pub fn get_precedence(op: &str) -> u8 {
+    match op {
+        "*" | "/" | "%" => 2, // Multiplicative
+        "+" | "-" => 1,        // Additive
+        ">" | "<" | ">=" | "<=" | "==" | "!=" => 1, // Comparison
+        "&&" => 0,             // Logical AND
+        "||" => 0,             // Logical OR
+        _ => panic!("## Not supported operator: {}", op.red()),
+    }
+}
