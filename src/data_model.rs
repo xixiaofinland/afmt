@@ -900,7 +900,7 @@ impl BinaryExpression {
     fn build_context(node: &Node) -> BinaryExpressionContext {
         let op = node.cvalue_by_n("operator", source_code());
         let precedence = get_precedence(&op);
-        let parent = Self::get_parent_node(*node);
+        let parent = node.parent().expect("BinaryExpression node should always have a parent");
         let left_child = node.c_by_n("left");
         let right_child = node.c_by_n("right");
 
@@ -928,20 +928,6 @@ impl BinaryExpression {
             is_node_same_precedence_as_left_child,
             is_node_same_precedence_as_parent,
             should_indent_top_most_expression,
-        }
-    }
-
-    fn get_parent_node(mut node: Node) -> Node {
-        loop {
-            match node.parent() {
-                Some(parent) if parent.kind() == "parenthesized_expression" => {
-                    node = parent;
-                }
-                Some(parent) => {
-                    return parent;
-                }
-                None => unreachable!("BinaryExpression node should always have a parent"),
-            }
         }
     }
 

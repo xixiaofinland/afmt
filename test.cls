@@ -1,5 +1,6 @@
 class HelloWorld {
   {
-    Boolean isReady = !a && (b != c);
+    Boolean isReady = a > b > c > d;
   }
 }
+
