@@ -1,6 +1,6 @@
-public class A {
-    {
-    if (i >   = 0) {   
-    }
+class HelloWorld {
+  {
+    Boolean a = b > 1 && c > 1;
   }
 }
+
