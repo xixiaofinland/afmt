@@ -890,8 +890,8 @@ pub struct BinaryExpression {
 
 impl BinaryExpression {
     fn build_context(node: &Node) -> BinaryExpressionContext {
-        let op = node.cvalue_by_n("operator", source_code());
-        let precedence = get_precedence(&op);
+        let op = node.c_by_n("operator").kind();
+        let precedence = get_precedence(op);
         let parent = node
             .parent()
             .expect("BinaryExpression node should always have a parent");
@@ -906,10 +906,10 @@ impl BinaryExpression {
             is_nested_expression && node.id() == parent.c_by_n("right").id();
 
         let left_child_has_same_precedence = is_left_node_binary
-            && precedence == get_precedence(left_child.cv_by_n("operator", source_code()));
+            && precedence == get_precedence(left_child.c_by_n("operator").kind());
 
-        let parent_has_same_precedence = isBinaryNode(parent)
-            && precedence == get_precedence(parent.cv_by_n("operator", source_code()));
+        let parent_has_same_precedence =
+            isBinaryNode(parent) && precedence == get_precedence(parent.c_by_n("operator").kind());
 
         // struct properties below;
 
@@ -937,8 +937,8 @@ impl BinaryExpression {
         // a = b > 1 && c > 1;
         let left_child_same_precedence_as_right_child = is_left_node_binary
             && is_right_node_binary
-            && get_precedence(left_child.cv_by_n("operator", source_code()))
-                == get_precedence(right_child.cv_by_n("operator", source_code()));
+            && get_precedence(left_child.c_by_n("operator").kind())
+                == get_precedence(right_child.c_by_n("operator").kind());
 
         //a = b > c > d -> the node (b > c > d);
         let is_top_most_parent_node_without_grouping =
@@ -3032,37 +3032,8 @@ impl SwitchRule {
     // TODO: update parser
     pub fn new(node: Node) -> Self {
         let label_node = node.c_by_k("switch_label");
+        let label = SwitchLabel::new(label_node);
 
-        let label = if label_node.children_vec().len() == 0 {
-            SwitchLabel::Else
-        } else if label_node.try_c_by_k("identifier").is_some() {
-            let mut sobjects = Vec::new();
-            let mut current_type: Option<UnannotatedType> = None;
-
-            for child in label_node.children_vec() {
-                match child.kind() {
-                    "identifier" => {
-                        sobjects.push(SObjectVar {
-                            unannotated_type: current_type.take(),
-                            identifier: child.value(source_code()),
-                        });
-                    }
-                    _ => {
-                        current_type = Some(UnannotatedType::new(child));
-                    }
-                }
-            }
-
-            SwitchLabel::SObjects(sobjects)
-        } else {
-            let expressions = label_node
-                .children_vec()
-                .into_iter()
-                .map(|n| Expression::new(n))
-                .collect();
-
-            SwitchLabel::Expressions(expressions)
-        };
         let block = Block::new(node.c_by_k("block"));
         Self { label, block }
     }
@@ -3081,6 +3052,43 @@ pub enum SwitchLabel {
     SObjects(Vec<SObjectVar>),
     Expressions(Vec<Expression>),
     Else,
+}
+
+impl SwitchLabel {
+    // TODO: update parser
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "switch_label");
+
+        if node.children_vec().len() == 0 {
+            Self::Else
+        } else if node.try_c_by_k("identifier").is_some() {
+            let mut sobjects = Vec::new();
+            let mut current_type: Option<UnannotatedType> = None;
+
+            for child in node.children_vec() {
+                match child.kind() {
+                    "identifier" => {
+                        sobjects.push(SObjectVar {
+                            unannotated_type: current_type.take(),
+                            identifier: child.value(source_code()),
+                        });
+                    }
+                    _ => {
+                        current_type = Some(UnannotatedType::new(child));
+                    }
+                }
+            }
+            Self::SObjects(sobjects)
+        } else {
+            let expressions = node
+                .children_vec()
+                .into_iter()
+                .map(|n| Expression::new(n))
+                .collect();
+
+            Self::Expressions(expressions)
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for SwitchLabel {
