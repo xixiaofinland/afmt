@@ -872,11 +872,29 @@ impl<'a> DocBuild<'a> for This {
 }
 
 #[derive(Debug, Serialize)]
+pub struct BinaryExpressionContext{
+    pub op: String,
+    pub precedence: u8,
+    pub isLeftNodeBinaryish: bool,
+    pub isRightNodeBinaryish: bool,
+    pub isNestedExpression: bool,
+    pub isNestedRightExpression: bool, //isNestedExpression && node === parentNode.right;
+    pub isNodeSamePrecedenceAsLeftChild: bool, //isLeftNodeBinaryish && nodePrecedence === getPrecedence(getOperator(node.left));
+    pub isNodeSamePrecedenceAsParent: bool,//isBinaryish(parentNode) && nodePrecedence === getPrecedence(getOperator(parentNode));
+    pub isLeftChildNodeWithoutGrouping: bool, // complex
+    pub hasRightChildNodeWithoutGrouping: bool,// complex
+    pub leftChildNodeSamePrecedenceAsRightChildNode: bool, //complex
+    pub isTopMostParentNodeWithoutGrouping: bool, //complext
+    pub shouldIndentTopMostExpression: bool, //insideParenthesis?
+}
+
+#[derive(Debug, Serialize)]
 pub struct BinaryExpression {
     pub left: Expression,
     pub op: String,
     pub right: Expression,
     pub is_nested: bool,
+    pub context: BinaryExpressionContext,
 }
 
 impl BinaryExpression {
@@ -895,6 +913,7 @@ impl BinaryExpression {
             op,
             right,
             is_nested,
+            context,
         }
     }
 }
