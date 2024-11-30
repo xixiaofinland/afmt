@@ -873,19 +873,20 @@ impl<'a> DocBuild<'a> for This {
 
 #[derive(Debug, Serialize)]
 pub struct BinaryExpressionContext {
-    pub op: String,
-    pub precedence: u8,
-    pub is_left_binary: bool,
-    pub is_right_binary: bool,
-    pub is_nested_expression: bool,
-    pub is_nested_right_expression: bool, //isNestedExpression && node === parentNode.right;
-    pub is_node_same_precedence_as_left_child: bool, //isLeftNodeBinaryish && nodePrecedence === getPrecedence(getOperator(node.left));
-    pub is_node_same_precedence_as_parent: bool, //isBinaryish(parentNode) && nodePrecedence === getPrecedence(getOperator(parentNode));
-    //pub isLeftChildNodeWithoutGrouping: bool, // complex
-    //pub hasRightChildNodeWithoutGrouping: bool, // complex
-    //pub leftChildNodeSamePrecedenceAsRightChildNode: bool, //complex
-    //pub isTopMostParentNodeWithoutGrouping: bool, //complext
+    //pub op: String,
+    //pub precedence: u8,
+    //pub is_left_binary: bool,
+    //pub is_right_binary: bool,
+    //pub is_nested_expression: bool,
+    //pub is_nested_right_expression: bool, //isNestedExpression && node === parentNode.right;
+    //pub is_node_same_precedence_as_left_child: bool, //isLeftNodeBinaryish && nodePrecedence === getPrecedence(getOperator(node.left));
+    //pub is_node_same_precedence_as_parent: bool, //isBinaryish(parentNode) && nodePrecedence === getPrecedence(getOperator(parentNode));
     pub should_indent_top_most_expression: bool, //insideParenthesis?
+
+    pub is_left_child_without_grouping: bool,   // complex
+    pub has_right_child_without_grouping: bool, // complex
+    pub left_child_same_precedence_as_right_child: bool, //complex
+    pub is_top_most_parent_node_without_grouping: bool, //complex
 }
 
 #[derive(Debug, Serialize)]
@@ -900,7 +901,9 @@ impl BinaryExpression {
     fn build_context(node: &Node) -> BinaryExpressionContext {
         let op = node.cvalue_by_n("operator", source_code());
         let precedence = get_precedence(&op);
-        let parent = node.parent().expect("BinaryExpression node should always have a parent");
+        let parent = node
+            .parent()
+            .expect("BinaryExpression node should always have a parent");
         let left_child = node.c_by_n("left");
         let right_child = node.c_by_n("right");
 
@@ -916,18 +919,35 @@ impl BinaryExpression {
         let is_node_same_precedence_as_parent = isBinaryNode(parent)
             && precedence == get_precedence(parent.cv_by_n("operator", source_code()));
 
+        // struct properties below;
+
         let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
 
+        let is_left_child_without_grouping = (is_node_same_precedence_as_left_child
+            || !is_left_binary)
+            && is_nested_expression
+            && is_node_same_precedence_as_parent
+            && !is_nested_right_expression;
+
+        let has_right_child_without_grouping = !is_left_child_without_grouping
+            && is_nested_expression
+            && is_node_same_precedence_as_parent
+            && !is_nested_right_expression;
+
+        let left_child_same_precedence_as_right_child = is_left_binary
+            && is_right_binary
+            && get_precedence(left_child.cv_by_n("operator", source_code()))
+                == get_precedence(right_child.cv_by_n("operator", source_code()));
+
+        let is_top_most_parent_node_without_grouping =
+            is_node_same_precedence_as_left_child && !is_nested_expression;
+
         BinaryExpressionContext {
-            op,
-            precedence,
-            is_left_binary,
-            is_right_binary,
-            is_nested_expression,
-            is_nested_right_expression,
-            is_node_same_precedence_as_left_child,
-            is_node_same_precedence_as_parent,
             should_indent_top_most_expression,
+            is_left_child_without_grouping,
+            has_right_child_without_grouping,
+            left_child_same_precedence_as_right_child,
+            is_top_most_parent_node_without_grouping,
         }
     }
 
@@ -938,14 +958,7 @@ impl BinaryExpression {
         let op = node.c_by_n("operator").kind().to_string();
         let right = Expression::new(node.c_by_n("right"));
 
-        let is_nested = if let Some(n) = node.parent() {
-            n.kind() == "binary_expression"
-        } else {
-            unreachable!("Node should always have a parent.");
-        };
-
         let context = Self::build_context(&node);
-        eprintln!("gopro[3]: data_model.rs:961: context={:#?}", context);
 
         Self {
             left,
@@ -956,19 +969,43 @@ impl BinaryExpression {
     }
 }
 
+// copied prettier apex
+// https://github.com/dangmai/prettier-plugin-apex/blob/0e4bd3495e09b35c93d9aa5264a85319311b96c0/packages/prettier-plugin-apex/src/printer.ts#L117
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(vec![&self.left, &self.right]);
-        let sep = Insertable::new(None, Some(format!(" {}", &self.op)), Some(b.softline()));
+        let left_doc = self.left.build(b);
+        let op_doc = b.txt(&self.op);
+        let right_doc = self.right.build(b);
 
-        //let doc = if self.is_nested {
-        //    b.intersperse(&docs, sep)
-        //} else {
-        //    b.group(b.indent(b.intersperse(&docs, sep)))
-        //};
-        let doc = b.group(b.indent(b.intersperse(&docs, sep)));
+        let context = &self.context;
 
-        result.push(doc);
+        if context.is_left_child_without_grouping
+            || context.left_child_same_precedence_as_right_child
+            || context.is_top_most_parent_node_without_grouping
+        {
+            let mut doc = b.concat(vec![left_doc, b.txt(" "), op_doc, b.softline(), right_doc]);
+            if context.should_indent_top_most_expression {
+                doc = b.indent(doc);
+            }
+            return result.push(doc);
+        }
+
+        if context.has_right_child_without_grouping {
+            return result.push(b.concat(vec![
+                b.group(left_doc),
+                b.txt(" "),
+                op_doc,
+                b.softline(),
+                right_doc,
+            ]));
+        }
+
+        result.push(b.group(left_doc));
+        result.push(b.txt(" "));
+
+        // TODO: prettier apex handles extra line_comment use-case
+
+        return result.push(b.group(b.concat(vec![op_doc, b.softline(), right_doc])));
     }
 }
 
