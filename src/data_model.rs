@@ -873,20 +873,11 @@ impl<'a> DocBuild<'a> for This {
 
 #[derive(Debug, Serialize)]
 pub struct BinaryExpressionContext {
-    //pub op: String,
-    //pub precedence: u8,
-    //pub is_left_binary: bool,
-    //pub is_right_binary: bool,
-    //pub is_nested_expression: bool,
-    //pub is_nested_right_expression: bool, //isNestedExpression && node === parentNode.right;
-    //pub is_node_same_precedence_as_left_child: bool, //isLeftNodeBinaryish && nodePrecedence === getPrecedence(getOperator(node.left));
-    //pub is_node_same_precedence_as_parent: bool, //isBinaryish(parentNode) && nodePrecedence === getPrecedence(getOperator(parentNode));
-    pub should_indent_top_most_expression: bool, //insideParenthesis?
-
-    pub is_left_child_without_grouping: bool,   // complex
-    pub has_right_child_without_grouping: bool, // complex
-    pub left_child_same_precedence_as_right_child: bool, //complex
-    pub is_top_most_parent_node_without_grouping: bool, //complex
+    pub should_indent_top_most_expression: bool,
+    pub is_left_child_without_grouping: bool,
+    pub has_right_child_without_grouping: bool,
+    pub left_child_same_precedence_as_right_child: bool,
+    pub is_top_most_parent_node_without_grouping: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -907,40 +898,51 @@ impl BinaryExpression {
         let left_child = node.c_by_n("left");
         let right_child = node.c_by_n("right");
 
-        let is_left_binary = isBinaryNode(left_child);
-        let is_right_binary = isBinaryNode(right_child);
+        let is_left_node_binary = isBinaryNode(left_child);
+        let is_right_node_binary = isBinaryNode(right_child);
+
         let is_nested_expression = isBinaryNode(parent);
         let is_nested_right_expression =
             is_nested_expression && node.id() == parent.c_by_n("right").id();
 
-        let is_node_same_precedence_as_left_child = is_left_binary
+        let left_child_has_same_precedence = is_left_node_binary
             && precedence == get_precedence(left_child.cv_by_n("operator", source_code()));
 
-        let is_node_same_precedence_as_parent = isBinaryNode(parent)
+        let parent_has_same_precedence = isBinaryNode(parent)
             && precedence == get_precedence(parent.cv_by_n("operator", source_code()));
 
         // struct properties below;
 
+        // If this expression is directly inside parentheses, we want to give it
+        // an extra level indentation
         let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
 
-        let is_left_child_without_grouping = (is_node_same_precedence_as_left_child
-            || !is_left_binary)
+        // a = b > c > d -> the "b > c" node;
+        let is_left_child_without_grouping = (left_child_has_same_precedence
+            || !is_left_node_binary)
             && is_nested_expression
-            && is_node_same_precedence_as_parent
+            && parent_has_same_precedence
             && !is_nested_right_expression;
 
+        // a = b > c && d && e -> the node (d);
         let has_right_child_without_grouping = !is_left_child_without_grouping
             && is_nested_expression
-            && is_node_same_precedence_as_parent
+            && parent_has_same_precedence
             && !is_nested_right_expression;
 
-        let left_child_same_precedence_as_right_child = is_left_binary
-            && is_right_binary
+        // a = b > 1 && c > 1;
+        let left_child_same_precedence_as_right_child = is_left_node_binary
+            && is_right_node_binary
             && get_precedence(left_child.cv_by_n("operator", source_code()))
                 == get_precedence(right_child.cv_by_n("operator", source_code()));
+        eprintln!(
+            "gopro[10]: data_model.rs:932: left_child_same_precedence_as_right_child={:#?}",
+            left_child_same_precedence_as_right_child
+        );
 
+        //a = b > c > d -> the node (b > c > d);
         let is_top_most_parent_node_without_grouping =
-            is_node_same_precedence_as_left_child && !is_nested_expression;
+            left_child_has_same_precedence && !is_nested_expression;
 
         BinaryExpressionContext {
             should_indent_top_most_expression,

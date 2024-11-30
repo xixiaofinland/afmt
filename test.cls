@@ -1,6 +1,6 @@
 class HelloWorld {
   {
-    Boolean isReady = a > b > c > d;
+    Boolean a = b > c > d;
   }
 }
 
