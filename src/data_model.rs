@@ -1002,6 +1002,10 @@ impl<'a> DocBuild<'a> for BinaryExpression {
             ]));
         }
 
+        // At this point we know that this node is not in a binaryish chain, so we
+        // can safely group the left doc and right doc separately to have this effect:
+        // a = b
+        //  .c() > d
         result.push(b.group(left_doc));
         result.push(b.txt(" "));
 
