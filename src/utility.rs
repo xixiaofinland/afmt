@@ -89,11 +89,23 @@ pub fn has_trailing_new_line(node: &Node) -> bool {
 
 pub fn get_precedence(op: &str) -> u8 {
     match op {
-        "*" | "/" | "%" => 2, // Multiplicative
-        "+" | "-" => 1,        // Additive
-        ">" | "<" | ">=" | "<=" | "==" | "!=" => 1, // Comparison
-        "&&" => 0,             // Logical AND
-        "||" => 0,             // Logical OR
-        _ => panic!("## Not supported operator: {}", op.red()),
+        "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" => 1, // Assignment
+        "?" | ":" => 2,                              // Ternary
+        "||" => 3,                                   // Logical OR
+        "&&" => 4,                                   // Logical AND
+        "|" => 5,                                    // Bitwise OR
+        "^" => 6,                                    // Bitwise XOR
+        "&" => 7,                                    // Bitwise AND
+        "==" | "!=" => 8,                            // Equality
+        ">" | "<" | ">=" | "<=" | "instanceof" => 9, // Relational
+        "<<" | ">>" | ">>>" => 10,                   // Shift
+        "+" | "-" => 11,                             // Additive
+        "*" | "/" | "%" => 12,                       // Multiplicative
+        "!" | "~" | "++" | "--" => 13,               // Unary operators
+        _ => panic!("## Not supported operator: {}", op),
     }
+}
+
+pub fn isBinaryNode(node: Node) -> bool {
+    node.kind() == "binary_expression"
 }

@@ -3,7 +3,7 @@ use crate::{
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
-    utility::{assert_check, has_trailing_new_line, source_code},
+    utility::{assert_check, get_precedence, has_trailing_new_line, isBinaryNode, source_code},
 };
 use colored::Colorize;
 use serde::Serialize;
@@ -872,20 +872,20 @@ impl<'a> DocBuild<'a> for This {
 }
 
 #[derive(Debug, Serialize)]
-pub struct BinaryExpressionContext{
+pub struct BinaryExpressionContext {
     pub op: String,
     pub precedence: u8,
-    pub isLeftNodeBinaryish: bool,
-    pub isRightNodeBinaryish: bool,
-    pub isNestedExpression: bool,
-    pub isNestedRightExpression: bool, //isNestedExpression && node === parentNode.right;
-    pub isNodeSamePrecedenceAsLeftChild: bool, //isLeftNodeBinaryish && nodePrecedence === getPrecedence(getOperator(node.left));
-    pub isNodeSamePrecedenceAsParent: bool,//isBinaryish(parentNode) && nodePrecedence === getPrecedence(getOperator(parentNode));
-    pub isLeftChildNodeWithoutGrouping: bool, // complex
-    pub hasRightChildNodeWithoutGrouping: bool,// complex
-    pub leftChildNodeSamePrecedenceAsRightChildNode: bool, //complex
-    pub isTopMostParentNodeWithoutGrouping: bool, //complext
-    pub shouldIndentTopMostExpression: bool, //insideParenthesis?
+    pub is_left_binary: bool,
+    pub is_right_binary: bool,
+    pub is_nested_expression: bool,
+    pub is_nested_right_expression: bool, //isNestedExpression && node === parentNode.right;
+    pub is_node_same_precedence_as_left_child: bool, //isLeftNodeBinaryish && nodePrecedence === getPrecedence(getOperator(node.left));
+    pub is_node_same_precedence_as_parent: bool, //isBinaryish(parentNode) && nodePrecedence === getPrecedence(getOperator(parentNode));
+    //pub isLeftChildNodeWithoutGrouping: bool, // complex
+    //pub hasRightChildNodeWithoutGrouping: bool, // complex
+    //pub leftChildNodeSamePrecedenceAsRightChildNode: bool, //complex
+    //pub isTopMostParentNodeWithoutGrouping: bool, //complext
+    pub should_indent_top_most_expression: bool, //insideParenthesis?
 }
 
 #[derive(Debug, Serialize)]
@@ -893,32 +893,80 @@ pub struct BinaryExpression {
     pub left: Expression,
     pub op: String,
     pub right: Expression,
-    pub is_nested: bool,
     pub context: BinaryExpressionContext,
 }
 
 impl BinaryExpression {
+    fn build_context(node: &Node) -> BinaryExpressionContext {
+        let op = node.cvalue_by_n("operator", source_code());
+        let precedence = get_precedence(&op);
+        let parent = Self::get_parent_node(*node);
+        let left_child = node.c_by_n("left");
+        let right_child = node.c_by_n("right");
+
+        let is_left_binary = isBinaryNode(left_child);
+        let is_right_binary = isBinaryNode(right_child);
+        let is_nested_expression = isBinaryNode(parent);
+        let is_nested_right_expression =
+            is_nested_expression && node.id() == parent.c_by_n("right").id();
+
+        let is_node_same_precedence_as_left_child = is_left_binary
+            && precedence == get_precedence(left_child.cv_by_n("operator", source_code()));
+
+        let is_node_same_precedence_as_parent = isBinaryNode(parent)
+            && precedence == get_precedence(parent.cv_by_n("operator", source_code()));
+
+        let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
+
+        BinaryExpressionContext {
+            op,
+            precedence,
+            is_left_binary,
+            is_right_binary,
+            is_nested_expression,
+            is_nested_right_expression,
+            is_node_same_precedence_as_left_child,
+            is_node_same_precedence_as_parent,
+            should_indent_top_most_expression,
+        }
+    }
+
+    fn get_parent_node(mut node: Node) -> Node {
+        loop {
+            match node.parent() {
+                Some(parent) if parent.kind() == "parenthesized_expression" => {
+                    node = parent;
+                }
+                Some(parent) => {
+                    return parent;
+                }
+                None => unreachable!("BinaryExpression node should always have a parent"),
+            }
+        }
+    }
+
     pub fn new(node: Node) -> Self {
+        assert_check(node, "binary_expression");
+
         let left = Expression::new(node.c_by_n("left"));
         let op = node.c_by_n("operator").kind().to_string();
         let right = Expression::new(node.c_by_n("right"));
+
         let is_nested = if let Some(n) = node.parent() {
             n.kind() == "binary_expression"
         } else {
             unreachable!("Node should always have a parent.");
         };
 
+        let context = Self::build_context(&node);
+        eprintln!("gopro[3]: data_model.rs:961: context={:#?}", context);
+
         Self {
             left,
             op,
             right,
-            is_nested,
             context,
         }
-    }
-
-    fn build_context(node: &Node) -> BinaryExpressionContext{
-
     }
 }
 
@@ -927,11 +975,12 @@ impl<'a> DocBuild<'a> for BinaryExpression {
         let docs = b.to_docs(vec![&self.left, &self.right]);
         let sep = Insertable::new(None, Some(format!(" {}", &self.op)), Some(b.softline()));
 
-        let doc = if self.is_nested {
-            b.intersperse(&docs, sep)
-        } else {
-            b.group(b.indent(b.intersperse(&docs, sep)))
-        };
+        //let doc = if self.is_nested {
+        //    b.intersperse(&docs, sep)
+        //} else {
+        //    b.group(b.indent(b.intersperse(&docs, sep)))
+        //};
+        let doc = b.group(b.indent(b.intersperse(&docs, sep)));
 
         result.push(doc);
     }
@@ -3463,7 +3512,11 @@ impl WhereClause {
 
 impl<'a> DocBuild<'a> for WhereClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![b.txt("WHERE"), b.softline(), self.boolean_exp.build_with_parent(b, None)];
+        let docs = vec![
+            b.txt("WHERE"),
+            b.softline(),
+            self.boolean_exp.build_with_parent(b, None),
+        ];
         result.push(b.group(b.indent_and_mark(b.concat(docs))));
     }
 }
