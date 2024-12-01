@@ -874,10 +874,10 @@ impl<'a> DocBuild<'a> for This {
 #[derive(Debug, Serialize)]
 pub struct BinaryExpressionContext {
     pub should_indent_top_most_expression: bool,
-    pub is_left_child_without_grouping: bool,
-    pub has_right_child_without_grouping: bool,
-    pub left_child_same_precedence_as_right_child: bool,
-    pub is_top_most_parent_node_without_grouping: bool,
+    pub is_a_left_child_that_should_not_group: bool,
+    pub has_a_right_child_that_should_not_group: bool,
+    pub has_left_and_rigth_children_same_precedence: bool,
+    pub is_top_most_parent_node_that_should_not_group: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -914,26 +914,26 @@ impl BinaryExpression {
         // struct properties below;
 
         // a = b > c > d -> the "b > c" node;
-        let is_left_child_without_grouping = (left_child_has_same_precedence
+        let is_a_left_child_that_should_not_group = (left_child_has_same_precedence
             || !is_left_node_binary)
             && is_nested_expression
             && parent_has_same_precedence
             && !is_nested_right_expression;
 
         // a = b > c && d && e -> the node (d);
-        let has_right_child_without_grouping = !is_left_child_without_grouping
+        let has_a_right_child_that_should_not_group = !is_a_left_child_that_should_not_group
             && is_nested_expression
             && parent_has_same_precedence
             && !is_nested_right_expression;
 
         // a = b > 1 && c > 1;
-        let left_child_same_precedence_as_right_child = is_left_node_binary
+        let has_left_and_rigth_children_same_precedence = is_left_node_binary
             && is_right_node_binary
             && get_precedence(left_child.c_by_n("operator").kind())
                 == get_precedence(right_child.c_by_n("operator").kind());
 
         //a = b > c > d -> the node (b > c > d);
-        let is_top_most_parent_node_without_grouping =
+        let is_top_most_parent_node_that_should_not_group =
             left_child_has_same_precedence && !is_nested_expression;
 
         // If this expression is directly inside parentheses, we want to give it
@@ -946,10 +946,10 @@ impl BinaryExpression {
 
 
         BinaryExpressionContext {
-            is_left_child_without_grouping,
-            has_right_child_without_grouping,
-            left_child_same_precedence_as_right_child,
-            is_top_most_parent_node_without_grouping,
+            is_a_left_child_that_should_not_group,
+            has_a_right_child_that_should_not_group,
+            has_left_and_rigth_children_same_precedence,
+            is_top_most_parent_node_that_should_not_group,
             should_indent_top_most_expression,
         }
     }
@@ -981,10 +981,11 @@ impl<'a> DocBuild<'a> for BinaryExpression {
         let right_doc = self.right.build(b);
 
         let context = &self.context;
+        eprintln!("gopro[3]: data_model.rs:983: context={:#?}", context);
 
-        if context.is_left_child_without_grouping
-            || context.left_child_same_precedence_as_right_child
-            || context.is_top_most_parent_node_without_grouping
+        if context.is_a_left_child_that_should_not_group
+            || context.has_left_and_rigth_children_same_precedence
+            || context.is_top_most_parent_node_that_should_not_group
         {
             let mut doc = b.concat(vec![left_doc, b.txt(" "), op_doc, b.softline(), right_doc]);
             if context.should_indent_top_most_expression {
@@ -993,7 +994,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
             return result.push(doc);
         }
 
-        if context.has_right_child_without_grouping {
+        if context.has_a_right_child_that_should_not_group {
             return result.push(b.concat(vec![
                 b.group(left_doc),
                 b.txt(" "),

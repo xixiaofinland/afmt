@@ -1,6 +1,10 @@
 class HelloWorld {
   {
-    Boolean a = b > 1 && c > 1;
+    Boolean aaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccc > 1;
+
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccccccccccc > 1;
+
+    b > 1 && c > 1;
   }
 }
 
