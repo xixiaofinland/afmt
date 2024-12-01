@@ -913,14 +913,6 @@ impl BinaryExpression {
 
         // struct properties below;
 
-        // If this expression is directly inside parentheses, we want to give it
-        // an extra level indentation, e.g.:
-        // createObject(
-        //   firstBoolean &&
-        //      secondBoolean
-        // );
-        let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
-
         // a = b > c > d -> the "b > c" node;
         let is_left_child_without_grouping = (left_child_has_same_precedence
             || !is_left_node_binary)
@@ -944,12 +936,21 @@ impl BinaryExpression {
         let is_top_most_parent_node_without_grouping =
             left_child_has_same_precedence && !is_nested_expression;
 
+        // If this expression is directly inside parentheses, we want to give it
+        // an extra level indentation, e.g.:
+        // createObject(
+        //   firstBoolean &&
+        //      secondBoolean
+        // );
+        let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
+
+
         BinaryExpressionContext {
-            should_indent_top_most_expression,
             is_left_child_without_grouping,
             has_right_child_without_grouping,
             left_child_same_precedence_as_right_child,
             is_top_most_parent_node_without_grouping,
+            should_indent_top_most_expression,
         }
     }
 
@@ -971,7 +972,7 @@ impl BinaryExpression {
     }
 }
 
-// copied prettier apex
+// logic copied prettier apex
 // https://github.com/dangmai/prettier-plugin-apex/blob/0e4bd3495e09b35c93d9aa5264a85319311b96c0/packages/prettier-plugin-apex/src/printer.ts#L117
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
