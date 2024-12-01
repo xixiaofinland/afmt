@@ -1119,25 +1119,27 @@ impl VariableDeclarator {
 
 impl<'a> DocBuild<'a> for VariableDeclarator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //TODO: handle dotted expression use-case
+        // TODO: handle dotted expression use-case
 
         let mut docs = vec![b.txt(&self.name)];
 
-        if let Some(ref v) = self.value {
-            if self.is_value_child_binary {
-                docs.push(b._txt("="));
-                docs.push(b.softline());
-                docs.push(v.build(b));
-                result.push(b.group(b.indent(b.concat(docs))));
-            } else {
-                docs.push(b._txt_("="));
-                docs.push(v.build(b));
-                result.push(b.group(b.concat(docs)));
-            }
-        }else{
+        if self.value.is_none() {
             result.push(b.concat(docs));
+            return;
         }
 
+        let value = self.value.as_ref().unwrap();
+        docs.push(b._txt("="));
+
+        if self.is_value_child_binary {
+            docs.push(b.softline());
+            docs.push(value.build(b));
+            result.push(b.group(b.indent(b.concat(docs))));
+        } else {
+            docs.push(b.txt(" "));
+            docs.push(value.build(b));
+            result.push(b.group(b.concat(docs)));
+        }
     }
 }
 
