@@ -3,7 +3,7 @@ use crate::{
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
-    utility::{assert_check, get_precedence, has_trailing_new_line, isBinaryNode, source_code},
+    utility::{assert_check, get_precedence, has_trailing_new_line, is_binary_node, source_code},
 };
 use colored::Colorize;
 use serde::Serialize;
@@ -484,6 +484,7 @@ pub struct AssignmentExpression {
     pub left: AssignmentLeft,
     pub op: String,
     pub right: Expression,
+    pub is_right_child_binary: bool,
 }
 
 impl AssignmentExpression {
@@ -492,8 +493,17 @@ impl AssignmentExpression {
 
         let left = AssignmentLeft::new(node.c_by_n("left"));
         let op = node.cvalue_by_n("operator", source_code());
-        let right = Expression::new(node.c_by_n("right"));
-        Self { left, op, right }
+
+        let right_child = node.c_by_n("righty");
+        let right = Expression::new(right_child);
+        let is_right_child_binary = is_binary_node(&right_child);
+
+        Self {
+            left,
+            op,
+            right,
+            is_right_child_binary,
+        }
     }
 }
 
@@ -897,18 +907,18 @@ impl BinaryExpression {
             .expect("BinaryExpression node should always have a parent");
         let left_child = node.c_by_n("left");
         let right_child = node.c_by_n("right");
-        let is_left_node_binary = isBinaryNode(left_child);
-        let is_right_node_binary = isBinaryNode(right_child);
+        let is_left_node_binary = is_binary_node(&left_child);
+        let is_right_node_binary = is_binary_node(&right_child);
 
-        let is_nested_expression = isBinaryNode(parent);
+        let is_nested_expression = is_binary_node(&parent);
         let is_nested_right_expression =
             is_nested_expression && node.id() == parent.c_by_n("right").id();
 
         let left_child_has_same_precedence = is_left_node_binary
             && precedence == get_precedence(left_child.c_by_n("operator").kind());
 
-        let parent_has_same_precedence =
-            isBinaryNode(parent) && precedence == get_precedence(parent.c_by_n("operator").kind());
+        let parent_has_same_precedence = is_binary_node(&parent)
+            && precedence == get_precedence(parent.c_by_n("operator").kind());
 
         // struct properties below;
 
@@ -942,7 +952,6 @@ impl BinaryExpression {
         //      secondBoolean
         // );
         let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
-
 
         BinaryExpressionContext {
             is_a_left_child_that_should_not_group,

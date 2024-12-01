@@ -20,7 +20,6 @@ pub fn set_thread_source_code(code: String) {
 }
 
 /// Retrieves the source code for the current thread.
-/// Panics if the source code has not been set.
 pub fn source_code() -> &'static str {
     THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
 }
@@ -107,6 +106,6 @@ pub fn get_precedence(op: &str) -> u8 {
     }
 }
 
-pub fn isBinaryNode(node: Node) -> bool {
+pub fn is_binary_node(node: &Node) -> bool {
     node.kind() == "binary_expression"
 }
