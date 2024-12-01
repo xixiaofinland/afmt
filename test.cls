@@ -1,10 +1,5 @@
 class HelloWorld {
-  {
-    Boolean aaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccc > 1;
+public List<SObject> inputCollection;
 
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccccccccccc > 1;
-
-    b > 1 && c > 1;
-  }
 }
 

@@ -1087,6 +1087,7 @@ pub struct VariableDeclarator {
     pub name: String,
     //pub dimenssions
     pub value: Option<VariableInitializer>,
+    pub is_value_child_binary: bool,
 }
 
 impl VariableDeclarator {
@@ -1094,6 +1095,7 @@ impl VariableDeclarator {
         assert_check(node, "variable_declarator");
         let name = node.cvalue_by_n("name", source_code());
 
+        let mut is_value_child_binary = false;
         let value = node.try_c_by_n("value").map(|n| match n.kind() {
             //"array_initializer" => {
             //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
@@ -1101,20 +1103,41 @@ impl VariableDeclarator {
             //_ => VariableInitializer::Expression(Expression::Primary(Box::new(
             //    PrimaryExpression::Identifier(v.value(source_code())),
             //))),
-            _ => VariableInitializer::Exp(Expression::new(n)),
+            _ => {
+                is_value_child_binary = n.kind() == "binary_expression";
+                VariableInitializer::Exp(Expression::new(n))
+            }
         });
 
-        Self { name, value }
+        Self {
+            name,
+            value,
+            is_value_child_binary,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for VariableDeclarator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.name));
+        //TODO: handle dotted expression use-case
+
+        let mut docs = vec![b.txt(&self.name)];
+
         if let Some(ref v) = self.value {
-            result.push(b.txt(" = "));
-            result.push(v.build(b));
+            if self.is_value_child_binary {
+                docs.push(b._txt("="));
+                docs.push(b.softline());
+                docs.push(v.build(b));
+                result.push(b.group(b.indent(b.concat(docs))));
+            } else {
+                docs.push(b._txt_("="));
+                docs.push(v.build(b));
+                result.push(b.group(b.concat(docs)));
+            }
+        }else{
+            result.push(b.concat(docs));
         }
+
     }
 }
 
