@@ -518,7 +518,7 @@ impl<'a> DocBuild<'a> for AssignmentExpression {
         } else {
             docs.push(b.txt(" "));
             docs.push(self.right.build(b));
-            result.push(b.group(b.concat(docs)));
+            result.push(b.group_concat(docs));
         }
     }
 }
@@ -1028,7 +1028,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
 
         // TODO: prettier apex handles extra line_comment use-case
 
-        return result.push(b.group(b.concat(vec![op_doc, b.softline(), right_doc])));
+        return result.push(b.group_concat(vec![op_doc, b.softline(), right_doc]));
     }
 }
 
@@ -1138,7 +1138,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
         } else {
             docs.push(b.txt(" "));
             docs.push(value.build(b));
-            result.push(b.group(b.concat(docs)));
+            result.push(b.group_concat(docs));
         }
     }
 }
