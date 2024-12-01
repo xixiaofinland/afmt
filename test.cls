@@ -1,5 +1,6 @@
 class HelloWorld {
-public List<SObject> inputCollection;
-
+{
+ a.k.b().c();
+}
 }
 
