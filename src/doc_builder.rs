@@ -219,7 +219,11 @@ impl<'a> DocBuilder<'a> {
         self.choice(self.flat(doc), doc)
     }
 
-    pub fn group_iter(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+    pub fn group_indent_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+        self.group(self.indent(self.concat(doc_refs)))
+    }
+
+    pub fn group_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
         self.group(self.concat(doc_refs))
     }
 }
