@@ -1,6 +1,7 @@
 class Conditional {
   {
-    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() || isALongVeryBBBBBBBBBBBB()) {
+    if (isALongVeryAAAAAAAAAAAAAAAAAAAAAAAAAAA() 
+  ||isALongVeryBBBBBBBBBBBB()) {
       System.debug('true');
     }
   }
