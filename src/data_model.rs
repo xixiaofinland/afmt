@@ -494,7 +494,7 @@ impl AssignmentExpression {
         let left = AssignmentLeft::new(node.c_by_n("left"));
         let op = node.cvalue_by_n("operator", source_code());
 
-        let right_child = node.c_by_n("righty");
+        let right_child = node.c_by_n("right");
         let right = Expression::new(right_child);
         let is_right_child_binary = is_binary_node(&right_child);
 
