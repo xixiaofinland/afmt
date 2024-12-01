@@ -514,7 +514,7 @@ impl<'a> DocBuild<'a> for AssignmentExpression {
         if self.is_right_child_binary {
             docs.push(b.softline());
             docs.push(self.right.build(b));
-            result.push(b.group(b.indent(b.concat(docs))));
+            result.push(b.group_indent_concat(docs));
         } else {
             docs.push(b.txt(" "));
             docs.push(self.right.build(b));
@@ -1134,7 +1134,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
         if self.is_value_child_binary {
             docs.push(b.softline());
             docs.push(value.build(b));
-            result.push(b.group(b.indent(b.concat(docs))));
+            result.push(b.group_indent_concat(docs));
         } else {
             docs.push(b.txt(" "));
             docs.push(value.build(b));
@@ -3029,7 +3029,7 @@ impl SwitchExpression {
 impl<'a> DocBuild<'a> for SwitchExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = vec![b.txt("switch on"), b.softline(), self.condition.build(b)];
-        let doc = b.group(b.indent(b.concat(docs)));
+        let doc = b.group_indent_concat(docs);
         result.push(doc);
         result.push(b.txt(" "));
         result.push(self.body.build(b));
