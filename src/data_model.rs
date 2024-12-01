@@ -897,7 +897,6 @@ impl BinaryExpression {
             .expect("BinaryExpression node should always have a parent");
         let left_child = node.c_by_n("left");
         let right_child = node.c_by_n("right");
-
         let is_left_node_binary = isBinaryNode(left_child);
         let is_right_node_binary = isBinaryNode(right_child);
 
@@ -981,7 +980,6 @@ impl<'a> DocBuild<'a> for BinaryExpression {
         let right_doc = self.right.build(b);
 
         let context = &self.context;
-        eprintln!("gopro[3]: data_model.rs:983: context={:#?}", context);
 
         if context.is_a_left_child_that_should_not_group
             || context.has_left_and_rigth_children_same_precedence
