@@ -137,6 +137,27 @@ impl<'a> DocBuilder<'a> {
         items.into_iter().map(|item| item.build(self)).collect()
     }
 
+    pub fn group_surround(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        self.group(self.surround(elems, sep, open, close))
+    }
+
+    pub fn group_indent_concat(
+        &'a self,
+        doc_refs: impl IntoIterator<Item = DocRef<'a>>,
+    ) -> DocRef<'a> {
+        self.group(self.indent(self.concat(doc_refs)))
+    }
+
+    pub fn group_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+        self.group(self.concat(doc_refs))
+    }
+
     pub fn nil(&'a self) -> DocRef<'a> {
         self.txt("")
     }
@@ -187,8 +208,7 @@ impl<'a> DocBuilder<'a> {
 
     pub fn indent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.arena
-            .alloc(Doc::Indent(relative_indent, doc_ref))
+        self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
     pub fn indent_and_mark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
@@ -199,7 +219,8 @@ impl<'a> DocBuilder<'a> {
 
     pub fn dedent_and_unmark(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.arena.alloc(Doc::DedentAndUnmark(relative_indent, doc_ref))
+        self.arena
+            .alloc(Doc::DedentAndUnmark(relative_indent, doc_ref))
     }
 
     pub fn set_mark_value(&'a self, flag: bool, doc_ref: DocRef<'a>) -> DocRef<'a> {
@@ -217,14 +238,6 @@ impl<'a> DocBuilder<'a> {
 
     pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
         self.choice(self.flat(doc), doc)
-    }
-
-    pub fn group_indent_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
-        self.group(self.indent(self.concat(doc_refs)))
-    }
-
-    pub fn group_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
-        self.group(self.concat(doc_refs))
     }
 }
 
