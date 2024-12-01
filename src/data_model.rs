@@ -509,9 +509,17 @@ impl AssignmentExpression {
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.left.build(b));
-        result.push(b._txt_(&self.op));
-        result.push(self.right.build(b));
+        let mut docs = vec![self.left.build(b), b._txt(&self.op)];
+
+        if self.is_right_child_binary {
+            docs.push(b.softline());
+            docs.push(self.right.build(b));
+            result.push(b.group(b.indent(b.concat(docs))));
+        } else {
+            docs.push(b.txt(" "));
+            docs.push(self.right.build(b));
+            result.push(b.group(b.concat(docs)));
+        }
     }
 }
 
