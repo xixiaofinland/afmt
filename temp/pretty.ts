@@ -51,6 +51,34 @@ function handleDottedExpression(path: AstPath, print: printFn): Doc {
   return "";
 }
 
+function shouldDottedExpressionBreak(path: AstPath): boolean {
+  const node = path.getNode();
+  // #62 - `super` cannot  be followed any white spaces
+  if (
+    node.dottedExpr.value["@class"] === APEX_TYPES.SUPER_VARIABLE_EXPRESSION
+  ) {
+    return false;
+  }
+  // #98 - Even though `this` can synctactically be followed by whitespaces,
+  // make the formatted output similar to `super` to provide consistency.
+  if (node.dottedExpr.value["@class"] === APEX_TYPES.THIS_VARIABLE_EXPRESSION) {
+    return false;
+  }
+  if (node["@class"] !== APEX_TYPES.METHOD_CALL_EXPRESSION) {
+    return true;
+  }
+  if (checkIfParentIsDottedExpression(path)) {
+    return true;
+  }
+  if (
+    node.dottedExpr.value &&
+    node.dottedExpr.value["@class"] === APEX_TYPES.METHOD_CALL_EXPRESSION
+  ) {
+    return true;
+  }
+  return node.dottedExpr.value;
+}
+
 function handleInputParameters(path: AstPath, print: printFn): Doc[] {
   // In most cases, the descendant nodes inside `inputParameters` will create
   // their own groups. However, in certain circumstances (i.e. with binaryish
