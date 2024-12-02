@@ -2067,7 +2067,7 @@ impl DmlExpression {
         let security_mode = node
             .try_c_by_k("dml_security_mode")
             .map(|n| DmlSecurityMode::new(n));
-        let target = Expression::new( node.c_by_n("target"));
+        let target = Expression::new(node.c_by_n("target"));
 
         let dml_type = DmlType::from(node.c_by_k("dml_type").first_c().kind());
         match dml_type {
@@ -2078,7 +2078,9 @@ impl DmlExpression {
                 merge_with: Expression::new(node.c_by_n("merge_with")),
             },
             DmlType::Upsert => {
-                let unannotated = node.try_c_by_n("upsert_key").map(|n| Box::new(UnannotatedType::new(n)));
+                let unannotated = node
+                    .try_c_by_n("upsert_key")
+                    .map(|n| Box::new(UnannotatedType::new(n)));
                 Self::Upsert {
                     dml_type,
                     security_mode,
@@ -3062,43 +3064,25 @@ impl<'a> DocBuild<'a> for SwitchRule {
 
 #[derive(Debug, Serialize)]
 pub enum SwitchLabel {
-    SObjects(Vec<SObjectVar>),
+    WhenSObject(WhenSObjectType),
     Expressions(Vec<Expression>),
     Else,
 }
 
 impl SwitchLabel {
-    // TODO: update parser
     pub fn new(node: Node) -> Self {
         assert_check(node, "switch_label");
 
-        if node.children_vec().len() == 0 {
+        if node.children_vec().is_empty() {
             Self::Else
-        } else if node.try_c_by_k("identifier").is_some() {
-            let mut sobjects = Vec::new();
-            let mut current_type: Option<UnannotatedType> = None;
-
-            for child in node.children_vec() {
-                match child.kind() {
-                    "identifier" => {
-                        sobjects.push(SObjectVar {
-                            unannotated_type: current_type.take(),
-                            identifier: child.value(source_code()),
-                        });
-                    }
-                    _ => {
-                        current_type = Some(UnannotatedType::new(child));
-                    }
-                }
-            }
-            Self::SObjects(sobjects)
+        } else if let Some(when_node) = node.try_c_by_k("when_sobject_type") {
+            Self::WhenSObject(WhenSObjectType::new(when_node))
         } else {
             let expressions = node
                 .children_vec()
                 .into_iter()
-                .map(|n| Expression::new(n))
+                .map(Expression::new)
                 .collect();
-
             Self::Expressions(expressions)
         }
     }
@@ -3108,11 +3092,8 @@ impl<'a> DocBuild<'a> for SwitchLabel {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt_("when"));
         match self {
-            Self::SObjects(vec) => {
-                let docs = b.to_docs(vec);
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
-                let doc = b.group(b.indent(b.intersperse(&docs, sep)));
-                result.push(doc);
+            Self::WhenSObject(n) => {
+                result.push(n.build(b));
             }
             Self::Expressions(vec) => {
                 let docs = b.to_docs(vec);
@@ -3128,17 +3109,39 @@ impl<'a> DocBuild<'a> for SwitchLabel {
 }
 
 #[derive(Debug, Serialize)]
-pub struct SObjectVar {
-    pub unannotated_type: Option<UnannotatedType>,
+pub struct WhenSObjectType {
+    pub unannotated_type: UnannotatedType,
     pub identifier: String,
 }
 
-impl<'a> DocBuild<'a> for SObjectVar {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.unannotated_type {
-            result.push(n.build(b));
-            result.push(b.txt(" "));
+impl WhenSObjectType {
+    pub fn new(node: Node) -> Self {
+        let mut unannotated_type = None;
+        let mut identifier = None;
+
+        for child in node.children_vec() {
+            match child.kind() {
+                "identifier" => {
+                    identifier = Some(child.value(source_code()));
+                }
+                _ => {
+                    unannotated_type = Some(UnannotatedType::new(child));
+                }
+            }
         }
+
+        Self {
+            unannotated_type: unannotated_type
+                .expect("Missing unannotated_type in WhenSObjectType"),
+            identifier: identifier.expect("Missing identifier in WhenSObjectType"),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for WhenSObjectType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.unannotated_type.build(b));
+        result.push(b.txt(" "));
         result.push(b.txt(&self.identifier));
     }
 }
