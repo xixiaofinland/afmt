@@ -2061,7 +2061,6 @@ pub enum DmlExpression {
     },
 }
 
-// TODO: update AST to add placeholder field_names
 impl DmlExpression {
     pub fn new(node: Node) -> Self {
         let security_mode = node
@@ -2518,53 +2517,6 @@ impl<'a> DocBuild<'a> for CatchClause {
         result.push(self.formal_parameter.build(b));
         result.push(b.txt_(")"));
         result.push(self.body.build(b));
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct CatchFormalParameter {
-    pub modifiers: Option<Modifiers>,
-    pub type_: UnannotatedType,
-    pub name: String,
-    pub dimensions: Option<Dimensions>,
-}
-
-impl CatchFormalParameter {
-    pub fn new(node: Node) -> Self {
-        assert_check(node, "catch_formal_parameter");
-
-        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-
-        // TODO: can't locate "UnannotatedType" which is an internal type;
-        let type_node = node
-            .c_by_n("name")
-            .prev_named_sibling()
-            .expect("missing mandatory type node in CatchFormalParameter");
-        let type_ = UnannotatedType::new(type_node);
-
-        let name = node.cvalue_by_n("name", source_code());
-        let dimensions = node.try_c_by_k("dimensions").map(|n| Dimensions::new(n));
-
-        Self {
-            modifiers,
-            type_,
-            name,
-            dimensions,
-        }
-    }
-}
-
-impl<'a> DocBuild<'a> for CatchFormalParameter {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-        result.push(self.type_.build(b));
-        result.push(b._txt(&self.name));
-        if let Some(ref d) = self.dimensions {
-            result.push(b.txt(" "));
-            result.push(d.build(b));
-        }
     }
 }
 
@@ -3044,7 +2996,6 @@ pub struct SwitchRule {
 }
 
 impl SwitchRule {
-    // TODO: update parser
     pub fn new(node: Node) -> Self {
         let label_node = node.c_by_k("switch_label");
         let label = SwitchLabel::new(label_node);
