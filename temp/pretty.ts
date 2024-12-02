@@ -1,92 +1,3 @@
-export function checkIfParentIsDottedExpression(path: AstPath): boolean {
-  const node = path.getNode();
-  const parentNode = path.getParentNode();
-
-  let result = false;
-  // We're making an assumption here that `callParent` is always synchronous.
-  // We're doing it because FastPath does not expose other ways to find the
-  // parent name.
-  let parentNodeName;
-  let grandParentNodeName;
-  path.callParent((innerPath) => {
-    parentNodeName = innerPath.getName();
-  });
-  path.callParent((innerPath) => {
-    grandParentNodeName = innerPath.getName();
-  }, 1);
-  if (parentNodeName === "dottedExpr") {
-    result = true;
-  } else if (
-    node["@class"] === apexTypes.VARIABLE_EXPRESSION &&
-    parentNode["@class"] === apexTypes.ARRAY_EXPRESSION &&
-    grandParentNodeName === "dottedExpr"
-  ) {
-    // a
-    //   .b[0]  // <- Node b here
-    //   .c()
-    // For this situation we want to flag b as a nested dotted expression,
-    // so that we can make it part of the grand parent's group, even though
-    // technically it's the grandchild of the dotted expression.
-    result = true;
-  }
-  return result;
-}
-
-function handleDottedExpression(path: AstPath, print: printFn): Doc {
-  const node = path.getNode();
-  const dottedExpressionParts: Doc[] = [];
-  const dottedExpressionDoc: Doc = path.call(print, "dottedExpr", "value");
-
-  if (dottedExpressionDoc) {
-    dottedExpressionParts.push(dottedExpressionDoc);
-    if (shouldDottedExpressionBreak(path)) {
-      dottedExpressionParts.push(softline);
-    }
-    if (node.isSafeNav) {
-      dottedExpressionParts.push("?");
-    }
-    dottedExpressionParts.push(".");
-    return dottedExpressionParts;
-  }
-  return "";
-}
-
-function shouldDottedExpressionBreak(path: AstPath): boolean {
-  const node = path.getNode();
-  // #62 - `super` cannot  be followed any white spaces
-  if (
-    node.dottedExpr.value["@class"] === APEX_TYPES.SUPER_VARIABLE_EXPRESSION
-  ) {
-    return false;
-  }
-  // #98 - Even though `this` can synctactically be followed by whitespaces,
-  // make the formatted output similar to `super` to provide consistency.
-  if (node.dottedExpr.value["@class"] === APEX_TYPES.THIS_VARIABLE_EXPRESSION) {
-    return false;
-  }
-  if (node["@class"] !== APEX_TYPES.METHOD_CALL_EXPRESSION) {
-    return true;
-  }
-  if (checkIfParentIsDottedExpression(path)) {
-    return true;
-  }
-  if (
-    node.dottedExpr.value &&
-    node.dottedExpr.value["@class"] === APEX_TYPES.METHOD_CALL_EXPRESSION
-  ) {
-    return true;
-  }
-  return node.dottedExpr.value;
-}
-
-function handleInputParameters(path: AstPath, print: printFn): Doc[] {
-  // In most cases, the descendant nodes inside `inputParameters` will create
-  // their own groups. However, in certain circumstances (i.e. with binaryish
-  // behavior), they rely on groups created by their parents. That's why we
-  // wrap each inputParameter in a group here. See #693 for an example case.
-  return path.map(print, "inputParameters").map((paramDoc) => group(paramDoc));
-}
-
 function handleMethodCallExpression(path: AstPath, print: printFn): Doc {
   const node = path.getNode();
   const parentNode = path.getParentNode();
@@ -216,6 +127,113 @@ function handleMethodCallExpression(path: AstPath, print: printFn): Doc {
   }
   return resultDoc;
 }
+
+function handleArrayExpressionIndex(
+  path: AstPath,
+  print: printFn,
+  withGroup = true,
+): Doc {
+  const node = path.getNode();
+  let parts;
+  if (node.index["@class"] === APEX_TYPES.LITERAL_EXPRESSION) {
+    // For literal index, we will make sure it's always attached to the [],
+    // because it's usually short and will look bad being broken up.
+    parts = ["[", path.call(print, "index"), "]"];
+  } else {
+    parts = ["[", softline, path.call(print, "index"), dedent(softline), "]"];
+  }
+  return withGroup ? groupIndentConcat(parts) : parts;
+}
+
+export function checkIfParentIsDottedExpression(path: AstPath): boolean {
+  const node = path.getNode();
+  const parentNode = path.getParentNode();
+
+  let result = false;
+  // We're making an assumption here that `callParent` is always synchronous.
+  // We're doing it because FastPath does not expose other ways to find the
+  // parent name.
+  let parentNodeName;
+  let grandParentNodeName;
+  path.callParent((innerPath) => {
+    parentNodeName = innerPath.getName();
+  });
+  path.callParent((innerPath) => {
+    grandParentNodeName = innerPath.getName();
+  }, 1);
+  if (parentNodeName === "dottedExpr") {
+    result = true;
+  } else if (
+    node["@class"] === apexTypes.VARIABLE_EXPRESSION &&
+    parentNode["@class"] === apexTypes.ARRAY_EXPRESSION &&
+    grandParentNodeName === "dottedExpr"
+  ) {
+    // a
+    //   .b[0]  // <- Node b here
+    //   .c()
+    // For this situation we want to flag b as a nested dotted expression,
+    // so that we can make it part of the grand parent's group, even though
+    // technically it's the grandchild of the dotted expression.
+    result = true;
+  }
+  return result;
+}
+
+function handleDottedExpression(path: AstPath, print: printFn): Doc {
+  const node = path.getNode();
+  const dottedExpressionParts: Doc[] = [];
+  const dottedExpressionDoc: Doc = path.call(print, "dottedExpr", "value");
+
+  if (dottedExpressionDoc) {
+    dottedExpressionParts.push(dottedExpressionDoc);
+    if (shouldDottedExpressionBreak(path)) {
+      dottedExpressionParts.push(softline);
+    }
+    if (node.isSafeNav) {
+      dottedExpressionParts.push("?");
+    }
+    dottedExpressionParts.push(".");
+    return dottedExpressionParts;
+  }
+  return "";
+}
+
+function shouldDottedExpressionBreak(path: AstPath): boolean {
+  const node = path.getNode();
+  // #62 - `super` cannot  be followed any white spaces
+  if (
+    node.dottedExpr.value["@class"] === APEX_TYPES.SUPER_VARIABLE_EXPRESSION
+  ) {
+    return false;
+  }
+  // #98 - Even though `this` can synctactically be followed by whitespaces,
+  // make the formatted output similar to `super` to provide consistency.
+  if (node.dottedExpr.value["@class"] === APEX_TYPES.THIS_VARIABLE_EXPRESSION) {
+    return false;
+  }
+  if (node["@class"] !== APEX_TYPES.METHOD_CALL_EXPRESSION) {
+    return true;
+  }
+  if (checkIfParentIsDottedExpression(path)) {
+    return true;
+  }
+  if (
+    node.dottedExpr.value &&
+    node.dottedExpr.value["@class"] === APEX_TYPES.METHOD_CALL_EXPRESSION
+  ) {
+    return true;
+  }
+  return node.dottedExpr.value;
+}
+
+function handleInputParameters(path: AstPath, print: printFn): Doc[] {
+  // In most cases, the descendant nodes inside `inputParameters` will create
+  // their own groups. However, in certain circumstances (i.e. with binaryish
+  // behavior), they rely on groups created by their parents. That's why we
+  // wrap each inputParameter in a group here. See #693 for an example case.
+  return path.map(print, "inputParameters").map((paramDoc) => group(paramDoc));
+}
+
 
 // a.b().c();
 {
