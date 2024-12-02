@@ -1,10 +1,10 @@
-class UTIL_SortContact_TEST {
+class T {
   {
     [
-      SELECT OpportunityId
-      FROM OpportunityContactRole
-      GROUP BY OpportunityId
-      HAVING COUNT(Id) > 1
+      SELECT count(Id)
+      FROM Lead
+      GROUP BY LeadSource
+      HAVING COUNT(Name) > 100 AND LeadSource LIKE 'San%'
     ];
   }
 }

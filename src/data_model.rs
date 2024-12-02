@@ -4024,7 +4024,7 @@ pub struct HavingAndExpression {
 
 impl HavingAndExpression {
     pub fn new(node: Node) -> Self {
-        assert_eq!(node.kind(), "having_and_expression");
+        assert_eq!(node.kind(), "and_expression");
 
         let exps = node
             .children_vec()
@@ -4053,7 +4053,7 @@ pub struct HavingOrExpression {
 
 impl HavingOrExpression {
     pub fn new(node: Node) -> Self {
-        assert_eq!(node.kind(), "having_or_expression");
+        assert_eq!(node.kind(), "or_expression");
 
         let exps = node
             .children_vec()
@@ -4082,7 +4082,7 @@ pub struct HavingNotExpression {
 
 impl HavingNotExpression {
     pub fn new(node: Node) -> Self {
-        assert_eq!(node.kind(), "having_not_expression");
+        assert_eq!(node.kind(), "not_expression");
 
         let exp = Box::new(HavingConditionExpression::new(node.first_c()));
         Self { exp }
