@@ -23,6 +23,17 @@ class A {
         .dddddddddddddddd()
         .fffffffffffffffffff()[0]
       .gggggg();
+
+    a6aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[
+      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    ];
+
+    a7aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[
+        bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+      ]
+      .ccccccccccccccccccccccc()
+      .ddddddddddddddddddddddddddd()
+      .eeeeeeeeeeee();
   }
 }
 
