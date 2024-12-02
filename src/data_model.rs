@@ -213,19 +213,23 @@ pub struct FormalParameter {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub name: String,
-    //pub dimenssions
+    pub dimensions: Option<Dimensions>,
 }
 
 impl FormalParameter {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "formal_parameter");
+
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let type_ = UnannotatedType::new(node.c_by_n("type"));
         let name = node.cvalue_by_n("name", source_code());
+        let dimensions = node.try_c_by_k("dimensions").map(|n| Dimensions::new(n));
 
         Self {
             modifiers,
             type_,
             name,
+            dimensions,
         }
     }
 }
@@ -235,9 +239,12 @@ impl<'a> DocBuild<'a> for FormalParameter {
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
         }
-
         result.push(self.type_.build(b));
         result.push(b._txt(&self.name));
+        if let Some(ref d) = self.dimensions {
+            result.push(b.txt(" "));
+            result.push(d.build(b));
+        }
     }
 }
 
@@ -737,7 +744,7 @@ impl MethodInvocation {
         });
 
         let property_navigation = object.as_ref().map(|_| {
-            if node.try_c_by_k("safe_navigaion_operator").is_some() {
+            if node.try_c_by_k("safe_navigation_operator").is_some() {
                 PropertyNavigation::SafeNavigationOperator
             } else {
                 PropertyNavigation::Dot
@@ -1915,7 +1922,7 @@ impl FieldAccess {
             MethodObject::Primary(Box::new(PrimaryExpression::new(obj_node)))
         };
 
-        let property_navigation = if node.try_c_by_k("safe_navigaion_operator").is_some() {
+        let property_navigation = if node.try_c_by_k("safe_navigation_operator").is_some() {
             PropertyNavigation::SafeNavigationOperator
         } else {
             PropertyNavigation::Dot
@@ -2520,7 +2527,7 @@ impl<'a> DocBuild<'a> for TryStatementTail {
 
 #[derive(Debug, Serialize)]
 pub struct CatchClause {
-    pub formal_parameter: CatchFormalParameter,
+    pub formal_parameter: FormalParameter,
     pub body: Block,
 }
 
@@ -2528,7 +2535,7 @@ impl CatchClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "catch_clause");
 
-        let formal_parameter = CatchFormalParameter::new(node.c_by_k("catch_formal_parameter"));
+        let formal_parameter = FormalParameter::new(node.c_by_k("formal_parameter"));
         let body = Block::new(node.c_by_n("body"));
         Self {
             formal_parameter,

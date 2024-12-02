@@ -107,10 +107,8 @@ mod tests {
 
         if !prettier_file.exists() {
             println!(
-                "{} {} {}",
-                "### ",
+                "### {}  file not found, generating...",
                 config_name.yellow(),
-                " file not found, generating..."
             );
 
             let prettier_output = run_prettier(
