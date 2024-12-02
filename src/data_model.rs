@@ -3992,10 +3992,10 @@ pub enum HavingBooleanExpression {
 impl HavingBooleanExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "having_and_expression" => Self::And(HavingAndExpression::new(node)),
-            "having_or_expression" => Self::Or(HavingOrExpression::new(node)),
-            "having_not_expression" => Self::Not(HavingNotExpression::new(node)),
-            "having_comparison_expression" => Self::Condition(
+            "and_expression" => Self::And(HavingAndExpression::new(node)),
+            "or_expression" => Self::Or(HavingOrExpression::new(node)),
+            "not_expression" => Self::Not(HavingNotExpression::new(node)),
+            "comparison_expression" => Self::Condition(
                 HavingConditionExpression::Comparison(HavingComparisonExpression::new(node)),
             ),
             _ => Self::Condition(HavingConditionExpression::Parenthesized(Box::new(
@@ -4130,7 +4130,7 @@ pub struct HavingComparisonExpression {
 
 impl HavingComparisonExpression {
     pub fn new(node: Node) -> Self {
-        assert_check(node, "having_comparison_expression");
+        assert_check(node, "comparison_expression");
 
         let child = node.first_c();
         let function = FunctionExpression::new(child.clone());
