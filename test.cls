@@ -1,21 +1,28 @@
 class A {
   {
-    aaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccccc()
+    a1aaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccccc()
       .ddddddddddddddddddddddddddddddd();
 
-    aaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb()
+    a2aaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb()
       .cccccccccccccccccccccc()
       .ddddddddddddddddddddddddddddddd();
 
-    aaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccccc()[
+    a3aaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccccc()[
         ffffffffffffffffff.callMethod()
       ]
       .ddddddddddddddddddddddddddddddd();
 
-    aaaaaaaaaaaaaa.bbbbbbbbbbbbbb()
-      .ccccccccccccc()
-      .dddddddddddddddd()
-      .eeeeeeeeeeeeeeeeeeeeee()[ffffffffffffffffffffffffffff.callThis()].gggggg();
+    a4aaaaaaaaaaaaa.bbbbbbbbbbbbbb()
+        .ccccccccccccc()
+        .dddddddddddddddd()
+        .fffffffffffffffffff()[eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.callThis()]
+      .gggggg();
+
+    a5aaaaaaaaaaaaa.bbbbbbbbbbbbbb()
+        .ccccccccccccc()
+        .dddddddddddddddd()
+        .fffffffffffffffffff()[0]
+      .gggggg();
   }
 }
 
