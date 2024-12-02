@@ -1,18 +1,10 @@
-class HelloWorld {
+class UTIL_SortContact_TEST {
   {
-
-    String longResult = super    
-    .callMethod('first param')
-      .callAnotherMethod()
-      .getStringResult();
-
-    String longResult = super.longPropertyName.anotherLongPropertyName.yetAnotherLongPropertyName;
-
-    String longResult = super.longPropertyName.callMethod('first param')
-      .callAnotherMethod()
-      .getStringResult();
-
-        aaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb[0].cccccccccccccccccccccccccccccccccccccccccccccccc().dddddddddddddd().e();
-  }
+                    [
+            SELECT OpportunityId 
+            FROM OpportunityContactRole 
+            GROUP BY OpportunityId 
+            HAVING COUNT(Id) > 1
+        ];
 }
-
+}
