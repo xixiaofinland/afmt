@@ -1,6 +1,10 @@
-class PackageVersion {
-  void packageVersionTest() {
-    Object v = Package.Version.1.0;
-    v = Package.Version.Request;
-  }
+class UTIL_SortContact_TEST {
+  {
+                    [
+            SELECT OpportunityId 
+            FROM OpportunityContactRole 
+            GROUP BY OpportunityId 
+            HAVING COUNT(Id) > 1
+        ];
+}
 }
