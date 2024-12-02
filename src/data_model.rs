@@ -3202,18 +3202,29 @@ impl<'a> DocBuild<'a> for InstanceOfExpression {
 }
 
 #[derive(Debug, Serialize)]
-pub struct VersionExpression {}
+pub struct VersionExpression {
+    version_number: Option<String>,
+}
 
 impl VersionExpression {
-    pub fn new(_node: Node) -> Self {
-        Self {}
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "version_expression");
+
+        let version_number = node
+            .try_c_by_n("version_num")
+            .map(|n| n.value(source_code()));
+        Self { version_number }
     }
 }
 
 impl<'a> DocBuild<'a> for VersionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        // TODO: when it's major.minor? No corresponding nodes from parser
-        result.push(b.txt("Package.Version.Request"));
+        result.push(b.txt("Package.Version."));
+        if let Some(ref n) = self.version_number {
+            result.push(b.txt(n));
+        }else{
+            result.push(b.txt("Request"));
+        }
     }
 }
 
