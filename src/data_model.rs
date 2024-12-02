@@ -2045,19 +2045,19 @@ pub enum DmlExpression {
     Basic {
         dml_type: DmlType,
         security_mode: Option<DmlSecurityMode>,
-        exp: Expression,
+        target: Expression,
     },
     Upsert {
         dml_type: DmlType,
         security_mode: Option<DmlSecurityMode>,
-        exp: Expression,
+        target: Expression,
         unannotated: Option<Box<UnannotatedType>>,
     },
     Merge {
         dml_type: DmlType,
         security_mode: Option<DmlSecurityMode>,
-        exp: Expression,
-        exp_extra: Expression,
+        target: Expression,
+        merge_with: Expression,
     },
 }
 
@@ -2067,67 +2067,31 @@ impl DmlExpression {
         let security_mode = node
             .try_c_by_k("dml_security_mode")
             .map(|n| DmlSecurityMode::new(n));
-
-        let (exp_node, second_node) = DmlExpression::get_two_extra_nodes(node)
-            .expect("Can't find expected child node in DmlExpression");
+        let target = Expression::new( node.c_by_n("target"));
 
         let dml_type = DmlType::from(node.c_by_k("dml_type").first_c().kind());
         match dml_type {
             DmlType::Merge => Self::Merge {
                 dml_type,
                 security_mode,
-                exp: Expression::new(exp_node),
-                exp_extra: Expression::new(
-                    second_node.expect("Second node in DmlExpression::Merge is missing"),
-                ),
+                target,
+                merge_with: Expression::new(node.c_by_n("merge_with")),
             },
             DmlType::Upsert => {
-                let unannotated = second_node.map(|n| Box::new(UnannotatedType::new(n)));
+                let unannotated = node.try_c_by_n("upsert_key").map(|n| Box::new(UnannotatedType::new(n)));
                 Self::Upsert {
                     dml_type,
                     security_mode,
-                    exp: Expression::new(exp_node),
+                    target,
                     unannotated,
                 }
             }
             _ => Self::Basic {
                 dml_type,
                 security_mode,
-                exp: Expression::new(exp_node),
+                target,
             },
         }
-    }
-
-    fn get_two_extra_nodes(node: Node) -> Option<(Node, Option<Node>)> {
-        let excluded_types: HashSet<&str> = [
-            "line_comment",
-            "block_comment",
-            "dml_security_mode",
-            "dml_type",
-        ]
-        .iter()
-        .cloned()
-        .collect();
-
-        let mut children_iter = node.children_vec().into_iter();
-        let mut first: Option<Node> = None;
-        let mut second: Option<Node> = None;
-
-        while let Some(child) = children_iter.next() {
-            let child_type = child.kind();
-
-            if excluded_types.contains(child_type) {
-                continue;
-            }
-
-            if first.is_none() {
-                first = Some(child);
-            } else if second.is_none() {
-                second = Some(child);
-                break;
-            }
-        }
-        first.map(|f| (f, second))
     }
 }
 
@@ -2137,7 +2101,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
             Self::Basic {
                 dml_type,
                 security_mode,
-                exp,
+                target: exp,
             } => {
                 result.push(b.txt_(dml_type.as_str()));
                 if let Some(ref s) = security_mode {
@@ -2149,8 +2113,8 @@ impl<'a> DocBuild<'a> for DmlExpression {
             Self::Merge {
                 dml_type,
                 security_mode,
-                exp,
-                exp_extra,
+                target: exp,
+                merge_with: exp_extra,
             } => {
                 result.push(b.txt_(dml_type.as_str()));
                 if let Some(ref s) = security_mode {
@@ -2166,7 +2130,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
             Self::Upsert {
                 dml_type,
                 security_mode,
-                exp,
+                target: exp,
                 unannotated,
             } => {
                 result.push(b.txt_(dml_type.as_str()));
@@ -4149,10 +4113,7 @@ impl HavingComparisonExpression {
             unreachable!("code should not reach here in HavingComparisonExpression");
         };
 
-        Self {
-            value,
-            comparison,
-        }
+        Self { value, comparison }
     }
 }
 
