@@ -1,8 +1,21 @@
-class SoqlHaving {
+class A {
   {
-    [SELECT COUNT(Id)
-      FROM Lead
-      GROUP BY LeadSource
-      HAVING (COUNT(Name) > 100 AND LeadSource LIKE 'San%') OR (LeadSource = 'San%' AND LeadSource IN ('Val1', 'Val2'))];
+    aaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccccc()
+      .ddddddddddddddddddddddddddddddd();
+
+    aaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb()
+      .cccccccccccccccccccccc()
+      .ddddddddddddddddddddddddddddddd();
+
+    aaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccccc()[
+        ffffffffffffffffff.callMethod()
+      ]
+      .ddddddddddddddddddddddddddddddd();
+
+    aaaaaaaaaaaaaa.bbbbbbbbbbbbbb()
+      .ccccccccccccc()
+      .dddddddddddddddd()
+      .eeeeeeeeeeeeeeeeeeeeee()[ffffffffffffffffffffffffffff.callThis()].gggggg();
   }
 }
+
