@@ -1,4 +1,4 @@
-class SoqlHaving {
+class SoqlHaving2 {
   {
     [SELECT COUNT(Id)
       FROM Lead

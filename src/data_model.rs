@@ -3222,7 +3222,7 @@ impl<'a> DocBuild<'a> for VersionExpression {
         result.push(b.txt("Package.Version."));
         if let Some(ref n) = self.version_number {
             result.push(b.txt(n));
-        }else{
+        } else {
             result.push(b.txt("Request"));
         }
     }
@@ -3995,9 +3995,9 @@ impl HavingBooleanExpression {
             "and_expression" => Self::And(HavingAndExpression::new(node)),
             "or_expression" => Self::Or(HavingOrExpression::new(node)),
             "not_expression" => Self::Not(HavingNotExpression::new(node)),
-            "comparison_expression" => Self::Condition(
-                HavingConditionExpression::Comparison(HavingComparisonExpression::new(node)),
-            ),
+            "comparison_expression" => Self::Condition(HavingConditionExpression::Comparison(
+                HavingComparisonExpression::new(node),
+            )),
             _ => Self::Condition(HavingConditionExpression::Parenthesized(Box::new(
                 HavingBooleanExpression::new(node),
             ))),
@@ -4124,16 +4124,17 @@ impl<'a> DocBuild<'a> for HavingConditionExpression {
 
 #[derive(Debug, Serialize)]
 pub struct HavingComparisonExpression {
-    pub function: FunctionExpression,
+    pub value: ValueExpression,
     pub comparison: HavingComparison,
 }
 
+//comparison_expression: ($) => seq($._value_expression, $._comparison),
 impl HavingComparisonExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "comparison_expression");
 
         let child = node.first_c();
-        let function = FunctionExpression::new(child.clone());
+        let value = ValueExpression::new(child);
         let comparison = if let Some(n) = node.try_c_by_k("value_comparison_operator") {
             HavingComparison::Value {
                 operator: n.value(source_code()),
@@ -4149,7 +4150,7 @@ impl HavingComparisonExpression {
         };
 
         Self {
-            function,
+            value,
             comparison,
         }
     }
@@ -4157,7 +4158,7 @@ impl HavingComparisonExpression {
 
 impl<'a> DocBuild<'a> for HavingComparisonExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.function.build(b));
+        result.push(self.value.build(b));
         result.push(self.comparison.build(b));
     }
 }
@@ -4226,7 +4227,7 @@ pub enum HavingSet {
 impl HavingSet {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "Comparable_list" => Self::Comparable(ComparableList::new(node)),
+            "comparable_list" => Self::Comparable(ComparableList::new(node)),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
             _ => panic!("## unknown node: {} in HavingSet", node.kind().red()),
         }
