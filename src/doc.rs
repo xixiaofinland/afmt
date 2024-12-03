@@ -106,6 +106,10 @@ impl<'a> PrettyPrinter<'a> {
         let mut result = String::new();
 
         while let Some(chunk) = self.chunks.pop() {
+            if chunk.indent >= 4 {
+                eprintln!("gopro[21]: doc.rs:109: chunk={:#?}", chunk);
+            }
+
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
