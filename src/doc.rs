@@ -24,6 +24,7 @@ struct PrettyPrinter<'a> {
     max_width: u32,
     col: u32,
     chunks: Vec<Chunk<'a>>,
+    align_stack: Vec<u32>,
 }
 
 pub struct PrettyConfig {
@@ -84,12 +85,14 @@ impl<'a> PrettyPrinter<'a> {
             doc_ref,
             indent: 0,
             flat: false,
+            align: None,
         };
 
         Self {
             max_width,
             col: 0,
             chunks: vec![chunk],
+            align_stack: Vec::new(),
         }
     }
 
