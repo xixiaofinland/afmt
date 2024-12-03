@@ -5,5 +5,10 @@ public class Me {
       FROM Account
       WHERE CreatedDate = LAST_N_DAYS:60
     ];
+    [
+      SELECT Id, Name, Good_c__c
+      FROM Account
+      WHERE CreatedDate = LAST_N_DAYS:60
+    ];
   }
 }
