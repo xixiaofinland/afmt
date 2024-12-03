@@ -7,7 +7,7 @@ use crate::{
 };
 use colored::Colorize;
 use serde::Serialize;
-use std::{collections::HashSet, fmt::Debug};
+use std::fmt::Debug;
 use tree_sitter::{Node, Point, Range};
 
 pub trait DocBuild<'a> {
