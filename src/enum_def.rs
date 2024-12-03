@@ -836,7 +836,7 @@ impl<'a> DocBuild<'a> for SelectClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut doc_vec = Vec::new();
         doc_vec.push(b.txt("SELECT"));
-        doc_vec.push(b.indent_and_mark(b.softline()));
+        doc_vec.push(b.indent(b.softline()));
 
         match self {
             Self::Count(n) => {
@@ -848,7 +848,7 @@ impl<'a> DocBuild<'a> for SelectClause {
                 let sep = Insertable::new(None, Some(","), Some(b.softline()));
                 let doc = b.intersperse(&docs, sep);
 
-                let indented_join = b.indent_and_mark(doc);
+                let indented_join = b.indent(doc);
                 doc_vec.push(indented_join);
             }
         }
