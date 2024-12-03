@@ -17,6 +17,7 @@ pub enum Doc<'a> {
     Dedent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
+    Align(DocRef<'a>),
 }
 
 struct PrettyPrinter<'a> {
@@ -44,22 +45,19 @@ struct Chunk<'a> {
     doc_ref: DocRef<'a>,
     indent: u32,
     flat: bool,
+    align: Option<u32>,
 }
 
 impl<'a> Chunk<'a> {
     fn with_doc(self, doc_ref: DocRef<'a>) -> Self {
-        Chunk {
-            doc_ref,
-            indent: self.indent,
-            flat: self.flat,
-        }
+        Chunk { doc_ref, ..self }
     }
 
     fn indented(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
         Chunk {
             doc_ref,
             indent: self.indent + indent,
-            flat: self.flat,
+            ..self
         }
     }
 
@@ -67,15 +65,15 @@ impl<'a> Chunk<'a> {
         Chunk {
             doc_ref,
             indent: self.indent.saturating_sub(indent),
-            flat: self.flat,
+            ..self
         }
     }
 
     fn flat(self, doc_ref: DocRef<'a>) -> Self {
         Chunk {
             doc_ref,
-            indent: self.indent,
             flat: true,
+            ..self
         }
     }
 }
@@ -218,4 +216,3 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 }
-

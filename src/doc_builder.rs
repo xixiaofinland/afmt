@@ -213,6 +213,10 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
     }
 
+    pub fn align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.arena.alloc(Doc::Align(doc_ref))
+    }
+
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
         let n_vec = doc_refs.into_iter().collect::<Vec<_>>();
         self.arena.alloc(Doc::Concat(n_vec))
