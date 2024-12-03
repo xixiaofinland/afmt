@@ -42,16 +42,12 @@ impl<'a> DocBuilder<'a> {
         }
 
         let mut docs_to_align = vec![];
-
         if let Some(n) = open.suf {
             docs_to_align.push(n);
         }
+        docs_to_align.push(self.intersperse(elems, sep));
 
-        //docs.push(self.align(self.indent(self.intersperse(elems, sep))));
-        let interspersed_doc = self.intersperse(elems, sep);
-        docs_to_align.push(interspersed_doc);
-
-        result.push(self.align(self.concat(docs_to_align)));
+        result.push(self.indent_align_concat(docs_to_align));
 
         if let Some(n) = close.pre {
             result.push(n);
@@ -261,9 +257,17 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
     }
 
-    pub fn align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn indent_align_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+        self.indent_align(self.concat(doc_refs))
+    }
+
+    pub fn indent_align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        let doc_to_align = self.arena.alloc(Doc::Align(relative_indent, doc_ref));
+        self.align(relative_indent, doc_ref)
+    }
+
+    pub fn align(&'a self, align_doc: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let doc_to_align = self.arena.alloc(Doc::Align(align_doc, doc_ref));
         self.choice(self.flat(doc_to_align), doc_to_align)
     }
 
