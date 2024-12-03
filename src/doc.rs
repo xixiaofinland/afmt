@@ -10,9 +10,9 @@ pub enum Doc<'a> {
     Newline,
     NewlineWithNoIndent,
     Text(String, u32), // The given text should not contain line breaks
+    Softline,          // a space or a newline
+    Maybeline,         // empty or a newline
     Flat(DocRef<'a>),
-    Softline,  // a space or a newline
-    Maybeline, // empty or a newline
     Indent(u32, DocRef<'a>),
     Dedent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
@@ -24,7 +24,6 @@ struct PrettyPrinter<'a> {
     max_width: u32,
     col: u32,
     chunks: Vec<Chunk<'a>>,
-    align_stack: Vec<u32>,
 }
 
 pub struct PrettyConfig {
@@ -46,7 +45,7 @@ struct Chunk<'a> {
     doc_ref: DocRef<'a>,
     indent: u32,
     flat: bool,
-    align: Option<u32>,
+    align: u32,
 }
 
 impl<'a> Chunk<'a> {
@@ -77,6 +76,14 @@ impl<'a> Chunk<'a> {
             ..self
         }
     }
+
+    fn align(self, align_col: u32, doc_ref: DocRef<'a>) -> Self {
+        Chunk {
+            doc_ref,
+            align: align_col,
+            ..self
+        }
+    }
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -85,14 +92,13 @@ impl<'a> PrettyPrinter<'a> {
             doc_ref,
             indent: 0,
             flat: false,
-            align: None,
+            align: 0,
         };
 
         Self {
             max_width,
             col: 0,
             chunks: vec![chunk],
-            align_stack: Vec::new(),
         }
     }
 
@@ -103,10 +109,11 @@ impl<'a> PrettyPrinter<'a> {
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
-                    for _ in 0..chunk.indent {
+                    let total_indent = chunk.indent + chunk.align;
+                    for _ in 0..total_indent {
                         result.push(' ');
                     }
-                    self.col = chunk.indent;
+                    self.col = total_indent;
                 }
                 Doc::Softline => {
                     if chunk.flat {
@@ -114,19 +121,21 @@ impl<'a> PrettyPrinter<'a> {
                         self.col += 1;
                     } else {
                         result.push('\n');
-                        for _ in 0..chunk.indent {
+                        let total_indent = chunk.indent + chunk.align;
+                        for _ in 0..total_indent {
                             result.push(' ');
                         }
-                        self.col = chunk.indent;
+                        self.col = total_indent;
                     }
                 }
                 Doc::Maybeline => {
                     if !chunk.flat {
                         result.push('\n');
-                        for _ in 0..chunk.indent {
+                        let total_indent = chunk.indent + chunk.align;
+                        for _ in 0..total_indent {
                             result.push(' ');
                         }
-                        self.col = chunk.indent;
+                        self.col = total_indent;
                     }
                 }
                 Doc::NewlineWithNoIndent => {
@@ -140,6 +149,9 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
+                Doc::Align(x) => {
+                    self.chunks.push(chunk.align(self.col, x));
+                }
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         self.chunks.push(chunk.with_doc(n));
@@ -201,6 +213,9 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => stack.push(chunk.dedented(*i, x)),
+                Doc::Align(x) => {
+                    self.chunks.push(chunk.align(self.col, x));
+                }
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         stack.push(chunk.with_doc(n));
