@@ -18,6 +18,54 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
+    pub fn surround_align(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.concat(vec![
+                self.txt(open.str.unwrap()),
+                self.txt(close.str.unwrap()),
+            ]);
+        }
+
+        let mut result = Vec::new();
+
+        if let Some(n) = open.pre {
+            result.push(n);
+        }
+        if let Some(n) = open.str {
+            result.push(self.txt(n));
+        }
+
+        let mut docs_to_align = vec![];
+
+        if let Some(n) = open.suf {
+            docs_to_align.push(n);
+        }
+
+        //docs.push(self.align(self.indent(self.intersperse(elems, sep))));
+        let interspersed_doc = self.intersperse(elems, sep);
+        docs_to_align.push(interspersed_doc);
+
+        result.push(self.align(self.concat(docs_to_align)));
+
+        if let Some(n) = close.pre {
+            result.push(n);
+        }
+        if let Some(n) = close.str {
+            result.push(self.txt(n));
+        }
+        if let Some(n) = close.suf {
+            result.push(n);
+        }
+
+        self.concat(result)
+    }
+
     pub fn surround(
         &'a self,
         elems: &[DocRef<'a>],
@@ -214,7 +262,8 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        self.arena.alloc(Doc::Align(doc_ref))
+        let aligned_doc_ref = self.arena.alloc(Doc::Align(doc_ref));
+        self.choice(self.flat(aligned_doc_ref), aligned_doc_ref)
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
@@ -226,8 +275,8 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Choice(first, second))
     }
 
-    pub fn group(&'a self, doc: DocRef<'a>) -> DocRef<'a> {
-        self.choice(self.flat(doc), doc)
+    pub fn group(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.choice(self.flat(doc_ref), doc_ref)
     }
 }
 

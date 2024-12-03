@@ -867,7 +867,7 @@ impl<'a> DocBuild<'a> for ArgumentList {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.align(b.surround(&docs, sep, open, close));
+        let doc = b.surround_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
