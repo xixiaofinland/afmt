@@ -17,7 +17,7 @@ pub enum Doc<'a> {
     Dedent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
-    Align(DocRef<'a>),
+    Align(u32, DocRef<'a>),
 }
 
 struct PrettyPrinter<'a> {
@@ -106,10 +106,6 @@ impl<'a> PrettyPrinter<'a> {
         let mut result = String::new();
 
         while let Some(chunk) = self.chunks.pop() {
-            if chunk.indent >= 4 {
-                eprintln!("gopro[21]: doc.rs:109: chunk={:#?}", chunk);
-            }
-
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
@@ -153,8 +149,8 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
-                Doc::Align(x) => {
-                    self.chunks.push(chunk.align(self.col, x));
+                Doc::Align(align_col, x) => {
+                    self.chunks.push(chunk.align(*align_col, x));
                 }
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
@@ -217,8 +213,8 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => stack.push(chunk.dedented(*i, x)),
-                Doc::Align(x) => {
-                    stack.push(chunk.align(self.col, x));
+                Doc::Align(align_col, x) => {
+                    stack.push(chunk.align(*align_col, x));
                 }
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {

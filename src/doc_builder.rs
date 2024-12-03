@@ -262,8 +262,9 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let aligned_doc_ref = self.arena.alloc(Doc::Align(doc_ref));
-        self.choice(self.flat(aligned_doc_ref), aligned_doc_ref)
+        let relative_indent = self.config.indent_size;
+        let doc_to_align = self.arena.alloc(Doc::Align(relative_indent, doc_ref));
+        self.choice(self.flat(doc_to_align), doc_to_align)
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
