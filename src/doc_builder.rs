@@ -127,10 +127,7 @@ impl<'a> DocBuilder<'a> {
         self.concat(member_docs)
     }
 
-    pub fn to_docs<'b, T: DocBuild<'a>>(
-        &'a self,
-        items: impl IntoIterator<Item = &'b T>,
-    ) -> Vec<DocRef<'a>>
+    pub fn to_docs<'b, T>(&'a self, items: impl IntoIterator<Item = &'b T>) -> Vec<DocRef<'a>>
     where
         T: DocBuild<'a> + 'b,
     {
@@ -213,8 +210,7 @@ impl<'a> DocBuilder<'a> {
 
     pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.arena
-            .alloc(Doc::Dedent(relative_indent, doc_ref))
+        self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
