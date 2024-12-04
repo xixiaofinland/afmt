@@ -2983,7 +2983,7 @@ impl<'a> DocBuild<'a> for SwitchBlock {
         let sep = Insertable::new(None, Some(""), Some(b.nl()));
         let open = Insertable::new(None, Some("{"), Some(b.nl()));
         let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.surround(&docs, sep, open, close);
+        let doc = b.surround_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
