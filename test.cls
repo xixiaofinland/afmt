@@ -1,12 +1,8 @@
-class A {
+public class Me {
   {
-    Integer[] b = new List<Integer>{};
-
-    Account[] account = new Account[]{
-      new Account(Id = accountId, Name = 'Inner Acme One'),
-      new Account(Id = accountId, Name = 'Inner Acme Two')
-    };
-
-    Id[] accountIds = new Id[]{ accountId };
+      Map<String, Integer > intsBymap 
+                = new Map<String, Integer>
+                 {    'hello'    => 1  , 
+                  'world' =>    2    }   ;
   }
 }
