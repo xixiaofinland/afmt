@@ -18,6 +18,16 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
+    pub fn group_surround_align(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        self.group(self.surround_align(elems, sep, open, close))
+    }
+
     pub fn surround_align(
         &'a self,
         elems: &[DocRef<'a>],
@@ -47,7 +57,7 @@ impl<'a> DocBuilder<'a> {
         }
         docs_to_align.push(self.intersperse(elems, sep));
 
-        result.push(self.indent_align_concat(docs_to_align));
+        result.push(self.align_concat(docs_to_align));
 
         if let Some(n) = close.pre {
             result.push(n);
@@ -257,18 +267,13 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
     }
 
-    pub fn indent_align_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
-        self.indent_align(self.concat(doc_refs))
+    pub fn align_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
+        self.align(self.concat(doc_refs))
     }
 
-    pub fn indent_align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.align(relative_indent, doc_ref)
-    }
-
-    pub fn align(&'a self, align_doc: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let doc_to_align = self.arena.alloc(Doc::Align(align_doc, doc_ref));
-        self.choice(self.flat(doc_to_align), doc_to_align)
+        self.arena.alloc(Doc::Align(relative_indent, doc_ref))
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
