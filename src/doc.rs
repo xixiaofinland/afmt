@@ -149,8 +149,8 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
-                Doc::Align(align_col, x) => {
-                    let new_align = chunk.align + align_col;
+                Doc::Align(relative_align_col, x) => {
+                    let new_align = chunk.align + relative_align_col;
                     self.chunks.push(chunk.align(new_align, x));
                 }
                 Doc::Concat(seq) => {
@@ -214,8 +214,8 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => stack.push(chunk.dedented(*i, x)),
-                Doc::Align(align_col, x) => {
-                    let new_align = chunk.align + align_col;
+                Doc::Align(relative_align_col, x) => {
+                    let new_align = chunk.align + relative_align_col;
                     stack.push(chunk.align(new_align, x));
                 }
                 Doc::Concat(seq) => {
