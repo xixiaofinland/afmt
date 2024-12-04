@@ -3531,8 +3531,7 @@ impl<'a> DocBuild<'a> for WhereClause {
             b.softline(),
             self.boolean_exp.build_with_parent(b, None),
         ];
-        //result.push(b.group(b.indent(b.concat(docs))));
-        result.push(b.group(b.align_concat(docs)));
+        result.push(b.group_indented_align_concat(docs));
     }
 }
 

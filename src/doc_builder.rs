@@ -57,7 +57,7 @@ impl<'a> DocBuilder<'a> {
         }
         docs_to_align.push(self.intersperse(elems, sep));
 
-        result.push(self.align_concat(docs_to_align));
+        result.push(self.indented_align_concat(docs_to_align));
 
         if let Some(n) = close.pre {
             result.push(n);
@@ -267,13 +267,27 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
     }
 
-    pub fn align_concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
-        self.align(self.concat(doc_refs))
+    pub fn group_indented_align_concat(
+        &'a self,
+        doc_refs: impl IntoIterator<Item = DocRef<'a>>,
+    ) -> DocRef<'a> {
+        self.group(self.indented_align(self.concat(doc_refs)))
     }
 
-    pub fn align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    pub fn indented_align_concat(
+        &'a self,
+        doc_refs: impl IntoIterator<Item = DocRef<'a>>,
+    ) -> DocRef<'a> {
+        self.indented_align(self.concat(doc_refs))
+    }
+
+    pub fn indented_align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
-        self.arena.alloc(Doc::Align(relative_indent, doc_ref))
+        self.align(relative_indent, doc_ref)
+    }
+
+    pub fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        self.arena.alloc(Doc::Align(relative_col_offset, doc_ref))
     }
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {

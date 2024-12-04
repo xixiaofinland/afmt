@@ -5,7 +5,5 @@ class HelloWorld {
     aaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccc > 1;
 
     bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccccccccccc > 1;
-
-    b > 1 && c > 1;
   }
 }
