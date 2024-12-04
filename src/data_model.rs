@@ -2011,7 +2011,7 @@ impl<'a> DocBuild<'a> for EnumBody {
         let sep = Insertable::new(None, Some(","), Some(b.nl()));
         let open = Insertable::new(None, Some("{"), Some(b.nl()));
         let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
+        let doc = b.group_surround_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -3296,7 +3296,7 @@ impl<'a> DocBuild<'a> for QueryExpression {
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
         let open = Insertable::new(None, Some("["), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
+        let doc = b.group_surround_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
