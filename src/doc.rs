@@ -150,7 +150,8 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
                 Doc::Align(align_col, x) => {
-                    self.chunks.push(chunk.align(*align_col, x));
+                    let new_align = chunk.align + align_col;
+                    self.chunks.push(chunk.align(new_align, x));
                 }
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
@@ -214,7 +215,8 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => stack.push(chunk.dedented(*i, x)),
                 Doc::Align(align_col, x) => {
-                    stack.push(chunk.align(*align_col, x));
+                    let new_align = chunk.align + align_col;
+                    stack.push(chunk.align(new_align, x));
                 }
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
