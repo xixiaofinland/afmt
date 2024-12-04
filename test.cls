@@ -1,10 +1,12 @@
-public with sharing class MyClass {
-  public void hello(
-    String s,
-    Intgeter i1,
-    Intgeter i2,
-    Intgeter i3,
-    String sack
-  ) {
+class A {
+  {
+    Integer[] b = new List<Integer>{};
+
+    Account[] account = new Account[]{
+      new Account(Id = accountId, Name = 'Inner Acme One'),
+      new Account(Id = accountId, Name = 'Inner Acme Two')
+    };
+
+    Id[] accountIds = new Id[]{ accountId };
   }
 }
