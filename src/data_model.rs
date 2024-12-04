@@ -2799,7 +2799,7 @@ impl<'a> DocBuild<'a> for AccessorList {
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("{"), Some(b.softline()));
             let close = Insertable::new(Some(b.softline()), Some("}"), None);
-            let doc = b.group_surround(&docs, sep, open, close);
+            let doc = b.group_surround_align(&docs, sep, open, close);
             result.push(doc);
         }
     }
