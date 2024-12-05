@@ -3,7 +3,10 @@ use crate::{
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
-    utility::{assert_check, get_precedence, has_trailing_new_line, is_binary_node, source_code},
+    utility::{
+        assert_check, get_precedence, has_trailing_new_line, is_binary_node, is_method_invocation,
+        source_code,
+    },
 };
 use colored::Colorize;
 use serde::Serialize;
@@ -724,27 +727,57 @@ impl<'a> DocBuild<'a> for Interface {
 }
 
 #[derive(Debug, Serialize)]
-pub struct MethodInvocation {
+pub struct MethodInvocationContext {
+    pub is_a_simple_node: bool,
+    pub is_top_most_in_nest: bool,
+    pub is_parent_a_method_node: bool,
     pub has_method_child: bool,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MethodInvocation {
     pub object: Option<MethodObject>,
     pub property_navigation: Option<PropertyNavigation>,
     pub type_arguments: Option<TypeArguments>,
     pub name: String,
     pub arguments: ArgumentList,
+    pub context: MethodInvocationContext,
 }
 
 impl MethodInvocation {
+    fn build_context(node: &Node) -> MethodInvocationContext {
+        let parent_node = node
+            .parent()
+            .expect("MethodInvocation node must have parent node");
+
+        let is_parent_a_method_node = is_method_invocation(&parent_node);
+
+        let mut has_method_child = false;
+
+        if let Some(ref n) = node.try_c_by_n("object") {
+            if is_method_invocation(n) {
+                has_method_child = true;
+            }
+        }
+
+        let is_top_most_in_nest = has_method_child && !is_parent_a_method_node;
+        let is_a_simple_node = !has_method_child && !is_parent_a_method_node;
+
+        MethodInvocationContext {
+            is_a_simple_node,
+            is_top_most_in_nest,
+            is_parent_a_method_node,
+            has_method_child,
+        }
+    }
+
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_invocation");
 
-        let mut has_method_child = false; // to align with prettier apex
         let object = node.try_c_by_n("object").map(|n| {
             if n.kind() == "super" {
                 MethodObject::Super(Super {})
             } else {
-                if n.kind() == "method_invocation" {
-                    has_method_child = true;
-                }
                 MethodObject::Primary(Box::new(PrimaryExpression::new(n)))
             }
         });
@@ -763,14 +796,15 @@ impl MethodInvocation {
 
         let name = node.cvalue_by_n("name", source_code());
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
+        let context = Self::build_context(&node);
 
         Self {
-            has_method_child,
             object,
             property_navigation,
             type_arguments,
             name,
             arguments,
+            context,
         }
     }
 }
@@ -778,11 +812,13 @@ impl MethodInvocation {
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut docs = vec![];
+        let context = &self.context;
 
         if let Some(ref o) = self.object {
             docs.push(o.build(b));
 
-            if self.has_method_child {
+            // chaining methods break points
+            if context.is_top_most_in_nest || context.is_parent_a_method_node {
                 docs.push(b.maybeline());
             }
         }
@@ -795,12 +831,22 @@ impl<'a> DocBuild<'a> for MethodInvocation {
 
         docs.push(self.arguments.build(b));
 
-        if self.has_method_child {
-            // manage chained method indent: t.a().b().c().d();
-            result.push(b.group(b.indent(b.concat(docs))));
-        } else {
-            result.push(b.concat(docs));
+        if context.is_a_simple_node {
+            return result.push(b.concat(docs));
         }
+
+        if context.is_top_most_in_nest {
+            return result.push(b.group_indented_align_concat(docs));
+        }
+
+        result.push(b.concat(docs))
+
+        //if !self.is_nested {
+        //    //result.push(b.group(b.indent(b.concat(docs))));
+        //    result.push(b.group_indented_align_concat(docs));
+        //} else {
+        //    result.push(b.concat(docs));
+        //}
     }
 }
 
@@ -1112,15 +1158,6 @@ impl BinaryExpression {
         //   firstBoolean &&
         //      secondBoolean
         // );
-        let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
-
-        //BinaryExpressionContext {
-        //    is_a_left_child_that_should_not_group,
-        //    has_a_right_child_that_should_not_group,
-        //    has_left_and_rigth_children_same_precedence,
-        //    is_top_most_parent_node_that_should_not_group,
-        //    should_indent_top_most_expression,
-        //}
 
         BinaryExpressionContext {
             parent_has_same_precedence,
@@ -1286,15 +1323,18 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
         let value = self.value.as_ref().unwrap();
         docs.push(b._txt("="));
 
-        if self.is_value_child_binary {
-            docs.push(b.softline());
-            docs.push(value.build(b));
-            result.push(b.group_indent_concat(docs));
-        } else {
-            docs.push(b.txt(" "));
-            docs.push(value.build(b));
-            result.push(b.group_concat(docs));
-        }
+        docs.push(b.softline());
+        docs.push(value.build(b));
+        result.push(b.group_indent_concat(docs));
+        //if self.is_value_child_binary {
+        //    docs.push(b.softline());
+        //    docs.push(value.build(b));
+        //    result.push(b.group_indent_concat(docs));
+        //} else {
+        //    docs.push(b.txt(" "));
+        //    docs.push(value.build(b));
+        //    result.push(b.group_concat(docs));
+        //}
     }
 }
 

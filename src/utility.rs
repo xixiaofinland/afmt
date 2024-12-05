@@ -106,6 +106,10 @@ pub fn get_precedence(op: &str) -> u8 {
     }
 }
 
+pub fn is_method_invocation(node: &Node) -> bool {
+    node.kind() == "method_invocation"
+}
+
 pub fn is_binary_node(node: &Node) -> bool {
     node.kind() == "binary_expression"
 }

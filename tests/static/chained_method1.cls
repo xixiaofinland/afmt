@@ -1,6 +1,7 @@
 class A {
   {
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
       .getAnotherSet()
       .getYetAnotherSet();
 
