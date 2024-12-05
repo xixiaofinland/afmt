@@ -516,17 +516,23 @@ impl AssignmentExpression {
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![self.left.build(b), b._txt(&self.op)];
+        let docs = vec![
+            self.left.build(b),
+            b._txt(&self.op),
+            b.softline(),
+            self.right.build(b),
+        ];
+        result.push(b.group_indent_concat(docs));
 
-        if self.is_right_child_binary {
-            docs.push(b.softline());
-            docs.push(self.right.build(b));
-            result.push(b.group_indent_concat(docs));
-        } else {
-            docs.push(b.txt(" "));
-            docs.push(self.right.build(b));
-            result.push(b.group_concat(docs));
-        }
+        //if self.is_right_child_binary {
+        //    docs.push(b.softline());
+        //    docs.push(self.right.build(b));
+        //    result.push(b.group_indent_concat(docs));
+        //} else {
+        //    docs.push(b.txt(" "));
+        //    docs.push(self.right.build(b));
+        //    result.push(b.group_concat(docs));
+        //}
     }
 }
 
@@ -1040,11 +1046,7 @@ impl<'a> DocBuild<'a> for This {
 
 #[derive(Debug, Serialize)]
 pub struct BinaryExpressionContext {
-    pub should_indent_top_most_expression: bool,
-    pub is_a_left_child_that_should_not_group: bool,
-    pub has_a_right_child_that_should_not_group: bool,
-    pub has_left_and_rigth_children_same_precedence: bool,
-    pub is_top_most_parent_node_that_should_not_group: bool,
+    parent_has_same_precedence: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -1110,12 +1112,16 @@ impl BinaryExpression {
         // );
         let should_indent_top_most_expression = parent.kind() == "parenthesized_expression";
 
+        //BinaryExpressionContext {
+        //    is_a_left_child_that_should_not_group,
+        //    has_a_right_child_that_should_not_group,
+        //    has_left_and_rigth_children_same_precedence,
+        //    is_top_most_parent_node_that_should_not_group,
+        //    should_indent_top_most_expression,
+        //}
+
         BinaryExpressionContext {
-            is_a_left_child_that_should_not_group,
-            has_a_right_child_that_should_not_group,
-            has_left_and_rigth_children_same_precedence,
-            is_top_most_parent_node_that_should_not_group,
-            should_indent_top_most_expression,
+            parent_has_same_precedence,
         }
     }
 
@@ -1147,37 +1153,23 @@ impl<'a> DocBuild<'a> for BinaryExpression {
 
         let context = &self.context;
 
-        if context.is_a_left_child_that_should_not_group
-            || context.has_left_and_rigth_children_same_precedence
-            || context.is_top_most_parent_node_that_should_not_group
-        {
-            let mut doc = b.concat(vec![left_doc, b.txt(" "), op_doc, b.softline(), right_doc]);
-            if context.should_indent_top_most_expression {
-                doc = b.indent(doc);
-            }
-            return result.push(doc);
-        }
-
-        if context.has_a_right_child_that_should_not_group {
+        if context.parent_has_same_precedence {
             return result.push(b.concat(vec![
-                b.group(left_doc),
-                b.txt(" "),
-                op_doc,
+                left_doc,
                 b.softline(),
+                op_doc,
+                b.txt(" "),
                 right_doc,
             ]));
         }
 
-        // At this point we know that this node is not in a binaryish chain, so we
-        // can safely group the left doc and right doc separately to have this effect:
-        // a = b
-        //  .c() > d
-        result.push(b.group(left_doc));
-        result.push(b.txt(" "));
-
-        // TODO: prettier apex handles extra line_comment use-case
-
-        return result.push(b.group_concat(vec![op_doc, b.softline(), right_doc]));
+        result.push(b.group_indented_align_concat(vec![
+            left_doc,
+            b.softline(),
+            op_doc,
+            b.txt(" "),
+            right_doc,
+        ]))
     }
 }
 
