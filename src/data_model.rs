@@ -831,21 +831,13 @@ impl<'a> DocBuild<'a> for MethodInvocation {
 
         docs.push(self.arguments.build(b));
 
-        if context.is_a_simple_node {
-            return result.push(b.concat(docs));
-        }
-
         if context.is_top_most_in_nest {
             return result.push(b.group_indented_align_concat(docs));
         }
 
         result.push(b.concat(docs))
-
-        //if !self.is_nested {
-        //    //result.push(b.group(b.indent(b.concat(docs))));
-        //    result.push(b.group_indented_align_concat(docs));
-        //} else {
-        //    result.push(b.concat(docs));
+        //if context.is_a_simple_node {
+        //    return result.push(b.concat(docs));
         //}
     }
 }
