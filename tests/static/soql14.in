@@ -1,7 +1,6 @@
-@isTest
-private class UTIL_SortContact_TEST {
+private class A {
   @isTest
-  private static void sortContactsLastFirstName() {
+  private static void B() {
     queryLocator = System.Database.getQueryLocator(
       [
         SELECT Id
@@ -13,5 +12,7 @@ private class UTIL_SortContact_TEST {
         ORDER BY LogRetentionDate__c
       ]
     );
+
+    queryLocator = System.Database.getQueryLocator('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' + 'bbbbbbbbbbbbbbbbbbbbbbbbbbb');
   }
 }

@@ -1,12 +1,18 @@
-class HelloWorld {
-  {
-      b = 'Very Long String Literal That Will Break The Line For Sure Without Help From Any Other Element'[0];
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb >
-    111111111;
+private class A {
+  @isTest
+  private static void B() {
+    queryLocator = System.Database.getQueryLocator(
+      [
+        SELECT Id
+        FROM Log__c
+        WHERE
+          (LogRetentionDate__c <= :LOG_RETENTION_END_DATE
+          AND LogRetentionDate__c != NULL)
+          OR TotalLogEntries__c = 0
+        ORDER BY LogRetentionDate__c
+      ]
+    );
 
-    (bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb >
-    111111111 &&
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb >
-    111111111) && ccccccccccccccccccccc > 1;
+    queryLocator = System.Database.getQueryLocator('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' + 'bbbbbbbbbbbbbbbbbbbbbbbbbbb');
   }
 }
