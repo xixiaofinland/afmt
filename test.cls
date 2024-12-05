@@ -19,5 +19,11 @@ class A {
     Integer[] b = new List<Integer>{};
 
     Id[] accountIds = new Id[]{ accountId };
+
+    Map<String, Integer > intsBymap
+                = new Map<String, Integer>
+                 {    'hello'    => 1  ,
+                  'world' =>    2    }   ;
+
   }
 }

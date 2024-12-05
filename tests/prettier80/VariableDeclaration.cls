@@ -2,7 +2,6 @@ public class VariableDeclaration {
   public void declareVariables() {
     String firstString, secondString;
     String a = 'aaa', b = 'bbb';
-    List<UnknownClass.InnerClass> nestedList = new List<UnknownClass.InnerClass>();
     String c = 'c';
     String d = 'd';
     String e = c, d = a;

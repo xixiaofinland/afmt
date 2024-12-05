@@ -1270,7 +1270,7 @@ pub struct VariableDeclarator {
     pub name: String,
     //pub dimenssions
     pub value: Option<VariableInitializer>,
-    pub is_value_child_binary: bool,
+    pub is_value_child_query: bool,
 }
 
 impl VariableDeclarator {
@@ -1278,7 +1278,7 @@ impl VariableDeclarator {
         assert_check(node, "variable_declarator");
         let name = node.cvalue_by_n("name", source_code());
 
-        let mut is_value_child_binary = false;
+        let mut is_value_child_query = false;
         let value = node.try_c_by_n("value").map(|n| match n.kind() {
             //"array_initializer" => {
             //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
@@ -1287,7 +1287,7 @@ impl VariableDeclarator {
             //    PrimaryExpression::Identifier(v.value(source_code())),
             //))),
             _ => {
-                is_value_child_binary = n.kind() == "binary_expression";
+                is_value_child_query = n.kind() == "query_expression";
                 VariableInitializer::Exp(Expression::new(n))
             }
         });
@@ -1295,7 +1295,7 @@ impl VariableDeclarator {
         Self {
             name,
             value,
-            is_value_child_binary,
+            is_value_child_query,
         }
     }
 }
@@ -1314,9 +1314,15 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
         let value = self.value.as_ref().unwrap();
         docs.push(b._txt("="));
 
-        docs.push(b.softline());
-        docs.push(value.build(b));
-        result.push(b.group_indent_concat(docs));
+        if self.is_value_child_query {
+            docs.push(b.txt(" "));
+            docs.push(value.build(b));
+            result.push(b.concat(docs));
+        } else {
+            docs.push(b.softline());
+            docs.push(value.build(b));
+            result.push(b.group_indent_concat(docs));
+        }
         //if self.is_value_child_binary {
         //    docs.push(b.softline());
         //    docs.push(value.build(b));
