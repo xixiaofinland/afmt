@@ -9,7 +9,6 @@ use crate::{
     },
 };
 use colored::Colorize;
-use serde::Serialize;
 use std::fmt::Debug;
 use tree_sitter::{Node, Point, Range};
 
@@ -23,7 +22,7 @@ pub trait DocBuild<'a> {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default)]
 pub struct Root {
     pub members: Vec<RootMember>,
 }
@@ -67,7 +66,7 @@ impl<'a> DocBuild<'a> for Root {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ClassDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
@@ -132,7 +131,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct MethodDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
@@ -182,7 +181,7 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct FormalParameters {
     pub formal_parameters: Vec<FormalParameter>,
 }
@@ -211,7 +210,7 @@ impl<'a> DocBuild<'a> for FormalParameters {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct FormalParameter {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
@@ -251,7 +250,7 @@ impl<'a> DocBuild<'a> for FormalParameter {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct SuperClass {
     pub type_: Type,
 }
@@ -272,7 +271,7 @@ impl<'a> DocBuild<'a> for SuperClass {
     }
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default)]
 pub struct Modifiers {
     //pub buckets: CommentBuckets,
     annotation: Option<Annotation>,
@@ -313,7 +312,7 @@ impl<'a> DocBuild<'a> for Modifiers {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Annotation {
     pub name: String,
     pub arguments: Option<AnnotationArgumentList>,
@@ -342,7 +341,7 @@ impl<'a> DocBuild<'a> for Annotation {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct AnnotationKeyValue {
     key: String,
     value: String,
@@ -366,7 +365,7 @@ impl<'a> DocBuild<'a> for AnnotationKeyValue {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ClassBody {
     pub class_members: Vec<BodyMember<ClassMember>>,
 }
@@ -394,7 +393,7 @@ impl<'a> DocBuild<'a> for ClassBody {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct FieldDeclaration {
     pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
@@ -458,7 +457,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ArrayInitializer {
     initializers: Vec<VariableInitializer>,
 }
@@ -489,7 +488,7 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct AssignmentExpression {
     pub left: AssignmentLeft,
     pub op: String,
@@ -539,7 +538,7 @@ impl<'a> DocBuild<'a> for AssignmentExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum AssignmentLeft {
     Identifier(String),
     Field(FieldAccess),
@@ -573,7 +572,7 @@ impl<'a> DocBuild<'a> for AssignmentLeft {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct VoidType {
     pub value: String,
 }
@@ -586,7 +585,7 @@ impl VoidType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct DataRange {
     pub start_byte: usize,
     pub end_byte: usize,
@@ -608,7 +607,7 @@ impl From<Range> for DataRange {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct DataPoint {
     pub row: usize,
     pub column: usize,
@@ -623,13 +622,13 @@ impl From<Point> for DataPoint {
     }
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default)]
 pub struct CommentBuckets {
     pub pre_comments: Vec<Comment>,
     pub post_comments: Vec<Comment>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Comment {
     pub id: usize,
     pub content: String,
@@ -656,13 +655,13 @@ impl Comment {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum CommentType {
     Line,
     Block,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Block {
     pub statements: Vec<BodyMember<Statement>>,
 }
@@ -695,7 +694,7 @@ impl<'a> DocBuild<'a> for Block {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Interface {
     pub types: Vec<Type>,
 }
@@ -726,7 +725,7 @@ impl<'a> DocBuild<'a> for Interface {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct MethodInvocationContext {
     pub is_a_simple_node: bool,
     pub is_top_most_in_nest: bool,
@@ -734,7 +733,7 @@ pub struct MethodInvocationContext {
     pub has_method_child: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct MethodInvocation {
     pub object: Option<MethodObject>,
     pub property_navigation: Option<PropertyNavigation>,
@@ -842,7 +841,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum MethodObject {
     Super(Super),
     Primary(Box<PrimaryExpression>),
@@ -861,7 +860,7 @@ impl<'a> DocBuild<'a> for MethodObject {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct TypeArguments {
     pub types: Vec<Type>,
 }
@@ -887,7 +886,7 @@ impl<'a> DocBuild<'a> for TypeArguments {
     }
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default)]
 pub struct ArgumentList {
     pub expressions: Vec<Expression>,
 }
@@ -915,7 +914,7 @@ impl<'a> DocBuild<'a> for ArgumentList {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Super {}
 
 impl<'a> DocBuild<'a> for Super {
@@ -924,7 +923,7 @@ impl<'a> DocBuild<'a> for Super {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct This {}
 
 impl This {
@@ -939,7 +938,7 @@ impl<'a> DocBuild<'a> for This {
     }
 }
 
-//#[derive(Debug, Serialize)]
+//#[derive(Debug)]
 //pub struct BinaryExpressionContext {
 //    pub should_indent_top_most_expression: bool,
 //    pub is_a_left_child_that_should_not_group: bool,
@@ -948,7 +947,7 @@ impl<'a> DocBuild<'a> for This {
 //    pub is_top_most_parent_node_that_should_not_group: bool,
 //}
 //
-//#[derive(Debug, Serialize)]
+//#[derive(Debug)]
 //pub struct BinaryExpression {
 //    pub left: Expression,
 //    pub op: String,
@@ -1082,13 +1081,13 @@ impl<'a> DocBuild<'a> for This {
 //    }
 //}
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct BinaryExpressionContext {
     is_nested_expression: bool,
     parent_has_same_precedence: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct BinaryExpression {
     pub left: Expression,
     pub op: String,
@@ -1216,7 +1215,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct LocalVariableDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
@@ -1266,7 +1265,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct VariableDeclarator {
     pub name: String,
     //pub dimenssions
@@ -1330,7 +1329,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct GenericType {
     pub generic_identifier: GenericIdentifier,
     pub type_arguments: TypeArguments,
@@ -1364,7 +1363,7 @@ impl<'a> DocBuild<'a> for GenericType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum GenericIdentifier {
     Type(String),
     Scoped(ScopedTypeIdentifier),
@@ -1382,7 +1381,7 @@ impl<'a> DocBuild<'a> for GenericIdentifier {
         }
     }
 }
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct IfStatement {
     pub condition: ParenthesizedExpression,
     pub consequence: Statement,
@@ -1452,7 +1451,7 @@ impl<'a> DocBuild<'a> for IfStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ParenthesizedExpression {
     pub exp: Expression,
 }
@@ -1478,7 +1477,7 @@ impl<'a> DocBuild<'a> for ParenthesizedExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ForStatement {
     pub init: Option<LocalVariableDeclaration>,
     pub condition: Option<Expression>,
@@ -1536,7 +1535,7 @@ impl<'a> DocBuild<'a> for ForStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct EnhancedForStatement {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
@@ -1582,7 +1581,7 @@ impl<'a> DocBuild<'a> for EnhancedForStatement {
         }
     }
 }
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum UpdateExpression {
     Pre {
         operator: String,
@@ -1630,7 +1629,7 @@ impl<'a> DocBuild<'a> for UpdateExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ScopedTypeIdentifier {
     pub scoped_choice: ScopedChoice,
     pub annotations: Vec<Annotation>,
@@ -1687,7 +1686,7 @@ impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum ScopedChoice {
     TypeIdentifier(String),
     Scoped(Box<ScopedTypeIdentifier>),
@@ -1710,7 +1709,7 @@ impl<'a> DocBuild<'a> for ScopedChoice {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ConstructorDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_parameters: Option<TypeParameters>,
@@ -1754,7 +1753,7 @@ impl<'a> DocBuild<'a> for ConstructorDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ConstructorBody {
     pub constructor_invocation: Option<BodyMember<ConstructInvocation>>,
     pub statements: Vec<BodyMember<Statement>>,
@@ -1817,7 +1816,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ConstructInvocation {
     pub object: Option<Box<PrimaryExpression>>,
     pub type_arguments: Option<TypeArguments>,
@@ -1870,7 +1869,7 @@ impl<'a> DocBuild<'a> for ConstructInvocation {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Constructor {
     This,
     Super,
@@ -1885,7 +1884,7 @@ impl<'a> DocBuild<'a> for Constructor {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct TypeParameters {
     pub type_parameters: Vec<TypeParameter>,
 }
@@ -1913,7 +1912,7 @@ impl<'a> DocBuild<'a> for TypeParameters {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct TypeParameter {
     annotations: Vec<Annotation>,
     pub type_identifier: String,
@@ -1941,7 +1940,7 @@ impl<'a> DocBuild<'a> for TypeParameter {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ObjectCreationExpression {
     pub type_arguments: Option<TypeArguments>,
     pub type_: UnannotatedType,
@@ -1987,7 +1986,7 @@ impl<'a> DocBuild<'a> for ObjectCreationExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct RunAsStatement {
     pub user: ParenthesizedExpression,
     pub block: Block,
@@ -2012,7 +2011,7 @@ impl<'a> DocBuild<'a> for RunAsStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct DoStatement {
     pub body: Block,
     pub condition: ParenthesizedExpression,
@@ -2036,7 +2035,7 @@ impl<'a> DocBuild<'a> for DoStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct WhileStatement {
     pub condition: ParenthesizedExpression,
     pub body: Statement,
@@ -2065,7 +2064,7 @@ impl<'a> DocBuild<'a> for WhileStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct UnaryExpression {
     pub operator: String,
     pub operand: Box<Expression>,
@@ -2086,7 +2085,7 @@ impl<'a> DocBuild<'a> for UnaryExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct FieldAccess {
     pub object: MethodObject,
     pub property_navigation: PropertyNavigation,
@@ -2126,7 +2125,7 @@ impl<'a> DocBuild<'a> for FieldAccess {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct EnumDeclaration {
     pub modifiers: Option<Modifiers>,
     pub name: String,
@@ -2164,7 +2163,7 @@ impl<'a> DocBuild<'a> for EnumDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct EnumBody {
     enum_constants: Vec<EnumConstant>,
 }
@@ -2197,7 +2196,7 @@ impl<'a> DocBuild<'a> for EnumBody {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct EnumConstant {
     pub modifiers: Option<Modifiers>,
     pub name: String,
@@ -2220,7 +2219,7 @@ impl<'a> DocBuild<'a> for EnumConstant {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum DmlExpression {
     Basic {
         dml_type: DmlType,
@@ -2336,7 +2335,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum DmlSecurityMode {
     User(String),
     System(String),
@@ -2363,7 +2362,7 @@ impl<'a> DocBuild<'a> for DmlSecurityMode {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum DmlType {
     Insert,
     Update,
@@ -2400,7 +2399,7 @@ impl DmlType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ArrayAccess {
     pub array: PrimaryExpression,
     pub index: Expression,
@@ -2423,7 +2422,7 @@ impl<'a> DocBuild<'a> for ArrayAccess {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ArrayCreationExpression {
     pub type_: SimpleType,
     pub variant: ArrayCreationVariant,
@@ -2474,7 +2473,7 @@ impl<'a> DocBuild<'a> for ArrayCreationExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum ArrayCreationVariant {
     DD {
         dimensions_exprs: Vec<DimensionsExpr>,
@@ -2516,7 +2515,7 @@ impl<'a> DocBuild<'a> for ArrayCreationVariant {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Dimensions {}
 
 impl Dimensions {
@@ -2532,7 +2531,7 @@ impl<'a> DocBuild<'a> for Dimensions {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct DimensionsExpr {
     pub exp: Expression,
 }
@@ -2554,7 +2553,7 @@ impl<'a> DocBuild<'a> for DimensionsExpr {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ReturnStatement {
     pub exp: Option<Expression>,
 }
@@ -2577,7 +2576,7 @@ impl<'a> DocBuild<'a> for ReturnStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct TernaryExpression {
     pub condition: Expression,
     pub consequence: Expression,
@@ -2607,7 +2606,7 @@ impl<'a> DocBuild<'a> for TernaryExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct TryStatement {
     pub body: Block,
     pub tail: TryStatementTail,
@@ -2646,7 +2645,7 @@ impl<'a> DocBuild<'a> for TryStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum TryStatementTail {
     Catches(Vec<CatchClause>),
     CatchesFinally(Vec<CatchClause>, FinallyClause),
@@ -2670,7 +2669,7 @@ impl<'a> DocBuild<'a> for TryStatementTail {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct CatchClause {
     pub formal_parameter: FormalParameter,
     pub body: Block,
@@ -2700,7 +2699,7 @@ impl<'a> DocBuild<'a> for CatchClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct FinallyClause {
     pub body: Block,
 }
@@ -2721,7 +2720,7 @@ impl<'a> DocBuild<'a> for FinallyClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct StaticInitializer {
     pub block: Block,
 }
@@ -2741,7 +2740,7 @@ impl<'a> DocBuild<'a> for StaticInitializer {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct InterfaceDeclaration {
     pub modifiers: Option<Modifiers>,
     pub name: String,
@@ -2794,7 +2793,7 @@ impl<'a> DocBuild<'a> for InterfaceDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ExtendsInterface {
     pub types: Vec<Type>,
 }
@@ -2822,7 +2821,7 @@ impl<'a> DocBuild<'a> for ExtendsInterface {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct InterfaceBody {
     members: Vec<BodyMember<InterfaceMember>>,
 }
@@ -2865,7 +2864,7 @@ impl<'a> DocBuild<'a> for InterfaceBody {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum InterfaceMember {
     Constant(ConstantDeclaration),
     EnumD(EnumDeclaration),
@@ -2900,7 +2899,7 @@ impl<'a> DocBuild<'a> for InterfaceMember {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ConstantDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
@@ -2942,7 +2941,7 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct AccessorList {
     pub accessor_declarations: Vec<AccessorDeclaration>,
     pub child_has_body_section: bool,
@@ -2986,7 +2985,7 @@ impl<'a> DocBuild<'a> for AccessorList {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct AccessorDeclaration {
     pub modifiers: Option<Modifiers>,
     pub accessor: String,
@@ -3022,7 +3021,7 @@ impl<'a> DocBuild<'a> for AccessorDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct CastExpression {
     pub type_: Type,
     pub value: Expression,
@@ -3045,7 +3044,7 @@ impl<'a> DocBuild<'a> for CastExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ThrowStatement {
     pub exp: Expression,
 }
@@ -3065,7 +3064,7 @@ impl<'a> DocBuild<'a> for ThrowStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct BreakStatement {
     pub identifier: Option<String>,
 }
@@ -3091,7 +3090,7 @@ impl<'a> DocBuild<'a> for BreakStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ContinueStatement {
     pub identifier: Option<String>,
 }
@@ -3117,7 +3116,7 @@ impl<'a> DocBuild<'a> for ContinueStatement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct SwitchExpression {
     pub condition: Expression,
     pub body: SwitchBlock,
@@ -3141,7 +3140,7 @@ impl<'a> DocBuild<'a> for SwitchExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct SwitchBlock {
     pub rules: Vec<SwitchRule>,
 }
@@ -3169,7 +3168,7 @@ impl<'a> DocBuild<'a> for SwitchBlock {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct SwitchRule {
     pub label: SwitchLabel,
     pub block: Block,
@@ -3193,7 +3192,7 @@ impl<'a> DocBuild<'a> for SwitchRule {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum SwitchLabel {
     WhenSObject(WhenSObjectType),
     Expressions(Vec<Expression>),
@@ -3239,7 +3238,7 @@ impl<'a> DocBuild<'a> for SwitchLabel {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct WhenSObjectType {
     pub unannotated_type: UnannotatedType,
     pub identifier: String,
@@ -3277,7 +3276,7 @@ impl<'a> DocBuild<'a> for WhenSObjectType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct InstanceOfExpression {
     pub left: Expression,
     pub right: Type,
@@ -3299,7 +3298,7 @@ impl<'a> DocBuild<'a> for InstanceOfExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct VersionExpression {
     version_number: Option<String>,
 }
@@ -3326,7 +3325,7 @@ impl<'a> DocBuild<'a> for VersionExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct JavaFieldAccess {
     pub field_access: FieldAccess,
 }
@@ -3345,7 +3344,7 @@ impl<'a> DocBuild<'a> for JavaFieldAccess {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct JavaType {
     pub scoped_type_identifier: ScopedTypeIdentifier,
 }
@@ -3367,7 +3366,7 @@ impl<'a> DocBuild<'a> for JavaType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ArrayType {
     pub element: UnannotatedType,
     pub dimensions: Dimensions,
@@ -3393,7 +3392,7 @@ impl<'a> DocBuild<'a> for ArrayType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct TriggerDeclaration {
     pub name: String,
     pub object: String,
@@ -3440,7 +3439,7 @@ impl<'a> DocBuild<'a> for TriggerDeclaration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct TriggerBody {
     pub block: Block,
 }
@@ -3458,7 +3457,7 @@ impl<'a> DocBuild<'a> for TriggerBody {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct QueryExpression {
     pub query_body: QueryBody,
 }
@@ -3482,7 +3481,7 @@ impl<'a> DocBuild<'a> for QueryExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum QueryBody {
     SOQL(SoqlQueryBody),
     SOSL,
@@ -3511,7 +3510,7 @@ impl<'a> DocBuild<'a> for QueryBody {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct SoqlQueryBody {
     pub select_clause: SelectClause,
     pub from_clause: FromClause,
@@ -3607,7 +3606,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct FromClause {
     pub content: StorageVariant,
 }
@@ -3626,7 +3625,7 @@ impl<'a> DocBuild<'a> for FromClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct StorageAlias {
     pub storage_alias: StorageIdentifier,
     pub identifier: String,
@@ -3653,7 +3652,7 @@ impl<'a> DocBuild<'a> for StorageAlias {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct LimitClause {
     pub limit_value: LimitValue,
 }
@@ -3672,7 +3671,7 @@ impl<'a> DocBuild<'a> for LimitClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct BoundApexExpression {
     pub exp: Box<Expression>,
 }
@@ -3692,7 +3691,7 @@ impl<'a> DocBuild<'a> for BoundApexExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct WhereClause {
     pub boolean_exp: BooleanExpression,
 }
@@ -3716,7 +3715,7 @@ impl<'a> DocBuild<'a> for WhereClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ComparisonExpression {
     pub value: Box<ValueExpression>,
     pub comparison: Comparison,
@@ -3764,7 +3763,7 @@ impl<'a> DocBuild<'a> for ComparisonExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ValueComparison {
     pub operator: String,
     pub compared_with: ValueComparedWith,
@@ -3777,7 +3776,7 @@ impl<'a> DocBuild<'a> for ValueComparison {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct SetComparison {
     pub operator: String,
     pub set_value: SetValue,
@@ -3790,7 +3789,7 @@ impl<'a> DocBuild<'a> for SetComparison {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct ComparableList {
     pub values: Vec<ComparableListValue>,
 }
@@ -3818,7 +3817,7 @@ impl<'a> DocBuild<'a> for ComparableList {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct OrderByClause {
     pub exps: Vec<OrderExpression>,
 }
@@ -3846,7 +3845,7 @@ impl<'a> DocBuild<'a> for OrderByClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct OrderExpression {
     pub value_expression: ValueExpression,
     pub direction: Option<String>,
@@ -3886,7 +3885,7 @@ impl<'a> DocBuild<'a> for OrderExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct SubQuery {
     pub soql_query_body: Box<SoqlQueryBody>,
 }
@@ -3906,7 +3905,7 @@ impl<'a> DocBuild<'a> for SubQuery {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct MapCreationExpression {
     type_: SimpleType,
     value: MapInitializer,
@@ -3930,7 +3929,7 @@ impl<'a> DocBuild<'a> for MapCreationExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct MapInitializer {
     initializers: Vec<MapKeyInitializer>,
 }
@@ -3961,7 +3960,7 @@ impl<'a> DocBuild<'a> for MapInitializer {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct MapKeyInitializer {
     pub exp1: Box<Expression>,
     pub exp2: Box<Expression>,
@@ -3989,7 +3988,7 @@ impl<'a> DocBuild<'a> for MapKeyInitializer {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct GroupByClause {
     pub exps: Vec<GroupByExpression>,
     pub have_clause: Option<HavingClause>,
@@ -4038,7 +4037,7 @@ impl<'a> DocBuild<'a> for GroupByClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum GroupByExpression {
     Field(FieldIdentifier),
     Func(FunctionExpression),
@@ -4057,7 +4056,7 @@ impl<'a> DocBuild<'a> for GroupByExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct HavingClause {
     pub exp: HavingBooleanExpression,
 }
@@ -4079,7 +4078,7 @@ impl<'a> DocBuild<'a> for HavingClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum HavingBooleanExpression {
     And(HavingAndExpression),
     Or(HavingOrExpression),
@@ -4115,7 +4114,7 @@ impl<'a> DocBuild<'a> for HavingBooleanExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct HavingAndExpression {
     pub exps: Vec<HavingConditionExpression>,
 }
@@ -4144,7 +4143,7 @@ impl<'a> DocBuild<'a> for HavingAndExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct HavingOrExpression {
     pub exps: Vec<HavingConditionExpression>,
 }
@@ -4173,7 +4172,7 @@ impl<'a> DocBuild<'a> for HavingOrExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct HavingNotExpression {
     pub exp: Box<HavingConditionExpression>,
 }
@@ -4194,7 +4193,7 @@ impl<'a> DocBuild<'a> for HavingNotExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum HavingConditionExpression {
     Parenthesized(Box<HavingBooleanExpression>),
     Comparison(HavingComparisonExpression),
@@ -4220,7 +4219,7 @@ impl<'a> DocBuild<'a> for HavingConditionExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct HavingComparisonExpression {
     pub value: ValueExpression,
     pub comparison: HavingComparison,
@@ -4258,7 +4257,7 @@ impl<'a> DocBuild<'a> for HavingComparisonExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum HavingComparison {
     Value {
         operator: String,
@@ -4285,7 +4284,7 @@ impl<'a> DocBuild<'a> for HavingComparison {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum HavingValue {
     Soql(SoqlLiteral),
     Bound(BoundApexExpression),
@@ -4313,7 +4312,7 @@ impl<'a> DocBuild<'a> for HavingValue {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum HavingSet {
     Comparable(ComparableList),
     Bound(BoundApexExpression),
@@ -4342,7 +4341,7 @@ impl<'a> DocBuild<'a> for HavingSet {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct WithClause {
     pub with_type: WithType,
 }
@@ -4361,7 +4360,7 @@ impl<'a> DocBuild<'a> for WithClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum WithType {
     SimpleType(String), // Security_Enforced, User_Mode, and System_Mode
     //RecordVisibility(WithRecordVisibilityExpression),

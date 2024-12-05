@@ -1,6 +1,4 @@
 use colored::Colorize;
-use serde::Serialize;
-use serde_json::Value;
 use tree_sitter::Node;
 
 use crate::{
@@ -11,7 +9,7 @@ use crate::{
     utility::{assert_check, source_code},
 };
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum RootMember {
     Class(Box<ClassDeclaration>),
     Enum(Box<EnumDeclaration>),
@@ -38,7 +36,7 @@ impl<'a> DocBuild<'a> for RootMember {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum ClassMember {
     Field(Box<FieldDeclaration>),
     NestedClass(Box<ClassDeclaration>),
@@ -98,7 +96,7 @@ impl<'a> DocBuild<'a> for ClassMember {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum UnannotatedType {
     Simple(SimpleType),
     Array(Box<ArrayType>),
@@ -127,7 +125,7 @@ impl<'a> DocBuild<'a> for UnannotatedType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum SimpleType {
     Identifier(String),
     Void(VoidType),
@@ -171,7 +169,7 @@ impl<'a> DocBuild<'a> for SimpleType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum VariableInitializer {
     Exp(Expression),
     Array(Box<ArrayInitializer>),
@@ -199,7 +197,7 @@ impl<'a> DocBuild<'a> for VariableInitializer {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Expression {
     Assignment(Box<AssignmentExpression>),
     Binary(Box<BinaryExpression>),
@@ -297,7 +295,7 @@ impl<'a> DocBuild<'a> for Expression {
 //    $.version_expression
 //  ),
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum PrimaryExpression {
     Literal(Literal_),
     Identifier(String),
@@ -385,7 +383,7 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Literal_ {
     Bool(String),
     Null,
@@ -431,7 +429,7 @@ impl<'a> DocBuild<'a> for Literal_ {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Modifier {
     Abstract,
     Final,
@@ -546,7 +544,7 @@ impl<'a> DocBuild<'a> for Modifier {
 //    $.try_statement,
 //    $.run_as_statement
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Statement {
     If(Box<IfStatement>),
     Exp(Expression),
@@ -650,7 +648,7 @@ impl<'a> DocBuild<'a> for Statement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Type {
     Unannotated(UnannotatedType),
 }
@@ -679,7 +677,7 @@ impl<'a> DocBuild<'a> for Type {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum PropertyNavigation {
     SafeNavigationOperator,
     Dot,
@@ -698,7 +696,7 @@ impl<'a> DocBuild<'a> for PropertyNavigation {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum AnnotationArgumentList {
     Nil,
     Value(String),
@@ -749,13 +747,13 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 }
 
 // Generic struct to associate a body member with trailing newline information
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum TriggerEvent {
     BeforeInsert,
     BeforeUpdate,
@@ -809,7 +807,7 @@ impl<'a> DocBuild<'a> for TriggerEvent {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum SelectClause {
     Count(String),
     Selectable(Vec<SelectableExpression>),
@@ -856,7 +854,7 @@ impl<'a> DocBuild<'a> for SelectClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum SelectableExpression {
     Value(ValueExpression),
     //Alias(AliasExpression),
@@ -890,7 +888,7 @@ impl<'a> DocBuild<'a> for SelectableExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum FieldIdentifier {
     Identifier(String),
     Dotted(Vec<String>),
@@ -930,7 +928,7 @@ impl<'a> DocBuild<'a> for FieldIdentifier {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum StorageVariant {
     Identifier(StorageIdentifier),
     Alias(StorageAlias),
@@ -959,7 +957,7 @@ impl<'a> DocBuild<'a> for StorageVariant {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum StorageIdentifier {
     Identifier(String),
     Dotted(Vec<String>),
@@ -999,7 +997,7 @@ impl<'a> DocBuild<'a> for StorageIdentifier {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum LimitValue {
     Int(String),
     Bound(BoundApexExpression),
@@ -1028,7 +1026,7 @@ impl<'a> DocBuild<'a> for LimitValue {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum BooleanExpression {
     And(Vec<ConditionExpression>),
     Or(Vec<ConditionExpression>),
@@ -1103,7 +1101,7 @@ impl<'a> DocBuild<'a> for BooleanExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum ConditionExpression {
     Bool(Box<BooleanExpression>),
     Comparison(ComparisonExpression),
@@ -1147,7 +1145,7 @@ impl<'a> DocBuild<'a> for ConditionExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum ValueExpression {
     Field(FieldIdentifier),
     Function(Box<FunctionExpression>),
@@ -1176,7 +1174,7 @@ impl<'a> DocBuild<'a> for ValueExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum FunctionVariant {
     Complex {
         function_name: String,
@@ -1213,7 +1211,7 @@ impl<'a> DocBuild<'a> for FunctionVariant {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum FunctionChoice {
     Field(String),
     Bound(BoundApexExpression),
@@ -1242,7 +1240,7 @@ impl<'a> DocBuild<'a> for FunctionChoice {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum GeoLocationType {
     Field(FieldIdentifier),
     Bound(BoundApexExpression),
@@ -1305,7 +1303,7 @@ impl<'a> DocBuild<'a> for GeoLocationType {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum Comparison {
     Value(ValueComparison),
     Set(SetComparison),
@@ -1335,7 +1333,7 @@ impl<'a> DocBuild<'a> for Comparison {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum ValueComparedWith {
     Literal(SoqlLiteral),
     Bound(BoundApexExpression),
@@ -1368,7 +1366,7 @@ impl<'a> DocBuild<'a> for ValueComparedWith {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum SoqlLiteral {
     Int(String),
     Decimal(String),
@@ -1428,7 +1426,7 @@ impl<'a> DocBuild<'a> for SoqlLiteral {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct DateLiteralWithParam {
     date_literal: String,
     param: String,
@@ -1456,7 +1454,7 @@ impl<'a> DocBuild<'a> for DateLiteralWithParam {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum SetValue {
     Sub(SubQuery),
     List(ComparableList),
@@ -1490,7 +1488,7 @@ impl<'a> DocBuild<'a> for SetValue {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum ComparableListValue {
     Literal(SoqlLiteral),
     Bound(BoundApexExpression),
@@ -1518,7 +1516,7 @@ impl<'a> DocBuild<'a> for ComparableListValue {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum OffsetClause {
     Int(String),
     Bound(BoundApexExpression),
@@ -1550,7 +1548,7 @@ impl<'a> DocBuild<'a> for OffsetClause {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum FunctionExpression {
     WithGEO {
         function_name: String,
@@ -1638,7 +1636,7 @@ impl<'a> DocBuild<'a> for FunctionExpression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub enum FunctionExpressionChoice {
     Field(FieldIdentifier),
     Bound(BoundApexExpression),
