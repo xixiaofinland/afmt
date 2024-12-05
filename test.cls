@@ -1,29 +1,24 @@
 class A {
   {
-    Account[] account =
-      new Account[]{
-        new Account(Id = accountId, Name = 'Inner Acme One'),
-        new Account(Id = accountId, Name = 'Inner Acme Two')
-      };
 
-    List<Account> accounts =
-      [SELECT Id FROM Account WHERE CreatedDate = LAST_N_DAYS:60];
+    a2aaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb()
+      .cccccccccccccccccccccc(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa().bbbbbbbbbbbbbbbbbbbbbbbbbb().ccccccccccccccccccc(
+      a(kkkkkkkkkkkkkkkkkkkkkk(),cccccccccccccccccccccccccccccccccccccccccccccc()), mmmmmmmmmmmmmmmmmmmmmmmmmmmmm()
+      ))
+      .ddddddddddddddddddddddddddddddd();
 
-    List<Account> accounts =
+    Boolean aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa =
       [
-        SELECT Id, Name, Date, ABC__c
-        FROM Account
-        WHERE CreatedDate = LAST_N_DAYS:60
-      ];
-
-    Integer[] b = new List<Integer>{};
-
-    Id[] accountIds = new Id[]{ accountId };
-
-    Map<String, Integer > intsBymap
-                = new Map<String, Integer>
-                 {    'hello'    => 1  ,
-                  'world' =>    2    }   ;
-
+          SELECT
+            Id,
+            Name______bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_c,
+            Kname_________________b_______________aa_c
+          FROM Contact
+        ]
+        .bbbbbbbbb()
+        .cccccccccccc()
+        .ddddddddddddddd()
+        .size() > 0;
   }
 }
+
