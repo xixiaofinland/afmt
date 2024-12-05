@@ -114,7 +114,6 @@ class Conditional extends Object {
     b = a[a[0]];
 
     b = 'String Literal'[0];
-    b = 'Very Long String Literal That Will Break The Line For Sure Without Help From Any Other Element'[0];
 
     String longResult = o[0].callMethod('first param');
   }

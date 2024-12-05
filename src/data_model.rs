@@ -1058,6 +1058,7 @@ pub struct BinaryExpression {
     pub context: BinaryExpressionContext,
 }
 
+// TODO: clean up
 impl BinaryExpression {
     fn build_context(node: &Node) -> BinaryExpressionContext {
         let op = node.c_by_n("operator").kind();
@@ -1145,8 +1146,6 @@ impl BinaryExpression {
     }
 }
 
-// logic copied prettier apex
-// https://github.com/dangmai/prettier-plugin-apex/blob/0e4bd3495e09b35c93d9aa5264a85319311b96c0/packages/prettier-plugin-apex/src/printer.ts#L117
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let left_doc = self.left.build(b);
