@@ -103,7 +103,8 @@ mod tests {
     }
 
     fn run_prettier_test_files(source: &Path, config_name: &str) -> bool {
-        let prettier_file = source.with_extension(config_name);
+        let prettier_file = source.with_extension("cls");
+        //let prettier_file = source.with_extension(config_name);
 
         if !prettier_file.exists() {
             println!(
