@@ -205,7 +205,7 @@ impl<'a> DocBuild<'a> for FormalParameters {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround_align(&modifiers_doc, sep, open, close);
+        let doc = b.group_surround_indented_align(&modifiers_doc, sep, open, close);
         result.push(doc);
     }
 }
@@ -483,7 +483,7 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("{"), Some(b.softline()));
         let close = Insertable::new(Some(b.softline()), Some("}"), None);
-        let doc = b.group_surround_align(&docs, sep, open, close);
+        let doc = b.group_surround_indented_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -913,7 +913,7 @@ impl<'a> DocBuild<'a> for ArgumentList {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround_align(&docs, sep, open, close);
+        let doc = b.group_surround_indented_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -1274,7 +1274,7 @@ pub struct VariableDeclarator {
     pub name: String,
     //pub dimenssions
     pub value: Option<VariableInitializer>,
-    pub is_value_child_query: bool,
+    pub is_value_child_a_query_node: bool,
 }
 
 impl VariableDeclarator {
@@ -1282,7 +1282,7 @@ impl VariableDeclarator {
         assert_check(node, "variable_declarator");
         let name = node.cvalue_by_n("name", source_code());
 
-        let mut is_value_child_query = false;
+        let mut is_value_child_a_query_node = false;
         let value = node.try_c_by_n("value").map(|n| match n.kind() {
             //"array_initializer" => {
             //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
@@ -1291,7 +1291,7 @@ impl VariableDeclarator {
             //    PrimaryExpression::Identifier(v.value(source_code())),
             //))),
             _ => {
-                is_value_child_query = n.kind() == "query_expression";
+                is_value_child_a_query_node = n.kind() == "query_expression";
                 VariableInitializer::Exp(Expression::new(n))
             }
         });
@@ -1299,7 +1299,7 @@ impl VariableDeclarator {
         Self {
             name,
             value,
-            is_value_child_query,
+            is_value_child_a_query_node,
         }
     }
 }
@@ -1318,7 +1318,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
         let value = self.value.as_ref().unwrap();
         docs.push(b._txt("="));
 
-        if self.is_value_child_query {
+        if self.is_value_child_a_query_node {
             docs.push(b.txt(" "));
             docs.push(value.build(b));
             result.push(b.concat(docs));
@@ -1327,15 +1327,6 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
             docs.push(value.build(b));
             result.push(b.group_indent_concat(docs));
         }
-        //if self.is_value_child_binary {
-        //    docs.push(b.softline());
-        //    docs.push(value.build(b));
-        //    result.push(b.group_indent_concat(docs));
-        //} else {
-        //    docs.push(b.txt(" "));
-        //    docs.push(value.build(b));
-        //    result.push(b.group_concat(docs));
-        //}
     }
 }
 
@@ -2201,7 +2192,7 @@ impl<'a> DocBuild<'a> for EnumBody {
         let sep = Insertable::new(None, Some(","), Some(b.nl()));
         let open = Insertable::new(None, Some("{"), Some(b.nl()));
         let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.group_surround_align(&docs, sep, open, close);
+        let doc = b.group_surround_indented_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -2983,13 +2974,13 @@ impl<'a> DocBuild<'a> for AccessorList {
             let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
             let open = Insertable::new(None, Some("{"), Some(b.nl()));
             let close = Insertable::new(Some(b.nl()), Some("}"), None);
-            let doc = b.group_surround_align(&docs, sep, open, close);
+            let doc = b.group_surround_indented_align(&docs, sep, open, close);
             result.push(doc);
         } else {
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("{"), Some(b.softline()));
             let close = Insertable::new(Some(b.softline()), Some("}"), None);
-            let doc = b.group_surround_align(&docs, sep, open, close);
+            let doc = b.group_surround_indented_align(&docs, sep, open, close);
             result.push(doc);
         }
     }
@@ -3173,7 +3164,7 @@ impl<'a> DocBuild<'a> for SwitchBlock {
         let sep = Insertable::new(None, Some(""), Some(b.nl()));
         let open = Insertable::new(None, Some("{"), Some(b.nl()));
         let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.surround_align(&docs, sep, open, close);
+        let doc = b.surround_indented_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -3486,7 +3477,7 @@ impl<'a> DocBuild<'a> for QueryExpression {
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
         let open = Insertable::new(None, Some("["), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
-        let doc = b.group_surround_align(&docs, sep, open, close);
+        let doc = b.group_surround_indented_align(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -3965,7 +3956,7 @@ impl<'a> DocBuild<'a> for MapInitializer {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("{"), Some(b.softline()));
         let close = Insertable::new(Some(b.softline()), Some("}"), None);
-        let doc = b.group_surround_align(&docs, sep, open, close);
+        let doc = b.group_surround_indented_align(&docs, sep, open, close);
         result.push(doc);
     }
 }

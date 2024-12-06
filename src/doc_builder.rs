@@ -18,17 +18,17 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    pub fn group_surround_align(
+    pub fn group_surround_indented_align(
         &'a self,
         elems: &[DocRef<'a>],
         sep: Insertable<'a>,
         open: Insertable<'a>,
         close: Insertable<'a>,
     ) -> DocRef<'a> {
-        self.group(self.surround_align(elems, sep, open, close))
+        self.group(self.surround_indented_align(elems, sep, open, close))
     }
 
-    pub fn surround_align(
+    pub fn surround_indented_align(
         &'a self,
         elems: &[DocRef<'a>],
         sep: Insertable<'a>,
