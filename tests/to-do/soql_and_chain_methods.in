@@ -1,20 +1,23 @@
 class A {
   {
-    Boolean aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa =
-      [
+    [
         SELECT
           Id,
           Name______bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_c,
           Kname_________________b_______________aa_c
         FROM Contact
-      ] > 0;
+      ]
+      .b()
+      .c();
 
-    Boolean aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa =
-      15> [  SELECT
+    [
+        SELECT
           Id,
           Name______bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_c,
           Kname_________________b_______________aa_c
         FROM Contact
-      ];
+      ]
+      .b()
+      .c();
   }
 }

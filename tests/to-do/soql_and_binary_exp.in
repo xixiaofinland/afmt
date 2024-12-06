@@ -1,0 +1,10 @@
+Class A{{
+    Boolean aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa =
+      [
+        SELECT
+          Id,
+          Name______bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_c,
+          Kname_________________b_______________aa_c
+        FROM Contact
+      ] > 0;
+}}
