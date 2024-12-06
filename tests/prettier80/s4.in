@@ -5,11 +5,7 @@ public class Me {
                      FROM Account
                        WHERE 
                 Name = :
-                [SELECT Name FROM Account
-                     WHERE Id = :A.Id
-
-                     ].Name    ];
-
+                [SELECT Name FROM Account WHERE Id = :A.Id ].Name    ];
 
      }
 }
