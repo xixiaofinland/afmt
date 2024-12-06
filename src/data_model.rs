@@ -4,8 +4,8 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
     utility::{
-        assert_check, get_precedence, has_trailing_new_line, is_binary_node, is_method_invocation,
-        source_code,
+        assert_check, get_precedence, has_trailing_new_line, is_binary_exp, is_method_invocation,
+        is_where_or_have_clause, source_code,
     },
 };
 use colored::Colorize;
@@ -505,7 +505,7 @@ impl AssignmentExpression {
 
         let right_child = node.c_by_n("right");
         let right = Expression::new(right_child);
-        let is_right_child_binary = is_binary_node(&right_child);
+        let is_right_child_binary = is_binary_exp(&right_child);
 
         Self {
             left,
@@ -967,7 +967,7 @@ impl BinaryExpression {
             .expect("BinaryExpression node should always have a parent");
         //let left_child = node.c_by_n("left");
         //let right_child = node.c_by_n("right");
-        let is_a_chaining_inner_node = is_binary_node(&parent);
+        let is_a_chaining_inner_node = is_binary_exp(&parent);
 
         //let is_left_node_binary = is_binary_node(&left_child);
         //let is_right_node_binary = is_binary_node(&right_child);
@@ -977,7 +977,7 @@ impl BinaryExpression {
         //let left_child_has_same_precedence = is_left_node_binary
         //    && precedence == get_precedence(left_child.c_by_n("operator").kind());
 
-        let has_parent_same_precedence = is_binary_node(&parent)
+        let has_parent_same_precedence = is_binary_exp(&parent)
             && precedence == get_precedence(parent.c_by_n("operator").kind());
 
         // struct properties below;
@@ -1015,7 +1015,7 @@ impl BinaryExpression {
         BinaryExpressionContext {
             has_parent_same_precedence,
             is_a_chaining_inner_node,
-            is_parent_return_statement: parent.kind() == "return_statement"
+            is_parent_return_statement: parent.kind() == "return_statement",
         }
     }
 
@@ -1066,7 +1066,6 @@ impl<'a> DocBuild<'a> for BinaryExpression {
                 right_doc,
             ]));
         }
-
 
         // otherwise:
         result.push(b.group_indented_align_concat(vec![
@@ -3978,6 +3977,7 @@ impl<'a> DocBuild<'a> for HavingBooleanExpression {
 #[derive(Debug)]
 pub struct HavingAndExpression {
     pub exps: Vec<HavingConditionExpression>,
+    pub needs_parenthesis: bool,
 }
 
 impl HavingAndExpression {
@@ -3989,17 +3989,35 @@ impl HavingAndExpression {
             .into_iter()
             .map(|n| HavingConditionExpression::new(n))
             .collect();
-        Self { exps }
+
+        let needs_parenthesis = !is_where_or_have_clause(
+            &node
+                .parent()
+                .expect("HavingAndExpression should have parent node"),
+        );
+
+        Self {
+            exps,
+            needs_parenthesis,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for HavingAndExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if self.needs_parenthesis {
+            result.push(b.txt("("));
+        }
+
         for (i, exp) in self.exps.iter().enumerate() {
             if i > 0 {
                 result.push(b._txt_("AND"));
             }
             result.push(exp.build(b));
+        }
+
+        if self.needs_parenthesis {
+            result.push(b.txt(")"));
         }
     }
 }
@@ -4007,6 +4025,7 @@ impl<'a> DocBuild<'a> for HavingAndExpression {
 #[derive(Debug)]
 pub struct HavingOrExpression {
     pub exps: Vec<HavingConditionExpression>,
+    pub needs_parenthesis: bool,
 }
 
 impl HavingOrExpression {
@@ -4018,17 +4037,35 @@ impl HavingOrExpression {
             .into_iter()
             .map(|n| HavingConditionExpression::new(n))
             .collect();
-        Self { exps }
+
+        let needs_parenthesis = !is_where_or_have_clause(
+            &node
+                .parent()
+                .expect("HavingAndExpression should have parent node"),
+        );
+
+        Self {
+            exps,
+            needs_parenthesis,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for HavingOrExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if self.needs_parenthesis {
+            result.push(b.txt("("));
+        }
+
         for (i, exp) in self.exps.iter().enumerate() {
             if i > 0 {
                 result.push(b._txt_("OR"));
             }
             result.push(exp.build(b));
+        }
+
+        if self.needs_parenthesis {
+            result.push(b.txt(")"));
         }
     }
 }

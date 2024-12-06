@@ -110,6 +110,10 @@ pub fn is_method_invocation(node: &Node) -> bool {
     node.kind() == "method_invocation"
 }
 
-pub fn is_binary_node(node: &Node) -> bool {
+pub fn is_binary_exp(node: &Node) -> bool {
     node.kind() == "binary_expression"
+}
+
+pub fn is_where_or_have_clause(node: &Node) -> bool {
+    matches!(node.kind(), "where_clause" | "having_clause")
 }
