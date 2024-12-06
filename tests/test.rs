@@ -97,7 +97,6 @@ mod tests {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source, Some("tests/configs/.afmt_static.toml"));
         let expected =
-            //std::fs::read_to_string(expected_file).expect(&format!("{}","Failed to read expected .cls file".red()));
             std::fs::read_to_string(&expected_file).unwrap_or_else(|_| panic!(
             "Failed to read expected .cls file at {}",
             expected_file.to_string_lossy().red()
@@ -107,8 +106,8 @@ mod tests {
     }
 
     fn run_prettier_test_files(source: &Path, config_name: &str) -> bool {
-        let prettier_file = source.with_extension("cls");
         //let prettier_file = source.with_extension(config_name);
+        let prettier_file = source.with_extension("cls");
 
         if !prettier_file.exists() {
             println!(
