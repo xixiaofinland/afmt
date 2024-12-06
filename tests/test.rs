@@ -97,7 +97,8 @@ mod tests {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source, Some("tests/configs/.afmt_static.toml"));
         let expected =
-            std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
+            //std::fs::read_to_string(expected_file).expect(&format!("{}","Failed to read expected .cls file".red()));
+            std::fs::read_to_string(expected_file).unwrap_or_else(|_| panic!("Failed to read expected {}", ".cls file".red()));
 
         compare("Static:", output, expected, source)
     }
