@@ -2458,11 +2458,18 @@ impl TernaryExpression {
 
 impl<'a> DocBuild<'a> for TernaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.condition.build(b));
-        result.push(b._txt_("?"));
-        result.push(self.consequence.build(b));
-        result.push(b._txt_(":"));
-        result.push(self.alternative.build(b));
+        let mut docs = vec![];
+        docs.push(self.condition.build(b));
+        docs.push(b.softline());
+        docs.push(b.txt_("?"));
+
+        docs.push(b.indent(self.consequence.build(b)));
+
+        docs.push(b.softline());
+        docs.push(b.txt_(":"));
+        docs.push(b.indent(self.alternative.build(b)));
+
+        result.push(b.group_concat(docs));
     }
 }
 

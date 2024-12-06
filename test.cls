@@ -1,8 +1,9 @@
-class SoqlHaving2 {
+class Ternary {
   {
-    [SELECT COUNT(Id)
-      FROM Lead
-      GROUP BY LeadSource
-      HAVING (COUNT(Name) > 100 AND LeadSource LIKE 'San%') OR (LeadSource = 'San%' AND LeadSource IN ('Val1', 'Val2'))];
+    a < b ? System.debug('Hi') : System.debug('Hello');
+
+    a == 1 ? someVariable.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa().callMethod1111111111111111111111111111111111111111111() : anotherVariable.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb().anotherMethod();
+
+    String s = a == 1 ? someVariable.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa().callMethod1111111111111111111111111111111111111111111() : anotherVariable.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb().anotherMethod();
   }
 }
