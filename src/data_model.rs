@@ -3933,8 +3933,10 @@ impl HavingClause {
 
 impl<'a> DocBuild<'a> for HavingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("HAVING"));
-        result.push(self.exp.build(b));
+        //result.push(b.txt("HAVING"));
+        //result.push(b.softline());
+        //result.push(self.exp.build(b));
+        result.push(b.group_indent_concat(vec![b.txt("HAVING"), b.softline(), self.exp.build(b)]));
     }
 }
 
@@ -3970,7 +3972,7 @@ impl<'a> DocBuild<'a> for HavingBooleanExpression {
             Self::Not(n) => n.build(b),
             Self::Condition(n) => n.build(b),
         };
-        result.push(doc);
+        result.push(b.indented_align(doc));
     }
 }
 
