@@ -826,6 +826,10 @@ impl<'a> DocBuild<'a> for MethodInvocation {
             docs.push(p.build(b));
         }
 
+        if let Some(ref n) = self.type_arguments {
+            docs.push(n.build(b));
+        }
+
         docs.push(b.txt(&self.name));
 
         docs.push(self.arguments.build(b));
