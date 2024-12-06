@@ -3918,25 +3918,25 @@ impl<'a> DocBuild<'a> for GroupByExpression {
 
 #[derive(Debug)]
 pub struct HavingClause {
-    pub exp: HavingBooleanExpression,
+    pub boolean_exp: BooleanExpression,
 }
 
 impl HavingClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "having_clause");
-
-        let child = node.first_c();
-        let exp = HavingBooleanExpression::new(child);
-        Self { exp }
+        let boolean_exp = BooleanExpression::new(node.first_c());
+        Self { boolean_exp }
     }
 }
 
 impl<'a> DocBuild<'a> for HavingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //result.push(b.txt("HAVING"));
-        //result.push(b.softline());
-        //result.push(self.exp.build(b));
-        result.push(b.group_indent_concat(vec![b.txt("HAVING"), b.softline(), self.exp.build(b)]));
+        let docs = vec![
+            b.txt("HAVING"),
+            b.softline(),
+            self.boolean_exp.build_with_parent(b, None),
+        ];
+        result.push(b.group_indented_align_concat(docs));
     }
 }
 
