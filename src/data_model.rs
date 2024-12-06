@@ -5,7 +5,7 @@ use crate::{
     enum_def::{FunctionExpression, *},
     utility::{
         assert_check, get_precedence, has_trailing_new_line, is_binary_exp, is_method_invocation,
-        is_where_or_have_clause, source_code,
+        source_code,
     },
 };
 use colored::Colorize;
