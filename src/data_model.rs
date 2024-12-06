@@ -2165,7 +2165,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
 
                 let docs = b.to_docs(vec![exp, exp_extra]);
                 let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-                let doc = b.group(b.intersperse(&docs, sep));
+                let doc = b.group(b.indent(b.intersperse(&docs, sep)));
                 result.push(doc);
             }
             Self::Upsert {
@@ -2188,7 +2188,7 @@ impl<'a> DocBuild<'a> for DmlExpression {
                 }
 
                 let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-                let doc = b.group(b.intersperse(&docs, sep));
+                let doc = b.group(b.indent(b.intersperse(&docs, sep)));
                 result.push(doc);
             }
         }
