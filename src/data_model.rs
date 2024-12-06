@@ -1089,6 +1089,7 @@ impl<'a> DocBuild<'a> for This {
 pub struct BinaryExpressionContext {
     is_nested_expression: bool,
     parent_has_same_precedence: bool,
+    is_parent_return_statement: bool,
 }
 
 #[derive(Debug)]
@@ -1157,6 +1158,7 @@ impl BinaryExpression {
         BinaryExpressionContext {
             parent_has_same_precedence,
             is_nested_expression,
+            is_parent_return_statement: parent.kind() == "return_statement"
         }
     }
 
@@ -1186,18 +1188,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
 
         let context = &self.context;
 
-        // group() using the current line indent level
-        if !context.is_nested_expression {
-            return result.push(b.group_concat(vec![
-                left_doc,
-                b.softline(),
-                op_doc,
-                b.txt(" "),
-                right_doc,
-            ]));
-        }
-
-        // deligate to the parent to handle group() or align()
+        // nested case: deligate to the parent to handle group() or align()
         if context.parent_has_same_precedence {
             return result.push(b.concat(vec![
                 left_doc,
@@ -1208,7 +1199,19 @@ impl<'a> DocBuild<'a> for BinaryExpression {
             ]));
         }
 
-        // as the nested binary_exp node, use align()
+        // group() using the current line indent level
+        if !context.is_nested_expression && !context.is_parent_return_statement {
+            return result.push(b.group_concat(vec![
+                left_doc,
+                b.softline(),
+                op_doc,
+                b.txt(" "),
+                right_doc,
+            ]));
+        }
+
+
+        // otherwise: indented align
         result.push(b.group_indented_align_concat(vec![
             left_doc,
             b.softline(),
