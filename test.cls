@@ -1,38 +1,36 @@
 class A {
   {
-    a0aaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb(
-        kkkkkkkkkkkkkkkkk(
-          k111111111111,
-          k222222222222222,
-          k33333333333,
-          k444444444
+    t.a(
+        k(
+          '1111111111111111111111111111111111111111111111111111111111111111111111111111'
         )
-      )
-      .cccccccccccccccccccccc()
-      .ddddddddddddddddddddddddddddddd();
+      ) ;
 
-    a1aaaaaaaaaaaaaaaaaa.jj()
-      .bbbbbbbbbbbbbbbbbbbb(
-        kkkkkkkkkkkkkkkkk(
-          k111111111111,
-          k222222222222222,
-          k33333333333,
-          k444444444
-        )
-      )
-      .cccccccccccccccccccccc()
-      .ddddddddddddddddddddddddddddddd();
+    a(
+      b(
+        '1111111111111111111111111111111111111111111111111111111111111111111111111111'
+      ),     t.a().b().c().d(),
+          superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet()
 
-    a1aaaaaaaaaaaaaaaaaa.jj()
-      .bbbbbbbbbbbbbbbbbbbb()
-      .cccccccccccccccccccccc()
-      .ddddddddddddddddddddddddddddddd(
-        kkkkkkkkkkkkkkkkk(
-          k111111111111,
-          k222222222222222,
-          k33333333333,
-          k444444444
-        )
-      );
+    );
+
+    b(
+      '1111111111111111111111111111111111111111111111111111111111111111111111111111'
+    );
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
+    t.a().b().c().d();
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne(
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbb
+    );
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne()
+    .getTwo(aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbb);
   }
 }
+
