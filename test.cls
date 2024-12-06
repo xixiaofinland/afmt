@@ -1,19 +1,11 @@
-class A{
-{
-    b > 1 && c > 1;
+class HelloWorld {
+  {
+    Boolean aaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccc > 1;
 
-    queryLocator = System.Database.getQueryLocator(
-      [
-        SELECT Id
-        FROM Log__c
-        WHERE
-          (LogRetentionDate__c <= :LOG_RETENTION_END_DATE
-          AND LogRetentionDate__c != NULL)
-          OR TotalLogEntries__c = 0
-        ORDER BY LogRetentionDate__c
-      ]
-    );
+    aaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccc > 1;
 
-    queryLocator = System.Database.getQueryLocator('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' + 'bbbbbbbbbbbbbbbbbbbbbbbbbbb');
-}
+    aaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && cccccccccccccccccccccccccccccccccc > 1;
+
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1 && ccccccccccccccccccccccccccccc > 1;
+  }
 }
