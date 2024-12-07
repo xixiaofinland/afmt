@@ -72,6 +72,16 @@ impl<'a> DocBuilder<'a> {
         self.concat(result)
     }
 
+    pub fn group_surround(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        self.group(self.surround(elems, sep, open, close))
+    }
+
     pub fn surround(
         &'a self,
         elems: &[DocRef<'a>],
@@ -186,16 +196,6 @@ impl<'a> DocBuilder<'a> {
         T: DocBuild<'a> + 'b,
     {
         items.into_iter().map(|item| item.build(self)).collect()
-    }
-
-    pub fn group_surround(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: Insertable<'a>,
-        open: Insertable<'a>,
-        close: Insertable<'a>,
-    ) -> DocRef<'a> {
-        self.group(self.surround(elems, sep, open, close))
     }
 
     pub fn group_indent_concat(
