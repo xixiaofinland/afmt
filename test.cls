@@ -1,9 +1,42 @@
-class Ternary {
+class A {
   {
-    a < b ? System.debug('Hi') : System.debug('Hello');
+    t.a(
+      k(
+        '1111111111111111111111111111111111111111111111111111111111111111111111111111'
+      )
+    );
 
-    a == 1 ? someVariable.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa().callMethod1111111111111111111111111111111111111111111() : anotherVariable.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb().anotherMethod();
+    a(
+      b(
+        '1111111111111111111111111111111111111111111111111111111111111111111111111111'
+      ),
+      t.a().b().c().d(),
+      superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+        .getOneSet()
+        .getAnotherSet()
+        .getYetAnotherSet()
+    );
 
-    String s = a == 1 ? someVariable.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa().callMethod1111111111111111111111111111111111111111111() : anotherVariable.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb().anotherMethod();
+    b(
+      '1111111111111111111111111111111111111111111111111111111111111111111111111111'
+    );
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
+    t.a().b().c().d();
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne(
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
+      bbbbbbbbbbbbbbbbbbbbb
+    );
+
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOne()
+      .getTwo(
+        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
+        bbbbbbbbbbbbbbbbbbbbb
+      );
   }
 }
