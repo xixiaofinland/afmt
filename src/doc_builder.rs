@@ -290,7 +290,7 @@ impl<'a> DocBuilder<'a> {
         self.align(relative_indent, doc_ref)
     }
 
-    pub fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
         self.arena.alloc(Doc::Align(relative_col_offset, doc_ref))
     }
 
