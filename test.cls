@@ -1,42 +1,9 @@
-class A {
-  {
-    t.a(
-      k(
-        '1111111111111111111111111111111111111111111111111111111111111111111111111111'
-      )
-    );
+public class Me {
+     {
+          List<List<SObject>> res =
 
-    a(
-      b(
-        '1111111111111111111111111111111111111111111111111111111111111111111111111111'
-      ),
-      t.a().b().c().d(),
-      superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
-        .getOneSet()
-        .getAnotherSet()
-        .getYetAnotherSet()
-    );
-
-    b(
-      '1111111111111111111111111111111111111111111111111111111111111111111111111111'
-    );
-
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
-      .getOneSet()
-      .getAnotherSet()
-      .getYetAnotherSet();
-    t.a().b().c().d();
-
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak.getOne(
-      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
-      bbbbbbbbbbbbbbbbbbbbb
-    );
-
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
-      .getOne()
-      .getTwo(
-        aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
-        bbbbbbbbbbbbbbbbbbbbb
-      );
-  }
+               [  FIND 
+               'hello'    RETURNING   Account  ]
+               ;
+     }
 }

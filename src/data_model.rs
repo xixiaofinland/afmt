@@ -3377,6 +3377,26 @@ impl<'a> DocBuild<'a> for QueryBody {
     }
 }
 
+//sosl_query_body: ($) =>
+//  seq(
+//    $.find_clause,
+//    optional($.in_clause),
+//    optional(repeat($.returning_clause)),
+//    optional(repeat(alias($.sosl_with_clause, $.with_clause))),
+//    optional($.limit_clause),
+//    optional($.offset_clause),
+//    optional($.update_clause)
+#[derive(Debug)]
+pub struct SoslQueryBody {
+    pub find_clause: FindClause,
+    //pub in_clause: InClause,
+    //pub returning_clauses:Vec<ReturningClause>,
+    //pub sosl_with_clauses: Vec<WithClause>,
+    //pub limit_clause: Option<LimitClause>,
+    //pub offset_clause: Option<OffsetClause>,
+    //pub offset_clause: Option<UpdateClause>,
+}
+
 #[derive(Debug)]
 pub struct SoqlQueryBody {
     pub select_clause: SelectClause,
