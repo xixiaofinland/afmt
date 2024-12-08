@@ -18,16 +18,6 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    pub fn group_surround_indented_align(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: Insertable<'a>,
-        open: Insertable<'a>,
-        close: Insertable<'a>,
-    ) -> DocRef<'a> {
-        self.group(self.surround_indented_align(elems, sep, open, close))
-    }
-
     pub fn group_surround2(
         &'a self,
         elems: &[DocRef<'a>],
@@ -39,51 +29,6 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn surround2(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: Insertable<'a>,
-        open: Insertable<'a>,
-        close: Insertable<'a>,
-    ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.concat(vec![
-                self.txt(open.str.unwrap()),
-                self.txt(close.str.unwrap()),
-            ]);
-        }
-
-        let mut docs = Vec::new();
-
-        if let Some(n) = open.pre {
-            docs.push(n);
-        }
-        if let Some(n) = open.str {
-            docs.push(self.txt(n));
-        }
-
-        let mut docs_to_align = vec![];
-        if let Some(n) = open.suf {
-            docs_to_align.push(n);
-        }
-        docs_to_align.push(self.intersperse(elems, sep));
-
-        //result.push(self.indented_align_concat(docs_to_align));
-        docs.push(self.indent(self.concat(docs_to_align)));
-
-        if let Some(n) = close.pre {
-            docs.push(n);
-        }
-        if let Some(n) = close.str {
-            docs.push(self.txt(n));
-        }
-        if let Some(n) = close.suf {
-            docs.push(n);
-        }
-
-        self.concat(docs)
-    }
-
-    pub fn surround_indented_align(
         &'a self,
         elems: &[DocRef<'a>],
         sep: Insertable<'a>,
@@ -325,24 +270,6 @@ impl<'a> DocBuilder<'a> {
     pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
         let relative_indent = self.config.indent_size;
         self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
-    }
-
-    pub fn group_indented_align_concat(
-        &'a self,
-        doc_refs: impl IntoIterator<Item = DocRef<'a>>,
-    ) -> DocRef<'a> {
-        self.group(self.indented_align(self.concat(doc_refs)))
-    }
-
-    pub fn indented_align_concat(
-        &'a self,
-        doc_refs: impl IntoIterator<Item = DocRef<'a>>,
-    ) -> DocRef<'a> {
-        self.indented_align(self.concat(doc_refs))
-    }
-
-    pub fn indented_align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        self.indent(doc_ref)
     }
 
     //fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
