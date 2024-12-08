@@ -28,6 +28,61 @@ impl<'a> DocBuilder<'a> {
         self.group(self.surround_indented_align(elems, sep, open, close))
     }
 
+    pub fn group_surround2(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        self.group(self.surround2(elems, sep, open, close))
+    }
+
+    pub fn surround2(
+        &'a self,
+        elems: &[DocRef<'a>],
+        sep: Insertable<'a>,
+        open: Insertable<'a>,
+        close: Insertable<'a>,
+    ) -> DocRef<'a> {
+        if elems.is_empty() {
+            return self.concat(vec![
+                self.txt(open.str.unwrap()),
+                self.txt(close.str.unwrap()),
+            ]);
+        }
+
+        let mut docs = Vec::new();
+
+        if let Some(n) = open.pre {
+            docs.push(n);
+        }
+        if let Some(n) = open.str {
+            docs.push(self.txt(n));
+        }
+
+        let mut docs_to_align = vec![];
+        if let Some(n) = open.suf {
+            docs_to_align.push(n);
+        }
+        docs_to_align.push(self.intersperse(elems, sep));
+
+        //result.push(self.indented_align_concat(docs_to_align));
+        docs.push(self.indent(self.concat(docs_to_align)));
+
+        if let Some(n) = close.pre {
+            docs.push(n);
+        }
+        if let Some(n) = close.str {
+            docs.push(self.txt(n));
+        }
+        if let Some(n) = close.suf {
+            docs.push(n);
+        }
+
+        self.concat(docs)
+    }
+
     pub fn surround_indented_align(
         &'a self,
         elems: &[DocRef<'a>],
@@ -42,13 +97,13 @@ impl<'a> DocBuilder<'a> {
             ]);
         }
 
-        let mut result = Vec::new();
+        let mut docs = Vec::new();
 
         if let Some(n) = open.pre {
-            result.push(n);
+            docs.push(n);
         }
         if let Some(n) = open.str {
-            result.push(self.txt(n));
+            docs.push(self.txt(n));
         }
 
         let mut docs_to_align = vec![];
@@ -57,19 +112,20 @@ impl<'a> DocBuilder<'a> {
         }
         docs_to_align.push(self.intersperse(elems, sep));
 
-        result.push(self.indented_align_concat(docs_to_align));
+        //result.push(self.indented_align_concat(docs_to_align));
+        docs.push(self.indent(self.concat(docs_to_align)));
 
         if let Some(n) = close.pre {
-            result.push(n);
+            docs.push(n);
         }
         if let Some(n) = close.str {
-            result.push(self.txt(n));
+            docs.push(self.txt(n));
         }
         if let Some(n) = close.suf {
-            result.push(n);
+            docs.push(n);
         }
 
-        self.concat(result)
+        self.concat(docs)
     }
 
     pub fn group_surround(

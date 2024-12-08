@@ -738,7 +738,7 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
                     let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                     let open = Insertable::new(None, Some("("), Some(b.maybeline()));
                     let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-                    let doc = b.group_surround_indented_align(&docs, sep, open, close);
+                    let doc = b.group_surround2(&docs, sep, open, close);
                     result.push(doc);
                 }
             }
