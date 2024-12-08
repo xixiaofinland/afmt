@@ -1629,7 +1629,7 @@ impl<'a> DocBuild<'a> for FunctionExpression {
                 let sep = Insertable::new(None, Some(","), Some(b.softline()));
                 let open = Insertable::new(None, Some("("), Some(b.maybeline()));
                 let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-                let doc = b.group(b.surround(&doc, sep, open, close));
+                let doc = b.group_surround(&doc, sep, open, close);
                 result.push(doc);
             }
         }
