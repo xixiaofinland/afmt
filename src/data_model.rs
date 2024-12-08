@@ -835,7 +835,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         docs.push(self.arguments.build(b));
 
         if context.is_top_most_in_nest {
-            return result.push(b.group_indented_align_concat(docs));
+            return result.push(b.group_indent_concat(docs));
         }
 
         result.push(b.concat(docs))
@@ -1068,7 +1068,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
         }
 
         // otherwise:
-        result.push(b.group_indented_align_concat(vec![
+        result.push(b.group_indent_concat(vec![
             left_doc,
             b.softline(),
             op_doc,
@@ -3578,7 +3578,7 @@ impl<'a> DocBuild<'a> for WhereClause {
             b.softline(),
             self.boolean_exp.build_with_parent(b, None),
         ];
-        result.push(b.group_indented_align_concat(docs));
+        result.push(b.group_indent_concat(docs));
     }
 }
 
@@ -3943,7 +3943,7 @@ impl<'a> DocBuild<'a> for HavingClause {
             b.softline(),
             self.boolean_exp.build_with_parent(b, None),
         ];
-        result.push(b.group_indented_align_concat(docs));
+        result.push(b.group_indent_concat(docs));
     }
 }
 

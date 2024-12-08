@@ -342,13 +342,12 @@ impl<'a> DocBuilder<'a> {
     }
 
     pub fn indented_align(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let relative_indent = self.config.indent_size;
-        self.align(relative_indent, doc_ref)
+        self.indent(doc_ref)
     }
 
-    fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        self.arena.alloc(Doc::Align(relative_col_offset, doc_ref))
-    }
+    //fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    //    self.arena.alloc(Doc::Align(relative_col_offset, doc_ref))
+    //}
 
     pub fn concat(&'a self, doc_refs: impl IntoIterator<Item = DocRef<'a>>) -> DocRef<'a> {
         let n_vec = doc_refs.into_iter().collect::<Vec<_>>();
