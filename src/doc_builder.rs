@@ -50,15 +50,11 @@ impl<'a> DocBuilder<'a> {
         if let Some(n) = open.str {
             docs.push(self.txt(n));
         }
-
-        let mut docs_to_align = vec![];
         if let Some(n) = open.suf {
-            docs_to_align.push(n);
+            docs.push(self.indent(n));
         }
-        docs_to_align.push(self.intersperse(elems, sep));
 
-        //result.push(self.indented_align_concat(docs_to_align));
-        docs.push(self.indent(self.concat(docs_to_align)));
+        docs.push(self.indent(self.intersperse(elems, sep)));
 
         if let Some(n) = close.pre {
             docs.push(n);
@@ -100,7 +96,7 @@ impl<'a> DocBuilder<'a> {
         let mut docs = Vec::new();
 
         if let Some(n) = open.pre {
-            docs.push(self.indent(n));
+            docs.push(self.indent(n)); // diff: docs.push(n);
         }
         if let Some(n) = open.str {
             docs.push(self.txt(n));
@@ -112,7 +108,7 @@ impl<'a> DocBuilder<'a> {
         docs.push(self.indent(self.intersperse(elems, sep)));
 
         if let Some(n) = close.pre {
-            docs.push(self.dedent(n));
+            docs.push(self.dedent(n)); // diff: docs.push(n);
         }
         if let Some(n) = close.str {
             docs.push(self.txt(n));
