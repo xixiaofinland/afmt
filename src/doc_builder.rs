@@ -69,57 +69,6 @@ impl<'a> DocBuilder<'a> {
         self.concat(docs)
     }
 
-    //pub fn group_surround(
-    //    &'a self,
-    //    elems: &[DocRef<'a>],
-    //    sep: Insertable<'a>,
-    //    open: Insertable<'a>,
-    //    close: Insertable<'a>,
-    //) -> DocRef<'a> {
-    //    self.group(self.surround(elems, sep, open, close))
-    //}
-
-    //pub fn surround(
-    //    &'a self,
-    //    elems: &[DocRef<'a>],
-    //    sep: Insertable<'a>,
-    //    open: Insertable<'a>,
-    //    close: Insertable<'a>,
-    //) -> DocRef<'a> {
-    //    if elems.is_empty() {
-    //        return self.concat(vec![
-    //            self.txt(open.str.unwrap()),
-    //            self.txt(close.str.unwrap()),
-    //        ]);
-    //    }
-    //
-    //    let mut docs = Vec::new();
-    //
-    //    if let Some(n) = open.pre {
-    //        docs.push(self.indent(n)); // diff: docs.push(n);
-    //    }
-    //    if let Some(n) = open.str {
-    //        docs.push(self.txt(n));
-    //    }
-    //    if let Some(n) = open.suf {
-    //        docs.push(self.indent(n));
-    //    }
-    //
-    //    docs.push(self.indent(self.intersperse(elems, sep)));
-    //
-    //    if let Some(n) = close.pre {
-    //        docs.push(self.dedent(n)); // diff: docs.push(n);
-    //    }
-    //    if let Some(n) = close.str {
-    //        docs.push(self.txt(n));
-    //    }
-    //    if let Some(n) = close.suf {
-    //        docs.push(n);
-    //    }
-    //
-    //    self.concat(docs)
-    //}
-
     pub fn intersperse(&'a self, elems: &[DocRef<'a>], sep: Insertable<'a>) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
@@ -263,10 +212,10 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
-    pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-        let relative_indent = self.config.indent_size;
-        self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
-    }
+    //pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+    //    let relative_indent = self.config.indent_size;
+    //    self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
+    //}
 
     //fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
     //    self.arena.alloc(Doc::Align(relative_col_offset, doc_ref))
