@@ -18,57 +18,6 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
-    pub fn group_surround2(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: Insertable<'a>,
-        open: Insertable<'a>,
-        close: Insertable<'a>,
-    ) -> DocRef<'a> {
-        self.group(self.surround2(elems, sep, open, close))
-    }
-
-    pub fn surround2(
-        &'a self,
-        elems: &[DocRef<'a>],
-        sep: Insertable<'a>,
-        open: Insertable<'a>,
-        close: Insertable<'a>,
-    ) -> DocRef<'a> {
-        if elems.is_empty() {
-            return self.concat(vec![
-                self.txt(open.str.unwrap()),
-                self.txt(close.str.unwrap()),
-            ]);
-        }
-
-        let mut docs = Vec::new();
-
-        if let Some(n) = open.pre {
-            docs.push(n);
-        }
-        if let Some(n) = open.str {
-            docs.push(self.txt(n));
-        }
-        if let Some(n) = open.suf {
-            docs.push(self.indent(n));
-        }
-
-        docs.push(self.indent(self.intersperse(elems, sep)));
-
-        if let Some(n) = close.pre {
-            docs.push(n);
-        }
-        if let Some(n) = close.str {
-            docs.push(self.txt(n));
-        }
-        if let Some(n) = close.suf {
-            docs.push(n);
-        }
-
-        self.concat(docs)
-    }
-
     pub fn group_surround(
         &'a self,
         elems: &[DocRef<'a>],
@@ -96,7 +45,7 @@ impl<'a> DocBuilder<'a> {
         let mut docs = Vec::new();
 
         if let Some(n) = open.pre {
-            docs.push(self.indent(n)); // diff: docs.push(n);
+            docs.push(n);
         }
         if let Some(n) = open.str {
             docs.push(self.txt(n));
@@ -108,7 +57,7 @@ impl<'a> DocBuilder<'a> {
         docs.push(self.indent(self.intersperse(elems, sep)));
 
         if let Some(n) = close.pre {
-            docs.push(self.dedent(n)); // diff: docs.push(n);
+            docs.push(n);
         }
         if let Some(n) = close.str {
             docs.push(self.txt(n));
@@ -119,6 +68,57 @@ impl<'a> DocBuilder<'a> {
 
         self.concat(docs)
     }
+
+    //pub fn group_surround(
+    //    &'a self,
+    //    elems: &[DocRef<'a>],
+    //    sep: Insertable<'a>,
+    //    open: Insertable<'a>,
+    //    close: Insertable<'a>,
+    //) -> DocRef<'a> {
+    //    self.group(self.surround(elems, sep, open, close))
+    //}
+
+    //pub fn surround(
+    //    &'a self,
+    //    elems: &[DocRef<'a>],
+    //    sep: Insertable<'a>,
+    //    open: Insertable<'a>,
+    //    close: Insertable<'a>,
+    //) -> DocRef<'a> {
+    //    if elems.is_empty() {
+    //        return self.concat(vec![
+    //            self.txt(open.str.unwrap()),
+    //            self.txt(close.str.unwrap()),
+    //        ]);
+    //    }
+    //
+    //    let mut docs = Vec::new();
+    //
+    //    if let Some(n) = open.pre {
+    //        docs.push(self.indent(n)); // diff: docs.push(n);
+    //    }
+    //    if let Some(n) = open.str {
+    //        docs.push(self.txt(n));
+    //    }
+    //    if let Some(n) = open.suf {
+    //        docs.push(self.indent(n));
+    //    }
+    //
+    //    docs.push(self.indent(self.intersperse(elems, sep)));
+    //
+    //    if let Some(n) = close.pre {
+    //        docs.push(self.dedent(n)); // diff: docs.push(n);
+    //    }
+    //    if let Some(n) = close.str {
+    //        docs.push(self.txt(n));
+    //    }
+    //    if let Some(n) = close.suf {
+    //        docs.push(n);
+    //    }
+    //
+    //    self.concat(docs)
+    //}
 
     pub fn intersperse(&'a self, elems: &[DocRef<'a>], sep: Insertable<'a>) -> DocRef<'a> {
         if elems.is_empty() {
