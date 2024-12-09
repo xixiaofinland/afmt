@@ -3331,7 +3331,14 @@ pub struct QueryExpression {
 
 impl QueryExpression {
     pub fn new(node: Node) -> Self {
-        let query_body = QueryBody::SOQL(SoqlQueryBody::new(node.first_c()));
+        assert_check(node, "query_expression");
+
+        let query_body = if let Some(soql_node) = node.try_c_by_k("soql_query_body") {
+            QueryBody::Soql(SoqlQueryBody::new(soql_node))
+        } else {
+            QueryBody::Sosl(SoslQueryBody::new(node.c_by_k("sosl_query_body")))
+        };
+
         Self { query_body }
     }
 }
@@ -3350,28 +3357,18 @@ impl<'a> DocBuild<'a> for QueryExpression {
 
 #[derive(Debug)]
 pub enum QueryBody {
-    SOQL(SoqlQueryBody),
-    SOSL,
-}
-
-impl QueryBody {
-    pub fn new(node: Node) -> Self {
-        match node.kind() {
-            "soql_query_body" => Self::SOQL(SoqlQueryBody::new(node)),
-            "sosl_query_body" => unimplemented!(),
-            _ => unimplemented!(),
-        }
-    }
+    Soql(SoqlQueryBody),
+    Sosl(SoslQueryBody),
 }
 
 impl<'a> DocBuild<'a> for QueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::SOQL(n) => {
+            Self::Soql(n) => {
                 result.push(n.build(b));
             }
-            Self::SOSL => {
-                unimplemented!()
+            Self::Sosl(n) => {
+                result.push(n.build(b));
             }
         }
     }
@@ -3388,6 +3385,18 @@ pub struct SoslQueryBody {
     //pub offset_clause: Option<UpdateClause>,
 }
 
+impl SoslQueryBody {
+    pub fn new(node: Node) -> Self {
+        let find_clause = FindClause::new(node.c_by_k("find_clause"));
+        Self { find_clause }
+    }
+}
+impl<'a> DocBuild<'a> for SoslQueryBody {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.find_clause.build(b));
+    }
+}
+
 #[derive(Debug)]
 pub enum FindClause {
     Bound(BoundApexExpression),
@@ -3401,7 +3410,7 @@ impl FindClause {
         if node.try_c_by_k("bound_apex_expression").is_some() {
             Self::Bound(BoundApexExpression::new(node))
         } else {
-            Self::Term(node.cvalue_by_n("term", source_code()))
+            Self::Term(node.cvalue_by_k("term", source_code()))
         }
     }
 }
