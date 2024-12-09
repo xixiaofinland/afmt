@@ -4269,43 +4269,61 @@ impl<'a> DocBuild<'a> for SoqlWithType {
 //),
 #[derive(Debug)]
 pub enum SoslWithType {
-    SimpleType(String), // Security_Enforced, User_Mode, and System_Mode
-    //RecordVisibility(WithRecordVisibilityExpression),
-    //DataCategory(WithDataCatExpression),
-    UserId(String),
+    Division(WithDivisionExpression),
 }
 
 impl SoslWithType {
     pub fn new(node: Node) -> Self {
-        let with_type = if node.named_child_count() == 0 {
-            return Self::SimpleType(node.value(source_code()));
-        } else {
-            let child = node.first_c();
-            match child.kind() {
-                "with_user_id_type" => {
-                    Self::UserId(child.cvalue_by_k("string_literal", source_code()))
-                }
-                _ => panic!("## unknown node: {} in WithType", node.kind().red()),
-            }
-        };
-        with_type
+        assert_check(node, "with_type");
+
+        let child = node.first_c();
+        match child.kind(){
+            "with_division_expression" =>  Self::Division(WithDivisionExpression::new(child)),
+            _ => panic!("## unknown node: {} in SoslWithType", node.kind().red()),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SoslWithType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::SimpleType(n) => {
-                result.push(b.txt(n));
-            }
-            Self::UserId(n) => {
-                result.push(b.txt_("UserId ="));
-                result.push(b.txt(n));
+            Self::Division(n) => {
+                result.push(n.build(b));
             }
         }
     }
 }
 
-//pub struct WithRecordVisibilityExpression {
-//    pub params: WithRecordVisibilityParams,
-//}
+#[derive(Debug)]
+pub enum WithDivisionExpression {
+    Bound(BoundApexExpression),
+    StringLiteral(String),
+
+}
+
+impl WithDivisionExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_division_expression");
+
+        let child = node.first_c();
+        match child.kind() {
+            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
+            "string_literal" => Self::StringLiteral(child.value(source_code())),
+            _ => panic!("## unknown node: {} in WithDivisionExpression", node.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for WithDivisionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("DIVISION = "));
+        match self {
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+            Self::StringLiteral(n) => {
+                result.push(b.txt(n));
+            }
+        }
+    }
+}
