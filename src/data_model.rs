@@ -3501,25 +3501,11 @@ impl<'a> DocBuild<'a> for ReturningClause {
 }
 
 // TODO:
-//sobject_return: ($) =>
-//seq(
-//  $.identifier,
-//  optional(
-//    seq(
-//      "(",
-//      $.selected_fields,
-//      optional($.using_clause),
-//      optional($.where_clause),
-//      optional($.order_by_clause),
-//      optional($.limit_clause),
-//      optional($.offset_clause),
-//      ")"
-//    )
-//  )
-//),
+
 #[derive(Debug)]
 pub struct SObjectReturn {
     pub identifier: String,
+    pub sobject_return_query: Option<SObjectReturnQuery>,
 }
 
 impl SObjectReturn {
@@ -3528,6 +3514,10 @@ impl SObjectReturn {
 
         let identifier = node.cvalue_by_k("identifier", source_code());
 
+        let some(selected_fields_node) = node.c_by_k("selected_fields"){
+
+        }
+
         Self { identifier }
     }
 }
@@ -3535,6 +3525,44 @@ impl SObjectReturn {
 impl<'a> DocBuild<'a> for SObjectReturn {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(&self.identifier));
+    }
+}
+
+
+#[derive(Debug)]
+pub struct SObjectReturnQuery {
+    pub selected_fields: Vec<SelectableExpression>,
+    //pub using_clause: Option<UsingClause>,
+    pub where_clause: Option<WhereClause>,
+    pub order_by_clause: Option<OrderByClause>,
+    pub limit_clause: Option<LimitClause>,
+    pub offset_clause: Option<OffsetClause>,
+
+}
+
+impl<'a> DocBuild<'a> for SObjectReturnQuery {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let mut docs = vec![];
+
+        let selected_fields_docs = b.to_docs(&self.selected_fields);
+        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+        let doc = b.intersperse(&selected_fields_docs, sep);
+        docs.push(doc);
+
+        if let Some(ref n) = self.where_clause {
+            docs.push(n.build(b));
+        }
+        if let Some(ref n) = self.order_by_clause {
+            docs.push(n.build(b));
+        }
+        if let Some(ref n) = self.limit_clause {
+            docs.push(n.build(b));
+        }
+        if let Some(ref n) = self.offset_clause {
+            docs.push(n.build(b));
+        }
+
+        result.push(b.concat(docs));
     }
 }
 
