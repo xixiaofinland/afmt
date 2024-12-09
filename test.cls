@@ -1,9 +1,14 @@
 public class Me {
      {
           List<List<SObject>> res =
-
-               [  FIND 
-               'hello'    RETURNING   Account  ]
-               ;
+               [FIND :myString1 IN ALL FIELDS
+                                  RETURNING
+                                     Account (Id, Name WHERE Name LIKE :myString2
+                                              LIMIT :myInt3),
+                                     Contact,
+                                     Opportunity,
+                                     Lead
+                                  WITH DIVISION =:myString4
+                                  LIMIT :myInt5];
      }
 }

@@ -3416,8 +3416,8 @@ impl FindClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "find_clause");
 
-        if node.try_c_by_k("bound_apex_expression").is_some() {
-            Self::Bound(BoundApexExpression::new(node))
+        if let Some(bound_node) = node.try_c_by_k("bound_apex_expression") {
+            Self::Bound(BoundApexExpression::new(bound_node))
         } else {
             Self::Term(node.cvalue_by_k("term", source_code()))
         }
