@@ -3377,7 +3377,7 @@ impl<'a> DocBuild<'a> for QueryBody {
 #[derive(Debug)]
 pub struct SoslQueryBody {
     pub find_clause: FindClause,
-    //pub in_clause: InClause,
+    pub in_clause: Option<InClause>,
     pub returning_clause: Option<ReturningClause>,
     //pub sosl_with_clauses: Vec<WithClause>,
     //pub limit_clause: Option<LimitClause>,
@@ -3388,21 +3388,33 @@ pub struct SoslQueryBody {
 impl SoslQueryBody {
     pub fn new(node: Node) -> Self {
         let find_clause = FindClause::new(node.c_by_k("find_clause"));
+        let in_clause = node.try_c_by_k("in_clause").map(|n| InClause::new(n));
         let returning_clause = node
             .try_c_by_k("returning_clause")
             .map(|n| ReturningClause::new(n));
         Self {
             find_clause,
+            in_clause,
             returning_clause,
         }
     }
 }
 impl<'a> DocBuild<'a> for SoslQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.find_clause.build(b));
-        if let Some(ref n) = self.returning_clause {
-            result.push(n.build(b));
+        let mut docs = vec![];
+        docs.push(self.find_clause.build(b));
+
+        if let Some(ref n) = self.in_clause {
+            docs.push(n.build(b));
         }
+
+        if let Some(ref n) = self.returning_clause {
+            docs.push(n.build(b));
+        }
+
+        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
     }
 }
 
@@ -3435,6 +3447,28 @@ impl<'a> DocBuild<'a> for FindClause {
                 result.push(b.txt(format!("'{}'", n)));
             }
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct InClause {
+    in_type: String,
+}
+
+impl InClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "in_clause");
+
+        let in_type = node.cvalue_by_k("in_type", source_code());
+        Self { in_type }
+    }
+}
+
+impl<'a> DocBuild<'a> for InClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("IN"));
+        result.push(b.txt(&self.in_type));
+        result.push(b._txt("FIELDS"));
     }
 }
 
