@@ -3391,7 +3391,32 @@ pub struct SoslQueryBody {
 #[derive(Debug)]
 pub enum FindClause {
     Bound(BoundApexExpression),
-    Term(TermSequence),
+    Term(String),
+}
+
+impl FindClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "find_clause");
+
+        if node.try_c_by_k("bound_apex_expression").is_some() {
+            Self::Bound(BoundApexExpression::new(node))
+        } else {
+            Self::Term(node.cvalue_by_n("term", source_code()))
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FindClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Bound(n) => {
+                result.push(n.build(b));
+            }
+            Self::Term(n) => {
+                result.push(b.txt(format!("'{}'", n)));
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
