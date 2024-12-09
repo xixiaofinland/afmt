@@ -3514,20 +3514,40 @@ impl SObjectReturn {
 
         let identifier = node.cvalue_by_k("identifier", source_code());
 
-        let some(selected_fields_node) = node.c_by_k("selected_fields"){
+        let sobject_return_query = node
+            .try_c_by_k("selected_fields")
+            .map(|n| SObjectReturnQuery {
+                selected_fields: n
+                    .children_vec()
+                    .into_iter()
+                    .map(|selectable_node| SelectableExpression::new(selectable_node))
+                    .collect(),
+                where_clause: node.try_c_by_n("where_clause").map(|n| WhereClause::new(n)),
+                order_by_clause: node
+                    .try_c_by_n("order_by_clause")
+                    .map(|n| OrderByClause::new(n)),
+                limit_clause: node.try_c_by_n("limit_clause").map(|n| LimitClause::new(n)),
+                offset_clause: node
+                    .try_c_by_n("offset_clause")
+                    .map(|n| OffsetClause::new(n)),
+            });
 
+        Self {
+            identifier,
+            sobject_return_query,
         }
-
-        Self { identifier }
     }
 }
 
 impl<'a> DocBuild<'a> for SObjectReturn {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(&self.identifier));
+
+        if let Some(ref n) = self.sobject_return_query {
+            result.push(n.build(b));
+        }
     }
 }
-
 
 #[derive(Debug)]
 pub struct SObjectReturnQuery {
@@ -3537,12 +3557,12 @@ pub struct SObjectReturnQuery {
     pub order_by_clause: Option<OrderByClause>,
     pub limit_clause: Option<LimitClause>,
     pub offset_clause: Option<OffsetClause>,
-
 }
 
 impl<'a> DocBuild<'a> for SObjectReturnQuery {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut docs = vec![];
+        docs.push(b.txt("("));
 
         let selected_fields_docs = b.to_docs(&self.selected_fields);
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
@@ -3562,6 +3582,7 @@ impl<'a> DocBuild<'a> for SObjectReturnQuery {
             docs.push(n.build(b));
         }
 
+        docs.push(b.txt(")"));
         result.push(b.concat(docs));
     }
 }
