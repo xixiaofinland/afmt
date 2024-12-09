@@ -3491,7 +3491,7 @@ impl ReturningClause {
 
 impl<'a> DocBuild<'a> for ReturningClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b._txt_("RETURNING"));
+        result.push(b.txt_("RETURNING"));
 
         let docs = b.to_docs(&self.sobject_returns);
         let sep = Insertable::new(None, Some(", "), None);
@@ -3522,13 +3522,13 @@ impl SObjectReturn {
                     .into_iter()
                     .map(|selectable_node| SelectableExpression::new(selectable_node))
                     .collect(),
-                where_clause: node.try_c_by_n("where_clause").map(|n| WhereClause::new(n)),
+                where_clause: node.try_c_by_k("where_clause").map(|n| WhereClause::new(n)),
                 order_by_clause: node
-                    .try_c_by_n("order_by_clause")
+                    .try_c_by_k("order_by_clause")
                     .map(|n| OrderByClause::new(n)),
-                limit_clause: node.try_c_by_n("limit_clause").map(|n| LimitClause::new(n)),
+                limit_clause: node.try_c_by_k("limit_clause").map(|n| LimitClause::new(n)),
                 offset_clause: node
-                    .try_c_by_n("offset_clause")
+                    .try_c_by_k("offset_clause")
                     .map(|n| OffsetClause::new(n)),
             });
 
@@ -3583,7 +3583,10 @@ impl<'a> DocBuild<'a> for SObjectReturnQuery {
         }
 
         docs.push(b.txt(")"));
-        result.push(b.concat(docs));
+
+        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
     }
 }
 
