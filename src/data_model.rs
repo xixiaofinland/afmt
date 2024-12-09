@@ -3379,6 +3379,7 @@ pub struct SoslQueryBody {
     pub find_clause: FindClause,
     pub in_clause: Option<InClause>,
     pub returning_clause: Option<ReturningClause>,
+    pub with_clauses: Vec<SoslWithClause>,
     //pub sosl_with_clauses: Vec<WithClause>,
     //pub limit_clause: Option<LimitClause>,
     //pub offset_clause: Option<OffsetClause>,
@@ -3392,10 +3393,17 @@ impl SoslQueryBody {
         let returning_clause = node
             .try_c_by_k("returning_clause")
             .map(|n| ReturningClause::new(n));
+        let with_clauses = node
+            .try_cs_by_k("with_clause")
+            .into_iter()
+            .map(|n| SoslWithClause::new(n))
+            .collect();
+
         Self {
             find_clause,
             in_clause,
             returning_clause,
+            with_clauses,
         }
     }
 }
@@ -3410,6 +3418,13 @@ impl<'a> DocBuild<'a> for SoslQueryBody {
 
         if let Some(ref n) = self.returning_clause {
             docs.push(n.build(b));
+        }
+
+        if !self.with_clauses.is_empty() {
+            let with_clauses_docs = b.to_docs(&self.with_clauses);
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+            let doc = b.intersperse(&with_clauses_docs, sep);
+            docs.push(doc);
         }
 
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
@@ -3596,7 +3611,7 @@ pub struct SoqlQueryBody {
     pub from_clause: FromClause,
     //using_clause;
     pub where_clause: Option<WhereClause>,
-    pub with_clause: Option<WithClause>,
+    pub with_clause: Option<SoqlWithClause>,
     pub group_by_clause: Option<GroupByClause>,
     pub order_by_clause: Option<OrderByClause>,
     pub limit_clause: Option<LimitClause>,
@@ -3611,7 +3626,7 @@ impl SoqlQueryBody {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
         let from_clause = FromClause::new(node.c_by_n("from_clause"));
         let where_clause = node.try_c_by_n("where_clause").map(|n| WhereClause::new(n));
-        let with_clause = node.try_c_by_n("with_clause").map(|n| WithClause::new(n));
+        let with_clause = node.try_c_by_n("with_clause").map(|n| SoqlWithClause::new(n));
         let group_by_clause = node
             .try_c_by_n("group_by_clause")
             .map(|n| GroupByClause::new(n));
@@ -4161,18 +4176,20 @@ impl<'a> DocBuild<'a> for HavingClause {
 }
 
 #[derive(Debug)]
-pub struct WithClause {
-    pub with_type: WithType,
+pub struct SoslWithClause {
+    pub with_type: SoslWithType,
 }
 
-impl WithClause {
+impl SoslWithClause {
     pub fn new(node: Node) -> Self {
-        let with_type = WithType::new(node.c_by_k("with_type"));
+        assert_check(node, "with_clause");
+
+        let with_type = SoslWithType::new(node.c_by_k("with_type"));
         Self { with_type }
     }
 }
 
-impl<'a> DocBuild<'a> for WithClause {
+impl<'a> DocBuild<'a> for SoslWithClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt_("WITH"));
         result.push(self.with_type.build(b));
@@ -4180,14 +4197,35 @@ impl<'a> DocBuild<'a> for WithClause {
 }
 
 #[derive(Debug)]
-pub enum WithType {
+pub struct SoqlWithClause {
+    pub with_type: SoqlWithType,
+}
+
+impl SoqlWithClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_clause");
+
+        let with_type = SoqlWithType::new(node.c_by_k("with_type"));
+        Self { with_type }
+    }
+}
+
+impl<'a> DocBuild<'a> for SoqlWithClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("WITH"));
+        result.push(self.with_type.build(b));
+    }
+}
+
+#[derive(Debug)]
+pub enum SoqlWithType {
     SimpleType(String), // Security_Enforced, User_Mode, and System_Mode
     //RecordVisibility(WithRecordVisibilityExpression),
     //DataCategory(WithDataCatExpression),
     UserId(String),
 }
 
-impl WithType {
+impl SoqlWithType {
     pub fn new(node: Node) -> Self {
         let with_type = if node.named_child_count() == 0 {
             return Self::SimpleType(node.value(source_code()));
@@ -4204,7 +4242,57 @@ impl WithType {
     }
 }
 
-impl<'a> DocBuild<'a> for WithType {
+impl<'a> DocBuild<'a> for SoqlWithType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::SimpleType(n) => {
+                result.push(b.txt(n));
+            }
+            Self::UserId(n) => {
+                result.push(b.txt_("UserId ="));
+                result.push(b.txt(n));
+            }
+        }
+    }
+}
+
+//sosl_with_type: ($) =>
+//choice(
+//  $.with_data_cat_expression,
+//  $.with_division_expression,
+//  $.with_highlight,
+//  $.with_metadata_expression,
+//  $.with_network_expression,
+//  $.with_pricebook_expression,
+//  $.with_snippet_expression,
+//  $.with_spell_correction_expression
+//),
+#[derive(Debug)]
+pub enum SoslWithType {
+    SimpleType(String), // Security_Enforced, User_Mode, and System_Mode
+    //RecordVisibility(WithRecordVisibilityExpression),
+    //DataCategory(WithDataCatExpression),
+    UserId(String),
+}
+
+impl SoslWithType {
+    pub fn new(node: Node) -> Self {
+        let with_type = if node.named_child_count() == 0 {
+            return Self::SimpleType(node.value(source_code()));
+        } else {
+            let child = node.first_c();
+            match child.kind() {
+                "with_user_id_type" => {
+                    Self::UserId(child.cvalue_by_k("string_literal", source_code()))
+                }
+                _ => panic!("## unknown node: {} in WithType", node.kind().red()),
+            }
+        };
+        with_type
+    }
+}
+
+impl<'a> DocBuild<'a> for SoslWithType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::SimpleType(n) => {
