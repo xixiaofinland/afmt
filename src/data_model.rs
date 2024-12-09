@@ -3378,7 +3378,7 @@ impl<'a> DocBuild<'a> for QueryBody {
 pub struct SoslQueryBody {
     pub find_clause: FindClause,
     //pub in_clause: InClause,
-    //pub returning_clauses:Vec<ReturningClause>,
+    pub returning_clause: Option<ReturningClause>,
     //pub sosl_with_clauses: Vec<WithClause>,
     //pub limit_clause: Option<LimitClause>,
     //pub offset_clause: Option<OffsetClause>,
@@ -3388,12 +3388,21 @@ pub struct SoslQueryBody {
 impl SoslQueryBody {
     pub fn new(node: Node) -> Self {
         let find_clause = FindClause::new(node.c_by_k("find_clause"));
-        Self { find_clause }
+        let returning_clause = node
+            .try_c_by_k("returning_clause")
+            .map(|n| ReturningClause::new(n));
+        Self {
+            find_clause,
+            returning_clause,
+        }
     }
 }
 impl<'a> DocBuild<'a> for SoslQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(self.find_clause.build(b));
+        if let Some(ref n) = self.returning_clause {
+            result.push(n.build(b));
+        }
     }
 }
 
@@ -3417,6 +3426,7 @@ impl FindClause {
 
 impl<'a> DocBuild<'a> for FindClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("FIND"));
         match self {
             Self::Bound(n) => {
                 result.push(n.build(b));
@@ -3425,6 +3435,72 @@ impl<'a> DocBuild<'a> for FindClause {
                 result.push(b.txt(format!("'{}'", n)));
             }
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct ReturningClause {
+    sobject_returns: Vec<SObjectReturn>,
+}
+
+impl ReturningClause {
+    pub fn new(node: Node) -> Self {
+        let sobject_returns = node
+            .cs_by_k("sobject_return")
+            .into_iter()
+            .map(|n| SObjectReturn::new(n))
+            .collect();
+
+        Self { sobject_returns }
+    }
+}
+
+impl<'a> DocBuild<'a> for ReturningClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b._txt_("RETURNING"));
+
+        let docs = b.to_docs(&self.sobject_returns);
+        let sep = Insertable::new(None, Some(", "), None);
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
+    }
+}
+
+// TODO:
+//sobject_return: ($) =>
+//seq(
+//  $.identifier,
+//  optional(
+//    seq(
+//      "(",
+//      $.selected_fields,
+//      optional($.using_clause),
+//      optional($.where_clause),
+//      optional($.order_by_clause),
+//      optional($.limit_clause),
+//      optional($.offset_clause),
+//      ")"
+//    )
+//  )
+//),
+#[derive(Debug)]
+pub struct SObjectReturn {
+    pub identifier: String,
+}
+
+impl SObjectReturn {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "sobject_return");
+
+        let identifier = node.cvalue_by_k("identifier", source_code());
+
+        Self { identifier }
+    }
+}
+
+impl<'a> DocBuild<'a> for SObjectReturn {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.identifier));
     }
 }
 
