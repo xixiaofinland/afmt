@@ -3380,8 +3380,7 @@ pub struct SoslQueryBody {
     pub in_clause: Option<InClause>,
     pub returning_clause: Option<ReturningClause>,
     pub with_clauses: Vec<SoslWithClause>,
-    //pub sosl_with_clauses: Vec<WithClause>,
-    //pub limit_clause: Option<LimitClause>,
+    pub limit_clause: Option<LimitClause>,
     //pub offset_clause: Option<OffsetClause>,
     //pub offset_clause: Option<UpdateClause>,
 }
@@ -3398,12 +3397,16 @@ impl SoslQueryBody {
             .into_iter()
             .map(|n| SoslWithClause::new(n))
             .collect();
+        let limit_clause = node
+            .try_c_by_k("limit_clause")
+            .map(|n| LimitClause::new(n));
 
         Self {
             find_clause,
             in_clause,
             returning_clause,
             with_clauses,
+            limit_clause,
         }
     }
 }
@@ -3425,6 +3428,10 @@ impl<'a> DocBuild<'a> for SoslQueryBody {
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let doc = b.intersperse(&with_clauses_docs, sep);
             docs.push(doc);
+        }
+
+        if let Some(ref n) = self.limit_clause {
+            docs.push(n.build(b));
         }
 
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
