@@ -3509,11 +3509,11 @@ impl ReturningClause {
 
 impl<'a> DocBuild<'a> for ReturningClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("RETURNING"));
+        result.push(b.txt("RETURNING"));
 
         let docs = b.to_docs(&self.sobject_returns);
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let doc = b.group_indent(b.intersperse(&docs, sep));
+        let doc = b.group_indent(b.concat(vec![b.softline(), b.intersperse(&docs, sep)]));
         result.push(doc);
     }
 }
@@ -3582,7 +3582,7 @@ impl<'a> DocBuild<'a> for SObjectReturnQuery {
         let mut docs = vec![];
 
         let selected_fields_docs = b.to_docs(&self.selected_fields);
-        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+        let sep = Insertable::new::<&str>(None, Some(","), Some(b.softline()));
         let doc = b.intersperse(&selected_fields_docs, sep);
         docs.push(doc);
 
