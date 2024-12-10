@@ -4,7 +4,7 @@ public class Me {
       FIND :myString1
       IN ALL FIELDS
       RETURNING
-        Account(Id, Name WHERE Name LIKE :myString2 LIMIT :myInt3),
+        Account(Id, FirstName, LastName, ThisGoodOne, Name WHERE Name LIKE :myString2 LIMIT :myInt3),
         Contact,
         Opportunity,
         Lead

@@ -3512,8 +3512,8 @@ impl<'a> DocBuild<'a> for ReturningClause {
         result.push(b.txt_("RETURNING"));
 
         let docs = b.to_docs(&self.sobject_returns);
-        let sep = Insertable::new(None, Some(", "), None);
-        let doc = b.intersperse(&docs, sep);
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let doc = b.group_indent(b.intersperse(&docs, sep));
         result.push(doc);
     }
 }
@@ -3580,7 +3580,6 @@ pub struct SObjectReturnQuery {
 impl<'a> DocBuild<'a> for SObjectReturnQuery {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut docs = vec![];
-        docs.push(b.txt("("));
 
         let selected_fields_docs = b.to_docs(&self.selected_fields);
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
@@ -3600,10 +3599,10 @@ impl<'a> DocBuild<'a> for SObjectReturnQuery {
             docs.push(n.build(b));
         }
 
-        docs.push(b.txt(")"));
-
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let doc = b.intersperse(&docs, sep);
+        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+        let doc = b.group_surround(&docs, sep, open, close);
         result.push(doc);
     }
 }
