@@ -3397,9 +3397,7 @@ impl SoslQueryBody {
             .into_iter()
             .map(|n| SoslWithClause::new(n))
             .collect();
-        let limit_clause = node
-            .try_c_by_k("limit_clause")
-            .map(|n| LimitClause::new(n));
+        let limit_clause = node.try_c_by_k("limit_clause").map(|n| LimitClause::new(n));
 
         Self {
             find_clause,
@@ -3410,6 +3408,7 @@ impl SoslQueryBody {
         }
     }
 }
+
 impl<'a> DocBuild<'a> for SoslQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut docs = vec![];
@@ -3418,19 +3417,16 @@ impl<'a> DocBuild<'a> for SoslQueryBody {
         if let Some(ref n) = self.in_clause {
             docs.push(n.build(b));
         }
-
         if let Some(ref n) = self.returning_clause {
             docs.push(n.build(b));
         }
-
         if !self.with_clauses.is_empty() {
             let with_clauses_docs = b.to_docs(&self.with_clauses);
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let doc = b.intersperse(&with_clauses_docs, sep);
             docs.push(doc);
         }
-
-        if let Some(ref n) = self.limit_clause {
+        if let Some(ref n) = self.returning_clause {
             docs.push(n.build(b));
         }
 
@@ -3633,7 +3629,9 @@ impl SoqlQueryBody {
         let select_clause = SelectClause::new(node.c_by_n("select_clause"));
         let from_clause = FromClause::new(node.c_by_n("from_clause"));
         let where_clause = node.try_c_by_n("where_clause").map(|n| WhereClause::new(n));
-        let with_clause = node.try_c_by_n("with_clause").map(|n| SoqlWithClause::new(n));
+        let with_clause = node
+            .try_c_by_n("with_clause")
+            .map(|n| SoqlWithClause::new(n));
         let group_by_clause = node
             .try_c_by_n("group_by_clause")
             .map(|n| GroupByClause::new(n));
@@ -4284,8 +4282,8 @@ impl SoslWithType {
         assert_check(node, "with_type");
 
         let child = node.first_c();
-        match child.kind(){
-            "with_division_expression" =>  Self::Division(WithDivisionExpression::new(child)),
+        match child.kind() {
+            "with_division_expression" => Self::Division(WithDivisionExpression::new(child)),
             _ => panic!("## unknown node: {} in SoslWithType", node.kind().red()),
         }
     }
@@ -4305,7 +4303,6 @@ impl<'a> DocBuild<'a> for SoslWithType {
 pub enum WithDivisionExpression {
     Bound(BoundApexExpression),
     StringLiteral(String),
-
 }
 
 impl WithDivisionExpression {
@@ -4316,7 +4313,10 @@ impl WithDivisionExpression {
         match child.kind() {
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
             "string_literal" => Self::StringLiteral(child.value(source_code())),
-            _ => panic!("## unknown node: {} in WithDivisionExpression", node.kind().red()),
+            _ => panic!(
+                "## unknown node: {} in WithDivisionExpression",
+                node.kind().red()
+            ),
         }
     }
 }
