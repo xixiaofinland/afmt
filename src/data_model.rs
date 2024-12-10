@@ -3426,7 +3426,7 @@ impl<'a> DocBuild<'a> for SoslQueryBody {
             let doc = b.intersperse(&with_clauses_docs, sep);
             docs.push(doc);
         }
-        if let Some(ref n) = self.returning_clause {
+        if let Some(ref n) = self.limit_clause {
             docs.push(n.build(b));
         }
 
