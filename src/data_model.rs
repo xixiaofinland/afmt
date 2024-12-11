@@ -3885,7 +3885,7 @@ impl<'a> DocBuild<'a> for ComparableList {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
+        let doc = b.surround(&docs, sep, open, close);
         result.push(doc);
     }
 }
@@ -4170,7 +4170,7 @@ impl SoslWithClause {
 impl<'a> DocBuild<'a> for SoslWithClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = vec![b.txt_("WITH"), self.with_type.build(b)];
-        result.push(b.group_indent_concat(docs));
+        result.push(b.group_concat(docs));
     }
 }
 
@@ -4310,11 +4310,11 @@ impl WithDataCatExpression {
 impl<'a> DocBuild<'a> for WithDataCatExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("DATA CATEGORY"));
-        result.push(b.softline());
+        result.push(b.indent(b.softline()));
 
         let docs = b.to_docs(&self.filters);
         let sep = Insertable::new::<&str>(Some(b.softline()), Some("AND "), None);
-        let doc = b.intersperse(&docs, sep);
+        let doc = b.indent(b.intersperse(&docs, sep));
         result.push(doc);
     }
 }
