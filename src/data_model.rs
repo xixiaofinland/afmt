@@ -4,7 +4,8 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
     utility::{
-        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp, is_method_invocation, source_code
+        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp,
+        is_method_invocation, source_code,
     },
 };
 use colored::Colorize;
@@ -4252,6 +4253,7 @@ pub enum SoslWithType {
     Division(WithDivisionExpression),
     Snippet(WithSnippetExpression),
     Network(WithNetworkExpression),
+    Metadata(WithMetadataExpression),
 }
 
 impl SoslWithType {
@@ -4264,6 +4266,7 @@ impl SoslWithType {
             "with_division_expression" => Self::Division(WithDivisionExpression::new(child)),
             "with_snippet_expression" => Self::Snippet(WithSnippetExpression::new(child)),
             "with_network_expression" => Self::Network(WithNetworkExpression::new(child)),
+            "with_metadata_expression" => Self::Metadata(WithMetadataExpression::new(child)),
             _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
         }
     }
@@ -4282,6 +4285,9 @@ impl<'a> DocBuild<'a> for SoslWithType {
                 result.push(n.build(b));
             }
             Self::Network(n) => {
+                result.push(n.build(b));
+            }
+            Self::Metadata(n) => {
                 result.push(n.build(b));
             }
         }
@@ -4432,7 +4438,7 @@ impl<'a> DocBuild<'a> for WithSnippetExpression {
 
 #[derive(Debug)]
 pub struct WithNetworkExpression {
-    comparison: Comparison
+    comparison: Comparison,
 }
 
 impl WithNetworkExpression {
@@ -4448,5 +4454,26 @@ impl<'a> DocBuild<'a> for WithNetworkExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("NETWORK"));
         result.push(self.comparison.build(b));
+    }
+}
+
+#[derive(Debug)]
+pub struct WithMetadataExpression {
+    string_literal: String,
+}
+
+impl WithMetadataExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_metadata_expression");
+
+        let string_literal = node.cvalue_by_k("string_literal", source_code());
+        Self { string_literal }
+    }
+}
+
+impl<'a> DocBuild<'a> for WithMetadataExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("METADATA = "));
+        result.push(b.txt(&self.string_literal));
     }
 }
