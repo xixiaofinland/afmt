@@ -1,4 +1,4 @@
-use crate::data_model::*;
+use crate::{accessor::Accessor, data_model::*, enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith}};
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
@@ -116,4 +116,31 @@ pub fn is_binary_exp(node: &Node) -> bool {
 
 pub fn is_where_or_have_clause(node: &Node) -> bool {
     matches!(node.kind(), "where_clause" | "having_clause")
+}
+
+// TODO: AST use a comparison concrete node so this can be moved into Comparison::new()
+// TODO: get rid of next_named()?
+pub fn get_comparsion(node: &Node) -> Comparison {
+    if let Some(operator_node) = node.try_c_by_k("value_comparison_operator") {
+        let next_node = operator_node.next_named();
+        let compared_with = match next_node.kind() {
+            "bound_apex_expression" => {
+                ValueComparedWith::Bound(BoundApexExpression::new(next_node))
+            }
+            _ => ValueComparedWith::Literal(SoqlLiteral::new(next_node)),
+        };
+
+        Comparison::Value(ValueComparison {
+            operator: operator_node.value(source_code()),
+            compared_with,
+        })
+    } else if let Some(operator_node) = node.try_c_by_k("set_comparison_operator") {
+        let next_node = operator_node.next_named();
+        Comparison::Set(SetComparison {
+            operator: operator_node.value(source_code()),
+            set_value: SetValue::new(next_node),
+        })
+    } else {
+        unreachable!()
+    }
 }

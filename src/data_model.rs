@@ -4,8 +4,7 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
     utility::{
-        assert_check, get_precedence, has_trailing_new_line, is_binary_exp, is_method_invocation,
-        source_code,
+        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp, is_method_invocation, source_code
     },
 };
 use colored::Colorize;
@@ -3825,34 +3824,8 @@ impl ComparisonExpression {
         assert_check(node, "comparison_expression");
 
         let value = Box::new(ValueExpression::new(node.first_c()));
-        let comparison = ComparisonExpression::get_comparsion(&node);
+        let comparison = get_comparsion(&node);
         Self { value, comparison }
-    }
-
-    // TODO: get rid of next_named()?
-    fn get_comparsion(node: &Node) -> Comparison {
-        if let Some(operator_node) = node.try_c_by_k("value_comparison_operator") {
-            let next_node = operator_node.next_named();
-            let compared_with = match next_node.kind() {
-                "bound_apex_expression" => {
-                    ValueComparedWith::Bound(BoundApexExpression::new(next_node))
-                }
-                _ => ValueComparedWith::Literal(SoqlLiteral::new(next_node)),
-            };
-
-            Comparison::Value(ValueComparison {
-                operator: operator_node.value(source_code()),
-                compared_with,
-            })
-        } else if let Some(operator_node) = node.try_c_by_k("set_comparison_operator") {
-            let next_node = operator_node.next_named();
-            Comparison::Set(SetComparison {
-                operator: operator_node.value(source_code()),
-                set_value: SetValue::new(next_node),
-            })
-        } else {
-            unreachable!()
-        }
     }
 }
 
@@ -4278,6 +4251,7 @@ pub enum SoslWithType {
     DataCat(WithDataCatExpression),
     Division(WithDivisionExpression),
     Snippet(WithSnippetExpression),
+    Network(WithNetworkExpression),
 }
 
 impl SoslWithType {
@@ -4289,6 +4263,7 @@ impl SoslWithType {
             "with_data_cat_expression" => Self::DataCat(WithDataCatExpression::new(child)),
             "with_division_expression" => Self::Division(WithDivisionExpression::new(child)),
             "with_snippet_expression" => Self::Snippet(WithSnippetExpression::new(child)),
+            "with_network_expression" => Self::Network(WithNetworkExpression::new(child)),
             _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
         }
     }
@@ -4304,6 +4279,9 @@ impl<'a> DocBuild<'a> for SoslWithType {
                 result.push(n.build(b));
             }
             Self::Snippet(n) => {
+                result.push(n.build(b));
+            }
+            Self::Network(n) => {
                 result.push(n.build(b));
             }
         }
@@ -4449,5 +4427,26 @@ impl<'a> DocBuild<'a> for WithSnippetExpression {
             result.push(b.txt("(TARGET_LENGTH = "));
             result.push(b.txt(n));
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct WithNetworkExpression {
+    comparison: Comparison
+}
+
+impl WithNetworkExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_network_expression");
+
+        let comparison = get_comparsion(&node);
+        Self { comparison }
+    }
+}
+
+impl<'a> DocBuild<'a> for WithNetworkExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("NETWORK"));
+        result.push(self.comparison.build(b));
     }
 }
