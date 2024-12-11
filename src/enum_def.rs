@@ -1388,6 +1388,7 @@ impl SoqlLiteral {
             "string_literal" => Self::StringLiteral(node.value(source_code())),
             "boolean" => Self::Boolean(node.value(source_code())),
             "date" => Self::Boolean(node.value(source_code())),
+            "date_literal" => Self::DateLiteral(node.value(source_code())),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
             "null_literal" => Self::NullLiteral(node.value(source_code())),
             _ => panic!("## unknown node: {} in SoqlLiteral", node.kind().red()),
@@ -1411,6 +1412,9 @@ impl<'a> DocBuild<'a> for SoqlLiteral {
                 result.push(b.txt(n));
             }
             Self::Boolean(n) => {
+                result.push(b.txt(n));
+            }
+            Self::DateLiteral(n) => {
                 result.push(b.txt(n));
             }
             Self::DWithParam(n) => {

@@ -3829,6 +3829,7 @@ impl ComparisonExpression {
         Self { value, comparison }
     }
 
+    // TODO: get rid of next_named()?
     fn get_comparsion(node: &Node) -> Comparison {
         if let Some(operator_node) = node.try_c_by_k("value_comparison_operator") {
             let next_node = operator_node.next_named();
