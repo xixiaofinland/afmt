@@ -4196,8 +4196,8 @@ impl SoslWithClause {
 
 impl<'a> DocBuild<'a> for SoslWithClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("WITH"));
-        result.push(self.with_type.build(b));
+        let docs = vec![b.txt_("WITH"), self.with_type.build(b)];
+        result.push(b.group_indent_concat(docs));
     }
 }
 
@@ -4261,6 +4261,7 @@ impl<'a> DocBuild<'a> for SoqlWithType {
     }
 }
 
+// TODO:
 //sosl_with_type: ($) =>
 //choice(
 //  $.with_data_cat_expression,
@@ -4274,6 +4275,7 @@ impl<'a> DocBuild<'a> for SoqlWithType {
 //),
 #[derive(Debug)]
 pub enum SoslWithType {
+    DataCat(WithDataCatExpression),
     Division(WithDivisionExpression),
 }
 
@@ -4283,8 +4285,9 @@ impl SoslWithType {
 
         let child = node.first_c();
         match child.kind() {
+            "with_data_cat_expression" => Self::DataCat(WithDataCatExpression::new(child)),
             "with_division_expression" => Self::Division(WithDivisionExpression::new(child)),
-            _ => panic!("## unknown node: {} in SoslWithType", node.kind().red()),
+            _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
         }
     }
 }
@@ -4292,9 +4295,93 @@ impl SoslWithType {
 impl<'a> DocBuild<'a> for SoslWithType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
+            Self::DataCat(n) => {
+                result.push(n.build(b));
+            }
             Self::Division(n) => {
                 result.push(n.build(b));
             }
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct WithDataCatExpression {
+    pub filters: Vec<WithDataCatFilter>,
+}
+
+impl WithDataCatExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_data_cat_expression");
+
+        let filters = node
+            .cs_by_k("with_data_cat_filter")
+            .into_iter()
+            .map(|n| WithDataCatFilter::new(n))
+            .collect();
+
+        Self { filters }
+    }
+}
+
+impl<'a> DocBuild<'a> for WithDataCatExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("DATA CATEGORY"));
+        result.push(b.softline());
+
+        let docs = b.to_docs(&self.filters);
+        let sep = Insertable::new::<&str>(Some(b.softline()), Some("AND "), None);
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
+    }
+}
+
+#[derive(Debug)]
+pub struct WithDataCatFilter {
+    pub identifier: String,
+    pub filter_type: String,
+    pub identifiers: Vec<String>,
+}
+
+impl WithDataCatFilter {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_data_cat_filter");
+
+        let all_identififers = node.cs_by_k("identifier");
+        if all_identififers.len() < 2 {
+            panic!("At least 2 identifier nodes should exist in WithDataCatFilter");
+        }
+
+        let identifier = all_identififers[0].value(source_code());
+        let filter_type = node.cvalue_by_k("with_data_cat_filter_type", source_code());
+        let identifiers: Vec<_> = all_identififers
+            .into_iter()
+            .skip(1)
+            .map(|n| n.value(source_code()))
+            .collect();
+
+        Self {
+            identifier,
+            filter_type,
+            identifiers,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for WithDataCatFilter {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.identifier));
+        result.push(b._txt_(&self.filter_type));
+
+        if self.identifiers.len() == 1 {
+            result.push(b.txt(&self.identifiers[0]));
+        } else {
+            let docs: Vec<DocRef<'a>> = self.identifiers.iter().map(|n| b.txt(n)).collect();
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
         }
     }
 }

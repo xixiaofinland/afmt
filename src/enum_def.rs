@@ -1257,7 +1257,7 @@ impl GeoLocationType {
         match child.kind() {
             "field_identifier" => Self::Field(FieldIdentifier::new(child)),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
-            "function_name" => {
+            "identifier" => {
                 let decimals = node.cs_by_k("decimal");
                 if decimals.len() != 2 {
                     panic!(

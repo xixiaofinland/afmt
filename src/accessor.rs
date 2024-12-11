@@ -98,7 +98,7 @@ impl<'t> Accessor<'t> for Node<'t> {
 
     fn first_c(&self) -> Node<'t> {
         self.named_child(0)
-            .unwrap_or_else(|| panic!("{}: missing a mandatory child.", self.kind().red()))
+            .unwrap_or_else(|| panic!("{}: missing a mandatory child in first_c().", self.kind().red()))
     }
 
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
