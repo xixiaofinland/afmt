@@ -4277,6 +4277,7 @@ impl<'a> DocBuild<'a> for SoqlWithType {
 pub enum SoslWithType {
     DataCat(WithDataCatExpression),
     Division(WithDivisionExpression),
+    Snippet(WithSnippetExpression),
 }
 
 impl SoslWithType {
@@ -4287,6 +4288,7 @@ impl SoslWithType {
         match child.kind() {
             "with_data_cat_expression" => Self::DataCat(WithDataCatExpression::new(child)),
             "with_division_expression" => Self::Division(WithDivisionExpression::new(child)),
+            "with_snippet_expression" => Self::Snippet(WithSnippetExpression::new(child)),
             _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
         }
     }
@@ -4299,6 +4301,9 @@ impl<'a> DocBuild<'a> for SoslWithType {
                 result.push(n.build(b));
             }
             Self::Division(n) => {
+                result.push(n.build(b));
+            }
+            Self::Snippet(n) => {
                 result.push(n.build(b));
             }
         }
@@ -4423,37 +4428,26 @@ impl<'a> DocBuild<'a> for WithDivisionExpression {
 }
 
 #[derive(Debug)]
-pub enum WithSnippetExpression {
-    Bound(BoundApexExpression),
-    StringLiteral(String),
+pub struct WithSnippetExpression {
+    int: Option<String>,
 }
 
 impl WithSnippetExpression {
     pub fn new(node: Node) -> Self {
-        assert_check(node, "with_division_expression");
+        assert_check(node, "with_snippet_expression");
 
-        let child = node.first_c();
-        match child.kind() {
-            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
-            "string_literal" => Self::StringLiteral(child.value(source_code())),
-            _ => panic!(
-                "## unknown node: {} in WithDivisionExpression",
-                node.kind().red()
-            ),
-        }
+        let int = node.try_c_by_k("int").map(|n| n.value(source_code()));
+        Self { int }
     }
 }
 
 impl<'a> DocBuild<'a> for WithSnippetExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("DIVISION = "));
-        match self {
-            Self::Bound(n) => {
-                result.push(n.build(b));
-            }
-            Self::StringLiteral(n) => {
-                result.push(b.txt(n));
-            }
+        result.push(b.txt("SNIPPET"));
+
+        if let Some(ref n) = self.int {
+            result.push(b.txt("(TARGET_LENGTH = "));
+            result.push(b.txt(n));
         }
     }
 }
