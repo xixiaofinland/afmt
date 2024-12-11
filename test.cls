@@ -1,4 +1,5 @@
 class SOSLClass {
+
   void inClause() {
     List<List<SObject>> searchResult;
     searchResult = [FIND 'Hello' IN ALL FIELDS];

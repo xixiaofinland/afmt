@@ -3885,7 +3885,7 @@ impl<'a> DocBuild<'a> for ComparableList {
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.surround(&docs, sep, open, close);
+        let doc = b.group_surround(&docs, sep, open, close);
         result.push(doc);
     }
 }
