@@ -3882,10 +3882,10 @@ impl<'a> DocBuild<'a> for ComparableList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = b.to_docs(&self.values);
 
-        let sep = Insertable::new(None, Some(", "), None);
-        let open = Insertable::new(None, Some("("), None);
-        let close = Insertable::new(None, Some(")"), None);
-        let doc = b.surround(&docs, sep, open, close);
+        let sep = Insertable::new(None, Some(","), Some(b.softline()));
+        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+        let doc = b.group_surround(&docs, sep, open, close);
         result.push(doc);
     }
 }
