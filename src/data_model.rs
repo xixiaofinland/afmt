@@ -4,8 +4,7 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
     utility::{
-        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp,
-        is_method_invocation, source_code,
+        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp, is_method_invocation, is_query_expression, source_code
     },
 };
 use colored::Colorize;
@@ -493,7 +492,7 @@ pub struct AssignmentExpression {
     pub left: AssignmentLeft,
     pub op: String,
     pub right: Expression,
-    pub is_right_child_binary: bool,
+    pub is_right_child_a_query_node: bool,
 }
 
 impl AssignmentExpression {
@@ -505,26 +504,24 @@ impl AssignmentExpression {
 
         let right_child = node.c_by_n("right");
         let right = Expression::new(right_child);
-        let is_right_child_binary = is_binary_exp(&right_child);
+        let is_right_child_a_query_node = is_query_expression(&right_child);
 
         Self {
             left,
             op,
             right,
-            is_right_child_binary,
+            is_right_child_a_query_node,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![
+        let mut docs = vec![
             self.left.build(b),
             b._txt(&self.op),
-            b.softline(),
-            self.right.build(b),
         ];
-        result.push(b.group_indent_concat(docs));
+        //result.push(b.group_indent_concat(docs));
 
         //if self.is_right_child_binary {
         //    docs.push(b.softline());
@@ -535,6 +532,15 @@ impl<'a> DocBuild<'a> for AssignmentExpression {
         //    docs.push(self.right.build(b));
         //    result.push(b.group_concat(docs));
         //}
+        if self.is_right_child_a_query_node {
+            docs.push(b.txt(" "));
+            docs.push(self.right.build(b));
+            result.push(b.concat(docs));
+        } else {
+            docs.push(b.softline());
+            docs.push(self.right.build(b));
+            result.push(b.group_indent_concat(docs));
+        }
     }
 }
 
@@ -1142,6 +1148,7 @@ impl VariableDeclarator {
         let name = node.cvalue_by_n("name", source_code());
 
         let mut is_value_child_a_query_node = false;
+
         let value = node.try_c_by_n("value").map(|n| match n.kind() {
             //"array_initializer" => {
             //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
@@ -1150,7 +1157,7 @@ impl VariableDeclarator {
             //    PrimaryExpression::Identifier(v.value(source_code())),
             //))),
             _ => {
-                is_value_child_a_query_node = n.kind() == "query_expression";
+                is_value_child_a_query_node = is_query_expression(&n);
                 VariableInitializer::Exp(Expression::new(n))
             }
         });
@@ -4254,6 +4261,8 @@ pub enum SoslWithType {
     Snippet(WithSnippetExpression),
     Network(WithNetworkExpression),
     Metadata(WithMetadataExpression),
+    Highlight,
+    Spell(WithSpellCorrectionExpression),
 }
 
 impl SoslWithType {
@@ -4267,6 +4276,8 @@ impl SoslWithType {
             "with_snippet_expression" => Self::Snippet(WithSnippetExpression::new(child)),
             "with_network_expression" => Self::Network(WithNetworkExpression::new(child)),
             "with_metadata_expression" => Self::Metadata(WithMetadataExpression::new(child)),
+            "with_spell_correction_expression" => Self::Spell(WithSpellCorrectionExpression::new(child)),
+            "with_highlight" => Self::Highlight,
             _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
         }
     }
@@ -4288,6 +4299,12 @@ impl<'a> DocBuild<'a> for SoslWithType {
                 result.push(n.build(b));
             }
             Self::Metadata(n) => {
+                result.push(n.build(b));
+            }
+            Self::Highlight => {
+                result.push(b.txt("HIGHLIGHT"));
+            }
+            Self::Spell(n) => {
                 result.push(n.build(b));
             }
         }
@@ -4475,5 +4492,26 @@ impl<'a> DocBuild<'a> for WithMetadataExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("METADATA = "));
         result.push(b.txt(&self.string_literal));
+    }
+}
+
+#[derive(Debug)]
+pub struct WithSpellCorrectionExpression {
+    boolean: String,
+}
+
+impl WithSpellCorrectionExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_spell_correction_expression");
+
+        let boolean = node.cvalue_by_k("boolean", source_code());
+        Self { boolean }
+    }
+}
+
+impl<'a> DocBuild<'a> for WithSpellCorrectionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("SPELL_CORRECTION = "));
+        result.push(b.txt(&self.boolean));
     }
 }

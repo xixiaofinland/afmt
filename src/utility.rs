@@ -114,6 +114,10 @@ pub fn is_binary_exp(node: &Node) -> bool {
     node.kind() == "binary_expression"
 }
 
+pub fn is_query_expression(node: &Node) -> bool {
+    node.kind() == "query_expression"
+}
+
 pub fn is_where_or_have_clause(node: &Node) -> bool {
     matches!(node.kind(), "where_clause" | "having_clause")
 }
