@@ -4,8 +4,9 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
     utility::{
-        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp,
-        is_method_invocation, is_query_expression, source_code,
+        assert_check, get_comparsion, get_precedence, get_property_navigation,
+        has_trailing_new_line, is_binary_exp, is_method_invocation, is_query_expression,
+        source_code,
     },
 };
 use colored::Colorize;
@@ -736,16 +737,168 @@ pub struct MethodInvocationContext {
 }
 
 #[derive(Debug)]
+pub enum ObjectExpression {
+    Primary(Box<PrimaryExpression>),
+    Super(Super),
+}
+
+impl ObjectExpression {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "primary_expression" => Self::Primary(Box::new(PrimaryExpression::new(node))),
+            "super" => Self::Super(Super {}),
+            _ => panic!("## unknown node: {} in ObjectExpression", node.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ObjectExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Primary(n) => {
+                result.push(n.build(b));
+            }
+            Self::Super(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct SuperNavigation {
+    pub super_expression: Super,
+    pub property_navigation: PropertyNavigation,
+}
+
+impl SuperNavigation {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "super");
+
+        let super_expression = Super {};
+        let next_node = node.next_named();
+        let property_navigation = if next_node.kind() == "safe_navigation_operator" {
+            PropertyNavigation::SafeNavigationOperator
+        } else {
+            PropertyNavigation::Dot
+        };
+
+        Self {
+            super_expression,
+            property_navigation,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for SuperNavigation {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.super_expression.build(b));
+        result.push(self.property_navigation.build(b));
+    }
+}
+
+#[derive(Debug)]
+pub enum MethodInvocationKind {
+    Simple(String),
+    Complex {
+        object: ObjectExpression,
+        property_navigation: PropertyNavigation,
+        super_navigation: Option<SuperNavigation>,
+        type_arguments: Option<TypeArguments>,
+        name: String,
+    },
+}
+
+impl<'a> DocBuild<'a> for MethodInvocationKind {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Simple(name) => {
+                result.push(b.txt(name));
+            }
+            Self::Complex {
+                object,
+                property_navigation,
+                super_navigation,
+                type_arguments,
+                name,
+            } => {
+                result.push(object.build(b));
+                result.push(property_navigation.build(b));
+
+                if let Some(ref n) = super_navigation {
+                    result.push(n.build(b));
+                }
+                if let Some(ref n) = type_arguments {
+                    result.push(n.build(b));
+                }
+
+                result.push(b.txt(name));
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct MethodInvocation {
-    pub object: Option<MethodObject>,
-    pub property_navigation: Option<PropertyNavigation>,
-    pub type_arguments: Option<TypeArguments>,
-    pub name: String,
+    pub kind: MethodInvocationKind,
     pub arguments: ArgumentList,
     pub context: MethodInvocationContext,
 }
 
 impl MethodInvocation {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "method_invocation");
+
+        let name = node.cvalue_by_n("name", source_code());
+
+        // complex kind;
+        let kind = if let Some(obj) = node.try_c_by_n("object") {
+            let object = ObjectExpression::new(obj);
+            let property_navigation = if obj.next_named().kind() == "safe_navigation_operator" {
+                PropertyNavigation::SafeNavigationOperator
+            } else {
+                PropertyNavigation::Dot
+            };
+
+            //TODO: update AST to easily locate super/super_navigation as there can be two supers
+            let super_node_in_navigation = {
+                let super_nodes = node.try_cs_by_k("super");
+                if super_nodes.len() == 2 {
+                    Some(super_nodes[1])
+                } else if obj.kind() != "super" && super_nodes.len() == 1 {
+                    Some(super_nodes[0])
+                } else {
+                    None
+                }
+            };
+
+            let super_navigation = super_node_in_navigation.map(|n| SuperNavigation::new(n));
+
+            let type_arguments = node
+                .try_c_by_k("type_arguments")
+                .map(|n| TypeArguments::new(n));
+
+            MethodInvocationKind::Complex {
+                object,
+                property_navigation,
+                super_navigation,
+                type_arguments,
+                name,
+            }
+        } else {
+            MethodInvocationKind::Simple(name)
+        };
+
+        let arguments = ArgumentList::new(node.c_by_n("arguments"));
+        let context = Self::build_context(&node);
+
+        Self {
+            kind,
+            arguments,
+            context,
+        }
+    }
+
     fn build_context(node: &Node) -> MethodInvocationContext {
         let parent_node = node
             .parent()
@@ -766,43 +919,6 @@ impl MethodInvocation {
         MethodInvocationContext {
             is_top_most_in_nest,
             is_parent_a_method_node,
-        }
-    }
-
-    pub fn new(node: Node) -> Self {
-        assert_check(node, "method_invocation");
-
-        let object = node.try_c_by_n("object").map(|n| {
-            if n.kind() == "super" {
-                MethodObject::Super(Super {})
-            } else {
-                MethodObject::Primary(Box::new(PrimaryExpression::new(n)))
-            }
-        });
-
-        let property_navigation = object.as_ref().map(|_| {
-            if node.try_c_by_k("safe_navigation_operator").is_some() {
-                PropertyNavigation::SafeNavigationOperator
-            } else {
-                PropertyNavigation::Dot
-            }
-        });
-
-        let type_arguments = node
-            .try_c_by_k("type_arguments")
-            .map(|n| TypeArguments::new(n));
-
-        let name = node.cvalue_by_n("name", source_code());
-        let arguments = ArgumentList::new(node.c_by_n("arguments"));
-        let context = Self::build_context(&node);
-
-        Self {
-            object,
-            property_navigation,
-            type_arguments,
-            name,
-            arguments,
-            context,
         }
     }
 }
@@ -1958,11 +2074,7 @@ impl FieldAccess {
             MethodObject::Primary(Box::new(PrimaryExpression::new(obj_node)))
         };
 
-        let property_navigation = if node.try_c_by_k("safe_navigation_operator").is_some() {
-            PropertyNavigation::SafeNavigationOperator
-        } else {
-            PropertyNavigation::Dot
-        };
+        let property_navigation = get_property_navigation(&node);
 
         let field = node.cvalue_by_n("field", source_code());
 
@@ -4623,7 +4735,9 @@ impl WithDataCatFilter {
         }
 
         let identifier = all_identififers[0].value(source_code());
-        let filter_type = node.cvalue_by_k("with_data_cat_filter_type", source_code()).to_uppercase();
+        let filter_type = node
+            .cvalue_by_k("with_data_cat_filter_type", source_code())
+            .to_uppercase();
         let identifiers: Vec<_> = all_identififers
             .into_iter()
             .skip(1)

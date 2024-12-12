@@ -1,4 +1,8 @@
-use crate::{accessor::Accessor, data_model::*, enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith}};
+use crate::{
+    accessor::Accessor,
+    data_model::*,
+    enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
+};
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
@@ -142,5 +146,13 @@ pub fn get_comparsion(node: &Node) -> Comparison {
         })
     } else {
         unreachable!()
+    }
+}
+
+pub fn get_property_navigation(parent_node: &Node) -> PropertyNavigation {
+    if parent_node.try_c_by_k("safe_navigation_operator").is_some() {
+        PropertyNavigation::SafeNavigationOperator
+    } else {
+        PropertyNavigation::Dot
     }
 }
