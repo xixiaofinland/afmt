@@ -2467,10 +2467,10 @@ impl<'a> DocBuild<'a> for TernaryExpression {
             self.condition.build(b),
             b.softline(),
             b.txt_("?"),
-            b.indent(self.consequence.build(b)),
+            self.consequence.build(b),
             b.softline(),
             b.txt_(":"),
-            b.indent(self.alternative.build(b)),
+            self.alternative.build(b),
         ];
         result.push(b.group_concat(docs));
     }
