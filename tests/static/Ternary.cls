@@ -4,6 +4,10 @@ class Ternary {
     ? VeryLongClassNameThatWillForSureBeTooLongForThisMethodToNotBreak.someMethod()
     : VeryLongClassNameThatWillForSureBeTooLongForThisMethodToNotBreak.anotherMethod();
 
+    String msg0 = num > 10 ? '1' : '2';
+
+    num > 10 ? '1' : '2';
+
     String msg1 =
       num > 10 ? 'Number is greater than 10' : 'Number is equal to 10';
 
