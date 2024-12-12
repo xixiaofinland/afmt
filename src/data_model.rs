@@ -4,7 +4,8 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
     utility::{
-        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp, is_method_invocation, is_query_expression, source_code
+        assert_check, get_comparsion, get_precedence, has_trailing_new_line, is_binary_exp,
+        is_method_invocation, is_query_expression, source_code,
     },
 };
 use colored::Colorize;
@@ -517,10 +518,7 @@ impl AssignmentExpression {
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![
-            self.left.build(b),
-            b._txt(&self.op),
-        ];
+        let mut docs = vec![self.left.build(b), b._txt(&self.op)];
         //result.push(b.group_indent_concat(docs));
 
         //if self.is_right_child_binary {
@@ -3389,7 +3387,7 @@ pub struct SoslQueryBody {
     pub with_clauses: Vec<SoslWithClause>,
     pub limit_clause: Option<LimitClause>,
     //pub offset_clause: Option<OffsetClause>,
-    //pub offset_clause: Option<UpdateClause>,
+    pub update_clause: Option<UpdateClause>,
 }
 
 impl SoslQueryBody {
@@ -3405,6 +3403,9 @@ impl SoslQueryBody {
             .map(|n| SoslWithClause::new(n))
             .collect();
         let limit_clause = node.try_c_by_k("limit_clause").map(|n| LimitClause::new(n));
+        let update_clause = node
+            .try_c_by_k("update_clause")
+            .map(|n| UpdateClause::new(n));
 
         Self {
             find_clause,
@@ -3412,6 +3413,7 @@ impl SoslQueryBody {
             returning_clause,
             with_clauses,
             limit_clause,
+            update_clause,
         }
     }
 }
@@ -3434,6 +3436,9 @@ impl<'a> DocBuild<'a> for SoslQueryBody {
             docs.push(doc);
         }
         if let Some(ref n) = self.limit_clause {
+            docs.push(n.build(b));
+        }
+        if let Some(ref n) = self.update_clause {
             docs.push(n.build(b));
         }
 
@@ -4242,18 +4247,6 @@ impl<'a> DocBuild<'a> for SoqlWithType {
     }
 }
 
-// TODO:
-//sosl_with_type: ($) =>
-//choice(
-//  $.with_data_cat_expression,
-//  $.with_division_expression,
-//  $.with_highlight,
-//  $.with_metadata_expression,
-//  $.with_network_expression,
-//  $.with_pricebook_expression,
-//  $.with_snippet_expression,
-//  $.with_spell_correction_expression
-//),
 #[derive(Debug)]
 pub enum SoslWithType {
     DataCat(WithDataCatExpression),
@@ -4276,7 +4269,9 @@ impl SoslWithType {
             "with_snippet_expression" => Self::Snippet(WithSnippetExpression::new(child)),
             "with_network_expression" => Self::Network(WithNetworkExpression::new(child)),
             "with_metadata_expression" => Self::Metadata(WithMetadataExpression::new(child)),
-            "with_spell_correction_expression" => Self::Spell(WithSpellCorrectionExpression::new(child)),
+            "with_spell_correction_expression" => {
+                Self::Spell(WithSpellCorrectionExpression::new(child))
+            }
             "with_highlight" => Self::Highlight,
             _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
         }
