@@ -731,10 +731,8 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug)]
 pub struct MethodInvocationContext {
-    pub is_a_simple_node: bool,
     pub is_top_most_in_nest: bool,
     pub is_parent_a_method_node: bool,
-    pub has_method_child: bool,
 }
 
 #[derive(Debug)]
@@ -767,10 +765,8 @@ impl MethodInvocation {
         let is_a_simple_node = !has_method_child && !is_parent_a_method_node;
 
         MethodInvocationContext {
-            is_a_simple_node,
             is_top_most_in_nest,
             is_parent_a_method_node,
-            has_method_child,
         }
     }
 
@@ -843,9 +839,6 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         }
 
         result.push(b.concat(docs))
-        //if context.is_a_simple_node {
-        //    return result.push(b.concat(docs));
-        //}
     }
 }
 
