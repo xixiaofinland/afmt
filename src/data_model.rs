@@ -2472,7 +2472,7 @@ impl<'a> DocBuild<'a> for TernaryExpression {
             b.txt_(":"),
             b.indent(self.alternative.build(b)),
         ];
-        result.push(b.group_indent_concat(docs));
+        result.push(b.group_concat(docs));
     }
 }
 
