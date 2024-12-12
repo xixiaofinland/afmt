@@ -3383,6 +3383,7 @@ pub struct SoslQueryBody {
     pub in_clause: Option<InClause>,
     pub returning_clause: Option<ReturningClause>,
     pub with_clauses: Vec<SoslWithClause>,
+    pub using_clause: Option<SoslUsingClause>,
     pub limit_clause: Option<LimitClause>,
     //pub offset_clause: Option<OffsetClause>,
     pub update_clause: Option<UpdateClause>,
@@ -3400,6 +3401,9 @@ impl SoslQueryBody {
             .into_iter()
             .map(|n| SoslWithClause::new(n))
             .collect();
+        let using_clause = node
+            .try_c_by_k("sosl_using_clause")
+            .map(|n| SoslUsingClause::new(n));
         let limit_clause = node.try_c_by_k("limit_clause").map(|n| LimitClause::new(n));
         let update_clause = node
             .try_c_by_k("update_clause")
@@ -3410,6 +3414,7 @@ impl SoslQueryBody {
             in_clause,
             returning_clause,
             with_clauses,
+            using_clause,
             limit_clause,
             update_clause,
         }
@@ -3432,6 +3437,9 @@ impl<'a> DocBuild<'a> for SoslQueryBody {
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let doc = b.intersperse(&with_clauses_docs, sep);
             docs.push(doc);
+        }
+        if let Some(ref n) = self.using_clause {
+            docs.push(n.build(b));
         }
         if let Some(ref n) = self.limit_clause {
             docs.push(n.build(b));
@@ -3828,6 +3836,56 @@ impl<'a> DocBuild<'a> for BoundApexExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(":"));
         result.push(self.exp.build(b));
+    }
+}
+
+#[derive(Debug)]
+pub struct SoslUsingClause {
+    pub search: UsingSearch,
+}
+
+impl SoslUsingClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "sosl_using_clause");
+
+        let search = UsingSearch::new(node.first_c());
+        Self { search }
+    }
+}
+
+impl<'a> DocBuild<'a> for SoslUsingClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("USING"));
+        result.push(self.search.build(b));
+    }
+}
+
+#[derive(Debug)]
+pub enum UsingSearch {
+    Phrase,
+    Advanced,
+}
+
+impl UsingSearch {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "using_phrase_search" => Self::Phrase,
+            "using_advanced_search" => Self::Advanced,
+            _ => panic!("## unknown node: {} in UsingSearch", node.kind().red()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingSearch {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Phrase => {
+                result.push(b.txt("PHRASE SEARCH"));
+            }
+            Self::Advanced => {
+                result.push(b.txt("ADVANCED SEARCH"));
+            }
+        }
     }
 }
 
@@ -4306,6 +4364,7 @@ pub enum SoslWithType {
     Metadata(WithMetadataExpression),
     Highlight,
     Spell(WithSpellCorrectionExpression),
+    PriceBook(WithPriceBookExpression),
 }
 
 impl SoslWithType {
@@ -4323,6 +4382,7 @@ impl SoslWithType {
                 Self::Spell(WithSpellCorrectionExpression::new(child))
             }
             "with_highlight" => Self::Highlight,
+            "with_pricebook_expression" => Self::PriceBook(WithPriceBookExpression::new(child)),
             _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
         }
     }
@@ -4350,6 +4410,9 @@ impl<'a> DocBuild<'a> for SoslWithType {
                 result.push(b.txt("HIGHLIGHT"));
             }
             Self::Spell(n) => {
+                result.push(n.build(b));
+            }
+            Self::PriceBook(n) => {
                 result.push(n.build(b));
             }
         }
@@ -4559,5 +4622,54 @@ impl<'a> DocBuild<'a> for WithSpellCorrectionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("SPELL_CORRECTION = "));
         result.push(b.txt(&self.boolean));
+    }
+}
+
+#[derive(Debug)]
+pub struct WithPriceBookExpression {
+    string_literal: String,
+}
+
+impl WithPriceBookExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_pricebook_expression");
+
+        let string_literal = node.cvalue_by_k("string_literal", source_code());
+        Self { string_literal }
+    }
+}
+
+impl<'a> DocBuild<'a> for WithPriceBookExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("PricebookId ="));
+        result.push(b.txt(&self.string_literal));
+    }
+}
+
+#[derive(Debug)]
+pub struct DottedIdentifier {
+    identifiers: Vec<String>,
+}
+
+impl DottedIdentifier {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "dotted_identifier");
+
+        let identifiers = node
+            .cs_by_k("identifier")
+            .into_iter()
+            .map(|n| n.value(source_code()))
+            .collect();
+
+        Self { identifiers }
+    }
+}
+
+impl<'a> DocBuild<'a> for DottedIdentifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let docs: Vec<_> = self.identifiers.iter().map(|s| b.txt(s)).collect();
+        let sep = Insertable::new(None, Some("."), None);
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
     }
 }

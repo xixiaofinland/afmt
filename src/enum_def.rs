@@ -891,7 +891,7 @@ impl<'a> DocBuild<'a> for SelectableExpression {
 #[derive(Debug)]
 pub enum FieldIdentifier {
     Identifier(String),
-    Dotted(Vec<String>),
+    Dotted(DottedIdentifier),
 }
 
 impl FieldIdentifier {
@@ -901,12 +901,7 @@ impl FieldIdentifier {
 
         match c.kind() {
             "identifier" => Self::Identifier(c.value(source_code())),
-            "dotted_identifier" => Self::Dotted(
-                c.cs_by_k("identifier")
-                    .into_iter()
-                    .map(|n| n.value(source_code()))
-                    .collect(),
-            ),
+            "dotted_identifier" => Self::Dotted(DottedIdentifier::new(c)),
             _ => panic!("## unknown node: {} in FieldIdentifier", c.kind().red()),
         }
     }
@@ -916,13 +911,10 @@ impl<'a> DocBuild<'a> for FieldIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
-                result.push(b.txt(&n));
+                result.push(b.txt(n));
             }
-            Self::Dotted(vec) => {
-                let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
-                let sep = Insertable::new(None, Some("."), None);
-                let doc = b.intersperse(&docs, sep);
-                result.push(doc);
+            Self::Dotted(n) => {
+                result.push(n.build(b));
             }
         }
     }
