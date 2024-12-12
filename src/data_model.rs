@@ -744,10 +744,10 @@ pub enum ObjectExpression {
 
 impl ObjectExpression {
     pub fn new(node: Node) -> Self {
+        //TODO: handle incoming comment node
         match node.kind() {
-            "primary_expression" => Self::Primary(Box::new(PrimaryExpression::new(node))),
             "super" => Self::Super(Super {}),
-            _ => panic!("## unknown node: {} in ObjectExpression", node.kind().red()),
+            _ => Self::Primary(Box::new(PrimaryExpression::new(node))),
         }
     }
 }
@@ -799,21 +799,27 @@ impl<'a> DocBuild<'a> for SuperNavigation {
 
 #[derive(Debug)]
 pub enum MethodInvocationKind {
-    Simple(String),
+    Simple {
+        name: String,
+        arguments: ArgumentList,
+    },
     Complex {
         object: ObjectExpression,
         property_navigation: PropertyNavigation,
         super_navigation: Option<SuperNavigation>,
         type_arguments: Option<TypeArguments>,
         name: String,
+        arguments: ArgumentList,
+        context: MethodInvocationContext,
     },
 }
 
 impl<'a> DocBuild<'a> for MethodInvocationKind {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::Simple(name) => {
+            Self::Simple { name, arguments } => {
                 result.push(b.txt(name));
+                result.push(arguments.build(b));
             }
             Self::Complex {
                 object,
@@ -821,18 +827,36 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
                 super_navigation,
                 type_arguments,
                 name,
+                arguments,
+                context,
             } => {
-                result.push(object.build(b));
-                result.push(property_navigation.build(b));
+                let mut docs = vec![];
+
+                docs.push(object.build(b));
+
+                // chaining logic break points
+                if context.is_top_most_in_nest || context.is_parent_a_method_node {
+                    docs.push(b.maybeline());
+                }
+
+                docs.push(property_navigation.build(b));
 
                 if let Some(ref n) = super_navigation {
                     result.push(n.build(b));
                 }
+
                 if let Some(ref n) = type_arguments {
-                    result.push(n.build(b));
+                    docs.push(n.build(b));
                 }
 
-                result.push(b.txt(name));
+                docs.push(b.txt(name));
+                docs.push(arguments.build(b));
+
+                if context.is_top_most_in_nest {
+                    return result.push(b.group_indent_concat(docs));
+                }
+
+                result.push(b.concat(docs))
             }
         }
     }
@@ -841,8 +865,6 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
 #[derive(Debug)]
 pub struct MethodInvocation {
     pub kind: MethodInvocationKind,
-    pub arguments: ArgumentList,
-    pub context: MethodInvocationContext,
 }
 
 impl MethodInvocation {
@@ -850,6 +872,7 @@ impl MethodInvocation {
         assert_check(node, "method_invocation");
 
         let name = node.cvalue_by_n("name", source_code());
+        let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         // complex kind;
         let kind = if let Some(obj) = node.try_c_by_n("object") {
@@ -877,6 +900,7 @@ impl MethodInvocation {
             let type_arguments = node
                 .try_c_by_k("type_arguments")
                 .map(|n| TypeArguments::new(n));
+            let context = Self::build_context(&node);
 
             MethodInvocationKind::Complex {
                 object,
@@ -884,19 +908,14 @@ impl MethodInvocation {
                 super_navigation,
                 type_arguments,
                 name,
+                arguments,
+                context,
             }
         } else {
-            MethodInvocationKind::Simple(name)
+            MethodInvocationKind::Simple { name, arguments }
         };
 
-        let arguments = ArgumentList::new(node.c_by_n("arguments"));
-        let context = Self::build_context(&node);
-
-        Self {
-            kind,
-            arguments,
-            context,
-        }
+        Self { kind }
     }
 
     fn build_context(node: &Node) -> MethodInvocationContext {
@@ -925,35 +944,7 @@ impl MethodInvocation {
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![];
-        let context = &self.context;
-
-        if let Some(ref o) = self.object {
-            docs.push(o.build(b));
-
-            // chaining logic break points
-            if context.is_top_most_in_nest || context.is_parent_a_method_node {
-                docs.push(b.maybeline());
-            }
-        }
-
-        if let Some(ref p) = self.property_navigation {
-            docs.push(p.build(b));
-        }
-
-        if let Some(ref n) = self.type_arguments {
-            docs.push(n.build(b));
-        }
-
-        docs.push(b.txt(&self.name));
-
-        docs.push(self.arguments.build(b));
-
-        if context.is_top_most_in_nest {
-            return result.push(b.group_indent_concat(docs));
-        }
-
-        result.push(b.concat(docs))
+        result.push(self.kind.build(b));
     }
 }
 
