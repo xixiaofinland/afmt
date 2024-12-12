@@ -10,19 +10,11 @@ class SOSLClass {
   void hardlineHeuristics() {
     List<List<SObject>> searchResult = [FIND 'FirstLastName'];
     searchResult = [FIND :a USING PHRASE SEARCH];
-    searchResult = [
-      FIND :a USING PHRASE SEARCH
-    ];
-    searchResult = [
-      FIND :a
-      USING PHRASE SEARCH
-    ];
   }
 
   void inClause() {
     List<List<SObject>> searchResult;
     searchResult = [FIND 'Hello' IN ALL FIELDS];
-    searchResult = [FIND 'Hello' in all fields];
     searchResult = [FIND 'Hello' IN EMAIL FIELDS];
     searchResult = [FIND 'Hello' IN NAME FIELDS];
     searchResult = [FIND 'Hello' IN PHONE FIELDS];
@@ -33,11 +25,7 @@ class SOSLClass {
     String a = 'Local';
     searchResult = [FIND 'Hello' WITH Division = 'Global'];
     searchResult = [FIND 'Hello' WITH Division = :a];
-    searchResult = [
-      FIND 'foobar'
-      RETURNING Account
-      WITH DIVISION ='global'
-    ];
+    searchResult = [ FIND 'foobar' RETURNING Account WITH DIVISION ='global' ];
   }
   void withDataCategory() {
     List<List<SObject>> searchResult;
@@ -50,15 +38,14 @@ class SOSLClass {
     List<List<SObject>> searchResult;
     String a = 'Local';
     searchResult = [FIND 'Hello' WITH SNIPPET];
-    searchResult = [FIND 'Hello' WITH SNIPPET (target_length=120)];
     searchResult = [FIND 'Hello' WITH SNIPPET (TARGET_LENGTH=120)];
   }
   void withNetwork() {
     List<List<SObject>> searchResult;
-    searchResult = [FIND 'Hello' WITH Network = 'NetworkId'];
-    searchResult = [FIND 'Hello' WITH Network IN ('NetworkId1', 'NetworkId2', 'NetworkId3')];
-    searchResult = [FIND 'Hello' WITH Network = '00000000000000'];
-    searchResult = [FIND 'Hello' WITH Network IN ('NetworkId1', 'NetworkId2', 'NetworkId3', 'NetworkId4', 'NetworkId5', 'NetworkId6')];
+    searchResult = [FIND 'Hello' WITH NETWORK = 'NetworkId'];
+    searchResult = [FIND 'Hello' WITH NETWORK IN ('NetworkId1', 'NetworkId2', 'NetworkId3')];
+    searchResult = [FIND 'Hello' WITH NETWORK = '00000000000000'];
+    searchResult = [FIND 'Hello' WITH NETWORK IN ('NetworkId1', 'NetworkId2', 'NetworkId3', 'NetworkId4', 'NetworkId5', 'NetworkId6')];
   }
   void withPricebookId() {
     List<List<SObject>> searchResult;

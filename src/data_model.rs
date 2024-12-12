@@ -4016,7 +4016,7 @@ impl UsingListviewClause {
 
 impl<'a> DocBuild<'a> for UsingListviewClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("Listview ="));
+        result.push(b.txt_("ListView ="));
         result.push(b.txt(&self.identifier));
     }
 }
@@ -4631,7 +4631,7 @@ impl WithDataCatFilter {
         }
 
         let identifier = all_identififers[0].value(source_code());
-        let filter_type = node.cvalue_by_k("with_data_cat_filter_type", source_code());
+        let filter_type = node.cvalue_by_k("with_data_cat_filter_type", source_code()).to_uppercase();
         let identifiers: Vec<_> = all_identififers
             .into_iter()
             .skip(1)
@@ -4805,7 +4805,7 @@ impl WithPriceBookExpression {
 
 impl<'a> DocBuild<'a> for WithPriceBookExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("PricebookId ="));
+        result.push(b.txt_("PriceBookId ="));
         result.push(b.txt(&self.string_literal));
     }
 }
