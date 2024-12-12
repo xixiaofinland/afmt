@@ -1295,7 +1295,7 @@ impl<'a> DocBuild<'a> for GeoLocationType {
                 result.push(b.txt(function_name));
                 result.push(b.txt("("));
                 result.push(b.txt(decimal1));
-                result.push(b.txt(","));
+                result.push(b.txt_(","));
                 result.push(b.txt(decimal2));
                 result.push(b.txt(")"));
             }
@@ -1617,9 +1617,9 @@ impl<'a> DocBuild<'a> for FunctionExpression {
                 if let Some(ref n) = bound {
                     result.push(n.build(b));
                 }
-                result.push(b.txt(","));
+                result.push(b.txt_(","));
                 result.push(geo.build(b));
-                result.push(b.txt(","));
+                result.push(b.txt_(","));
                 result.push(b.txt(string_literal));
                 result.push(b.txt(")"));
             }

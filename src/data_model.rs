@@ -3552,6 +3552,7 @@ impl SObjectReturn {
                     .into_iter()
                     .map(|selectable_node| SelectableExpression::new(selectable_node))
                     .collect(),
+                using_clause: node.try_c_by_k("using_clause").map(|n| UsingClause::new(n)),
                 where_clause: node.try_c_by_k("where_clause").map(|n| WhereClause::new(n)),
                 order_by_clause: node
                     .try_c_by_k("order_by_clause")
@@ -3582,7 +3583,7 @@ impl<'a> DocBuild<'a> for SObjectReturn {
 #[derive(Debug)]
 pub struct SObjectReturnQuery {
     pub selected_fields: Vec<SelectableExpression>,
-    //pub using_clause: Option<UsingClause>,
+    pub using_clause: Option<UsingClause>,
     pub where_clause: Option<WhereClause>,
     pub order_by_clause: Option<OrderByClause>,
     pub limit_clause: Option<LimitClause>,
@@ -3598,6 +3599,9 @@ impl<'a> DocBuild<'a> for SObjectReturnQuery {
         let doc = b.intersperse(&selected_fields_docs, sep);
         docs.push(doc);
 
+        if let Some(ref n) = self.using_clause {
+            docs.push(n.build(b));
+        }
         if let Some(ref n) = self.where_clause {
             docs.push(n.build(b));
         }
@@ -3613,7 +3617,7 @@ impl<'a> DocBuild<'a> for SObjectReturnQuery {
 
         let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+        let close = Insertable::new(None, Some(")"), None);
         let doc = b.group_surround(&docs, sep, open, close);
         result.push(doc);
     }
@@ -3783,6 +3787,33 @@ impl<'a> DocBuild<'a> for LimitClause {
 }
 
 #[derive(Debug)]
+pub struct UpdateClause {
+    pub update_types: Vec<String>,
+}
+
+impl UpdateClause {
+    pub fn new(node: Node) -> Self {
+        let update_types = node
+            .cs_by_k("update_type")
+            .into_iter()
+            .map(|n| n.value(source_code()))
+            .collect();
+        Self { update_types }
+    }
+}
+
+impl<'a> DocBuild<'a> for UpdateClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("UPDATE"));
+
+        let docs: Vec<DocRef<'a>> = self.update_types.iter().map(|n| b.txt(n)).collect();
+        let sep = Insertable::new(None, Some(", "), None);
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
+    }
+}
+
+#[derive(Debug)]
 pub struct BoundApexExpression {
     pub exp: Box<Expression>,
 }
@@ -3799,6 +3830,27 @@ impl<'a> DocBuild<'a> for BoundApexExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt(":"));
         result.push(self.exp.build(b));
+    }
+}
+
+#[derive(Debug)]
+pub struct UsingClause {
+    pub identifier: String,
+}
+
+impl UsingClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "using_clause");
+
+        let identifier = node.cvalue_by_k("identifier", source_code());
+        Self { identifier }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("USING LISTVIEW ="));
+        result.push(b.txt(&self.identifier));
     }
 }
 
@@ -4444,6 +4496,7 @@ impl<'a> DocBuild<'a> for WithSnippetExpression {
         if let Some(ref n) = self.int {
             result.push(b.txt("(TARGET_LENGTH = "));
             result.push(b.txt(n));
+            result.push(b.txt(")"));
         }
     }
 }
