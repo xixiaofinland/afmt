@@ -3891,22 +3891,186 @@ impl<'a> DocBuild<'a> for UsingSearch {
 
 #[derive(Debug)]
 pub struct UsingClause {
-    pub identifier: String,
+    pub option: UsingClauseOption,
 }
 
 impl UsingClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_clause");
 
-        let identifier = node.cvalue_by_k("identifier", source_code());
-        Self { identifier }
+        let option = UsingClauseOption::new(node.first_c());
+        Self { option }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("USING LISTVIEW ="));
+        result.push(b.txt_("USING"));
+        result.push(self.option.build(b));
+    }
+}
+
+#[derive(Debug)]
+pub enum UsingClauseOption {
+    Scope(UsingScopeClause),
+    Lookup(UsingLookupClause),
+    Listview(UsingListviewClause),
+}
+
+impl UsingClauseOption {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "using_scope_clause" => Self::Scope(UsingScopeClause::new(node)),
+            "using_lookup_clause" => Self::Lookup(UsingLookupClause::new(node)),
+            "using_listview_clause" => Self::Listview(UsingListviewClause::new(node)),
+            _ => panic!(
+                "## unknown node: {} in UsingClauseOption",
+                node.kind().red()
+            ),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingClauseOption {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Scope(n) => {
+                result.push(n.build(b));
+            }
+            Self::Lookup(n) => {
+                result.push(n.build(b));
+            }
+            Self::Listview(n) => {
+                result.push(n.build(b));
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct UsingScopeClause {
+    type_: String,
+}
+
+impl UsingScopeClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "using_scope_clause");
+
+        let type_ = node.cvalue_by_k("using_scope_type", source_code());
+        Self { type_ }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingScopeClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("SCOPE"));
+        result.push(b.txt(&self.type_));
+    }
+}
+
+#[derive(Debug)]
+pub struct UsingLookupClause {
+    lookup_field: DottedIdentifier,
+    bind_clause: Option<UsingLookupBindClause>,
+}
+
+impl UsingLookupClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "using_lookup_clause");
+
+        let lookup_field = DottedIdentifier::new(node.c_by_n("using_lookup_clause"));
+        let bind_clause = node
+            .try_c_by_k("using_lookup_bind_clause")
+            .map(|n| UsingLookupBindClause::new(n));
+        Self {
+            lookup_field,
+            bind_clause,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingLookupClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("LOOKUP"));
+        result.push(self.lookup_field.build(b));
+        result.push(b.txt(" "));
+        if let Some(ref n) = self.bind_clause {
+            result.push(n.build(b));
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct UsingListviewClause {
+    identifier: String,
+}
+
+impl UsingListviewClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "using_listview_clause");
+
+        let identifier = node.cvalue_by_k("identifier", source_code());
+        Self { identifier }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingListviewClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("Listview ="));
         result.push(b.txt(&self.identifier));
+    }
+}
+
+#[derive(Debug)]
+pub struct UsingLookupBindClause {
+    bind_exps: Vec<UsingLookupBindExpression>,
+}
+
+impl UsingLookupBindClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "using_lookup_bind_clause");
+
+        let bind_exps = node
+            .try_cs_by_k("using_lookup_bind_expression")
+            .into_iter()
+            .map(|n| UsingLookupBindExpression::new(n))
+            .collect();
+        Self { bind_exps }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingLookupBindClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt_("BIND"));
+
+        let docs = b.to_docs(&self.bind_exps);
+        let sep = Insertable::new(None, Some(", "), None);
+        let doc = b.intersperse(&docs, sep);
+        result.push(doc);
+    }
+}
+
+#[derive(Debug)]
+pub struct UsingLookupBindExpression {
+    field: String,
+    bound_value: SoqlLiteral,
+}
+
+impl UsingLookupBindExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "using_lookup_bind_expression");
+
+        let field = node.cvalue_by_n("field", source_code());
+        let bound_value = SoqlLiteral::new(node.c_by_n("bound_value"));
+        Self { field, bound_value }
+    }
+}
+
+impl<'a> DocBuild<'a> for UsingLookupBindExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.field));
+        result.push(b._txt_("="));
+        result.push(self.bound_value.build(b));
     }
 }
 
