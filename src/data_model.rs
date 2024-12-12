@@ -842,7 +842,7 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
                 docs.push(property_navigation.build(b));
 
                 if let Some(ref n) = super_navigation {
-                    result.push(n.build(b));
+                    docs.push(n.build(b));
                 }
 
                 if let Some(ref n) = type_arguments {
