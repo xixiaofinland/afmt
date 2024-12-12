@@ -762,7 +762,6 @@ impl MethodInvocation {
         }
 
         let is_top_most_in_nest = has_method_child && !is_parent_a_method_node;
-        let is_a_simple_node = !has_method_child && !is_parent_a_method_node;
 
         MethodInvocationContext {
             is_top_most_in_nest,
@@ -816,7 +815,7 @@ impl<'a> DocBuild<'a> for MethodInvocation {
         if let Some(ref o) = self.object {
             docs.push(o.build(b));
 
-            // chaining methods break points
+            // chaining logic break points
             if context.is_top_most_in_nest || context.is_parent_a_method_node {
                 docs.push(b.maybeline());
             }
