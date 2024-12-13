@@ -157,7 +157,7 @@ pub fn get_property_navigation(parent_node: &Node) -> PropertyNavigation {
     }
 }
 
-pub fn build_chaining_context(node: &Node) -> ChainingContext {
+pub fn build_chaining_context(node: &Node) -> Option<ChainingContext> {
     let parent_node = node
         .parent()
         .expect("node must have parent node in build_chaining_context()");
@@ -169,12 +169,16 @@ pub fn build_chaining_context(node: &Node) -> ChainingContext {
         .map(|n| is_a_possible_chaining_node(&n))
         .unwrap_or(false);
 
-    let is_top_most_in_nest = !is_parent_a_chaining_node && has_a_chaining_child;
-
-    ChainingContext {
-        is_parent_a_chaining_node,
-        is_top_most_in_nest,
+    if !is_parent_a_chaining_node && !has_a_chaining_child {
+        return None;
     }
+
+    let is_top_most_in_a_chain = has_a_chaining_child && !is_parent_a_chaining_node;
+
+    Some(ChainingContext {
+        is_top_most_in_a_chain,
+        is_parent_a_chaining_node,
+    })
 }
 
 fn is_a_possible_chaining_node(node: &Node) -> bool {

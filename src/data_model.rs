@@ -733,7 +733,7 @@ impl<'a> DocBuild<'a> for Interface {
 #[derive(Debug)]
 pub struct ChainingContext {
     pub is_parent_a_chaining_node: bool,
-    pub is_top_most_in_nest: bool,
+    pub is_top_most_in_a_chain: bool,
 }
 
 #[derive(Debug)]
@@ -810,7 +810,7 @@ pub enum MethodInvocationKind {
         type_arguments: Option<TypeArguments>,
         name: String,
         arguments: ArgumentList,
-        context: ChainingContext,
+        context: Option<ChainingContext>,
     },
 }
 
@@ -831,32 +831,50 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
                 context,
             } => {
                 let mut docs = vec![];
-
                 docs.push(object.build(b));
 
-                // chaining logic break points
-                if context.is_parent_a_chaining_node || context.is_top_most_in_nest {
-                    docs.push(b.maybeline());
+                // potential chaining scenario
+                if let Some(context) = context {
+                    if context.is_parent_a_chaining_node || context.is_top_most_in_a_chain {
+                        docs.push(b.maybeline());
+                    }
+
+                    docs.push(property_navigation.build(b));
+
+                    if let Some(ref n) = super_navigation {
+                        docs.push(n.build(b));
+
+                        if context.is_parent_a_chaining_node || context.is_top_most_in_a_chain {
+                            docs.push(b.maybeline());
+                        }
+                    }
+
+                    if let Some(ref n) = type_arguments {
+                        docs.push(n.build(b));
+                    }
+
+                    docs.push(b.txt(name));
+                    docs.push(arguments.build(b));
+
+                    if context.is_top_most_in_a_chain {
+                        return result.push(b.group_indent_concat(docs));
+                    }
+
+                    result.push(b.concat(docs))
+                } else {
+                    docs.push(property_navigation.build(b));
+
+                    if let Some(ref n) = super_navigation {
+                        docs.push(n.build(b));
+                    }
+
+                    if let Some(ref n) = type_arguments {
+                        docs.push(n.build(b));
+                    }
+                    docs.push(b.txt(name));
+                    docs.push(arguments.build(b));
+                    result.push(b.concat(docs))
                 }
-
-                docs.push(property_navigation.build(b));
-
-                if let Some(ref n) = super_navigation {
-                    docs.push(n.build(b));
-                }
-
-                if let Some(ref n) = type_arguments {
-                    docs.push(n.build(b));
-                }
-
-                docs.push(b.txt(name));
-                docs.push(arguments.build(b));
-
-                if context.is_top_most_in_nest {
-                    return result.push(b.group_indent_concat(docs));
-                }
-
-                result.push(b.concat(docs))
             }
         }
     }
@@ -874,7 +892,6 @@ impl MethodInvocation {
         let name = node.cvalue_by_n("name", source_code());
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
-        // complex kind;
         let kind = if let Some(obj) = node.try_c_by_n("object") {
             let object = ObjectExpression::new(obj);
             let property_navigation = if obj.next_named().kind() == "safe_navigation_operator" {
