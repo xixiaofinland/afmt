@@ -22,14 +22,6 @@ public class SimpleMethod implements FirstSampleInterface, SecondSampleInterface
     return 'Hello at ' + now.format();
   }
 
-  private String sayHello(String action, String subject) {
-    return action + ' ' + subject;
-
-    return generator.objectBuilder
-      .setExternalId(account.personContactId)
-      .getInstance();
-  }
-
   private String sayHelloWithLongListOfParameters(
     String action,
     String subject,

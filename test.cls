@@ -1,21 +1,7 @@
 class Chaining {
   {
-    a[0].super.c();
-    super.a.b();
 
-    super.a?.b();
-    super?.a?.b();
-
-    this?.a.b();
-    a.this?.b();
-
-    c = veryLongVariableThatWillHelpBreakTheExpression[insideFieldThatIsLong]
-      ?.aVeryLongMethod()
-      .anotherVeryLongField;
-
-    d = veryLongVariableThatWillHelpBreakTheExpression[insideFieldThatIsLong]
-      .aVeryLongMethod()
-      ?.anotherVeryLongField;
+    [Select Id, Name From acc].a;
 
     String g1 = [
       SELECT Id, Name, One_Field__c, Another_Field__c
@@ -24,6 +10,18 @@ class Chaining {
     ];
 
     String g2 = [
+      SELECT Id
+      FROM Account
+    ].a;
+
+    String g3 = [
+      SELECT Id, Name, One_Field__c, Another_Field__c
+      FROM Account
+      WHERE Id = :accId
+    ]
+    .Name().b.c.aa();
+
+    String g3 = [
       SELECT Id, Name, One_Field__c, Another_Field__c
       FROM Account
       WHERE Id = :accId
@@ -31,5 +29,9 @@ class Chaining {
     .Name;
 
     SObjectType.Attribute__c.fields.Name.isAccessible();
-}
+
+    return generator.objectBuilder
+      .setExternalId(account.personContactId)
+      .getInstance();
+  }
 }

@@ -212,10 +212,10 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Indent(relative_indent, doc_ref))
     }
 
-    //pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
-    //    let relative_indent = self.config.indent_size;
-    //    self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
-    //}
+    pub fn dedent(&'a self, doc_ref: DocRef<'a>) -> DocRef<'a> {
+        let relative_indent = self.config.indent_size;
+        self.arena.alloc(Doc::Dedent(relative_indent, doc_ref))
+    }
 
     //fn align(&'a self, relative_col_offset: u32, doc_ref: DocRef<'a>) -> DocRef<'a> {
     //    self.arena.alloc(Doc::Align(relative_col_offset, doc_ref))

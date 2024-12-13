@@ -3453,12 +3453,23 @@ impl QueryExpression {
 
 impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![self.query_body.build(b)];
-
-        // chaining scenario
         if self.context.is_some() {
-            result.push(b.txt("hello"));
+            let mut docs = vec![];
+            docs.push(b.txt("["));
+            docs.push(b.maybeline());
+
+            let body_docs = vec![self.query_body.build(b)];
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+            docs.push(b.intersperse(&body_docs, sep));
+
+            // TODO: Why dedent() is needed here? This is the only place in the code place.
+            docs.push(b.dedent(b.maybeline()));
+            docs.push(b.txt("]"));
+
+            result.push(b.group_concat(docs));
+
         } else {
+            let docs = vec![self.query_body.build(b)];
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("["), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
