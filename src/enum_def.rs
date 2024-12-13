@@ -1167,72 +1167,6 @@ impl<'a> DocBuild<'a> for ValueExpression {
 }
 
 #[derive(Debug)]
-pub enum FunctionVariant {
-    Complex {
-        function_name: String,
-        choice: FunctionChoice,
-        //geo_location_type: GeoLocationType,
-        value: String,
-    },
-    Simple {
-        function_name: String,
-        value_exps: Vec<ValueExpression>,
-    },
-}
-
-//impl FunctionVariant {
-//    pub fn new(n: Node) -> Self {
-//        match n.kind() {
-//            "field_identifier" => Self::Field(n.value(source_code())),
-//            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
-//            _ => panic!("## unknown node: {} in FuncVariant", n.kind().red()),
-//        }
-//    }
-//}
-
-impl<'a> DocBuild<'a> for FunctionVariant {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        //match self {
-        //    Self::Compelex(n) => {
-        //        result.push(b.txt(&n));
-        //    }
-        //    Self::Simple(n) => {
-        //        result.push(n.build(b));
-        //    }
-        //}
-    }
-}
-
-#[derive(Debug)]
-pub enum FunctionChoice {
-    Field(String),
-    Bound(BoundApexExpression),
-}
-
-impl FunctionChoice {
-    pub fn new(n: Node) -> Self {
-        match n.kind() {
-            "field_identifier" => Self::Field(n.value(source_code())),
-            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
-            _ => panic!("## unknown node: {} in FunctionChoice", n.kind().red()),
-        }
-    }
-}
-
-impl<'a> DocBuild<'a> for FunctionChoice {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        match self {
-            Self::Field(n) => {
-                result.push(b.txt(&n));
-            }
-            Self::Bound(n) => {
-                result.push(n.build(b));
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
 pub enum GeoLocationType {
     Field(FieldIdentifier),
     Bound(BoundApexExpression),
@@ -1330,20 +1264,6 @@ pub enum ValueComparedWith {
     Literal(SoqlLiteral),
     Bound(BoundApexExpression),
 }
-
-//impl ValueComparediWith {
-//    pub fn new(n: Node) -> Self {
-//        match n.kind() {
-//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
-//                SimpleType::Identifier(n.value(source_code())),
-//            )),
-//            _ => panic!(
-//                "## unknown node: {} in ValueComparisonChoice",
-//                n.kind().red()
-//            ),
-//        }
-//    }
-//}
 
 impl<'a> DocBuild<'a> for ValueComparedWith {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
@@ -1627,38 +1547,6 @@ impl<'a> DocBuild<'a> for FunctionExpression {
                 let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
                 let doc = b.group_surround(&doc, sep, open, close);
                 result.push(doc);
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum FunctionExpressionChoice {
-    Field(FieldIdentifier),
-    Bound(BoundApexExpression),
-}
-
-impl FunctionExpressionChoice {
-    pub fn new(node: Node) -> Self {
-        match node.kind() {
-            "field_identifier" => Self::Field(FieldIdentifier::new(node)),
-            "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
-            _ => panic!(
-                "## unknown node: {} in FunctionExpressionChoice",
-                node.kind().red()
-            ),
-        }
-    }
-}
-
-impl<'a> DocBuild<'a> for FunctionExpressionChoice {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        match self {
-            Self::Field(n) => {
-                result.push(n.build(b));
-            }
-            Self::Bound(n) => {
-                result.push(n.build(b));
             }
         }
     }

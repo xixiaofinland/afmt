@@ -5,7 +5,7 @@ use crate::{
     enum_def::{FunctionExpression, *},
     utility::{
         assert_check, build_chaining_context, get_comparsion, get_precedence,
-        get_property_navigation, has_trailing_new_line, is_binary_exp, is_method_invocation,
+        get_property_navigation, has_trailing_new_line, is_binary_exp,
         is_query_expression, source_code,
     },
 };
