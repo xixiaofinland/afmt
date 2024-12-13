@@ -25,5 +25,5 @@ class Chaining {
     ?.Name;
 
     SObjectType.Attribute__c.fields.Name.isAccessible();
-  }
+}
 }
