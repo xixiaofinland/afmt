@@ -11,6 +11,5 @@ class A {
       .objectBuilder
       .setExternalId(account.personContactId)
       .getInstance();
-
   }
 }

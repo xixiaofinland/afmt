@@ -16,10 +16,7 @@ class A {
       ];
 
     string city =
-      [
-        SELECT BillingCity
-        FROM Account
-        WHERE Id = '001xx000000001oAAA'
-      ]?.BillingCity;
+      [SELECT BillingCity FROM Account WHERE Id = '001xx000000001oAAA']
+        ?.BillingCity;
   }
 }

@@ -2,7 +2,11 @@ class Conditional {
   {
     if (
       !SObjectType.Attribute__c.fields.Name.isAccessible()
-        && !SObjectType.Attribute__c.fields.Display_on_Actions_Tab__c.isAccessible()
+        && !SObjectType
+          .Attribute__c
+          .fields
+          .Display_on_Actions_Tab__c
+          .isAccessible()
       || !SObjectType.Attribute__c.fields.Display_Order__c.isAccessible()
       || !SObjectType.Attribute__c.fields.Icon__c.isAccessible()
       || !SObjectType.Action__c.fields.Name.isAccessible()
