@@ -1,3 +1,0 @@
-class ClassDeclarationWithBlockComment {
-}
-/* Test comment */

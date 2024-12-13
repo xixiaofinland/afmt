@@ -1,11 +1,8 @@
-class UTIL_SortContact_TEST {
+public class Me {
   {
-      List<AutoNumber__c> autoNumbers = [
-    SELECT
-        Starting_Number__c
-        FROM AutoNumber__c WHERE
-        IsActive__c = TRUE LIMIT 1
-      FOR UPDATE
-    ];
+    Integer i = 1;
+    Integer cnt = [ 
+    SELECT COUNT()    FROM  Contact    ALL ROWS    ]
+    ;
   }
 }

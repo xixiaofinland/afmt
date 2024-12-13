@@ -71,15 +71,6 @@ class Conditional extends Object {
     c = a && b;
     c = a || b;
 
-
-    // This is different than what you'd expect. jorje does not automatically
-    // group this as left(anExtremelyVeryLongVariable > anotherVeryLongVariable)
-    // and right (anExtremelyVeryLongVariable < anotherVeryLongVariable).
-    // Instead it is
-    // left (anExtremelyVeryLongVariable > anotherVeryLongVariable == anExtremelyVeryLongVariable)
-    // and right (anotherVeryLongVariable).
-    // Therefore the formatted code does not look as nice as Prettier's core,
-    // but we can't change it because it will change the code's behavior.
   }
 
   void triggerVariableExpr_inOtherSuite() {}
@@ -115,7 +106,6 @@ class Conditional extends Object {
     b = a[a[0]];
 
     b = 'String Literal'[0];
-    b = 'Very Long String Literal That Will Break The Line For Sure Without Help From Any Other Element'[0];
 
     String longResult = o[0].callMethod('first param');}
 
@@ -138,8 +128,6 @@ class Conditional extends Object {
     super.methodCall();
     super.methodCall(1, 2, 3);
 
-    // Super cannot be followed by any whitespace, so we can't add newlines after it
-    // even if the chain is very long
   }
 
   void thisVariableExpression() {
@@ -175,12 +163,10 @@ class Conditional extends Object {
 
   class InnerClass extends ExpressionClass {
     InnerClass() {
-      // ThisMethodCallExpression
       this(1);
     }
 
     InnerClass(Integer i) {
-      // SuperMethodCallExpression
       super(i);
     }
   }

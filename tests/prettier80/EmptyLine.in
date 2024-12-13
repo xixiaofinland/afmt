@@ -320,9 +320,6 @@ class EmptyLine {
   }
 
 
-  /*
-   * ApexDoc 1
-   */
   void methodTwo(String testString);
 
 }

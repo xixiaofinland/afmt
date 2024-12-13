@@ -1,9 +1,10 @@
 {
   "devDependencies": {
     "prettier": "^3.3.3",
-    "prettier-plugin-apex": "^2.1.5"
+    "prettier-plugin-apex": "^2.2.2"
   },
   "name": "prettier for afmt test",
+  "type": "module",
   "version": "1.0.0",
   "description": "Running Prettier apex to format test scripts to compare with afmt's result",
   "directories": {

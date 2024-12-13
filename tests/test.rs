@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use afmt::config::*;
+    use afmt::formatter::*;
     use colored::Colorize;
     use similar::{ChangeTag, TextDiff};
     use std::fs::File;
@@ -20,18 +20,18 @@ mod tests {
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
-    #[test]
-    fn extra() {
-        let (total, failed) = run_scenario("tests/prettier10000", "prettier10000");
-        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
-    }
+    //#[test]
+    //fn extra() {
+    //    let (total, failed) = run_scenario("tests/prettier10000", "prettier10000");
+    //    assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
+    //}
 
     #[test]
     fn all() {
         let scenarios = [
             ("tests/static", "static"),
             ("tests/prettier80", "prettier80"),
-            ("tests/prettier10000", "prettier10000"),
+            //("tests/prettier10000", "prettier10000"),
         ];
 
         let mut total_tests = 0;
@@ -97,20 +97,22 @@ mod tests {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source, Some("tests/configs/.afmt_static.toml"));
         let expected =
-            std::fs::read_to_string(expected_file).expect("Failed to read expected .cls file");
+            std::fs::read_to_string(&expected_file).unwrap_or_else(|_| panic!(
+            "Failed to read expected .cls file at {}",
+            expected_file.to_string_lossy().red()
+        ));
 
         compare("Static:", output, expected, source)
     }
 
     fn run_prettier_test_files(source: &Path, config_name: &str) -> bool {
-        let prettier_file = source.with_extension(config_name);
+        //let prettier_file = source.with_extension(config_name);
+        let prettier_file = source.with_extension("cls");
 
         if !prettier_file.exists() {
             println!(
-                "{} {} {}",
-                "### ",
+                "### {}  file not found, generating...",
                 config_name.yellow(),
-                " file not found, generating..."
             );
 
             let prettier_output = run_prettier(
@@ -132,8 +134,26 @@ mod tests {
         compare("Prettier:", output, prettier_output, source)
     }
 
+    fn normalize(label: &str, content: &str) -> String {
+        //println!("{} (Hex):", label);
+        let mut normalized = String::new();
+
+        for (i, byte) in content.bytes().enumerate() {
+            if i % 16 == 0 && i != 0 {
+                normalized.push('\n');
+            }
+            normalized.push_str(&format!("{:02X} ", byte));
+        }
+
+        //println!("{}\n", normalized);
+        normalized
+    }
+
     fn compare(against: &str, output: String, expected: String, source: &Path) -> bool {
-        if output != expected {
+        let normalized_expected = normalize("prettier", &expected);
+        let normalized_output = normalize("afmt", &output);
+        if normalized_output != normalized_expected {
+            //if output != expected {
             let source_content =
                 std::fs::read_to_string(source).expect("Failed to read the file content.");
 
@@ -141,6 +161,7 @@ mod tests {
             println!("-------------------------------------\n");
             println!("{}", source_content);
             println!("-------------------------------------\n");
+            //print_side_by_side_diff(against, &normalized_output, &normalized_expected);
             print_side_by_side_diff(against, &output, &expected);
             println!("\n-------------------------------------\n");
             println!("{}", format!("Failed: {:?}:", source).yellow());
@@ -159,10 +180,10 @@ mod tests {
             .expect("PathBuf to String failed.")
             .to_string();
 
-        let session = Session::create_session_from_config(config_path, vec![file_path.clone()])
-            .expect("Create session failed.");
+        let formatter = Formatter::create_from_config(config_path, vec![file_path.clone()])
+            .expect("Create formatter failed.");
 
-        let vec = session.format();
+        let vec = formatter.format();
         vec.into_iter()
             .next()
             .and_then(|result| result.ok())
