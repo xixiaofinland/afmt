@@ -634,7 +634,7 @@ pub struct Comment {
 impl Comment {
     pub fn from_node(node: Node) -> Self {
         let id = node.id();
-        let content = node.v(source_code()).to_string();
+        let content = node.value(source_code());
         Self {
             id,
             content,

@@ -38,8 +38,14 @@ pub trait Accessor<'t> {
 
 impl<'t> Accessor<'t> for Node<'t> {
     fn next_named(&self) -> Node<'t> {
-        self.next_named_sibling()
-            .unwrap_or_else(|| panic!("{}: next_named node missing.", self.kind().red()))
+        let mut sibling = self.next_named_sibling();
+        while let Some(node) = sibling {
+            if !node.is_extra() {
+                return node;
+            }
+            sibling = node.next_named_sibling();
+        }
+        panic!("{}: next_named node missing.", self.kind().red());
     }
 
     fn v<'a>(&self, source_code: &'a str) -> &'a str {
