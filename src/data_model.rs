@@ -731,6 +731,12 @@ impl<'a> DocBuild<'a> for Interface {
 }
 
 #[derive(Debug)]
+pub struct ChainingContext {
+    pub is_top_most_in_nest: bool,
+    pub is_parent_a_method_node: bool,
+}
+
+#[derive(Debug)]
 pub struct MethodInvocationContext {
     pub is_top_most_in_nest: bool,
     pub is_parent_a_method_node: bool,
