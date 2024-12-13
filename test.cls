@@ -1,35 +1,30 @@
-class Chaining {
+class A {
   {
+    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak .getOneSet() .getAnotherSet() .getYetAnotherSet();
 
-    [Select Id, Name From acc].a;
+    t.a().b().c().d();
 
-    String g1 = [
-      SELECT Id, Name, One_Field__c, Another_Field__c
-      FROM Account
-      WHERE Id = :accId
-    ];
+    return generator .objectBuilder .setExternalId(account.personContactId) .getInstance();
 
-    String g2 = [
-      SELECT Id
-      FROM Account
-    ].a;
+    String longResult =
+      super.callMethod('first param').callAnotherMethod().getStringResult();
 
-    [ SELECT Id, Name, One_Field__c, Another_Field__c FROM Account WHERE Id = :accId
-    ]
-    .Name().bbbbbbbbbbbbbbbbbbbbb.cccccccccccccccccc.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa();
+    String longResult = super.longPropertyName.anotherLongPropertyName.yetAnotherLongPropertyName;
 
-    String g3 = [
-      SELECT Id, Name, One_Field__c, Another_Field__c
-      FROM Account
-      WHERE Id = :accId
-    ]
-    .Name().bbbbbbbbbbbbbbbbbbbbb.cccccccccccccccccc.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa();
+    String longResult =
+      super.longPropertyName.anotherLongPropertyName.yetAnotherLongPropertyName1;
 
-    String g3 = [
-      SELECT Id, Name, One_Field__c, Another_Field__c
-      FROM Account
-      WHERE Id = :accId
-    ]
-    .Name;
+    String longResult =
+      super
+        .longPropertyName
+        .callMethod('first param')
+        .callAnotherMethod()
+        .getStringResult();
+
+    aaaaaaaaaaaaaaaaaaaaaaaaa
+      .bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb[0]
+      .cccccccccccccccccccccccccccccccccccccccccccccccc()
+      .dddddddddddddd()
+      .e();
   }
 }
