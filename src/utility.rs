@@ -157,29 +157,38 @@ pub fn get_property_navigation(parent_node: &Node) -> PropertyNavigation {
     }
 }
 
-pub fn build_chaining_context(node: &Node) -> ChainingContext {
+pub fn build_chaining_context(node: &Node) -> Option<ChainingContext> {
     let parent_node = node
         .parent()
         .expect("node must have parent node in build_chaining_context()");
 
-    let is_parent_a_chaining_node = is_chaining_node(&parent_node);
+    let is_parent_a_chaining_node = is_a_possible_chaining_node(&parent_node);
 
-    let mut has_method_child = false;
+    let mut has_a_chaining_child = false;
 
-    if let Some(ref n) = node.try_c_by_n("object") {
-        if is_method_invocation(n) {
-            has_method_child = true;
-        }
+    let has_a_chaining_child = node
+        .try_c_by_n("object")
+        .map(|n| is_a_possible_chaining_node(&n))
+        .unwrap_or(false);
+
+    if !is_parent_a_chaining_node && !has_a_chaining_child {
+        return None;
     }
 
-    let is_top_most_in_nest = has_method_child && !is_parent_a_chaining_node;
+    let is_top_most_in_nest = has_a_chaining_child && !is_parent_a_chaining_node;
 
-    ChainingContext {
+    Some(ChainingContext {
         is_top_most_in_nest,
-        is_parent_a_method_node: is_parent_a_chaining_node,
-    }
+        is_parent_a_chaining_node,
+    })
 }
 
-fn is_chaining_node(node: &Node) -> bool {
-    ["method_invocation", "array_access", "c", "d"].contains(&node.kind())
+fn is_a_possible_chaining_node(node: &Node) -> bool {
+    [
+        "method_invocation",
+        "array_access",
+        "field_access",
+        "query_expression",
+    ]
+    .contains(&node.kind())
 }
