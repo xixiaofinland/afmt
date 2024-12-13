@@ -9,7 +9,6 @@ use tree_sitter::Node;
 // `by_k` => by kind
 #[allow(dead_code)]
 pub trait Accessor<'t> {
-    fn v<'a>(&self, source_code: &'a str) -> &'a str;
     fn value(&self, source_code: &str) -> String;
     fn children_vec(&self) -> Vec<Node<'t>>;
     fn all_children_vec(&self) -> Vec<Node<'t>>;
