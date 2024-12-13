@@ -1,30 +1,32 @@
 class A {
   {
-    superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak .getOneSet() .getAnotherSet() .getYetAnotherSet();
+    Boolean aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa =
+      [
+        SELECT
+          Id,
+          Name______bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_c,
+          Kname_________________b_______________aa_c
+        FROM Contact
+      ] > 0;
 
-    t.a().b().c().d();
+    [
+        SELECT
+          Id,
+          Name______bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_c,
+          Kname_________________b_______________aa_c
+        FROM Contact
+      ]
+      .b()
+      .c();
 
-    return generator .objectBuilder .setExternalId(account.personContactId) .getInstance();
-
-    String longResult =
-      super.callMethod('first param').callAnotherMethod().getStringResult();
-
-    String longResult = super.longPropertyName.anotherLongPropertyName.yetAnotherLongPropertyName;
-
-    String longResult =
-      super.longPropertyName.anotherLongPropertyName.yetAnotherLongPropertyName1;
-
-    String longResult =
-      super
-        .longPropertyName
-        .callMethod('first param')
-        .callAnotherMethod()
-        .getStringResult();
-
-    aaaaaaaaaaaaaaaaaaaaaaaaa
-      .bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb[0]
-      .cccccccccccccccccccccccccccccccccccccccccccccccc()
-      .dddddddddddddd()
-      .e();
+    [
+        SELECT
+          Id,
+          Name______bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb_c,
+          Kname_________________b_______________aa_c
+        FROM Contact
+      ]
+      .b()
+      .c();
   }
 }
