@@ -162,11 +162,11 @@ pub fn build_chaining_context(node: &Node) -> Option<ChainingContext> {
         .parent()
         .expect("node must have parent node in build_chaining_context()");
 
-    let is_parent_a_chaining_node = is_a_possible_chaining_node(&parent_node);
+    let is_parent_a_chaining_node = is_a_chaining_node(&parent_node);
 
     let has_a_chaining_child = node
         .try_c_by_n("object")
-        .map(|n| is_a_possible_chaining_node(&n))
+        .map(|n| is_a_chaining_node(&n))
         .unwrap_or(false);
 
     if !is_parent_a_chaining_node && !has_a_chaining_child {
@@ -181,7 +181,7 @@ pub fn build_chaining_context(node: &Node) -> Option<ChainingContext> {
     })
 }
 
-fn is_a_possible_chaining_node(node: &Node) -> bool {
+fn is_a_chaining_node(node: &Node) -> bool {
     [
         "method_invocation",
         "array_access",
