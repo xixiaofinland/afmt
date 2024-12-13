@@ -4,9 +4,9 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
     utility::{
-        assert_check, get_comparsion, get_precedence, get_property_navigation,
-        has_trailing_new_line, is_binary_exp, is_method_invocation, is_query_expression,
-        source_code,
+        assert_check, build_chaining_context, get_comparsion, get_precedence,
+        get_property_navigation, has_trailing_new_line, is_binary_exp, is_method_invocation,
+        is_query_expression, source_code,
     },
 };
 use colored::Colorize;
@@ -732,14 +732,8 @@ impl<'a> DocBuild<'a> for Interface {
 
 #[derive(Debug)]
 pub struct ChainingContext {
-    pub is_top_most_in_nest: bool,
     pub is_parent_a_chaining_node: bool,
-}
-
-#[derive(Debug)]
-pub struct MethodInvocationContext {
     pub is_top_most_in_nest: bool,
-    pub is_parent_a_method_node: bool,
 }
 
 #[derive(Debug)]
@@ -816,7 +810,7 @@ pub enum MethodInvocationKind {
         type_arguments: Option<TypeArguments>,
         name: String,
         arguments: ArgumentList,
-        context: MethodInvocationContext,
+        context: ChainingContext,
     },
 }
 
@@ -841,7 +835,7 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
                 docs.push(object.build(b));
 
                 // chaining logic break points
-                if context.is_top_most_in_nest || context.is_parent_a_method_node {
+                if context.is_parent_a_chaining_node || context.is_top_most_in_nest {
                     docs.push(b.maybeline());
                 }
 
@@ -906,7 +900,7 @@ impl MethodInvocation {
             let type_arguments = node
                 .try_c_by_k("type_arguments")
                 .map(|n| TypeArguments::new(n));
-            let context = Self::build_context(&node);
+            let context = build_chaining_context(&node);
 
             MethodInvocationKind::Complex {
                 object,
@@ -922,29 +916,6 @@ impl MethodInvocation {
         };
 
         Self { kind }
-    }
-
-    fn build_context(node: &Node) -> MethodInvocationContext {
-        let parent_node = node
-            .parent()
-            .expect("MethodInvocation node must have parent node");
-
-        let is_parent_a_method_node = is_method_invocation(&parent_node);
-
-        let mut has_method_child = false;
-
-        if let Some(ref n) = node.try_c_by_n("object") {
-            if is_method_invocation(n) {
-                has_method_child = true;
-            }
-        }
-
-        let is_top_most_in_nest = has_method_child && !is_parent_a_method_node;
-
-        MethodInvocationContext {
-            is_top_most_in_nest,
-            is_parent_a_method_node,
-        }
     }
 }
 
