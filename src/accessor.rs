@@ -33,7 +33,7 @@ pub trait Accessor<'t> {
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
     fn next_named(&self) -> Node<'t>;
-    fn is_comment(&self) -> bool;
+    //fn is_comment(&self) -> bool;
 }
 
 impl<'t> Accessor<'t> for Node<'t> {
@@ -175,24 +175,7 @@ impl<'t> Accessor<'t> for Node<'t> {
         self.try_c_by_k(kind).map(|child| child.v(source_code))
     }
 
-    fn is_comment(&self) -> bool {
-        matches!(self.kind(), "line_comment" | "block_comment")
-    }
+    //fn is_comment(&self) -> bool {
+    //    matches!(self.kind(), "line_comment" | "block_comment")
+    //}
 }
-
-//pub struct NamedChildren<'t> {
-//    cursor: TreeCursor<'t>,
-//    node: Node<'t>,
-//}
-//
-//impl<'t> Iterator for NamedChildren<'t> {
-//    type Item = Node<'t>;
-//
-//    fn next(&mut self) -> Option<Self::Item> {
-//        if self.cursor.goto_first_child() {
-//            Some(self.node)
-//        } else {
-//            None
-//        }
-//    }
-//}
