@@ -977,10 +977,10 @@ impl<'a> DocBuild<'a> for StorageIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
-                result.push(b.txt(&n));
+                result.push(b.txt(n));
             }
             Self::Dotted(vec) => {
-                let docs: Vec<_> = vec.into_iter().map(|s| b.txt(s)).collect();
+                let docs: Vec<_> = vec.iter().map(|s| b.txt(s)).collect();
                 let sep = Insertable::new(None, Some("."), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
@@ -1009,7 +1009,7 @@ impl<'a> DocBuild<'a> for LimitValue {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Int(n) => {
-                result.push(b.txt(&n));
+                result.push(b.txt(n));
             }
             Self::Bound(n) => {
                 result.push(n.build(b));

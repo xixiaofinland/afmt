@@ -155,8 +155,7 @@ impl Formatter {
         let doc_ref = root.build(&b);
 
         //pretty print
-        let result = pretty_print(doc_ref, config.max_width);
-        result
+        pretty_print(doc_ref, config.max_width)
     }
 
     pub fn parse(source_code: &str) -> Tree {
@@ -165,7 +164,7 @@ impl Formatter {
             .set_language(&language())
             .expect("Error loading Apex grammar");
 
-        let ast_tree = parser.parse(&source_code, None).unwrap();
+        let ast_tree = parser.parse(source_code, None).unwrap();
         let root_node = &ast_tree.root_node();
 
         if root_node.has_error() {

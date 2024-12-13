@@ -10,7 +10,8 @@ use std::cell::Cell;
 use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
-    static THREAD_SOURCE_CODE: Cell<Option<&'static str>> = Cell::new(None);
+    static THREAD_SOURCE_CODE: Cell<Option<&'static str>>
+        = const{ Cell::new(None) };
 }
 
 /// Sets the source code for the current thread.

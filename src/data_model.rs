@@ -5,8 +5,8 @@ use crate::{
     enum_def::{FunctionExpression, *},
     utility::{
         assert_check, build_chaining_context, get_comparsion, get_precedence,
-        get_property_navigation, has_trailing_new_line, is_binary_exp,
-        is_query_expression, source_code,
+        get_property_navigation, has_trailing_new_line, is_binary_exp, is_query_expression,
+        source_code,
     },
 };
 use colored::Colorize;
@@ -1229,17 +1229,9 @@ impl VariableDeclarator {
 
         let mut is_value_child_a_query_node = false;
 
-        let value = node.try_c_by_n("value").map(|n| match n.kind() {
-            //"array_initializer" => {
-            //    VariableInitializer::ArrayInitializer(ArrayInitializer::new(v, source_code, indent))
-            //}
-            //_ => VariableInitializer::Expression(Expression::Primary(Box::new(
-            //    PrimaryExpression::Identifier(v.value(source_code())),
-            //))),
-            _ => {
-                is_value_child_a_query_node = is_query_expression(&n);
-                VariableInitializer::Exp(Expression::new(n))
-            }
+        let value = node.try_c_by_n("value").map(|n| {
+            is_value_child_a_query_node = is_query_expression(&n);
+            VariableInitializer::Exp(Expression::new(n))
         });
 
         Self {
@@ -3467,7 +3459,6 @@ impl<'a> DocBuild<'a> for QueryExpression {
             docs.push(b.txt("]"));
 
             result.push(b.group_concat(docs));
-
         } else {
             let docs = vec![self.query_body.build(b)];
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));

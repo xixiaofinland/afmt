@@ -27,8 +27,8 @@ pub trait Accessor<'t> {
     fn try_first_c(&self) -> Option<Node<'t>>;
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
-    fn cvalue_by_n<'a>(&self, name: &str, source_code: &'a str) -> String;
-    fn cvalue_by_k<'a>(&self, name: &str, source_code: &'a str) -> String;
+    fn cvalue_by_n(&self, name: &str, source_code: &str) -> String;
+    fn cvalue_by_k(&self, name: &str, source_code: &str) -> String;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
@@ -97,8 +97,12 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 
     fn first_c(&self) -> Node<'t> {
-        self.named_child(0)
-            .unwrap_or_else(|| panic!("{}: missing a mandatory child in first_c().", self.kind().red()))
+        self.named_child(0).unwrap_or_else(|| {
+            panic!(
+                "{}: missing a mandatory child in first_c().",
+                self.kind().red()
+            )
+        })
     }
 
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
@@ -117,11 +121,11 @@ impl<'t> Accessor<'t> for Node<'t> {
         node.v(source_code)
     }
 
-    fn cvalue_by_n<'a>(&self, name: &str, source_code: &'a str) -> String {
+    fn cvalue_by_n(&self, name: &str, source_code: &str) -> String {
         self.cv_by_n(name, source_code).to_string()
     }
 
-    fn cvalue_by_k<'a>(&self, name: &str, source_code: &'a str) -> String {
+    fn cvalue_by_k(&self, name: &str, source_code: &str) -> String {
         self.cv_by_k(name, source_code).to_string()
     }
 
