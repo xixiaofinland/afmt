@@ -23,5 +23,7 @@ class Chaining {
       WHERE Id = :accId
     ]
     ?.Name;
+
+    SObjectType.Attribute__c.fields.Name.isAccessible();
   }
 }

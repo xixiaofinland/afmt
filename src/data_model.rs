@@ -520,17 +520,6 @@ impl AssignmentExpression {
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut docs = vec![self.left.build(b), b._txt(&self.op)];
-        //result.push(b.group_indent_concat(docs));
-
-        //if self.is_right_child_binary {
-        //    docs.push(b.softline());
-        //    docs.push(self.right.build(b));
-        //    result.push(b.group_indent_concat(docs));
-        //} else {
-        //    docs.push(b.txt(" "));
-        //    docs.push(self.right.build(b));
-        //    result.push(b.group_concat(docs));
-        //}
         if self.is_right_child_a_query_node {
             docs.push(b.txt(" "));
             docs.push(self.right.build(b));
@@ -2048,6 +2037,7 @@ pub struct FieldAccess {
     pub object: MethodObject,
     pub property_navigation: PropertyNavigation,
     pub field: String,
+    pub context: Option<ChainingContext>,
 }
 
 impl FieldAccess {
@@ -2062,20 +2052,41 @@ impl FieldAccess {
         let property_navigation = get_property_navigation(&node);
 
         let field = node.cvalue_by_n("field", source_code());
+        let context = build_chaining_context(&node);
 
         Self {
             object,
             property_navigation,
             field,
+            context,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldAccess {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.object.build(b));
-        result.push(self.property_navigation.build(b));
-        result.push(b.txt(&self.field));
+        let mut docs = vec![];
+
+        docs.push(self.object.build(b));
+
+        if let Some(ref context) = self.context {
+            if context.is_parent_a_chaining_node || context.is_top_most_in_a_chain {
+                docs.push(b.maybeline());
+            }
+        }
+
+        docs.push(self.property_navigation.build(b));
+        docs.push(b.txt(&self.field));
+
+        if self
+            .context
+            .as_ref()
+            .map_or(false, |context| context.is_top_most_in_a_chain)
+        {
+            result.push(b.group_indent_concat(docs));
+        } else {
+            result.push(b.concat(docs));
+        }
     }
 }
 
