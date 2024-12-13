@@ -9,30 +9,35 @@ use tree_sitter::Node;
 // `by_k` => by kind
 #[allow(dead_code)]
 pub trait Accessor<'t> {
-    fn v<'a>(&self, source_code: &'a str) -> &'a str;
     fn value(&self, source_code: &str) -> String;
+
     fn children_vec(&self) -> Vec<Node<'t>>;
-    //fn all_children_vec(&self) -> Vec<Node<'t>>;
 
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'t>>;
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'t>>;
-    fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
-    fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
-    //fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
+
+    fn first_c(&self) -> Node<'t>;
+    fn try_first_c(&self) -> Option<Node<'t>>;
 
     fn c_by_n(&self, name: &str) -> Node<'t>;
     fn c_by_k(&self, kind: &str) -> Node<'t>;
-    fn first_c(&self) -> Node<'t>;
-    fn try_first_c(&self) -> Option<Node<'t>>;
-    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
-    fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
     fn cvalue_by_n(&self, name: &str, source_code: &str) -> String;
     fn cvalue_by_k(&self, name: &str, source_code: &str) -> String;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
     fn next_named(&self) -> Node<'t>;
+
+    // private fn;
+    fn v<'a>(&self, source_code: &'a str) -> &'a str;
+    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+
+    //fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
+    //fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
+    //fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
+    //fn all_children_vec(&self) -> Vec<Node<'t>>;
     //fn is_comment(&self) -> bool;
 }
 
@@ -64,11 +69,6 @@ impl<'t> Accessor<'t> for Node<'t> {
             .collect()
     }
 
-    //fn all_children_vec(&self) -> Vec<Node<'t>> {
-    //    let mut cursor = self.walk();
-    //    self.children(&mut cursor).collect()
-    //}
-
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'t>> {
         let mut cursor = self.walk();
         let child = self.named_children(&mut cursor).find(|c| c.kind() == kind);
@@ -84,10 +84,6 @@ impl<'t> Accessor<'t> for Node<'t> {
 
     fn try_c_by_n(&self, name: &str) -> Option<Node<'t>> {
         self.child_by_field_name(name)
-    }
-
-    fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str> {
-        self.child_by_field_name(name).map(|n| n.v(source_code))
     }
 
     fn c_by_k(&self, kind: &str) -> Node<'t> {
@@ -184,9 +180,14 @@ impl<'t> Accessor<'t> for Node<'t> {
         children
     }
 
-    fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
-        self.try_c_by_k(kind).map(|child| child.v(source_code))
-    }
+    //fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
+    //    self.try_c_by_k(kind).map(|child| child.v(source_code))
+    //}
+
+    //fn all_children_vec(&self) -> Vec<Node<'t>> {
+    //    let mut cursor = self.walk();
+    //    self.children(&mut cursor).collect()
+    //}
 
     //fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
     //    self.try_cs_by_k(kind)
@@ -198,4 +199,9 @@ impl<'t> Accessor<'t> for Node<'t> {
     //fn is_comment(&self) -> bool {
     //    matches!(self.kind(), "line_comment" | "block_comment")
     //}
+
+    //fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str> {
+    //    self.child_by_field_name(name).map(|n| n.v(source_code))
+    //}
+
 }
