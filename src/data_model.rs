@@ -3455,11 +3455,16 @@ impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let docs = vec![self.query_body.build(b)];
 
-        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let open = Insertable::new(None, Some("["), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+        // chaining scenario
+        if self.context.is_some() {
+            result.push(b.txt("hello"));
+        } else {
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+            let open = Insertable::new(None, Some("["), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+        }
     }
 }
 
