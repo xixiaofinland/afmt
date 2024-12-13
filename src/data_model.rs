@@ -3430,6 +3430,7 @@ impl<'a> DocBuild<'a> for TriggerBody {
 #[derive(Debug)]
 pub struct QueryExpression {
     pub query_body: QueryBody,
+    pub context: Option<ChainingContext>,
 }
 
 impl QueryExpression {
@@ -3441,8 +3442,12 @@ impl QueryExpression {
         } else {
             QueryBody::Sosl(SoslQueryBody::new(node.c_by_k("sosl_query_body")))
         };
+        let context = build_chaining_context(&node);
 
-        Self { query_body }
+        Self {
+            query_body,
+            context,
+        }
     }
 }
 

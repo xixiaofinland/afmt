@@ -17,12 +17,18 @@ class Chaining {
       .aVeryLongMethod()
       ?.anotherVeryLongField;
 
-    String g = [
+    String g1 = [
+      SELECT Id, Name, One_Field__c, Another_Field__c
+      FROM Account
+      WHERE Id = :accId
+    ];
+
+    String g2 = [
       SELECT Id, Name, One_Field__c, Another_Field__c
       FROM Account
       WHERE Id = :accId
     ]
-    ?.Name;
+    .Name;
 
     SObjectType.Attribute__c.fields.Name.isAccessible();
 }
