@@ -12,15 +12,15 @@ Blazingly fast - parsing speed of largest open-source Apex files [report](https:
 
 # 📟 Project Progress
 
-| Feature                                         | Progress       | Difficulty   |
-| ----------------------------------------------- | -------------- | ------------ |
-| Recognize Apex nodes| ████████████ 100% | Easy         |
-| Support `.afmt.toml` for configuration | ████████████ 100% | Easy         |
-| Proper indentation | ████████░░░ 80%  | Easy         |
-| Support SOQL                                    | ████████████ 100% | Medium       |
-| Support SOSL                                    | ██████░░░░░ 50%  | Medium       |
-| Reformat lines beyond `max_width`               | █░░░░░░░░░ 10%  | Challenging  |
-| Support comment (line comment and block comment)| █░░░░░░░░░ 10%  | Challenging  |
+| Feature                                         | Progress       |
+| ----------------------------------------------- | -------------- |
+| Recognize Apex nodes                            | ████████████ 100%  |
+| Support `.afmt.toml` for configuration          | ████████████ 100%         |
+| Proper indentation                              | ████████████ 100%  |
+| Support SOQL                                    | ████████████ 100%  |
+| Support SOSL                                    | ████████████ 100%  |
+| Reformat lines beyond `max_width`               | ████████████ 100%  |
+| Support comment (line comment and block comment)| █░░░░░░░░░ 10%  |
 
 <br>
 
