@@ -59,7 +59,9 @@ impl<'t> Accessor<'t> for Node<'t> {
 
     fn children_vec(&self) -> Vec<Node<'t>> {
         let mut cursor = self.walk();
-        self.named_children(&mut cursor).collect()
+        self.named_children(&mut cursor)
+            .filter(|node| !node.is_extra())
+            .collect()
     }
 
     //fn all_children_vec(&self) -> Vec<Node<'t>> {
@@ -99,16 +101,28 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 
     fn try_first_c(&self) -> Option<Node<'t>> {
-        self.named_child(0)
+        let mut index = 0;
+        while let Some(node) = self.named_child(index) {
+            if !node.is_extra() {
+                return Some(node);
+            }
+            index += 1;
+        }
+        None
     }
 
     fn first_c(&self) -> Node<'t> {
-        self.named_child(0).unwrap_or_else(|| {
-            panic!(
-                "{}: missing a mandatory child in first_c().",
-                self.kind().red()
-            )
-        })
+        let mut index = 0;
+        while let Some(node) = self.named_child(index) {
+            if !node.is_extra() {
+                return node;
+            }
+            index += 1;
+        }
+        panic!(
+            "{}: missing a mandatory child in first_c().",
+            self.kind().red()
+        );
     }
 
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
@@ -180,7 +194,6 @@ impl<'t> Accessor<'t> for Node<'t> {
     //        .map(|n| n.v(source_code))
     //        .collect::<Vec<&str>>()
     //}
-
 
     //fn is_comment(&self) -> bool {
     //    matches!(self.kind(), "line_comment" | "block_comment")
