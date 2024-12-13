@@ -12,14 +12,14 @@ pub trait Accessor<'t> {
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
     fn value(&self, source_code: &str) -> String;
     fn children_vec(&self) -> Vec<Node<'t>>;
-    fn all_children_vec(&self) -> Vec<Node<'t>>;
+    //fn all_children_vec(&self) -> Vec<Node<'t>>;
 
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'t>>;
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'t>>;
     fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
-    fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
+    //fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
 
     fn c_by_n(&self, name: &str) -> Node<'t>;
     fn c_by_k(&self, kind: &str) -> Node<'t>;
@@ -62,10 +62,10 @@ impl<'t> Accessor<'t> for Node<'t> {
         self.named_children(&mut cursor).collect()
     }
 
-    fn all_children_vec(&self) -> Vec<Node<'t>> {
-        let mut cursor = self.walk();
-        self.children(&mut cursor).collect()
-    }
+    //fn all_children_vec(&self) -> Vec<Node<'t>> {
+    //    let mut cursor = self.walk();
+    //    self.children(&mut cursor).collect()
+    //}
 
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'t>> {
         let mut cursor = self.walk();
@@ -170,16 +170,17 @@ impl<'t> Accessor<'t> for Node<'t> {
         children
     }
 
-    fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
-        self.try_cs_by_k(kind)
-            .iter()
-            .map(|n| n.v(source_code))
-            .collect::<Vec<&str>>()
-    }
-
     fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
         self.try_c_by_k(kind).map(|child| child.v(source_code))
     }
+
+    //fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
+    //    self.try_cs_by_k(kind)
+    //        .iter()
+    //        .map(|n| n.v(source_code))
+    //        .collect::<Vec<&str>>()
+    //}
+
 
     //fn is_comment(&self) -> bool {
     //    matches!(self.kind(), "line_comment" | "block_comment")
