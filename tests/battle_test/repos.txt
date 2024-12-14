@@ -35,7 +35,6 @@ https://github.com/ipavlic/apex-lambda.git
 https://github.com/jamessimone/apex-async-processor.git
 https://github.com/jamessimone/apex-dml-mocking.git
 https://github.com/jamessimone/apex-mocks-stress-test.git
-https://github.com/jamessimone/apex-rollup.git
 https://github.com/jamessimone/salesforce-round-robin.git
 https://github.com/jongpie/ApexUUID.git
 https://github.com/jongpie/NebulaLogger.git
