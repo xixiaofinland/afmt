@@ -935,8 +935,23 @@ impl AliasExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "alias_expression");
 
+        // TODO: update AST or remove "as_"?
+        // https://github.com/aheber/tree-sitter-sfapex/issues/59
+        //let does_as_node_present = node
+        //    .first_c()
+        //    .next_sibling()
+        //    .expect("Child node must exist in AliasExpression")
+        //    .value(source_code())
+        //    .to_uppercase()
+        //    == "AS";
+        //let as_ = if does_as_node_present {
+        //    Some("AS".to_string())
+        //} else {
+        //    None
+        //};
         let value_exp = ValueExpression::new(node.first_c());
         let identifier = node.cvalue_by_k("identifier", source_code());
+
         Self {
             value_exp,
             identifier,
@@ -947,6 +962,7 @@ impl AliasExpression {
 impl<'a> DocBuild<'a> for AliasExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(self.value_exp.build(b));
+        result.push(b.txt(" "));
         result.push(b.txt(&self.identifier));
     }
 }
