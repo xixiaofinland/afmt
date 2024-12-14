@@ -893,17 +893,18 @@ pub enum SelectableExpression {
     Alias(AliasExpression),
     //Type(TypeOfClause),
     //Fields(FieldsExpression),
-    //Sub(SubQuery),
+    Sub(SubQuery),
 }
 
 impl SelectableExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifier::new(node))),
-            "alias_expression" => Self::Alias(AliasExpression::new(node)),
             "function_expression" => Self::Value(ValueExpression::Function(Box::new(
                 FunctionExpression::new(node),
             ))),
+            "alias_expression" => Self::Alias(AliasExpression::new(node)),
+            "subquery" => Self::Sub(SubQuery::new(node)),
             _ => panic!(
                 "## unknown node: {} in SelectableExpression",
                 node.kind().red()
@@ -919,6 +920,9 @@ impl<'a> DocBuild<'a> for SelectableExpression {
                 result.push(n.build(b));
             }
             Self::Alias(n) => {
+                result.push(n.build(b));
+            }
+            Self::Sub(n) => {
                 result.push(n.build(b));
             }
         }
