@@ -17,7 +17,7 @@ pub fn get_args() -> Args {
             ClapArg::new("file")
                 .value_name("FILE")
                 .help("The relative path to the file to parse")
-                .default_value("test.cls")
+                .default_value("./hello.cls")
                 .index(1),
         )
         .arg(
@@ -25,8 +25,7 @@ pub fn get_args() -> Args {
                 .short('c')
                 .long("config")
                 .value_name("CONFIG")
-                .help("Path to the .afmt.toml configuration file")
-                .default_value("./.afmt.toml"),
+                .help("Path to the .afmt.toml configuration file"),
         )
         .arg(
             ClapArg::new("write")

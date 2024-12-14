@@ -36,7 +36,7 @@ format_files() {
 
     echo "Processing file: $FILE_PATH"
 
-    OUTPUT=$($FORMATTER_BINARY -f "$FILE_PATH" 2>&1)
+    OUTPUT=$($FORMATTER_BINARY "$FILE_PATH" 2>&1)
     EXIT_CODE=$?
 
     if [ $EXIT_CODE -ne 0 ]; then
