@@ -107,6 +107,7 @@ impl UnannotatedType {
         match n.kind() {
             "type_identifier"
             | "void_type"
+            | "boolean_type"
             | "generic_type"
             | "java_type"
             | "scoped_type_identifier" => Self::Simple(SimpleType::new(n)),
@@ -129,6 +130,7 @@ impl<'a> DocBuild<'a> for UnannotatedType {
 pub enum SimpleType {
     Identifier(String),
     Void(VoidType),
+    Bool,
     Generic(GenericType),
     Scoped(ScopedTypeIdentifier),
     Java(JavaType),
@@ -139,6 +141,7 @@ impl SimpleType {
         match n.kind() {
             "type_identifier" => Self::Identifier(n.value(source_code())),
             "void_type" => Self::Void(VoidType::new(n)),
+            "boolean_type" => Self::Bool,
             "java_type" => Self::Java(JavaType::new(n)),
             "generic_type" => Self::Generic(GenericType::new(n)),
             "scoped_type_identifier" => Self::Scoped(ScopedTypeIdentifier::new(n)),
@@ -158,6 +161,9 @@ impl<'a> DocBuild<'a> for SimpleType {
             }
             Self::Void(n) => {
                 result.push(b.txt(&n.value));
+            }
+            Self::Bool => {
+                result.push(b.txt("boolean"));
             }
             Self::Generic(n) => {
                 result.push(n.build(b));
@@ -221,6 +227,7 @@ impl Expression {
             | "boolean"
             | "identifier"
             | "null_literal"
+            | "class_literal"
             | "method_invocation"
             | "parenthesized_expression"
             | "object_creation_expression"
@@ -299,6 +306,7 @@ impl<'a> DocBuild<'a> for Expression {
 pub enum PrimaryExpression {
     Literal(Literal_),
     Identifier(String),
+    Class(ClassLiteral),
     Method(MethodInvocation),
     Parenth(ParenthesizedExpression),
     Obj(ObjectCreationExpression),
@@ -321,6 +329,7 @@ impl PrimaryExpression {
             | "null_literal"
             | "string_literal" => Self::Literal(Literal_::new(n)),
             "identifier" => Self::Identifier(n.value(source_code())),
+            "class_literal" => Self::Class(ClassLiteral::new(n)),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
             "object_creation_expression" => Self::Obj(ObjectCreationExpression::new(n)),
@@ -345,6 +354,9 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
             }
             Self::Identifier(n) => {
                 result.push(b.txt(n));
+            }
+            Self::Class(n) => {
+                result.push(n.build(b));
             }
             Self::Method(n) => {
                 result.push(n.build(b));
@@ -380,6 +392,27 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
                 result.push(n.build(b));
             }
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct ClassLiteral {
+    pub type_: UnannotatedType,
+}
+
+impl ClassLiteral {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "class_literal");
+
+        let type_ = UnannotatedType::new(node.first_c());
+        Self{type_}
+    }
+}
+
+impl<'a> DocBuild<'a> for ClassLiteral {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.type_.build(b));
+        result.push(b.txt("class"));
     }
 }
 
