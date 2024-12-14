@@ -44,6 +44,8 @@ format_files() {
             :  # Skip logging for %% cases as they are from managed package templating
         elif echo "$OUTPUT" | grep -q "%%%"; then
             :  # Same as above
+        elif echo "$OUTPUT" | grep -q "in Root"; then
+            :  # Same as above
         else
             {
                 echo "========================================"
