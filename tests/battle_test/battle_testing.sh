@@ -4,7 +4,8 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_LIST="$SCRIPT_DIR/repos.txt"
 TARGET_DIR="$SCRIPT_DIR/repos"
-FORMATTER_BINARY="$SCRIPT_DIR/../../target/release/afmt"
+# FORMATTER_BINARY="$SCRIPT_DIR/../../target/release/afmt"
+FORMATTER_BINARY="$SCRIPT_DIR/../../target/debug/afmt"
 LOG_FILE="$SCRIPT_DIR/format_errors.log"  # Log file for errors
 
 # Create target directory if it doesn't exist
