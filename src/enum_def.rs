@@ -60,7 +60,7 @@ impl ClassMember {
             "constructor_declaration" => Self::Constructor(ConstructorDeclaration::new(n)),
             "enum_declaration" => Self::Enum(EnumDeclaration::new(n)),
             "static_initializer" => Self::Static(StaticInitializer::new(n)),
-            _ => panic!("## unknown node: {} in UnannotatedType ", n.kind().red()),
+            _ => panic_unknown_node(n, "ClassMember"),
         }
     }
 }
@@ -112,7 +112,7 @@ impl UnannotatedType {
             | "java_type"
             | "scoped_type_identifier" => Self::Simple(SimpleType::new(n)),
             "array_type" => Self::Array(Box::new(ArrayType::new(n))),
-            _ => panic!("## unknown node: {} in UnannotatedType", n.kind().red()),
+            _ => panic_unknown_node(n, "UnnanotatedType"),
         }
     }
 }
@@ -145,7 +145,7 @@ impl SimpleType {
             "java_type" => Self::Java(JavaType::new(n)),
             "generic_type" => Self::Generic(GenericType::new(n)),
             "scoped_type_identifier" => Self::Scoped(ScopedTypeIdentifier::new(n)),
-            _ => panic!("## unknown node: {} in SimpleType", n.kind().red()),
+            _ => panic_unknown_node(n, "SimpleType"),
         }
     }
 }
@@ -245,7 +245,7 @@ impl Expression {
             "ternary_expression" => Self::Te(Box::new(TernaryExpression::new(n))),
             "cast_expression" => Self::Cast(Box::new(CastExpression::new(n))),
             "instanceof_expression" => Self::Instance(Box::new(InstanceOfExpression::new(n))),
-            _ => panic!("## unknown node: {} in Expression", n.kind().red()),
+            _ => panic_unknown_node(n, "Expression"),
         }
     }
 }
@@ -341,7 +341,7 @@ impl PrimaryExpression {
             "query_expression" => Self::Query(QueryExpression::new(n)),
             "java_field_access" => Self::Java(JavaFieldAccess::new(n)),
             "this" => Self::This(This::new(n)),
-            _ => panic!("## unknown node: {} in PrimaryExpression", n.kind().red()),
+            _ => panic_unknown_node(n, "PrimaryExpression"),
         }
     }
 }
@@ -435,7 +435,7 @@ impl Literal_ {
             "decimal_floating_point_literal" => {
                 Self::Decimal(n.value(source_code()).to_lowercase())
             }
-            _ => panic!("## unknown node: {} in Literal", n.kind().red()),
+            _ => panic_unknown_node(n, "Literal_"),
         }
     }
 }
@@ -500,7 +500,7 @@ impl Modifier {
             "testMethod" => Self::TestMethod,
             "transient" => Self::Transient,
             "webservice" => Self::Webservice,
-            _ => panic!("## unknown node: {} in Modifier", kind),
+            _ => panic_unknown_node(n, "Modifier"),
         }
     }
 }
@@ -616,7 +616,7 @@ impl Statement {
             "continue_statement" => Self::Continue(ContinueStatement::new(n)),
             "switch_expression" => Self::Switch(Box::new(SwitchExpression::new(n))),
             ";" => Self::SemiColumn,
-            _ => panic!("## unknown node: {} in Statement", n.kind().red()),
+            _ => panic_unknown_node(n, "Statement"),
         }
     }
     pub fn is_block(&self) -> bool {
@@ -807,7 +807,7 @@ impl TriggerEvent {
             "after_update" => Self::AfterUpdate,
             "after_delete" => Self::AfterDelete,
             "after_undelete" => Self::AfterUndelete,
-            _ => panic!("## unknown node: {} in TriggerEvent", n.kind().red()),
+            _ => panic_unknown_node(n, "TriggerEvent"),
         }
     }
 }
@@ -905,10 +905,7 @@ impl SelectableExpression {
             ))),
             "alias_expression" => Self::Alias(AliasExpression::new(node)),
             "subquery" => Self::Sub(SubQuery::new(node)),
-            _ => panic!(
-                "## unknown node: {} in SelectableExpression",
-                node.kind().red()
-            ),
+            _ => panic_unknown_node(node, "SelectableExpression"),
         }
     }
 }
@@ -970,7 +967,7 @@ impl FieldIdentifier {
         match c.kind() {
             "identifier" => Self::Identifier(c.value(source_code())),
             "dotted_identifier" => Self::Dotted(DottedIdentifier::new(c)),
-            _ => panic!("## unknown node: {} in FieldIdentifier", c.kind().red()),
+            _ => panic_unknown_node(c, "FieldIdentifier"),
         }
     }
 }
@@ -999,7 +996,7 @@ impl StorageVariant {
         match node.kind() {
             "storage_alias" => Self::Alias(StorageAlias::new(node)),
             "storage_identifier" => Self::Identifier(StorageIdentifier::new(node)),
-            _ => panic!("## unknown node: {} in StorageVariant", node.kind().red()),
+            _ => panic_unknown_node(node, "StorageVariant"),
         }
     }
 }
@@ -1036,7 +1033,7 @@ impl StorageIdentifier {
                     .map(|n| n.value(source_code()))
                     .collect(),
             ),
-            _ => panic!("## unknown node: {} in StorageIdentifier", c.kind().red()),
+            _ => panic_unknown_node(c, "StorageIdentifier"),
         }
     }
 }
@@ -1068,7 +1065,7 @@ impl LimitValue {
         match n.kind() {
             "int" => Self::Int(n.value(source_code())),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
-            _ => panic!("## unknown node: {} in LimitValue", n.kind().red()),
+            _ => panic_unknown_node(n, "LimitValue"),
         }
     }
 }
@@ -1216,7 +1213,7 @@ impl ValueExpression {
         match n.kind() {
             "field_identifier" => Self::Field(FieldIdentifier::new(n)),
             "function_expression" => Self::Function(Box::new(FunctionExpression::new(n))),
-            _ => panic!("## unknown node: {} in ValueExpression", n.kind().red()),
+            _ => panic_unknown_node(n, "ValueExpression"),
         }
     }
 }
@@ -1267,7 +1264,7 @@ impl GeoLocationType {
                 }
             }
 
-            _ => panic!("## unknown node: {} in GeoLocationType", child.kind().red()),
+            _ => panic_unknown_node(child, "GeoLocationType"),
         }
     }
 }
@@ -1302,17 +1299,6 @@ pub enum Comparison {
     Value(ValueComparison),
     Set(SetComparison),
 }
-
-//impl Comparison {
-//    pub fn new(n: Node) -> Self {
-//        match n.kind() {
-//            "type_identifier" => Self::Unnanotated(UnnanotatedType::Simple(
-//                SimpleType::Identifier(n.value(source_code())),
-//            )),
-//            _ => panic!("## unknown node: {} in Comparison", n.kind().red()),
-//        }
-//    }
-//}
 
 impl<'a> DocBuild<'a> for Comparison {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
@@ -1371,7 +1357,7 @@ impl SoqlLiteral {
             "date_literal" => Self::DateLiteral(node.value(source_code())),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
             "null_literal" => Self::NullLiteral(node.value(source_code())),
-            _ => panic!("## unknown node: {} in SoqlLiteral", node.kind().red()),
+            _ => panic_unknown_node(node, "SoqlLiteral"),
         }
     }
 }
@@ -1451,7 +1437,7 @@ impl SetValue {
             "subquery" => Self::Sub(SubQuery::new(node)),
             "comparable_list" => Self::List(ComparableList::new(node)),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(node)),
-            _ => panic!("## unknown node: {} in SetValue", node.kind().red()),
+            _ => panic_unknown_node(node, "SetValue"),
         }
     }
 }
@@ -1512,7 +1498,7 @@ impl OffsetClause {
         match first_c.kind() {
             "int" => Self::Int(first_c.value(source_code())),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(first_c)),
-            _ => panic!("## unknown node: {} in OffsetClause", first_c.kind().red()),
+            _ => panic_unknown_node(first_c, "OffsetClause"),
         }
     }
 }

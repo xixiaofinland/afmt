@@ -6,7 +6,7 @@ use crate::{
     utility::{
         assert_check, build_chaining_context, get_comparsion, get_precedence,
         get_property_navigation, has_trailing_new_line, is_binary_exp, is_query_expression,
-        source_code,
+        panic_unknown_node, source_code,
     },
 };
 use colored::Colorize;
@@ -50,7 +50,7 @@ impl Root {
                             c,
                         ))))
                 }
-                _ => panic!("## unknown node: {} in Root ", c.kind().red()),
+                _ => panic_unknown_node(c, "Root"),
             }
         }
         root
@@ -291,7 +291,7 @@ impl Modifiers {
                 }
                 "modifier" => this.modifiers.push(Modifier::new(c.first_c())),
                 "line_comment" | "block_comment" => continue,
-                _ => panic!("## unknown node: {} in Modifiers", c.kind().red()),
+                _ => panic_unknown_node(c, "Modifiers"),
             }
         }
         this
@@ -540,12 +540,12 @@ pub enum AssignmentLeft {
 }
 
 impl AssignmentLeft {
-    pub fn new(n: Node) -> Self {
-        match n.kind() {
-            "identifier" => Self::Identifier(n.value(source_code())),
-            "field_access" => Self::Field(FieldAccess::new(n)),
-            "array_access" => Self::Array(ArrayAccess::new(n)),
-            _ => panic!("## unknown node: {} in AssignmentLeft", n.kind().red()),
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "identifier" => Self::Identifier(node.value(source_code())),
+            "field_access" => Self::Field(FieldAccess::new(node)),
+            "array_access" => Self::Array(ArrayAccess::new(node)),
+            _ => panic_unknown_node(node, "AssignmentLeft"),
         }
     }
 }
@@ -642,7 +642,7 @@ impl Comment {
             comment_type: match node.kind() {
                 "line_comment" => CommentType::Line,
                 "block_comment" => CommentType::Block,
-                _ => panic!("Unexpected comment type"),
+                _ => panic_unknown_node(node, "Comment"),
             },
             range: DataRange::from(node.range()),
         }
@@ -1621,10 +1621,7 @@ impl ScopedTypeIdentifier {
             "type_identifier" => ScopedChoice::TypeIdentifier(prefix_node.value(source_code())),
             "scoped_type_identifier" => ScopedChoice::Scoped(Box::new(Self::new(prefix_node))),
             "generic_type" => ScopedChoice::Generic(Box::new(GenericType::new(prefix_node))),
-            _ => panic!(
-                "## unknown node: {} in ScopedTypeIdentifier prefix node",
-                prefix_node.kind().red()
-            ),
+            _ => panic_unknown_node(prefix_node, "ScopedTypeIdentifier"),
         };
 
         let annotations: Vec<_> = node
@@ -1813,7 +1810,7 @@ impl ConstructInvocation {
         let constructor = node.try_c_by_n("constructor").map(|n| match n.kind() {
             "this" => Constructor::This,
             "super" => Constructor::Super,
-            other => panic!("## unknown node: {} in Constructor", other.red()),
+            _ => panic_unknown_node(n, "Constructor"),
         });
 
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
@@ -2341,7 +2338,7 @@ impl DmlSecurityMode {
         match child.kind() {
             "user" => Self::User(child.value(source_code())),
             "system" => Self::System(child.value(source_code())),
-            _ => panic!("## unknown node: {} in DmlSecurityMode ", n.kind().red()),
+            _ => panic_unknown_node(n, "DmlSecurityMode"),
         }
     }
 }
@@ -2843,7 +2840,7 @@ impl InterfaceBody {
                     "interface_declaration" => {
                         InterfaceMember::Interface(InterfaceDeclaration::new(n))
                     }
-                    _ => panic!("## unknown node: {} in InterfaceBody", n.kind().red()),
+                    _ => panic_unknown_node(n, "InterfaceBody"),
                 };
 
                 BodyMember {
@@ -4020,7 +4017,7 @@ impl UsingSearch {
         match node.kind() {
             "using_phrase_search" => Self::Phrase,
             "using_advanced_search" => Self::Advanced,
-            _ => panic!("## unknown node: {} in UsingSearch", node.kind().red()),
+            _ => panic_unknown_node(node, "UsingSearch"),
         }
     }
 }
@@ -4072,10 +4069,7 @@ impl UsingClauseOption {
             "using_scope_clause" => Self::Scope(UsingScopeClause::new(node)),
             "using_lookup_clause" => Self::Lookup(UsingLookupClause::new(node)),
             "using_listview_clause" => Self::Listview(UsingListviewClause::new(node)),
-            _ => panic!(
-                "## unknown node: {} in UsingClauseOption",
-                node.kind().red()
-            ),
+            _ => panic_unknown_node(node, "UsingClauseOption"),
         }
     }
 }
@@ -4647,7 +4641,7 @@ impl SoqlWithType {
                 "with_user_id_type" => {
                     Self::UserId(child.cvalue_by_k("string_literal", source_code()))
                 }
-                _ => panic!("## unknown node: {} in WithType", node.kind().red()),
+                _ => panic_unknown_node(node, "WithType"),
             }
         };
         with_type
@@ -4696,7 +4690,7 @@ impl SoslWithType {
             }
             "with_highlight" => Self::Highlight,
             "with_pricebook_expression" => Self::PriceBook(WithPriceBookExpression::new(child)),
-            _ => panic!("## unknown node: {} in SoslWithType", child.kind().red()),
+            _ => panic_unknown_node(child, "SoslWithType"),
         }
     }
 }
@@ -4829,10 +4823,7 @@ impl WithDivisionExpression {
         match child.kind() {
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
             "string_literal" => Self::StringLiteral(child.value(source_code())),
-            _ => panic!(
-                "## unknown node: {} in WithDivisionExpression",
-                node.kind().red()
-            ),
+            _ => panic_unknown_node(node, "WithDivisionExpression"),
         }
     }
 }
