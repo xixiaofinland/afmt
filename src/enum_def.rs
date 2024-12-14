@@ -432,9 +432,7 @@ impl Literal_ {
             "null_literal" => Self::Null,
             "int" => Self::Int(n.value()),
             "string_literal" => Self::Str(n.value()),
-            "decimal_floating_point_literal" => {
-                Self::Decimal(n.value().to_lowercase())
-            }
+            "decimal_floating_point_literal" => Self::Decimal(n.value().to_lowercase()),
             _ => panic_unknown_node(n, "Literal_"),
         }
     }
@@ -893,7 +891,7 @@ pub enum SelectableExpression {
     Value(ValueExpression),
     Alias(AliasExpression),
     //Type(TypeOfClause),
-    //Fields(FieldsExpression),
+    Fields(FieldsExpression),
     Sub(SubQuery),
 }
 
@@ -905,6 +903,7 @@ impl SelectableExpression {
                 FunctionExpression::new(node),
             ))),
             "alias_expression" => Self::Alias(AliasExpression::new(node)),
+            "fields_expression" => Self::Fields(FieldsExpression::new(node)),
             "subquery" => Self::Sub(SubQuery::new(node)),
             _ => panic_unknown_node(node, "SelectableExpression"),
         }
@@ -920,10 +919,35 @@ impl<'a> DocBuild<'a> for SelectableExpression {
             Self::Alias(n) => {
                 result.push(n.build(b));
             }
+            Self::Fields(n) => {
+                result.push(n.build(b));
+            }
             Self::Sub(n) => {
                 result.push(n.build(b));
             }
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct FieldsExpression {
+    fields_type: String,
+}
+
+impl FieldsExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "fields_expression");
+
+        let fields_type = node.cvalue_by_k("fields_type").to_uppercase();
+        Self { fields_type }
+    }
+}
+
+impl<'a> DocBuild<'a> for FieldsExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("FIELDS("));
+        result.push(b.txt(&self.fields_type));
+        result.push(b.txt(")"));
     }
 }
 
@@ -1407,9 +1431,7 @@ impl DateLiteralWithParam {
     pub fn new(node: Node) -> Self {
         assert_check(node, "date_literal_with_param");
 
-        let date_literal = node
-            .cvalue_by_k("date_literal")
-            .to_uppercase();
+        let date_literal = node.cvalue_by_k("date_literal").to_uppercase();
         let param = node.cvalue_by_k("int");
 
         Self {
