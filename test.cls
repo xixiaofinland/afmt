@@ -1,5 +1,5 @@
 global class PluginDescribeResult {
-  {
-    [SELECT FIELDS(STANDARd) FROM Organization LIMIT 1];
-  }
+    {
+        [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];
+    }
 }
