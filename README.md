@@ -27,7 +27,7 @@ Blazingly fast - parsing speed of largest open-source Apex files [report](https:
 # 🔧 How to use
 
 Download the binary from the [release page](https://github.com/xixiaofinland/afmt/releases). It
-supports Linux, MacOS, and Linux.
+supports Linux, MacOS, and Windows.
 
 Extract and run `afmt -h` to check the supported parameters.
 
