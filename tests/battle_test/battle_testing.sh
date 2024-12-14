@@ -46,6 +46,8 @@ format_files() {
             :  # Same as above
         elif echo "$OUTPUT" | grep -q "in Root"; then
             :  # Same as above
+        elif echo "$OUTPUT" | grep -q "Parent node kind: class_body,"; then
+            :  # Same as above
         else
             {
                 echo "========================================"
