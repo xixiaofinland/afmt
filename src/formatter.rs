@@ -5,7 +5,7 @@ use crate::utility::{collect_comments, enrich, set_thread_source_code};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use serde::Deserialize;
-use std::sync::{mpsc, Arc};
+use std::sync::mpsc;
 use std::thread;
 use std::{fs, path::Path};
 use tree_sitter::{Language, Node, Parser, Tree};
