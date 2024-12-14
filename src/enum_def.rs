@@ -6,7 +6,7 @@ use crate::{
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{assert_check, source_code},
+    utility::{assert_check, panic_unknown_node, source_code},
 };
 
 #[derive(Debug)]
@@ -695,7 +695,7 @@ impl Type {
             | "scoped_type_identifier"
             | "java_type" => Self::Unannotated(UnannotatedType::Simple(SimpleType::new(n))),
             "array_type" => Self::Unannotated(UnannotatedType::Array(Box::new(ArrayType::new(n)))),
-            _ => panic!("## unknown node: {} in Type", n.kind().red()),
+            _ => panic_unknown_node(n, "Type"),
         }
     }
 }
