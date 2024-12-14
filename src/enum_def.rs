@@ -691,6 +691,7 @@ impl Type {
         match n.kind() {
             "type_identifier"
             | "void_type"
+            | "boolean_type"
             | "generic_type"
             | "scoped_type_identifier"
             | "java_type" => Self::Unannotated(UnannotatedType::Simple(SimpleType::new(n))),

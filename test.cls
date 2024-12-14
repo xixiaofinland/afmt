@@ -1,7 +1,5 @@
 public class A {
-  public static void B() {
-    Integer i;
-    for (i = 0; i < 20; i++) {
-    }
+  {
+    Map<string, boolean> StatusLabels = new Map<string, boolean>();
   }
 }
