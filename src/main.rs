@@ -40,9 +40,10 @@ fn run(args: Args) -> Result<()> {
                 if args.write {
                     fs::write(&args.path, value)?;
                     println!("Formatted content written back to: {}\n", args.path);
-                } else {
-                    println!("{:?}", value);
                 }
+                //else {
+                //    println!("{:?}", value);
+                //}
             }
             Err(e) => {
                 println!("Result {}: Err\n{}", index, e);
