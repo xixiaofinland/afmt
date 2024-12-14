@@ -85,7 +85,7 @@ impl ClassDeclaration {
         let buckets = None;
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
@@ -148,7 +148,7 @@ impl MethodDeclaration {
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let formal_parameters = FormalParameters::new(node.c_by_n("parameters"));
         let body = node.try_c_by_n("body").map(|n| Block::new(n));
 
@@ -225,7 +225,7 @@ impl FormalParameter {
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let dimensions = node.try_c_by_k("dimensions").map(|n| Dimensions::new(n));
 
         Self {
@@ -321,7 +321,7 @@ pub struct Annotation {
 
 impl Annotation {
     pub fn new(node: Node) -> Self {
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
 
         let arguments = node
             .try_c_by_n("arguments")
@@ -352,8 +352,8 @@ impl AnnotationKeyValue {
     pub fn new(node: Node) -> Self {
         assert_check(node, "annotation_key_value");
         Self {
-            key: node.cvalue_by_n("key", source_code()),
-            value: node.cvalue_by_n("value", source_code()),
+            key: node.cvalue_by_n("key"),
+            value: node.cvalue_by_n("value"),
         }
     }
 }
@@ -502,7 +502,7 @@ impl AssignmentExpression {
         assert_check(node, "assignment_expression");
 
         let left = AssignmentLeft::new(node.c_by_n("left"));
-        let op = node.cvalue_by_n("operator", source_code());
+        let op = node.cvalue_by_n("operator");
 
         let right_child = node.c_by_n("right");
         let right = Expression::new(right_child);
@@ -878,7 +878,7 @@ impl MethodInvocation {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_invocation");
 
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         let kind = if let Some(obj) = node.try_c_by_n("object") {
@@ -1225,7 +1225,7 @@ pub struct VariableDeclarator {
 impl VariableDeclarator {
     pub fn new(node: Node) -> Self {
         assert_check(node, "variable_declarator");
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
 
         let mut is_value_child_a_query_node = false;
 
@@ -1527,7 +1527,7 @@ impl EnhancedForStatement {
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let value = Expression::new(node.c_by_n("value"));
         let body = Statement::new(node.c_by_n("body"));
         Self {
@@ -1697,7 +1697,7 @@ impl ConstructorDeclaration {
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let parameters = FormalParameters::new(node.c_by_n("parameters"));
         let body = ConstructorBody::new(node.c_by_n("body"));
         Self {
@@ -1899,7 +1899,7 @@ impl TypeParameter {
             .map(|n| Annotation::new(n))
             .collect();
 
-        let type_identifier = node.cvalue_by_k("type_identifier", source_code());
+        let type_identifier = node.cvalue_by_k("type_identifier");
         Self {
             annotations,
             type_identifier,
@@ -2045,7 +2045,7 @@ pub struct UnaryExpression {
 
 impl UnaryExpression {
     pub fn new(node: Node) -> Self {
-        let operator = node.cvalue_by_n("operator", source_code());
+        let operator = node.cvalue_by_n("operator");
         let operand = Box::new(Expression::new(node.c_by_n("operand")));
         Self { operator, operand }
     }
@@ -2077,7 +2077,7 @@ impl FieldAccess {
 
         let property_navigation = get_property_navigation(&node);
 
-        let field = node.cvalue_by_n("field", source_code());
+        let field = node.cvalue_by_n("field");
         let context = build_chaining_context(&node);
 
         Self {
@@ -2127,7 +2127,7 @@ pub struct EnumDeclaration {
 impl EnumDeclaration {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
         let body = EnumBody::new(node.c_by_n("body"));
         Self {
@@ -2196,7 +2196,7 @@ pub struct EnumConstant {
 impl EnumConstant {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         Self { modifiers, name }
     }
 }
@@ -2748,7 +2748,7 @@ pub struct InterfaceDeclaration {
 impl InterfaceDeclaration {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name", source_code());
+        let name = node.cvalue_by_n("name");
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
@@ -2991,7 +2991,7 @@ pub struct AccessorDeclaration {
 impl AccessorDeclaration {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let accessor = node.cvalue_by_n("accessor", source_code());
+        let accessor = node.cvalue_by_n("accessor");
         let body = node.try_c_by_n("body").map(|n| Block::new(n));
         Self {
             modifiers,
@@ -3398,8 +3398,8 @@ pub struct TriggerDeclaration {
 
 impl TriggerDeclaration {
     pub fn new(node: Node) -> Self {
-        let name = node.cvalue_by_n("name", source_code());
-        let object = node.cvalue_by_n("object", source_code());
+        let name = node.cvalue_by_n("name");
+        let object = node.cvalue_by_n("object");
         let events = node
             .cs_by_k("trigger_event")
             .into_iter()
@@ -3613,7 +3613,7 @@ impl FindClause {
         if let Some(bound_node) = node.try_c_by_k("bound_apex_expression") {
             Self::Bound(BoundApexExpression::new(bound_node))
         } else {
-            Self::Term(node.cvalue_by_k("term", source_code()))
+            Self::Term(node.cvalue_by_k("term"))
         }
     }
 }
@@ -3641,7 +3641,7 @@ impl InClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "in_clause");
 
-        let in_type = node.cvalue_by_k("in_type", source_code());
+        let in_type = node.cvalue_by_k("in_type");
         Self { in_type }
     }
 }
@@ -3694,7 +3694,7 @@ impl SObjectReturn {
     pub fn new(node: Node) -> Self {
         assert_check(node, "sobject_return");
 
-        let identifier = node.cvalue_by_k("identifier", source_code());
+        let identifier = node.cvalue_by_k("identifier");
 
         let sobject_return_query = node
             .try_c_by_k("selected_fields")
@@ -3813,7 +3813,7 @@ impl SoqlQueryBody {
         let for_clause = node
             .try_cs_by_k("for_clause")
             .into_iter()
-            .map(|n| n.cvalue_by_k("for_type", source_code()))
+            .map(|n| n.cvalue_by_k("for_type"))
             .collect();
 
         Self {
@@ -3903,7 +3903,7 @@ impl StorageAlias {
         assert_check(node, "storage_alias");
 
         let storage_alias = StorageIdentifier::new(node.c_by_k("storage_alias"));
-        let identifier = node.cvalue_by_k("identifier", source_code());
+        let identifier = node.cvalue_by_k("identifier");
         Self {
             storage_alias,
             identifier,
@@ -4099,7 +4099,7 @@ impl UsingScopeClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_scope_clause");
 
-        let type_ = node.cvalue_by_k("using_scope_type", source_code());
+        let type_ = node.cvalue_by_k("using_scope_type");
         Self { type_ }
     }
 }
@@ -4152,7 +4152,7 @@ impl UsingListviewClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_listview_clause");
 
-        let identifier = node.cvalue_by_k("identifier", source_code());
+        let identifier = node.cvalue_by_k("identifier");
         Self { identifier }
     }
 }
@@ -4203,7 +4203,7 @@ impl UsingLookupBindExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_lookup_bind_expression");
 
-        let field = node.cvalue_by_n("field", source_code());
+        let field = node.cvalue_by_n("field");
         let bound_value = SoqlLiteral::new(node.c_by_n("bound_value"));
         Self { field, bound_value }
     }
@@ -4639,7 +4639,7 @@ impl SoqlWithType {
             let child = node.first_c();
             match child.kind() {
                 "with_user_id_type" => {
-                    Self::UserId(child.cvalue_by_k("string_literal", source_code()))
+                    Self::UserId(child.cvalue_by_k("string_literal"))
                 }
                 _ => panic_unknown_node(node, "WithType"),
             }
@@ -4775,7 +4775,7 @@ impl WithDataCatFilter {
 
         let identifier = all_identififers[0].value(source_code());
         let filter_type = node
-            .cvalue_by_k("with_data_cat_filter_type", source_code())
+            .cvalue_by_k("with_data_cat_filter_type")
             .to_uppercase();
         let identifiers: Vec<_> = all_identififers
             .into_iter()
@@ -4898,7 +4898,7 @@ impl WithMetadataExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_metadata_expression");
 
-        let string_literal = node.cvalue_by_k("string_literal", source_code());
+        let string_literal = node.cvalue_by_k("string_literal");
         Self { string_literal }
     }
 }
@@ -4919,7 +4919,7 @@ impl WithSpellCorrectionExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_spell_correction_expression");
 
-        let boolean = node.cvalue_by_k("boolean", source_code());
+        let boolean = node.cvalue_by_k("boolean");
         Self { boolean }
     }
 }
@@ -4940,7 +4940,7 @@ impl WithPriceBookExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_pricebook_expression");
 
-        let string_literal = node.cvalue_by_k("string_literal", source_code());
+        let string_literal = node.cvalue_by_k("string_literal");
         Self { string_literal }
     }
 }

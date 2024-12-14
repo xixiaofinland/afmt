@@ -24,8 +24,8 @@ pub trait Accessor<'t> {
 
     fn c_by_n(&self, name: &str) -> Node<'t>;
     fn c_by_k(&self, kind: &str) -> Node<'t>;
-    fn cvalue_by_n(&self, name: &str, source_code: &str) -> String;
-    fn cvalue_by_k(&self, name: &str, source_code: &str) -> String;
+    fn cvalue_by_n(&self, name: &str) -> String;
+    fn cvalue_by_k(&self, name: &str) -> String;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
@@ -34,7 +34,7 @@ pub trait Accessor<'t> {
     // private fn;
     fn v<'a>(&self, source_code: &'a str) -> &'a str;
     fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
-    fn cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn cv_by_n<'a>(&self, name: &str) -> &'a str;
 
     //fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
     //fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
@@ -129,7 +129,7 @@ impl<'t> Accessor<'t> for Node<'t> {
         child_node.v(source_code)
     }
 
-    fn cv_by_n<'a>(&self, name: &str, source_code_: &'a str) -> &'a str {
+    fn cv_by_n<'a>(&self, name: &str) -> &'a str {
         let node = self.child_by_field_name(name).unwrap_or_else(|| {
             panic!(
                 "## {}: missing mandatory name child: {}\n ##Source_code: {}",
@@ -141,12 +141,12 @@ impl<'t> Accessor<'t> for Node<'t> {
         node.v(source_code())
     }
 
-    fn cvalue_by_n(&self, name: &str, source_code: &str) -> String {
-        self.cv_by_n(name, source_code).to_string()
+    fn cvalue_by_n(&self, name: &str) -> String {
+        self.cv_by_n(name).to_string()
     }
 
-    fn cvalue_by_k(&self, name: &str, source_code: &str) -> String {
-        self.cv_by_k(name, source_code).to_string()
+    fn cvalue_by_k(&self, name: &str) -> String {
+        self.cv_by_k(name, source_code()).to_string()
     }
 
     fn c_by_n(&self, name: &str) -> Node<'t> {

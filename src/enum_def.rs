@@ -746,7 +746,7 @@ impl AnnotationArgumentList {
         let key_values = n.try_cs_by_k("annotation_key_value");
 
         if key_values.is_empty() {
-            Self::Value(n.cvalue_by_n("value", source_code()))
+            Self::Value(n.cvalue_by_n("value"))
         } else {
             let key_values = key_values
                 .into_iter()
@@ -852,7 +852,7 @@ impl SelectClause {
         assert_check(node, "select_clause");
 
         if let Some(count_node) = node.try_c_by_k("count_expression") {
-            Self::Count(count_node.cvalue_by_n("function_name", source_code()))
+            Self::Count(count_node.cvalue_by_n("function_name"))
         } else {
             Self::Selectable(
                 node.children_vec()
@@ -938,7 +938,7 @@ impl AliasExpression {
         assert_check(node, "alias_expression");
 
         let value_exp = ValueExpression::new(node.first_c());
-        let identifier = node.cvalue_by_k("identifier", source_code());
+        let identifier = node.cvalue_by_k("identifier");
         Self {
             value_exp,
             identifier,
@@ -1408,9 +1408,9 @@ impl DateLiteralWithParam {
         assert_check(node, "date_literal_with_param");
 
         let date_literal = node
-            .cvalue_by_k("date_literal", source_code())
+            .cvalue_by_k("date_literal")
             .to_uppercase();
-        let param = node.cvalue_by_k("int", source_code());
+        let param = node.cvalue_by_k("int");
 
         Self {
             date_literal,
@@ -1540,7 +1540,7 @@ impl FunctionExpression {
 
         let function_expression = if node.try_c_by_k("geo_location_type").is_some() {
             Self::WithGEO {
-                function_name: node.cvalue_by_n("function_name", source_code()),
+                function_name: node.cvalue_by_n("function_name"),
                 field: node
                     .try_c_by_k("field_identifier")
                     .map(|n| FieldIdentifier::new(n)),
@@ -1548,11 +1548,11 @@ impl FunctionExpression {
                     .try_c_by_k("bound_apex_expression")
                     .map(|n| BoundApexExpression::new(n)),
                 geo: GeoLocationType::new(node.c_by_k("geo_location_type")),
-                string_literal: node.cvalue_by_k("string_literal", source_code()),
+                string_literal: node.cvalue_by_k("string_literal"),
             }
         } else {
             Self::WithoutGEO {
-                function_name: node.cvalue_by_n("function_name", source_code()),
+                function_name: node.cvalue_by_n("function_name"),
                 value_exps: node
                     .children_vec()
                     .into_iter()
