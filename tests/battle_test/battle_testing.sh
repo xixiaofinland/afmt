@@ -44,10 +44,10 @@ format_files() {
             :  # Skip logging for %% cases as they are from managed package templating
         elif echo "$OUTPUT" | grep -q "%%%"; then
             :  # Same as above
-        elif echo "$OUTPUT" | grep -q "in Root"; then
-            :  # Same as above
-        elif echo "$OUTPUT" | grep -q "Parent node kind: class_body,"; then
-            :  # Same as above
+        # elif echo "$OUTPUT" | grep -q "/scripts/"; then
+        #     :  # Same as above
+        # elif echo "$OUTPUT" | grep -q "Parent node kind: class_body,"; then
+        #     :  # Same as above
         else
             {
                 echo "========================================"
@@ -70,8 +70,11 @@ export LOG_FILE
 START_TIME=$(date +%s)
 
 # Find all .cls and .trigger files and process them in parallel
-find "$TARGET_DIR" -path "$TARGET_DIR/.sfdx" -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
+find "$TARGET_DIR" \( -type d \( -name ".sfdx" -o -name "scripts" \) \) -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
     parallel -0 -j+0 format_files
+
+# find "$TARGET_DIR" -path "$TARGET_DIR/.sfdx" -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
+#     parallel -0 -j+0 format_files
 
 # Check if any errors were logged
 if [ -s "$LOG_FILE" ]; then

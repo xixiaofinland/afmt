@@ -1,6 +1,6 @@
-public class A {
-  public class B {
-    public A.B() {
+Global class A {
+  Global class B {
+    Global A.B() {
     }
   }
 }
