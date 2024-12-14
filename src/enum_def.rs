@@ -405,7 +405,7 @@ impl ClassLiteral {
         assert_check(node, "class_literal");
 
         let type_ = UnannotatedType::new(node.first_c());
-        Self{type_}
+        Self { type_ }
     }
 }
 
@@ -890,7 +890,7 @@ impl<'a> DocBuild<'a> for SelectClause {
 #[derive(Debug)]
 pub enum SelectableExpression {
     Value(ValueExpression),
-    //Alias(AliasExpression),
+    Alias(AliasExpression),
     //Type(TypeOfClause),
     //Fields(FieldsExpression),
     //Sub(SubQuery),
@@ -900,9 +900,7 @@ impl SelectableExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifier::new(node))),
-            "function_expression" => Self::Value(ValueExpression::Function(Box::new(
-                FunctionExpression::new(node),
-            ))),
+            "alias_expression" => Self::Alias(AliasExpression::new(node)),
             _ => panic!(
                 "## unknown node: {} in SelectableExpression",
                 node.kind().red()
@@ -917,7 +915,36 @@ impl<'a> DocBuild<'a> for SelectableExpression {
             Self::Value(n) => {
                 result.push(n.build(b));
             }
+            Self::Alias(n) => {
+                result.push(n.build(b));
+            }
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct AliasExpression {
+    value_exp: ValueExpression,
+    identifier: String,
+}
+
+impl AliasExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "alias_expression");
+
+        let value_exp = ValueExpression::new(node.first_c());
+        let identifier = node.cvalue_by_k("identifier", source_code());
+        Self {
+            value_exp,
+            identifier,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AliasExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(self.value_exp.build(b));
+        result.push(b.txt(&self.identifier));
     }
 }
 
