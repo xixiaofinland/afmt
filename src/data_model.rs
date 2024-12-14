@@ -1417,8 +1417,46 @@ impl<'a> DocBuild<'a> for ParenthesizedExpression {
 }
 
 #[derive(Debug)]
+pub enum ForInitOption {
+    Declaration(LocalVariableDeclaration),
+    Exps(Vec<Expression>),
+}
+
+impl ForInitOption {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "local_variable_declaration" => Self::Declaration(LocalVariableDeclaration::new(node)),
+            _ => Self::Exps(
+                node.parent()
+                    .expect("node must have parent in ForInitOption")
+                    .cs_by_n("init")
+                    .into_iter()
+                    .map(|n| Expression::new(n))
+                    .collect(),
+            ),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ForInitOption {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::Declaration(n) => {
+                result.push(n.build(b));
+            }
+            Self::Exps(exps) => {
+                let docs = b.to_docs(exps);
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let doc = b.group(b.intersperse(&docs, sep));
+                result.push(doc);
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct ForStatement {
-    pub init: Option<LocalVariableDeclaration>,
+    pub init: Option<ForInitOption>,
     pub condition: Option<Expression>,
     pub update: Option<Expression>,
     pub body: Statement,
@@ -1428,7 +1466,7 @@ impl ForStatement {
     pub fn new(node: Node) -> Self {
         let init = node
             .try_c_by_n("init")
-            .map(|n| LocalVariableDeclaration::new(n));
+            .map(|n| ForInitOption::new(n));
         let condition = node.try_c_by_n("condition").map(|n| Expression::new(n));
         let update = node.try_c_by_n("update").map(|n| Expression::new(n));
         let body = Statement::new(node.c_by_n("body"));
@@ -1444,6 +1482,10 @@ impl ForStatement {
 impl<'a> DocBuild<'a> for ForStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("for "));
+        //if let Some(ref n) = self.init {
+        //    result.push(n.build(b));
+        //}
+
         let init = match &self.init {
             Some(i) => i.build(b),
             None => b.nil(),
