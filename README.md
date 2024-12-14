@@ -32,12 +32,14 @@ supports Linux, MacOS, and Linux.
 Extract and run `afmt -h` to check the supported parameters.
 
 ```
-Format Apex file v0.0.7
+Format Apex file v0.0.16
 
-Usage: afmt [OPTIONS]
+Usage: afmt [OPTIONS] [FILE]
+
+Arguments:
+  [FILE]  The relative path to the file to parse [default: ./hello.cls]
 
 Options:
-  -f, --file <FILE>      The relative path to the file to parse [default: test.cls]
   -c, --config <CONFIG>  Path to the .afmt.toml configuration file
   -w, --write            Write the formatted result back to the file
   -h, --help             Print help
@@ -46,36 +48,41 @@ Options:
 
 ## Simplest use scenario:
 
-- create a `test.cls` file next to binary with Apex code
-- run `afmt` to dry-check the format result
-- run `afmt -w` to write the format result into the file (`test.cls`)
+- create a `hello.cls` file next to binary with valid Apex format
+- run `afmt ./hello.cls` to dry-check the format result
+- run `afmt -w ./hello.cls` to write the format result into the file
 
+Dry-check sample result:
 ```
-» afmt
+> afmt ./hello.cls
 Result 0: Ok
-public class S {
-  {
-    rd.RecurringDonationSchedules__r?.get(0)?.nextDonationDate;
-  }
+global class PluginDescribeResult {
+    {
+        [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];
+    }
 }
 
-"public class S {\n  {\n    rd.RecurringDonationSchedules__r?.get(0)?.nextDonationDate;\n  }\n}\n"
+"global class PluginDescribeResult {\n    {\n        [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];\n    }\n}\n"
 Afmt completed successfully.
 
-Execution time: 585.1┬╡s
+Execution time: 491.772┬╡s
 ```
+
+Format file sample result:
 ```
-» afmt -w
+> afmt -w ./hello.cls
 Result 0: Ok
-public Date getExpectedDonationDate(RD2_ScheduleService scheduleService) {
-  return rd.RecurringDonationSchedules__r?.get(0)?.nextDonationDate;
+global class PluginDescribeResult {
+    {
+        [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];
+    }
 }
 
-Formatted content written back to: test.cls
+Formatted content written back to: ./hello.cls
 
 Afmt completed successfully.
 
-Execution time: 724.826┬╡s
+Execution time: 591.469┬╡s
 ```
 <br>
 
