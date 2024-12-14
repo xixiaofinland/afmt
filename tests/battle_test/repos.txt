@@ -8,7 +8,6 @@ https://github.com/SalesforceFoundation/NPSP.git
 https://github.com/SalesforceFoundation/PMM.git
 https://github.com/SalesforceFoundation/Relationships.git
 https://github.com/SalesforceFoundation/Volunteers-for-Salesforce.git
-https://github.com/SalesforceFoundation/kanban-board-rpt.git
 https://github.com/SalesforceLabs/EnhancedLightningGrid.git
 https://github.com/SalesforceLabs/Milestones-PM.git
 https://github.com/afawcett/apex-toolingapi.git
