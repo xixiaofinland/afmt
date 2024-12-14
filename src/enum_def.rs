@@ -901,6 +901,9 @@ impl SelectableExpression {
         match node.kind() {
             "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifier::new(node))),
             "alias_expression" => Self::Alias(AliasExpression::new(node)),
+            "function_expression" => Self::Value(ValueExpression::Function(Box::new(
+                FunctionExpression::new(node),
+            ))),
             _ => panic!(
                 "## unknown node: {} in SelectableExpression",
                 node.kind().red()

@@ -1,278 +1,416 @@
-/**
- * Copyright (c) 2014-2016, FinancialForce.com, inc
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright notice,
- *      this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice,
- *      this list of conditions and the following disclaimer in the documentation
- *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors
- *      may be used to endorse or promote products derived from this software without
- *      specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-@isTest
-public class fflib_ApexMocksUtilsTest
-{
-	public static Schema.FieldSet findAnyFieldSet()
-	{
-		for (Schema.SObjectType objectType : Schema.getGlobalDescribe().values())
-		{
-			for (Schema.FieldSet fs : objectType.getDescribe().FieldSets.getMap().values())
-			{
-				return fs;
-			}
-		}
+@IsTest
+private class RollupMultiCurrencyTests {
+  @TestSetup
+  static void setup() {
+    Account acc = new Account(Name = RollupMultiCurrencyTests.class.getName());
+    insert acc;
 
-		return null;
-	}
+    Opportunity opp = new Opportunity(
+      Name = 'Rollup Multicurrency',
+      StageName = 'One',
+      CloseDate = System.today(),
+      Amount = 1,
+      AccountIdText__c = acc.Id,
+      AccountId = acc.Id
+    );
+    RollupCurrencyInfo.setCurrencyIsoCode(opp, 'USD');
 
-	@isTest
-	private static void makeRelationship_returnsObjectsWithRelationFieldSet()
-	{
-		//Given
-		Account acc = new Account(
-			Id = fflib_IDGenerator.generate(Account.SObjectType),
-			Name = 'AccName',
-			NumberOfEmployees = 7
-		);
+    insert opp;
+    upsert new RollupSettings__c(IsEnabled__c = true);
+  }
 
-		Contact contact1 = new Contact(
-			Id = fflib_IDGenerator.generate(Contact.SObjectType),
-			DoNotCall = true
-		);
+  @IsTest
+  static void doesNotQueryDatedCurrenciesForNonMatchingObject() {
+    Account acc = new Account();
 
-		Contact contact2 = new Contact(
-			Id = fflib_IDGenerator.generate(Contact.SObjectType),
-			DoNotCall = false
-		);
+    RollupCurrencyInfo.transform(new List<Account>{ acc }, Account.AnnualRevenue, getCurrencyIsoCode(acc), new List<RollupOrderBy__mdt>());
 
-		//When
-		Account accWithRelationships = ((List<Account>)fflib_ApexMocksUtils.makeRelationship(
-			List<Account>.class,
-			new List<Account> { acc },
-			Contact.AccountId,
-			new List<List<Contact>> { new List<Contact> { contact1, contact2 }}
-		))[0];
+    // this test was flapping when comparing query counts during packaging despite passing in each multi-currency org
+    // previously. normally I don't like to resort to exposing @TestVisible properties but that's preferable to a flapping test
+    Assert.isFalse(RollupCurrencyInfo.hasLoadedDatedCurrencyInfo);
+  }
 
-		//Then
-		System.Assert.areEqual(acc.Id, accWithRelationships.Id);
-		System.Assert.areEqual(acc.Name, accWithRelationships.Name);
-		System.Assert.areEqual(acc.NumberOfEmployees, accWithRelationships.NumberOfEmployees);
-		
-		//Assert relationship fields
-		List<Contact> contacts = accWithRelationships.Contacts;
-		System.Assert.areNotEqual(null, contacts);
-		System.Assert.areEqual(2, contacts.size());
+  @IsTest
+  static void shouldCorrectlyRollupMaxForMultiCurrency() {
+    if (hasCurrencyInfo('EUR') == false) {
+      return;
+    }
+    Account acc = (Account) RollupTestUtils.queryRecord(Account.SObjectType, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    System.assertEquals(null, acc.AnnualRevenue, 'Test has started under the wrong conditions!');
+    System.assertEquals('USD', getCurrencyIsoCode(acc), 'Test has started under the wrong conditions!');
+    RollupCurrencyInfo.setCurrencyIsoCode(acc, 'EUR');
+    update acc;
 
-		System.Assert.areEqual(contact1.Id, contacts[0].Id);
-		System.Assert.areEqual(contact1.DoNotCall, contacts[0].DoNotCall);
+    Opportunity usdOpp = (Opportunity) RollupTestUtils.queryRecord(
+      Opportunity.SObjectType,
+      new List<Schema.SObjectField>{ Opportunity.StageName, Opportunity.CloseDate, Opportunity.Amount, Opportunity.AccountId }
+    );
 
-		System.Assert.areEqual(contact2.Id, contacts[1].Id);
-		System.Assert.areEqual(contact2.DoNotCall, contacts[1].DoNotCall);
-	}
+    Opportunity eurOpp = usdOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(eurOpp, 'EUR');
+    eurOpp.Amount = .95;
+    Opportunity jpyOpp = eurOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(jpyOpp, 'JPY');
+    jpyOpp.Amount = 100;
+    insert new List<Opportunity>{ eurOpp, jpyOpp };
 
-	@isTest
-	private static void makeRelationship_GenericOverload_ReturnsObjectsWithRelationFieldSet() {
-		//Given
-		SObject acc = Schema.getGlobalDescribe().get('Account').newSObject();
-		acc.put('Id', fflib_IDGenerator.generate(acc.getSObjectType()));
-		acc.put('Name', 'AccName');
-		acc.put('NumberOfEmployees', 7);
+    Rollup.rollupMetadata = new List<Rollup__mdt>{
+      new Rollup__mdt(
+        RollupFieldOnCalcItem__c = 'Amount',
+        LookupObject__c = 'Account',
+        LookupFieldOnCalcItem__c = 'AccountId',
+        LookupFieldOnLookupObject__c = 'Id',
+        RollupFieldOnLookupObject__c = 'AnnualRevenue',
+        RollupOperation__c = 'MAX',
+        CalcItem__c = 'Opportunity'
+      )
+    };
+    Rollup.apexContext = TriggerOperation.AFTER_INSERT;
+    Rollup.records = new List<Opportunity>{ usdOpp, eurOpp, jpyOpp };
+    Rollup.shouldRun = true;
 
-		SObject contact1 = Schema.getGlobalDescribe().get('Contact').newSObject();
-		contact1.put('Id', fflib_IDGenerator.generate(contact1.getSObjectType()));
-		contact1.put('DoNotCall', true);
+    Test.startTest();
+    Rollup.runFromTrigger();
+    Test.stopTest();
 
-		SObject contact2 = Schema.getGlobalDescribe().get('Contact').newSObject();
-		contact2.put('Id', fflib_IDGenerator.generate(contact2.getSObjectType()));
-		contact2.put('DoNotCall', false);
+    acc = (Account) RollupTestUtils.queryRecord(acc.Id, new List<Schema.SObjectField>{ Account.AnnualRevenue, Account.MaxAmountRollupSummary__c });
+    RollupCurrencyInfo currencyInfo = RollupCurrencyInfo.getCurrencyInfo(getCurrencyIsoCode(acc));
+    System.assertEquals(
+      acc.MaxAmountRollupSummary__c.setScale(currencyInfo.DecimalPlaces),
+      acc.AnnualRevenue.setScale(currencyInfo.DecimalPlaces),
+      'Multi-currency MAX rollup not calculated correctly!'
+    );
+  }
 
-		//When
-		SObject accWithRelationships = ((List<SObject>)fflib_ApexMocksUtils.makeRelationship(
-				'Account',
-				'Contact',
-				new List<SObject> { acc },
-				'AccountId',
-				new List<List<SObject>> { new List<SObject> { contact1, contact2 }}
+  @IsTest
+  static void shouldCorrectlyRollupMinForMultiCurrency() {
+    if (hasCurrencyInfo('EUR') == false) {
+      return;
+    }
+    Account acc = (Account) RollupTestUtils.queryRecord(Account.SObjectType, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    System.assertEquals(null, acc.AnnualRevenue, 'Test has started under the wrong conditions!');
+    System.assertEquals('USD', getCurrencyIsoCode(acc), 'Test has started under the wrong conditions!');
+    RollupCurrencyInfo.setCurrencyIsoCode(acc, 'EUR');
+    update acc;
 
-		))[0];
+    Opportunity usdOpp = (Opportunity) RollupTestUtils.queryRecord(
+      Opportunity.SObjectType,
+      new List<Schema.SObjectField>{ Opportunity.StageName, Opportunity.CloseDate, Opportunity.Amount, Opportunity.AccountId }
+    );
 
-		//Then
-		System.Assert.areEqual(acc.Id, accWithRelationships.Id);
-		System.Assert.areEqual(acc.get('Name'), accWithRelationships.get('Name'));
-		System.Assert.areEqual(acc.get('NumberOfEmployees'), accWithRelationships.get('NumberOfEmployees'));
+    Opportunity eurOpp = usdOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(eurOpp, 'EUR');
+    eurOpp.Amount = .95;
+    Opportunity jpyOpp = eurOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(jpyOpp, 'JPY');
+    jpyOpp.Amount = 100;
+    insert new List<Opportunity>{ eurOpp, jpyOpp };
 
-		//Assert relationship fields
-		List<SObject> contacts = accWithRelationships.getSObjects('Contacts');
-		System.Assert.areNotEqual(null, contacts);
-		System.Assert.areEqual(2, contacts.size());
+    Rollup.rollupMetadata = new List<Rollup__mdt>{
+      new Rollup__mdt(
+        RollupFieldOnCalcItem__c = 'Amount',
+        LookupObject__c = 'Account',
+        LookupFieldOnCalcItem__c = 'AccountId',
+        LookupFieldOnLookupObject__c = 'Id',
+        RollupFieldOnLookupObject__c = 'AnnualRevenue',
+        RollupOperation__c = 'MIN',
+        IsFullRecordSet__c = true,
+        CalcItem__c = 'Opportunity'
+      )
+    };
+    Rollup.apexContext = TriggerOperation.AFTER_INSERT;
+    Rollup.records = new List<Opportunity>{ usdOpp, eurOpp, jpyOpp };
+    Rollup.shouldRun = true;
 
-		System.Assert.areEqual(contact1.Id, contacts[0].Id);
-		System.Assert.areEqual((Boolean)contact1.get('DoNotCall'), (Boolean)contacts[0].get('DoNotCall'));
+    Test.startTest();
+    Rollup.runFromTrigger();
+    Test.stopTest();
 
-		System.Assert.areEqual(contact2.Id, contacts[1].Id);
-		System.Assert.areEqual((Boolean)contact2.get('DoNotCall'), (Boolean)contacts[1].get('DoNotCall'));
-	}
+    acc = (Account) RollupTestUtils.queryRecord(acc.Id, new List<Schema.SObjectField>{ Account.AnnualRevenue, Account.MinAmountRollupSummary__c });
+    RollupCurrencyInfo currencyInfo = RollupCurrencyInfo.getCurrencyInfo(getCurrencyIsoCode(acc));
+    System.assertEquals(
+      acc.MinAmountRollupSummary__c.setScale(currencyInfo.DecimalPlaces),
+      acc.AnnualRevenue.setScale(currencyInfo.DecimalPlaces),
+      'Multi-currency MIN rollup not calculated correctly!'
+    );
+  }
 
-	@isTest
-	private static void makeRelationship_GenericOverload_ThrowsErrorOnInvalidParentType() {
+  @IsTest
+  static void shouldCorrectlyRollupSumForMultiCurrency() {
+    if (hasCurrencyInfo('EUR') == false) {
+      return;
+    }
+    Account acc = (Account) RollupTestUtils.queryRecord(Account.SObjectType, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    System.assertEquals(null, acc.AnnualRevenue, 'Test has started under the wrong conditions!');
+    System.assertEquals('USD', getCurrencyIsoCode(acc), 'Test has started under the wrong conditions!');
+    RollupCurrencyInfo.setCurrencyIsoCode(acc, 'EUR');
+    update acc;
 
-		// Setup parent object
-		SObject acc = Schema.getGlobalDescribe().get('Account').newSObject();
-		acc.put('Id', fflib_IDGenerator.generate(acc.getSObjectType()));
+    Opportunity usdOpp = (Opportunity) RollupTestUtils.queryRecord(
+      Opportunity.SObjectType,
+      new List<Schema.SObjectField>{ Opportunity.StageName, Opportunity.CloseDate, Opportunity.Amount, Opportunity.AccountId }
+    );
 
-		// Setup child object
-		SObject cont = Schema.getGlobalDescribe().get('Contact').newSObject();
-		cont.put('Id', fflib_IDGenerator.generate(cont.getSObjectType()));
+    Opportunity eurOpp = usdOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(eurOpp, 'EUR');
+    eurOpp.Amount = .95;
+    Opportunity jpyOpp = eurOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(jpyOpp, 'JPY');
+    jpyOpp.Amount = 100;
+    insert new List<Opportunity>{ eurOpp, jpyOpp };
 
-		String errorMessage = '';
-		try {
-			// Call method under test
-			SObject accWithRelationships = ((List<SObject>)fflib_ApexMocksUtils.makeRelationship(
-					'MyInvalidParentType',
-					'Contact',
-					new List<SObject> { acc },
-					'AccountId',
-					new List<List<SObject>> { new List<SObject> { cont }}
-			))[0];
-		} catch (Exception exc) {
-			errorMessage = exc.getMessage();
-		}
-		System.Assert.areEqual('SObject type not found: MyInvalidParentType', errorMessage);
-	}
+    Rollup.rollupMetadata = new List<Rollup__mdt>{
+      new Rollup__mdt(
+        RollupFieldOnCalcItem__c = 'Amount',
+        LookupObject__c = 'Account',
+        LookupFieldOnCalcItem__c = 'AccountId',
+        LookupFieldOnLookupObject__c = 'Id',
+        RollupFieldOnLookupObject__c = 'AnnualRevenue',
+        RollupOperation__c = 'SUM',
+        IsFullRecordSet__c = true,
+        CalcItem__c = 'Opportunity'
+      )
+    };
+    Rollup.apexContext = TriggerOperation.AFTER_INSERT;
+    Rollup.records = new List<Opportunity>{ usdOpp, eurOpp, jpyOpp };
+    Rollup.shouldRun = true;
+    Rollup.onlyUseMockMetadata = true;
 
-	@isTest
-	private static void makeRelationship_GenericOverload_ThrowsErrorOnInvalidChildType() {
+    Test.startTest();
+    Rollup.runFromTrigger();
+    Test.stopTest();
 
-		// Setup parent object
-		SObject acc = Schema.getGlobalDescribe().get('Account').newSObject();
-		acc.put('Id', fflib_IDGenerator.generate(acc.getSObjectType()));
+    acc = (Account) RollupTestUtils.queryRecord(acc.Id, new List<Schema.SObjectField>{ Account.AnnualRevenue, Account.SumAmountRollupSummary__c });
+    RollupCurrencyInfo currencyInfo = RollupCurrencyInfo.getCurrencyInfo(getCurrencyIsoCode(acc));
+    System.assertEquals(
+      acc.SumAmountRollupSummary__c.setScale(currencyInfo.DecimalPlaces),
+      acc.AnnualRevenue.setScale(currencyInfo.DecimalPlaces),
+      'Multi-currency SUM rollup not calculated correctly!'
+    );
+  }
 
-		// Setup child object
-		SObject cont = Schema.getGlobalDescribe().get('Contact').newSObject();
-		cont.put('Id', fflib_IDGenerator.generate(cont.getSObjectType()));
+  @IsTest
+  static void shouldCorrectlyRollupAverageForMultiCurrency() {
+    if (hasCurrencyInfo('EUR') == false) {
+      return;
+    }
+    Account acc = (Account) RollupTestUtils.queryRecord(Account.SObjectType, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    System.assertEquals(null, acc.AnnualRevenue, 'Test has started under the wrong conditions!');
+    System.assertEquals('USD', getCurrencyIsoCode(acc), 'Test has started under the wrong conditions!');
+    RollupCurrencyInfo.setCurrencyIsoCode(acc, 'EUR');
+    update acc;
 
-		String errorMessage = '';
-		try {
-			// Call method under test
-			SObject accWithRelationships = ((List<SObject>)fflib_ApexMocksUtils.makeRelationship(
-					'Account',
-					'MyInvalidChildType',
-					new List<SObject> { acc },
-					'AccountId',
-					new List<List<SObject>> { new List<SObject> { cont }}
-			))[0];
-		} catch (Exception exc) {
-			errorMessage = exc.getMessage();
-		}
-		System.Assert.areEqual('SObject type not found: MyInvalidChildType', errorMessage);
-	}
+    Opportunity usdOpp = (Opportunity) RollupTestUtils.queryRecord(
+      Opportunity.SObjectType,
+      new List<Schema.SObjectField>{ Opportunity.StageName, Opportunity.CloseDate, Opportunity.Amount, Opportunity.AccountId }
+    );
 
-	@isTest
-	private static void makeRelationship_GenericOverload_ThrowsErrorOnInvalidFieldName() {
+    Opportunity eurOpp = usdOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(eurOpp, 'EUR');
+    eurOpp.Amount = .95;
+    Opportunity jpyOpp = eurOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(jpyOpp, 'JPY');
+    jpyOpp.Amount = 100;
+    insert new List<Opportunity>{ eurOpp, jpyOpp };
 
-		// Setup parent object
-		SObject acc = Schema.getGlobalDescribe().get('Account').newSObject();
-		acc.put('Id', fflib_IDGenerator.generate(acc.getSObjectType()));
+    Rollup.rollupMetadata = new List<Rollup__mdt>{
+      new Rollup__mdt(
+        RollupFieldOnCalcItem__c = 'Amount',
+        LookupObject__c = 'Account',
+        LookupFieldOnCalcItem__c = 'AccountId',
+        LookupFieldOnLookupObject__c = 'Id',
+        RollupFieldOnLookupObject__c = 'AnnualRevenue',
+        RollupOperation__c = 'AVERAGE',
+        CalcItem__c = 'Opportunity'
+      )
+    };
+    Rollup.apexContext = TriggerOperation.AFTER_INSERT;
+    Rollup.records = new List<Opportunity>{ usdOpp, eurOpp, jpyOpp };
+    Rollup.shouldRun = true;
 
-		// Setup child object
-		SObject cont = Schema.getGlobalDescribe().get('Contact').newSObject();
-		cont.put('Id', fflib_IDGenerator.generate(cont.getSObjectType()));
+    Test.startTest();
+    Rollup.runFromTrigger();
+    Test.stopTest();
 
-		String errorMessage = '';
-		try {
-			// Call method under test
-			SObject accWithRelationships = ((List<SObject>)fflib_ApexMocksUtils.makeRelationship(
-					'Account',
-					'Contact',
-					new List<SObject> { acc },
-					'MyInvalidField',
-					new List<List<SObject>> { new List<SObject> { cont }}
-			))[0];
-		} catch (Exception exc) {
-			errorMessage = exc.getMessage();
-		}
-		System.Assert.areEqual('SObject field not found: MyInvalidField', errorMessage);
-	}
+    List<SObject> opportunities = UserInfo.isMultiCurrencyOrganization()
+      ? Database.query('SELECT Id, convertCurrency(Amount) ConvertedAmount FROM Opportunity')
+      : [SELECT MAX(Amount) ConvertedAmount, Id FROM Opportunity GROUP BY Id];
+    Decimal convertedAmountSum = 0;
+    for (SObject opp : opportunities) {
+      convertedAmountSum += (Decimal) opp.get('ConvertedAmount');
+    }
+    RollupCurrencyInfo currencyInfo = RollupCurrencyInfo.getCurrencyInfo(getCurrencyIsoCode(acc));
+    Decimal expectedAverage = (convertedAmountSum / opportunities.size()) * currencyInfo.ConversionRate;
 
-	@isTest
-	static void setReadOnlyFields_CreatedByIdSetToCurrentUserId_IdFieldSetSuccessfully() {
-		
-		Account acc = new Account();
-		Id userId = fflib_IDGenerator.generate((new User()).getSObjectType());
+    acc = (Account) RollupTestUtils.queryRecord(acc.Id, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    System.assertEquals(
+      expectedAverage.setScale(currencyInfo.DecimalPlaces),
+      acc.AnnualRevenue.setScale(currencyInfo.DecimalPlaces),
+      'Multi-currency AVERAGE rollup not calculated correctly! Records: ' + opportunities
+    );
+  }
 
-		Test.startTest();
-		acc = (Account)fflib_ApexMocksUtils.setReadOnlyFields(
-				acc,
-				Account.class,
-				new Map<SObjectField, Object>{Account.CreatedById => userId}
-		);
-		Test.stopTest();
+  @IsTest
+  static void shouldCorrectlyRollupFirstForMultiCurrency() {
+    if (hasCurrencyInfo('EUR') == false) {
+      return;
+    }
+    Account acc = (Account) RollupTestUtils.queryRecord(Account.SObjectType, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    System.assertEquals(null, acc.AnnualRevenue, 'Test has started under the wrong conditions!');
+    System.assertEquals('USD', getCurrencyIsoCode(acc), 'Test has started under the wrong conditions!');
+    RollupCurrencyInfo.setCurrencyIsoCode(acc, 'EUR');
+    update acc;
 
-		System.Assert.areEqual(userId, acc.CreatedById);
-	}
+    Opportunity usdOpp = (Opportunity) RollupTestUtils.queryRecord(
+      Opportunity.SObjectType,
+      new List<Schema.SObjectField>{ Opportunity.StageName, Opportunity.CloseDate, Opportunity.Amount, Opportunity.AccountId }
+    );
 
-	@isTest
-	static void setReadOnlyFields_LastReferencedDateSetOnAccount_DateTimeFieldSetSuccessfully() {
-		
-		Account acc = new Account();
-		DateTime lastRefDate = DateTime.newInstanceGmt(2020, 1, 7, 23, 30, 0);
+    Opportunity eurOpp = usdOpp.clone(false, true);
+    eurOpp.StageName = 'A';
+    RollupCurrencyInfo.setCurrencyIsoCode(eurOpp, 'EUR');
+    eurOpp.Amount = .95;
+    Opportunity jpyOpp = eurOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(jpyOpp, 'JPY');
+    jpyOpp.StageName = 'Z';
+    jpyOpp.Amount = 100;
+    insert new List<Opportunity>{ eurOpp, jpyOpp };
 
-		Test.startTest();
-		acc = (Account)fflib_ApexMocksUtils.setReadOnlyFields(
-				acc,
-				Account.class,
-				new Map<SObjectField, Object> {Account.LastReferencedDate => lastRefDate}
-		);
-		Test.stopTest();
+    Rollup.onlyUseMockMetadata = true;
+    Rollup__mdt meta = Rollup.appendOrderByMetadata(
+      new Rollup__mdt(
+        RollupFieldOnCalcItem__c = 'StageName',
+        LookupObject__c = 'Account',
+        LookupFieldOnCalcItem__c = 'AccountId',
+        LookupFieldOnLookupObject__c = 'Id',
+        RollupFieldOnLookupObject__c = 'Name',
+        RollupOperation__c = 'FIRST',
+        CalcItem__c = 'Opportunity'
+      ),
+      new List<RollupOrderBy__mdt>{ new RollupOrderBy__mdt(FieldName__c = 'Amount') }
+    );
+    Rollup.rollupMetadata = new List<Rollup__mdt>{ meta };
+    Rollup.apexContext = TriggerOperation.AFTER_INSERT;
+    Rollup.records = new List<Opportunity>{ usdOpp, eurOpp, jpyOpp };
+    Rollup.shouldRun = true;
 
-		System.Assert.areEqual(lastRefDate, acc.LastReferencedDate);
-	}
+    Test.startTest();
+    Rollup.runFromTrigger();
+    Test.stopTest();
 
-	@isTest
-	static void setReadOnlyFields_IsDeletedSetOnAccount_BooleanFieldSetSuccessfully() {
+    acc = [SELECT Id, Name FROM Account];
+    System.assertEquals('A', acc.Name, 'Should have taken first based on multi-currency Amount!');
+  }
 
-		Account acc = new Account();
-		Boolean isDeleted = true;
+  @IsTest
+  static void shouldCorrectlyRollupLastForMultiCurrency() {
+    if (hasCurrencyInfo('EUR') == false) {
+      return;
+    }
+    Account acc = (Account) RollupTestUtils.queryRecord(Account.SObjectType, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    System.assertEquals(null, acc.AnnualRevenue, 'Test has started under the wrong conditions!');
+    System.assertEquals('USD', getCurrencyIsoCode(acc), 'Test has started under the wrong conditions!');
+    RollupCurrencyInfo.setCurrencyIsoCode(acc, 'EUR');
+    update acc;
 
-		Test.startTest();
-		acc = (Account)fflib_ApexMocksUtils.setReadOnlyFields(
-				acc,
-				Account.class,
-				new Map<SObjectField, Object> {Account.IsDeleted => isDeleted}
-		);
-		Test.stopTest();
+    Opportunity usdOpp = (Opportunity) RollupTestUtils.queryRecord(
+      Opportunity.SObjectType,
+      new List<Schema.SObjectField>{ Opportunity.StageName, Opportunity.CloseDate, Opportunity.Amount, Opportunity.AccountId }
+    );
 
-		System.Assert.areEqual(isDeleted, acc.IsDeleted);
-	}
+    Opportunity eurOpp = usdOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(eurOpp, 'EUR');
+    eurOpp.Amount = .95;
+    eurOpp.StageName = 'A';
+    Opportunity jpyOpp = eurOpp.clone(false, true);
+    RollupCurrencyInfo.setCurrencyIsoCode(jpyOpp, 'JPY');
+    jpyOpp.Amount = 100;
+    jpyOpp.StageName = 'Z';
+    insert new List<Opportunity>{ eurOpp, jpyOpp };
 
-	@isTest
-	static void setReadOnlyFields_PolymorphicRelationJoin_FieldSetSuccessfully() {
+    Rollup.onlyUseMockMetadata = true;
+    Rollup__mdt meta = Rollup.appendOrderByMetadata(
+      new Rollup__mdt(
+        RollupFieldOnCalcItem__c = 'StageName',
+        LookupObject__c = 'Account',
+        LookupFieldOnCalcItem__c = 'AccountId',
+        LookupFieldOnLookupObject__c = 'Id',
+        RollupFieldOnLookupObject__c = 'Name',
+        RollupOperation__c = 'LAST',
+        CalcItem__c = 'Opportunity'
+      ),
+      new List<RollupOrderBy__mdt>{ new RollupOrderBy__mdt(FieldName__c = 'Amount') }
+    );
+    Rollup.rollupMetadata = new List<Rollup__mdt>{ meta };
+    Rollup.apexContext = TriggerOperation.AFTER_INSERT;
+    Rollup.records = new List<Opportunity>{ usdOpp, eurOpp, jpyOpp };
+    Rollup.shouldRun = true;
 
-		Account acc = new Account(Name='TestAccount');
-		Task t = new Task();
+    Test.startTest();
+    Rollup.runFromTrigger();
+    Test.stopTest();
 
-		Test.startTest();
-		t = (Task)fflib_ApexMocksUtils.setReadOnlyFields(
-			t,
-			Task.class,
-			new Map<String, Object> {'What' => acc}
-		);
-		Test.stopTest();
+    acc = [SELECT Id, Name FROM Account];
+    System.assertEquals('Z', acc.Name, 'Should have taken last based on multi-currency Amount!');
+  }
 
-		System.Assert.areEqual(acc.Name, t.What.Name);
-	}
+  @IsTest
+  static void properlyTracksCurrencyItemsForDifferentParentCurrencies() {
+    if (hasCurrencyInfo('EUR') == false || hasCurrencyInfo('JPY') == false) {
+      return;
+    }
+    delete [SELECT Id FROM Opportunity];
+
+    Account acc = (Account) RollupTestUtils.queryRecord(Account.SObjectType, new List<Schema.SObjectField>{ Account.AnnualRevenue });
+    acc.AnnualRevenue = 100;
+    update acc;
+    System.assertEquals('USD', getCurrencyIsoCode(acc), 'Test has started under the wrong conditions!');
+
+    Opportunity eurOpp = new Opportunity(Name = 'First Parent', StageName = 'a', CloseDate = System.today(), AccountId = acc.Id);
+    RollupCurrencyInfo.setCurrencyIsoCode(eurOpp, 'EUR');
+    Contract contract = new Contract(AccountId = acc.Id, Name = 'Second Parent');
+    RollupCurrencyInfo.setCurrencyIsoCode(contract, 'JPY');
+    insert new List<SObject>{ eurOpp, contract };
+
+    Rollup.onlyUseMockMetadata = true;
+    Rollup__mdt firstParent = new Rollup__mdt(
+      RollupFieldOnCalcItem__c = 'AnnualRevenue',
+      LookupObject__c = 'Opportunity',
+      LookupFieldOnCalcItem__c = 'Id',
+      LookupFieldOnLookupObject__c = 'AccountId',
+      RollupFieldOnLookupObject__c = 'Amount',
+      RollupOperation__c = 'SUM',
+      CalcItem__c = 'Account'
+    );
+    Rollup__mdt secondParent = new Rollup__mdt(
+      RollupFieldOnCalcItem__c = 'AnnualRevenue',
+      LookupObject__c = 'Contract',
+      LookupFieldOnCalcItem__c = 'Id',
+      LookupFieldOnLookupObject__c = 'AccountId',
+      RollupFieldOnLookupObject__c = 'ContractTerm',
+      RollupOperation__c = 'SUM',
+      CalcItem__c = 'Account'
+    );
+    Rollup.rollupMetadata = new List<Rollup__mdt>{ firstParent, secondParent };
+    Rollup.apexContext = TriggerOperation.AFTER_INSERT;
+    Rollup.shouldRun = true;
+    Rollup.records = new List<Account>{ acc };
+
+    Test.startTest();
+    Rollup.runFromTrigger();
+    Test.stopTest();
+
+    contract = [SELECT ContractTerm FROM Contract WHERE Id = :contract.Id];
+    eurOpp = [SELECT Amount FROM Opportunity WHERE Id = :eurOpp.Id];
+    System.assertNotEquals(null, contract.ContractTerm, 'Rollup should have occurred');
+    System.assertNotEquals(contract.ContractTerm, eurOpp.Amount);
+  }
+
+  private static Boolean hasCurrencyInfo(String currencyCode) {
+    return RollupCurrencyInfo.getCurrencyInfo(currencyCode).IsoCode != null;
+  }
+
+  private static String getCurrencyIsoCode(SObject record) {
+    return UserInfo.isMultiCurrencyOrganization() ? (String) record.get(RollupCurrencyInfo.CURRENCY_ISO_CODE_FIELD_NAME) : 'USD';
+  }
 }
