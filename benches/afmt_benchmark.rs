@@ -1,4 +1,4 @@
-use afmt::{config::Formatter, format};
+use afmt::{format, formatter::Formatter};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::fs;
 

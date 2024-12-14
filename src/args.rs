@@ -8,7 +8,7 @@ pub struct Args {
 }
 
 pub fn get_args() -> Args {
-    const VERSION: &str = "v0.0.16";
+    const VERSION: &str = "v0.0.18";
 
     let matches = Command::new("afmt")
         .version(VERSION)
