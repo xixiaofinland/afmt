@@ -3894,7 +3894,7 @@ impl<'a> DocBuild<'a> for FromClause {
 
 #[derive(Debug)]
 pub struct StorageAlias {
-    pub storage_alias: StorageIdentifier,
+    pub storage_identifier: StorageIdentifier,
     pub identifier: String,
 }
 
@@ -3902,10 +3902,10 @@ impl StorageAlias {
     pub fn new(node: Node) -> Self {
         assert_check(node, "storage_alias");
 
-        let storage_alias = StorageIdentifier::new(node.c_by_k("storage_alias"));
+        let storage_identifier = StorageIdentifier::new(node.c_by_k("storage_identifier"));
         let identifier = node.cvalue_by_k("identifier");
         Self {
-            storage_alias,
+            storage_identifier,
             identifier,
         }
     }
@@ -3913,8 +3913,8 @@ impl StorageAlias {
 
 impl<'a> DocBuild<'a> for StorageAlias {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.storage_alias.build(b));
-        result.push(b._txt_("AS"));
+        result.push(self.storage_identifier.build(b));
+        result.push(b.txt(" "));
         result.push(b.txt(&self.identifier));
     }
 }
