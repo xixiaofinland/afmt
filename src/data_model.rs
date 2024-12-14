@@ -1464,9 +1464,7 @@ pub struct ForStatement {
 
 impl ForStatement {
     pub fn new(node: Node) -> Self {
-        let init = node
-            .try_c_by_n("init")
-            .map(|n| ForInitOption::new(n));
+        let init = node.try_c_by_n("init").map(|n| ForInitOption::new(n));
         let condition = node.try_c_by_n("condition").map(|n| Expression::new(n));
         let update = node.try_c_by_n("update").map(|n| Expression::new(n));
         let body = Statement::new(node.c_by_n("body"));
@@ -1482,9 +1480,6 @@ impl ForStatement {
 impl<'a> DocBuild<'a> for ForStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         result.push(b.txt("for "));
-        //if let Some(ref n) = self.init {
-        //    result.push(n.build(b));
-        //}
 
         let init = match &self.init {
             Some(i) => i.build(b),
