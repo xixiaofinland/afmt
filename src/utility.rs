@@ -57,9 +57,10 @@ pub fn enrich(ast_tree: &Tree) -> Root {
 pub fn assert_check(node: Node, expected_kind: &str) {
     assert!(
         node.kind() == expected_kind,
-        "Expected node kind '{}', found '{}'",
+        "## Expected node kind '{}', found '{}'.\n## Source_code: {}",
         expected_kind.yellow(),
-        node.kind().red()
+        node.kind().red(),
+        node.value(source_code())
     );
 }
 
