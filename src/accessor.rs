@@ -13,19 +13,19 @@ use crate::utility::source_code;
 pub trait Accessor<'t> {
     fn value(&self) -> String;
 
-    fn children_vec(&self) -> Vec<Node<'t>>;
+    fn first_c(&self) -> Node<'t>;
 
+    fn try_first_c(&self) -> Option<Node<'t>>;
     fn try_c_by_n(&self, kind: &str) -> Option<Node<'t>>;
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'t>>;
     fn try_cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
-
-    fn first_c(&self) -> Node<'t>;
-    fn try_first_c(&self) -> Option<Node<'t>>;
 
     fn c_by_n(&self, name: &str) -> Node<'t>;
     fn c_by_k(&self, kind: &str) -> Node<'t>;
     fn cvalue_by_n(&self, name: &str) -> String;
     fn cvalue_by_k(&self, name: &str) -> String;
+
+    fn children_vec(&self) -> Vec<Node<'t>>;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
 
@@ -35,12 +35,6 @@ pub trait Accessor<'t> {
     fn v<'a>(&self) -> &'a str;
     fn cv_by_k(&self, name: &str) -> &str;
     fn cv_by_n<'a>(&self, name: &str) -> &'a str;
-
-    //fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
-    //fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str>;
-    //fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str>;
-    //fn all_children_vec(&self) -> Vec<Node<'t>>;
-    //fn is_comment(&self) -> bool;
 }
 
 impl<'t> Accessor<'t> for Node<'t> {
@@ -57,7 +51,7 @@ impl<'t> Accessor<'t> for Node<'t> {
 
     fn v<'a>(&self) -> &'a str {
         self.utf8_text(source_code().as_bytes())
-            .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind().red()))
+            .unwrap_or_else(|_| panic!("{}: get AST source_code value failed.", self.kind().red()))
     }
 
     fn value(&self) -> String {
@@ -186,28 +180,4 @@ impl<'t> Accessor<'t> for Node<'t> {
         }
         children
     }
-
-    //fn try_cv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Option<&'a str> {
-    //    self.try_c_by_k(kind).map(|child| child.v(source_code))
-    //}
-
-    //fn all_children_vec(&self) -> Vec<Node<'t>> {
-    //    let mut cursor = self.walk();
-    //    self.children(&mut cursor).collect()
-    //}
-
-    //fn try_csv_by_k<'a>(&self, kind: &str, source_code: &'a str) -> Vec<&'a str> {
-    //    self.try_cs_by_k(kind)
-    //        .iter()
-    //        .map(|n| n.v(source_code))
-    //        .collect::<Vec<&str>>()
-    //}
-
-    //fn is_comment(&self) -> bool {
-    //    matches!(self.kind(), "line_comment" | "block_comment")
-    //}
-
-    //fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str> {
-    //    self.child_by_field_name(name).map(|n| n.v(source_code))
-    //}
 }
