@@ -542,7 +542,7 @@ pub enum AssignmentLeft {
 impl AssignmentLeft {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "identifier" => Self::Identifier(node.value(source_code())),
+            "identifier" => Self::Identifier(node.value()),
             "field_access" => Self::Field(FieldAccess::new(node)),
             "array_access" => Self::Array(ArrayAccess::new(node)),
             _ => panic_unknown_node(node, "AssignmentLeft"),
@@ -574,7 +574,7 @@ pub struct VoidType {
 impl VoidType {
     pub fn new(node: Node) -> Self {
         Self {
-            value: node.value(source_code()),
+            value: node.value(),
         }
     }
 }
@@ -634,7 +634,7 @@ pub struct Comment {
 impl Comment {
     pub fn from_node(node: Node) -> Self {
         let id = node.id();
-        let content = node.value(source_code());
+        let content = node.value();
         Self {
             id,
             content,
@@ -1279,7 +1279,7 @@ impl GenericType {
         assert_check(node, "generic_type");
 
         let generic_identifier = if let Some(t) = node.try_c_by_k("type_identifier") {
-            GenericIdentifier::Type(t.value(source_code()))
+            GenericIdentifier::Type(t.value())
         } else if let Some(s) = node.try_c_by_k("scoped_type_identifier") {
             GenericIdentifier::Scoped(ScopedTypeIdentifier::new(s))
         } else {
@@ -1578,13 +1578,13 @@ impl UpdateExpression {
 
         if operator_node.start_byte() < operand_node.start_byte() {
             Self::Pre {
-                operator: operator_node.value(source_code()),
+                operator: operator_node.value(),
                 operand: Box::new(Expression::new(operand_node)),
             }
         } else {
             Self::Post {
                 operand: Box::new(Expression::new(operand_node)),
-                operator: operator_node.value(source_code()),
+                operator: operator_node.value(),
             }
         }
     }
@@ -1618,7 +1618,7 @@ impl ScopedTypeIdentifier {
 
         let prefix_node = node.first_c();
         let scoped_choice = match prefix_node.kind() {
-            "type_identifier" => ScopedChoice::TypeIdentifier(prefix_node.value(source_code())),
+            "type_identifier" => ScopedChoice::TypeIdentifier(prefix_node.value()),
             "scoped_type_identifier" => ScopedChoice::Scoped(Box::new(Self::new(prefix_node))),
             "generic_type" => ScopedChoice::Generic(Box::new(GenericType::new(prefix_node))),
             _ => panic_unknown_node(prefix_node, "ScopedTypeIdentifier"),
@@ -1634,7 +1634,7 @@ impl ScopedTypeIdentifier {
             .cs_by_k("type_identifier")
             .pop()
             .expect("## mandatory node type_identifier missing in ScopedTypeIdentifier");
-        let type_identifier = type_identifier_node.value(source_code());
+        let type_identifier = type_identifier_node.value();
 
         Self {
             scoped_choice,
@@ -2336,8 +2336,8 @@ impl DmlSecurityMode {
     pub fn new(n: Node) -> Self {
         let child = n.first_c();
         match child.kind() {
-            "user" => Self::User(child.value(source_code())),
-            "system" => Self::System(child.value(source_code())),
+            "user" => Self::User(child.value()),
+            "system" => Self::System(child.value()),
             _ => panic_unknown_node(n, "DmlSecurityMode"),
         }
     }
@@ -3069,7 +3069,7 @@ impl BreakStatement {
     pub fn new(node: Node) -> Self {
         let identifier = node
             .try_c_by_k("identifier")
-            .map(|n| n.value(source_code()));
+            .map(|n| n.value());
         Self { identifier }
     }
 }
@@ -3095,7 +3095,7 @@ impl ContinueStatement {
     pub fn new(node: Node) -> Self {
         let identifier = node
             .try_c_by_k("identifier")
-            .map(|n| n.value(source_code()));
+            .map(|n| n.value());
         Self { identifier }
     }
 }
@@ -3248,7 +3248,7 @@ impl WhenSObjectType {
         for child in node.children_vec() {
             match child.kind() {
                 "identifier" => {
-                    identifier = Some(child.value(source_code()));
+                    identifier = Some(child.value());
                 }
                 _ => {
                     unannotated_type = Some(UnannotatedType::new(child));
@@ -3305,7 +3305,7 @@ impl VersionExpression {
 
         let version_number = node
             .try_c_by_n("version_num")
-            .map(|n| n.value(source_code()));
+            .map(|n| n.value());
         Self { version_number }
     }
 }
@@ -3948,7 +3948,7 @@ impl UpdateClause {
         let update_types = node
             .cs_by_k("update_type")
             .into_iter()
-            .map(|n| n.value(source_code()))
+            .map(|n| n.value())
             .collect();
         Self { update_types }
     }
@@ -4360,10 +4360,10 @@ impl OrderExpression {
         let value_expression = ValueExpression::new(node.first_c());
         let direction = node
             .try_c_by_k("order_direction")
-            .map(|n| n.value(source_code()));
+            .map(|n| n.value());
         let null_direction = node
             .try_c_by_k("order_null_direction")
-            .map(|n| n.value(source_code()));
+            .map(|n| n.value());
 
         Self {
             value_expression,
@@ -4634,7 +4634,7 @@ pub enum SoqlWithType {
 impl SoqlWithType {
     pub fn new(node: Node) -> Self {
         let with_type = if node.named_child_count() == 0 {
-            return Self::SimpleType(node.value(source_code()));
+            return Self::SimpleType(node.value());
         } else {
             let child = node.first_c();
             match child.kind() {
@@ -4773,14 +4773,14 @@ impl WithDataCatFilter {
             panic!("At least 2 identifier nodes should exist in WithDataCatFilter");
         }
 
-        let identifier = all_identififers[0].value(source_code());
+        let identifier = all_identififers[0].value();
         let filter_type = node
             .cvalue_by_k("with_data_cat_filter_type")
             .to_uppercase();
         let identifiers: Vec<_> = all_identififers
             .into_iter()
             .skip(1)
-            .map(|n| n.value(source_code()))
+            .map(|n| n.value())
             .collect();
 
         Self {
@@ -4822,7 +4822,7 @@ impl WithDivisionExpression {
         let child = node.first_c();
         match child.kind() {
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
-            "string_literal" => Self::StringLiteral(child.value(source_code())),
+            "string_literal" => Self::StringLiteral(child.value()),
             _ => panic_unknown_node(node, "WithDivisionExpression"),
         }
     }
@@ -4851,7 +4851,7 @@ impl WithSnippetExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_snippet_expression");
 
-        let int = node.try_c_by_k("int").map(|n| n.value(source_code()));
+        let int = node.try_c_by_k("int").map(|n| n.value());
         Self { int }
     }
 }
@@ -4964,7 +4964,7 @@ impl DottedIdentifier {
         let identifiers = node
             .cs_by_k("identifier")
             .into_iter()
-            .map(|n| n.value(source_code()))
+            .map(|n| n.value())
             .collect();
 
         Self { identifiers }

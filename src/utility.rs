@@ -60,7 +60,7 @@ pub fn assert_check(node: Node, expected_kind: &str) {
         "## Expected node kind '{}', found '{}'.\n## Source_code: {}",
         expected_kind.yellow(),
         node.kind().red(),
-        node.value(source_code())
+        node.value()
     );
 }
 
@@ -133,13 +133,13 @@ pub fn get_comparsion(node: &Node) -> Comparison {
         };
 
         Comparison::Value(ValueComparison {
-            operator: operator_node.value(source_code()),
+            operator: operator_node.value(),
             compared_with,
         })
     } else if let Some(operator_node) = node.try_c_by_k("set_comparison_operator") {
         let next_node = operator_node.next_named();
         Comparison::Set(SetComparison {
-            operator: operator_node.value(source_code()),
+            operator: operator_node.value(),
             set_value: SetValue::new(next_node),
         })
     } else {
@@ -194,6 +194,6 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
         "## unknown node: {} in {}\n## Source_code: {}",
         node.kind().red(),
         name,
-        node.value(source_code())
+        node.value()
     );
 }

@@ -139,7 +139,7 @@ pub enum SimpleType {
 impl SimpleType {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" => Self::Identifier(n.value(source_code())),
+            "type_identifier" => Self::Identifier(n.value()),
             "void_type" => Self::Void(VoidType::new(n)),
             "boolean_type" => Self::Bool,
             "java_type" => Self::Java(JavaType::new(n)),
@@ -328,7 +328,7 @@ impl PrimaryExpression {
             | "boolean"
             | "null_literal"
             | "string_literal" => Self::Literal(Literal_::new(n)),
-            "identifier" => Self::Identifier(n.value(source_code())),
+            "identifier" => Self::Identifier(n.value()),
             "class_literal" => Self::Class(ClassLiteral::new(n)),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
@@ -428,12 +428,12 @@ pub enum Literal_ {
 impl Literal_ {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "boolean" => Self::Bool(n.value(source_code()).to_lowercase()),
+            "boolean" => Self::Bool(n.value().to_lowercase()),
             "null_literal" => Self::Null,
-            "int" => Self::Int(n.value(source_code())),
-            "string_literal" => Self::Str(n.value(source_code())),
+            "int" => Self::Int(n.value()),
+            "string_literal" => Self::Str(n.value()),
             "decimal_floating_point_literal" => {
-                Self::Decimal(n.value(source_code()).to_lowercase())
+                Self::Decimal(n.value().to_lowercase())
             }
             _ => panic_unknown_node(n, "Literal_"),
         }
@@ -966,7 +966,7 @@ impl FieldIdentifier {
         let c = node.first_c();
 
         match c.kind() {
-            "identifier" => Self::Identifier(c.value(source_code())),
+            "identifier" => Self::Identifier(c.value()),
             "dotted_identifier" => Self::Dotted(DottedIdentifier::new(c)),
             _ => panic_unknown_node(c, "FieldIdentifier"),
         }
@@ -1027,11 +1027,11 @@ impl StorageIdentifier {
         let c = node.first_c();
 
         match c.kind() {
-            "identifier" => Self::Identifier(c.value(source_code())),
+            "identifier" => Self::Identifier(c.value()),
             "dotted_identifier" => Self::Dotted(
                 c.cs_by_k("identifier")
                     .into_iter()
-                    .map(|n| n.value(source_code()))
+                    .map(|n| n.value())
                     .collect(),
             ),
             _ => panic_unknown_node(c, "StorageIdentifier"),
@@ -1064,7 +1064,7 @@ pub enum LimitValue {
 impl LimitValue {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "int" => Self::Int(n.value(source_code())),
+            "int" => Self::Int(n.value()),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
             _ => panic_unknown_node(n, "LimitValue"),
         }
@@ -1259,9 +1259,9 @@ impl GeoLocationType {
                 }
 
                 Self::Func {
-                    function_name: child.value(source_code()),
-                    decimal1: decimals[0].value(source_code()),
-                    decimal2: decimals[1].value(source_code()),
+                    function_name: child.value(),
+                    decimal1: decimals[0].value(),
+                    decimal2: decimals[1].value(),
                 }
             }
 
@@ -1350,14 +1350,14 @@ pub enum SoqlLiteral {
 impl SoqlLiteral {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "decimal" => Self::Decimal(node.value(source_code())),
-            "int" => Self::Int(node.value(source_code())),
-            "string_literal" => Self::StringLiteral(node.value(source_code())),
-            "boolean" => Self::Boolean(node.value(source_code())),
-            "date" => Self::Boolean(node.value(source_code())),
-            "date_literal" => Self::DateLiteral(node.value(source_code())),
+            "decimal" => Self::Decimal(node.value()),
+            "int" => Self::Int(node.value()),
+            "string_literal" => Self::StringLiteral(node.value()),
+            "boolean" => Self::Boolean(node.value()),
+            "date" => Self::Boolean(node.value()),
+            "date_literal" => Self::DateLiteral(node.value()),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
-            "null_literal" => Self::NullLiteral(node.value(source_code())),
+            "null_literal" => Self::NullLiteral(node.value()),
             _ => panic_unknown_node(node, "SoqlLiteral"),
         }
     }
@@ -1497,7 +1497,7 @@ impl OffsetClause {
     pub fn new(node: Node) -> Self {
         let first_c = node.first_c();
         match first_c.kind() {
-            "int" => Self::Int(first_c.value(source_code())),
+            "int" => Self::Int(first_c.value()),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(first_c)),
             _ => panic_unknown_node(first_c, "OffsetClause"),
         }

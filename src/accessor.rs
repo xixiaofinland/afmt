@@ -11,7 +11,7 @@ use crate::utility::source_code;
 // `by_k` => by kind
 #[allow(dead_code)]
 pub trait Accessor<'t> {
-    fn value(&self, source_code: &str) -> String;
+    fn value(&self) -> String;
 
     fn children_vec(&self) -> Vec<Node<'t>>;
 
@@ -32,8 +32,8 @@ pub trait Accessor<'t> {
     fn next_named(&self) -> Node<'t>;
 
     // private fn;
-    fn v<'a>(&self, source_code: &'a str) -> &'a str;
-    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str;
+    fn v<'a>(&self) -> &'a str;
+    fn cv_by_k(&self, name: &str) -> &str;
     fn cv_by_n<'a>(&self, name: &str) -> &'a str;
 
     //fn try_cv_by_n<'a>(&self, name: &str, source_code: &'a str) -> Option<&'a str>;
@@ -55,13 +55,13 @@ impl<'t> Accessor<'t> for Node<'t> {
         panic!("{}: next_named node missing.", self.kind().red());
     }
 
-    fn v<'a>(&self, source_code: &'a str) -> &'a str {
-        self.utf8_text(source_code.as_bytes())
+    fn v<'a>(&self) -> &'a str {
+        self.utf8_text(source_code().as_bytes())
             .unwrap_or_else(|_| panic!("{}: get_value failed.", self.kind().red()))
     }
 
-    fn value(&self, source_code: &str) -> String {
-        self.v(source_code).to_string()
+    fn value(&self) -> String {
+        self.v().to_string()
     }
 
     fn children_vec(&self) -> Vec<Node<'t>> {
@@ -94,7 +94,7 @@ impl<'t> Accessor<'t> for Node<'t> {
                 "## {}: missing mandatory kind child: {}\n ##Source_code: {}",
                 self.kind().red(),
                 kind.red(),
-                self.value(source_code()),
+                self.value(),
             )
         })
     }
@@ -124,9 +124,9 @@ impl<'t> Accessor<'t> for Node<'t> {
         );
     }
 
-    fn cv_by_k<'a>(&self, name: &str, source_code: &'a str) -> &'a str {
+    fn cv_by_k(&self, name: &str) -> &str {
         let child_node = self.c_by_k(name);
-        child_node.v(source_code)
+        child_node.v()
     }
 
     fn cv_by_n<'a>(&self, name: &str) -> &'a str {
@@ -135,10 +135,10 @@ impl<'t> Accessor<'t> for Node<'t> {
                 "## {}: missing mandatory name child: {}\n ##Source_code: {}",
                 self.kind().red(),
                 name.red(),
-                self.value(source_code()),
+                self.value(),
             )
         });
-        node.v(source_code())
+        node.v()
     }
 
     fn cvalue_by_n(&self, name: &str) -> String {
@@ -146,7 +146,7 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 
     fn cvalue_by_k(&self, name: &str) -> String {
-        self.cv_by_k(name, source_code()).to_string()
+        self.cv_by_k(name).to_string()
     }
 
     fn c_by_n(&self, name: &str) -> Node<'t> {
@@ -155,7 +155,7 @@ impl<'t> Accessor<'t> for Node<'t> {
                 "## {}: missing mandatory name child: {}\n ##Source_code: {}",
                 self.kind().red(),
                 name.red(),
-                self.value(source_code()),
+                self.value(),
             )
         })
     }
@@ -168,7 +168,7 @@ impl<'t> Accessor<'t> for Node<'t> {
                 "## {}: missing mandatory name children: {}\n ##Source_code: {}",
                 self.kind().red(),
                 name.red(),
-                self.value(source_code()),
+                self.value(),
             );
         }
         children
@@ -181,7 +181,7 @@ impl<'t> Accessor<'t> for Node<'t> {
                 "## {}: missing mandatory kind children: {}\n ##Source_code: {}",
                 self.kind().red(),
                 kind.red(),
-                self.value(source_code()),
+                self.value(),
             );
         }
         children
