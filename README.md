@@ -1,4 +1,4 @@
-# 🚀 A Fast Salesforce Apex Formatter
+# 🚀 A Fast Configrable Salesforce Apex Formatter
 
 `afmt` is written in Rust🦀, uses [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
@@ -11,12 +11,13 @@ provide clear formatted Apex code, leveraging the same line wrapping algorithm:
 [Wadler's
 Pretty-Print](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
 
-However, unlike Prettier's "Opinionated" approach, afmt strives to
-provide a flexible and customizable user experience. Therefore, the
-formatting results of the two tools **differ** due to the fundamental guiding
-principle.
-
+However, unlike Prettier's "opinionated" approach, afmt strives to provide a
+flexible and configurable user experience. As a result, the formatting outcomes
+of the two tools vary, reflecting their fundamentally different guiding
+principles.
 <br>
+
+## Other highlights:
 
 | Feature                   | afmt                                      | Prettier Apex                             |
 |---------------------------|-------------------------------------------|-------------------------------------------|
