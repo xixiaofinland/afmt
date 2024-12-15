@@ -1,29 +1,29 @@
 # 🚀 A Fast Configrable Salesforce Apex Formatter
 
-`afmt` (Apex format tool) is written in Rust🦀, uses [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
+`afmt` (Apex format tool) is written in Rust 🦀 and utilizes the [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
-Note. it's in its early phase, don't expect to use it in production code yet.
+Note: it's in its early stages, so don't expect to use it in production code yet.
 
-# ✨ v.s. Prettier Apex
+# ✨ vs. Prettier Apex
 
-Both afmt and [Prettier Apex](https://github.com/dangmai/prettier-plugin-apex)
-provide clear formatted Apex code, leveraging the same line wrapping algorithm:
+Both `afmt` and [Prettier Apex](https://github.com/dangmai/prettier-plugin-apex)
+provide well-formatted Apex code by leveraging the same line-wrapping algorithm:
 [Wadler's
 Pretty-Print](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
 
-However, unlike Prettier's "opinionated" approach, afmt strives to provide a
+However, unlike Prettier's "opinionated" approach, `afmt` strives to provide a
 more configurable user experience. As a result, the formatting outcomes
 of the two tools vary, reflecting their fundamentally different guiding
 principles.
 <br>
 
-## Other highlights:
+## Other Highlights:
 
 | Feature                   | afmt                                      | Prettier Apex                             |
 |---------------------------|-------------------------------------------|-------------------------------------------|
 | **Maturity**              | Brand new | Battle tested for years|
-| **Dependencies**       | N/A (a standalone binary that works independently) | NodeJS + prettier package|
-| **Performance**            |Fast (Rust + C) |Relatively slower (NodeJS + Java jar)|
+| **Dependencies**       | N/A (standalone binary) | Node.js + prettier package|
+| **Performance**            |Fast (Rust) |Relatively slower (Node.js + Java JAR)|
 | **Parser**            |sfapex (open source) |Jorje (close source)|
 | **Open Source**           | Yes| Yes|
 
@@ -39,16 +39,19 @@ principles.
 | Support SOQL                                    | ████████████ 100%  |
 | Support SOSL                                    | ████████████ 100%  |
 | Line wrapping               | ████████████ 100%  |
-| Support comment (line comment and block comment)| █░░░░░░░░░ 10%  |
+| Support comment (line and block comment)| █░░░░░░░░░ 10%  |
 
 <br>
 
 # 🔧 How to use
 
-Download the binary from the [release page](https://github.com/xixiaofinland/afmt/releases/latest). It
-supports Linux, MacOS, and Windows.
+1. Download the binary:
+- visit the [release page](https://github.com/xixiaofinland/afmt/releases/latest)
+to download the appropriate binary for your OS (Linux, MacOS, or Windows).
 
-Extract and run `afmt -h` to check the supported parameters.
+2. Extract and run:
+- extract the downloaded binary localy (such as to `~/`).
+- Run `afmt -h` to view the supported parameters.
 
 ```
 Apex format tool (afmt): v0.0.19
@@ -78,11 +81,11 @@ afmt --config .afmt.toml ./file.cls
 
 ## Simple use scenarios:
 
-- create a `file.cls` file next to binary with valid Apex format
-- run `afmt ./file.cls` to dry-check the format result
-- run `afmt -w ./file.cls` to write the format result into the file
+### Dry Run:
 
-Dry run result:
+1. Create a `file.cls` file next to binary with valid Apex code.
+2. Run `afmt ./file.cls` to preview the formatting result.
+
 ```
 > afmt ./file.cls
 Result 0: Ok
@@ -95,8 +98,11 @@ global class PluginDescribeResult {
 Execution time: 491.772┬╡s
 ```
 
+### Format and Write:
 
-Format file result:
+1. Run `afmt -w ./file.cls` to format the file and overwrite it with the
+   formatted code.
+
 ```
 > afmt -w ./file.cls
 Formatted content written back to: ./file.cls
@@ -107,7 +113,7 @@ Execution time: 555.29┬╡s
 ```
 <br>
 
-# 📡 Technical parts
+# 📡 Technical Documentation
 
 [Technical Doc](md/Technical.md)
 
