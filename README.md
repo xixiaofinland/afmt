@@ -1,6 +1,6 @@
 # 🚀 A Fast Salesforce Apex Formatter
 
-`afmt` is written in Rust🦀, uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex).
+`afmt` is written in Rust🦀, uses [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
 Note. it's in its early phase, don't expect to use it in production code yet.
 
@@ -22,7 +22,8 @@ principle.
 |---------------------------|-------------------------------------------|-------------------------------------------|
 | **Maturity**              | Brand new | Battle tested for years|
 | **Dependencies**       | N/A (a standalone binary that works independently) | NodeJS + prettier package|
-| **Performance**            |Fast |Relatively slower|
+| **Performance**            |Fast (Rust + C) |Relatively slower (NodeJS + Java jar)|
+| **Parser**            |sfapex (open source) |Jorje (close source)|
 | **Open Source**           | Yes| Yes|
 
 <br>
