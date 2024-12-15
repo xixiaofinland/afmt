@@ -21,7 +21,7 @@ principle.
 | Feature                   | afmt                                      | Prettier Apex                             |
 |---------------------------|-------------------------------------------|-------------------------------------------|
 | **Maturity**              | Brand new | Battle tested for years|
-| **Dependencies**       | N/A | NodeJS + prettier package|
+| **Dependencies**       | N/A (a standalone binary that works independently) | NodeJS + prettier package|
 | **Performance**            |Fast |Relatively slower|
 | **Open Source**           | Yes| Yes|
 
