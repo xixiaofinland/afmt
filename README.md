@@ -33,7 +33,7 @@ Note. it's in its early phase, don't expect to use it in production code yet.
 
 # 🔧 How to use
 
-Download the binary from the [release page](https://github.com/xixiaofinland/afmt/releases). It
+Download the binary from the [release page](https://github.com/xixiaofinland/afmt/releases/latest). It
 supports Linux, MacOS, and Windows.
 
 Extract and run `afmt -h` to check the supported parameters.
