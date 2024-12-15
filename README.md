@@ -49,6 +49,12 @@ principles.
 
 # 🔧 How to use
 
+## Video version
+
+[afmt intro - 10mins 15/12/2024](https://www.youtube.com/watch?v=2tBctZqdjMU)
+
+## Text version
+
 1. Download the binary:
 - visit the [release page](https://github.com/xixiaofinland/afmt/releases/latest)
 to download the appropriate binary for your OS (Linux, MacOS, or Windows).
