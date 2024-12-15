@@ -1,4 +1,3 @@
-use colored::Colorize;
 use tree_sitter::Node;
 
 use crate::{
@@ -6,7 +5,7 @@ use crate::{
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{assert_check, panic_unknown_node, source_code},
+    utility::{assert_check, panic_unknown_node},
 };
 
 #[derive(Debug)]
