@@ -11,7 +11,7 @@ Note. it's in its early phase, don't expect to use it in production code yet.
 | Feature                   | afmt                                      | Prettier Apex                             |
 |---------------------------|-------------------------------------------|-------------------------------------------|
 | **Maturity**              | Brand new | Battle tested for years|
-| **Dependencies**       |A binnary file only| NodeJS + prettier package|
+| **Dependencies**       | N/A | NodeJS + prettier package|
 | **Performance**            |Fast |Relatively slower|
 | **Open Source**           | Yes| Yes|
 
