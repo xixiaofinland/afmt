@@ -1,4 +1,5 @@
 # 🚀 A Fast Configrable Salesforce Apex Formatter
+![afmt_logo](https://github.com/user-attachments/assets/5cf08fdb-aaa2-4556-83d7-2e9d2a99f86f)
 
 `afmt` (Apex format tool) is written in Rust 🦀 and utilizes the [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
