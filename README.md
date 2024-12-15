@@ -12,7 +12,7 @@ aim to provide clear formatted Apex code, leveraging the same underlying
 fundamental algorithm: [Wadler's Pretty-Print
 algorithm](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
 
-However, the formatting results of the two tools can **differ** due to differences
+However, the formatting results of the two tools **differ** due to differences
 in implementation, design choices, and priorities.
 
 <br>
