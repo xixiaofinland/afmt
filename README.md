@@ -50,7 +50,7 @@ principles.
 to download the appropriate binary for your OS (Linux, MacOS, or Windows).
 
 2. Extract and run:
-- extract the downloaded binary localy (such as to `~/`).
+- Extract the downloaded `afmt` binary, such as to `~/`.
 - Run `afmt -h` to view the supported parameters.
 
 ```
