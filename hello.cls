@@ -1,3 +1,5 @@
-Class A{{
- [Select id from acc];
-}}
+class A {
+    {
+        [SELECT id FROM acc];
+    }
+}

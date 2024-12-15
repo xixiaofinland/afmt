@@ -32,60 +32,60 @@ supports Linux, MacOS, and Windows.
 Extract and run `afmt -h` to check the supported parameters.
 
 ```
-Format Apex file v0.0.16
+Apex format tool (afmt): v0.0.19
 
-Usage: afmt [OPTIONS] [FILE]
+Usage: afmt [OPTIONS] <FILE>
 
 Arguments:
-  [FILE]  The relative path to the file to parse [default: ./hello.cls]
+  <FILE>  The relative path to the file to parse
 
 Options:
   -c, --config <CONFIG>  Path to the .afmt.toml configuration file
   -w, --write            Write the formatted result back to the file
   -h, --help             Print help
   -V, --version          Print version
+
+EXAMPLES:
+
+# Dry run: print the result without overwriting the file
+afmt ./file.cls
+
+# Format and write changes back to the file
+afmt --write src/file.cls
+
+# Use a specific config file
+afmt --config .afmt.toml ./file.cls
 ```
 
 ## Simplest use scenario:
 
-- create a `hello.cls` file next to binary with valid Apex format
-- run `afmt ./hello.cls` to dry-check the format result
-- run `afmt -w ./hello.cls` to write the format result into the file
+- create a `file.cls` file next to binary with valid Apex format
+- run `afmt ./file.cls` to dry-check the format result
+- run `afmt -w ./file.cls` to write the format result into the file
 
 Dry-check sample result:
 ```
-> afmt ./hello.cls
+> afmt ./file.cls
 Result 0: Ok
 global class PluginDescribeResult {
     {
         [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];
     }
 }
-
-"global class PluginDescribeResult {\n    {\n        [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];\n    }\n}\n"
-Afmt completed successfully.
 
 Execution time: 491.772┬╡s
 ```
 
+
 Format file sample result:
 ```
-> afmt -w ./hello.cls
-Result 0: Ok
-global class PluginDescribeResult {
-    {
-        [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];
-    }
-}
-
-Formatted content written back to: ./hello.cls
+Formatted content written back to: ./file.cls
 
 Afmt completed successfully.
 
-Execution time: 591.469┬╡s
+Execution time: 555.29┬╡s
 ```
 <br>
-
 
 # 📡 Technical parts
 
