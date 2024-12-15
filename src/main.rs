@@ -36,14 +36,12 @@ fn run(args: Args) -> Result<()> {
     for (index, result) in results.iter().enumerate() {
         match result {
             Ok(value) => {
-                println!("Result {}: Ok\n{}", index, value);
                 if args.write {
                     fs::write(&args.path, value)?;
                     println!("Formatted content written back to: {}\n", args.path);
+                } else {
+                    println!("Result {}: Ok\n{}", index, value);
                 }
-                //else {
-                //    println!("{:?}", value);
-                //}
             }
             Err(e) => {
                 println!("Result {}: Err\n{}", index, e);
