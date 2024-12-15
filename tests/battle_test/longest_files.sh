@@ -29,6 +29,6 @@ find . -type f \( -name "*.cls" -o -name "*.trigger" \) \
 done
 
 # Print the results
-echo "Top 200 longest .cls and .trigger files by line count saved to $log_file"
+echo "Top longest .cls and .trigger files by line count saved to $log_file"
 echo "Files copied to $output_dir/"
 
