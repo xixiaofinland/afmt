@@ -64,13 +64,13 @@ afmt --write src/file.cls
 afmt --config .afmt.toml ./file.cls
 ```
 
-## Simplest use scenario:
+## Simple use scenarios:
 
 - create a `file.cls` file next to binary with valid Apex format
 - run `afmt ./file.cls` to dry-check the format result
 - run `afmt -w ./file.cls` to write the format result into the file
 
-Dry-check sample result:
+Dry run result:
 ```
 > afmt ./file.cls
 Result 0: Ok
@@ -84,7 +84,7 @@ Execution time: 491.772┬╡s
 ```
 
 
-Format file sample result:
+Format file result:
 ```
 Formatted content written back to: ./file.cls
 
