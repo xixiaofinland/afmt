@@ -3067,9 +3067,7 @@ pub struct BreakStatement {
 
 impl BreakStatement {
     pub fn new(node: Node) -> Self {
-        let identifier = node
-            .try_c_by_k("identifier")
-            .map(|n| n.value());
+        let identifier = node.try_c_by_k("identifier").map(|n| n.value());
         Self { identifier }
     }
 }
@@ -3093,9 +3091,7 @@ pub struct ContinueStatement {
 
 impl ContinueStatement {
     pub fn new(node: Node) -> Self {
-        let identifier = node
-            .try_c_by_k("identifier")
-            .map(|n| n.value());
+        let identifier = node.try_c_by_k("identifier").map(|n| n.value());
         Self { identifier }
     }
 }
@@ -3303,9 +3299,7 @@ impl VersionExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "version_expression");
 
-        let version_number = node
-            .try_c_by_n("version_num")
-            .map(|n| n.value());
+        let version_number = node.try_c_by_n("version_num").map(|n| n.value());
         Self { version_number }
     }
 }
@@ -4018,7 +4012,7 @@ impl UsingSearch {
             "using_phrase_search" => Self::Phrase,
             "using_advanced_search" => Self::Advanced,
             _ => panic_unknown_node(node, "UsingSearch"),
-        
+        }
     }
 }
 
@@ -4358,12 +4352,8 @@ impl OrderExpression {
         assert_check(node, "order_expression");
 
         let value_expression = ValueExpression::new(node.first_c());
-        let direction = node
-            .try_c_by_k("order_direction")
-            .map(|n| n.value());
-        let null_direction = node
-            .try_c_by_k("order_null_direction")
-            .map(|n| n.value());
+        let direction = node.try_c_by_k("order_direction").map(|n| n.value());
+        let null_direction = node.try_c_by_k("order_null_direction").map(|n| n.value());
 
         Self {
             value_expression,
@@ -4638,9 +4628,7 @@ impl SoqlWithType {
         } else {
             let child = node.first_c();
             match child.kind() {
-                "with_user_id_type" => {
-                    Self::UserId(child.cvalue_by_k("string_literal"))
-                }
+                "with_user_id_type" => Self::UserId(child.cvalue_by_k("string_literal")),
                 _ => panic_unknown_node(node, "WithType"),
             }
         };
@@ -4774,9 +4762,7 @@ impl WithDataCatFilter {
         }
 
         let identifier = all_identififers[0].value();
-        let filter_type = node
-            .cvalue_by_k("with_data_cat_filter_type")
-            .to_uppercase();
+        let filter_type = node.cvalue_by_k("with_data_cat_filter_type").to_uppercase();
         let identifiers: Vec<_> = all_identififers
             .into_iter()
             .skip(1)
