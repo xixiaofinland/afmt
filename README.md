@@ -95,6 +95,7 @@ Execution time: 491.772┬╡s
 
 Format file result:
 ```
+> afmt -w ./file.cls
 Formatted content written back to: ./file.cls
 
 Afmt completed successfully.
