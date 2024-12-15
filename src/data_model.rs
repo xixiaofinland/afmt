@@ -4018,7 +4018,7 @@ impl UsingSearch {
             "using_phrase_search" => Self::Phrase,
             "using_advanced_search" => Self::Advanced,
             _ => panic_unknown_node(node, "UsingSearch"),
-        }
+        
     }
 }
 

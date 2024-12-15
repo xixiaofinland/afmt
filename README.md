@@ -1,8 +1,8 @@
 # 🚀 A Blazingly Fast Salesforce Apex Formatter
 
-Afmt is written in **Rust** 🦀. It uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) to traverse AST nodes.
+Afmt is written in **Rust** 🦀, uses [tree-sitter apex parser](https://github.com/aheber/tree-sitter-sfapex) as the parser.
 
-Note. this is a project in its early phase, don't expect to use it in production code yet.
+Note. it's in its early phase, don't expect to use it in production code yet.
 
 # ✨ afmt vs Prettier Apex
 
