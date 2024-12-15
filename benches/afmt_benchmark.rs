@@ -3,7 +3,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::fs;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    let sample_dir = "samples";
+    let sample_dir = "./tests/battle_test/top_large_apex_files";
     let apex_files = fs::read_dir(sample_dir)
         .expect("Failed to read samples directory")
         .filter_map(|entry| {
