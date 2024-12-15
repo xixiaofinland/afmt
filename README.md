@@ -4,7 +4,7 @@ Afmt is written in **Rust** 🦀, uses [tree-sitter apex parser](https://github.
 
 Note. it's in its early phase, don't expect to use it in production code yet.
 
-# ✨ afmt vs Prettier Apex
+# ✨ v.s. Prettier Apex
 
 [Prettier Apex Repo](https://github.com/dangmai/prettier-plugin-apex)
 
@@ -17,7 +17,7 @@ Note. it's in its early phase, don't expect to use it in production code yet.
 
 <br>
 
-# 📟 Project Progress
+# 📟 Progress
 
 | Feature                                         | Progress       |
 | ----------------------------------------------- | -------------- |
