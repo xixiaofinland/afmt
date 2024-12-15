@@ -15,6 +15,8 @@ algorithm](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
 However, the formatting results of the two tools can **differ** due to differences
 in implementation, design choices, and priorities.
 
+<br>
+
 | Feature                   | afmt                                      | Prettier Apex                             |
 |---------------------------|-------------------------------------------|-------------------------------------------|
 | **Maturity**              | Brand new | Battle tested for years|
