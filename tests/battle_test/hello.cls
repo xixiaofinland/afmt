@@ -1,11 +1,12 @@
 class A {
-    {
-        [
-            SELECT
-                Undeliverable_Address__c,
-                ( SELECT is_Address_Override__c, is_B__c, Undeliverable_Address__c FROM Contacts)
-            FROM Account
-            WHERE Id IN :accountIds
-        ];
+  private static final List<String> CLASSES_TO_IGNORE {
+    get {
+      CLASSES_TO_IGNORE = new List<String>{'Class.' + Logger.class.getName(), 'Class.' + LogEntryEventBuilder.class.getName(), 'Class.' + LogMessage.class.getName()};
     }
+    set;
+  }
+
+  {
+    CLASSES_TO_IGNORE = new List<String>{'Class.' + Logger.class.getName(), 'Class.' + LogEntryEventBuilder.class.getName(), 'Class.' + LogMessage.class.getName()};
+  }
 }

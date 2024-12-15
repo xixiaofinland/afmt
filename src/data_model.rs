@@ -3,11 +3,7 @@ use crate::{
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::{FunctionExpression, *},
-    utility::{
-        assert_check, build_chaining_context, get_comparsion, get_precedence,
-        get_property_navigation, has_trailing_new_line, is_binary_exp, is_query_expression,
-        panic_unknown_node, source_code,
-    },
+    utility::*,
 };
 use colored::Colorize;
 use std::fmt::Debug;
