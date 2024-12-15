@@ -23,8 +23,8 @@ principles.
 |---------------------------|-------------------------------------------|-------------------------------------------|
 | **Maturity**              | Brand new | Battle tested for years|
 | **Dependencies**       | N/A (standalone binary) | Node.js + prettier package|
-| **Performance**            |Fast (Rust) |Relatively slower (Node.js + Java JAR)|
-| **Parser**            |sfapex (open source) |Jorje (close source)|
+| **Performance**            |Fast (Rust) |Relatively slower (Node.js)|
+| **Parser**            |sfapex (C / open source) |Jorje (Java / close source)|
 | **Open Source**           | Yes| Yes|
 
 <br>
