@@ -26,7 +26,7 @@ Note. it's in its early phase, don't expect to use it in production code yet.
 | Proper indentation                              | ████████████ 100%  |
 | Support SOQL                                    | ████████████ 100%  |
 | Support SOSL                                    | ████████████ 100%  |
-| Reformat lines beyond `max_width`               | ████████████ 100%  |
+| Line wrapping               | ████████████ 100%  |
 | Support comment (line comment and block comment)| █░░░░░░░░░ 10%  |
 
 <br>
