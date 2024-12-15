@@ -2958,16 +2958,22 @@ impl AccessorList {
 
 impl<'a> DocBuild<'a> for AccessorList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.accessor_declarations);
-
         // to align with prettier apex;
         if self.child_has_body_section {
+            // NOTE: group does NOT work with b.nl() so can't use group_surround()
+            let docs = b.to_docs(&self.accessor_declarations);
             let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
-            let open = Insertable::new(None, Some("{"), Some(b.nl()));
-            let close = Insertable::new(Some(b.nl()), Some("}"), None);
-            let doc = b.group_surround(&docs, sep, open, close);
-            result.push(doc);
+            let joined = vec![
+                b.txt("{"),
+                b.indent(b.nl()),
+                b.indent(b.intersperse(&docs, sep)),
+                b.nl(),
+                b.txt("}"),
+            ];
+
+            result.push(b.concat(joined));
         } else {
+            let docs = b.to_docs(&self.accessor_declarations);
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("{"), Some(b.softline()));
             let close = Insertable::new(Some(b.softline()), Some("}"), None);

@@ -18,6 +18,7 @@ impl<'a> DocBuilder<'a> {
         }
     }
 
+    // NOTE: group does NOT work with b.nl() so don't wrap b.nl() in any inputs
     pub fn group_surround(
         &'a self,
         elems: &[DocRef<'a>],
