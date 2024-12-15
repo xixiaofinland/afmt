@@ -2,7 +2,7 @@ use crate::{
     accessor::Accessor,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    enum_def::{FunctionExpression, *},
+    enum_def::*,
     utility::*,
 };
 use colored::Colorize;

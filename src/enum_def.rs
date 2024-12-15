@@ -1,5 +1,4 @@
 use tree_sitter::Node;
-
 use crate::{
     accessor::Accessor,
     data_model::*,
