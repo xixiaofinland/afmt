@@ -54,6 +54,7 @@ to download the appropriate binary for your OS (Linux, MacOS, or Windows).
 - Run `afmt -h` to view the supported parameters.
 
 ```
+> ./afmt -h
 Apex format tool (afmt): v0.0.19
 
 Usage: afmt [OPTIONS] <FILE>
