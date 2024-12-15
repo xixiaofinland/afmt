@@ -159,9 +159,6 @@ impl<'a> PrettyPrinter<'a> {
                     }
                 }
                 Doc::Choice(x, y) => {
-                    //eprintln!("gopro[8]: doc.rs:161: x={:#?}", x);
-                    //eprintln!("gopro[9]: doc.rs:164: chunk.flat={:#?}", chunk.flat);
-                    //eprintln!("gopro[7]: doc.rs:162: self.fits(chunk.with_doc(x))={:#?}", self.fits(chunk.with_doc(x)));
                     if chunk.flat || self.fits(chunk.with_doc(x)) {
                         self.chunks.push(chunk.with_doc(x));
                     } else {
