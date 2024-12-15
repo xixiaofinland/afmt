@@ -4390,9 +4390,12 @@ impl SubQuery {
 
 impl<'a> DocBuild<'a> for SubQuery {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("("));
-        result.push(b.flat(self.soql_query_body.build(b)));
-        result.push(b.txt(")"));
+        let docs = vec![self.soql_query_body.build(b)];
+        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+        let doc = b.group_surround(&docs, sep, open, close);
+        result.push(doc);
     }
 }
 
