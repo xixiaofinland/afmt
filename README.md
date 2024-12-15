@@ -11,9 +11,9 @@ Both afmt and [Prettier Apex](https://github.com/dangmai/prettier-plugin-apex)
 aim to provide beautifully formatted Apex code, leveraging the same underlying
 fundamental algorithm: [Wadler's Pretty-Print
 algorithm](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
-However, despite sharing this foundational approach, the formatting results of
-the two tools can differ due to differences in implementation, design choices,
-and priorities.
+
+However, the formatting results of the two tools can **differ** due to differences
+in implementation, design choices, and priorities.
 
 | Feature                   | afmt                                      | Prettier Apex                             |
 |---------------------------|-------------------------------------------|-------------------------------------------|
