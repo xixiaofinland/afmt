@@ -8,7 +8,7 @@ Note. it's in its early phase, don't expect to use it in production code yet.
 
 
 Both afmt and [Prettier Apex](https://github.com/dangmai/prettier-plugin-apex)
-aim to provide beautifully formatted Apex code, leveraging the same underlying
+aim to provide clear formatted Apex code, leveraging the same underlying
 fundamental algorithm: [Wadler's Pretty-Print
 algorithm](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
 
