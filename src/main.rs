@@ -44,7 +44,7 @@ fn run(args: Args) -> Result<()> {
                 }
             }
             Err(e) => {
-                println!("Result {}: Err\n{}", index, e);
+                //println!("Result {}: Err\n{}", index, e);
                 return Err(anyhow!("{}", e));
             }
         }

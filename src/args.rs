@@ -12,12 +12,13 @@ pub fn get_args() -> Args {
 
     let matches = Command::new("afmt")
         .version(VERSION)
-        .about(format!("Format Apex file {}", VERSION))
+        .about(format!("Apex format tool (afmt): {}", VERSION))
+        .arg_required_else_help(true)
         .arg(
             ClapArg::new("file")
                 .value_name("FILE")
                 .help("The relative path to the file to parse")
-                .default_value("./hello.cls")
+                .required(true)
                 .index(1),
         )
         .arg(
@@ -33,6 +34,19 @@ pub fn get_args() -> Args {
                 .long("write")
                 .help("Write the formatted result back to the file")
                 .action(clap::ArgAction::SetTrue),
+        )
+        .after_help(
+            "EXAMPLES:\n\
+             \n\
+             # Dry run: print the result without overwriting the file\n\
+             afmt ./file.cls\n\
+             \n\
+             # Format and write changes back to the file\n\
+             afmt --write src/file.cls\n\
+             \n\
+             # Use a specific config file\n\
+             afmt --config .afmt.toml ./file.cls\n\
+            ",
         )
         .get_matches();
 
