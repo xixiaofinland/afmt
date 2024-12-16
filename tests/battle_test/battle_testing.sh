@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# -----------------------------------------------------------------------------
+# Script to format files in repos with Long Line Logging
+# -----------------------------------------------------------------------------
+
 # Get the absolute path of the current script's directory
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_LIST="$SCRIPT_DIR/repos.txt"
@@ -7,6 +11,9 @@ TARGET_DIR="$SCRIPT_DIR/repos"
 # FORMATTER_BINARY="$SCRIPT_DIR/../../target/release/afmt"
 FORMATTER_BINARY="$SCRIPT_DIR/../../target/debug/afmt"
 LOG_FILE="$SCRIPT_DIR/format_errors.log"  # Log file for errors
+LONG_LINES_LOG_FILE="$SCRIPT_DIR/long_lines.log"
+
+LINE_LENGTH=80
 
 # Create target directory if it doesn't exist
 mkdir -p $TARGET_DIR
@@ -27,8 +34,9 @@ while IFS= read -r REPO_URL; do
     git clone "$REPO_URL" "$TARGET_DIR/$REPO_NAME"
 done < "$REPO_LIST"
 
-# Clear the log file at the start
+# Clear the log files at the start
 > "$LOG_FILE"
+> "$LONG_LINES_LOG_FILE"
 
 # Function to format files and log errors with clear info
 format_files() {
@@ -60,11 +68,17 @@ format_files() {
             return 1
         fi
     fi
+
+    # Log long lines
+    PATTERN="^.{$((LINE_LENGTH + 1)),}$"
+    echo "$OUTPUT" | grep -E "$PATTERN" >> "$LONG_LINES_LOG_FILE"
 }
 
 export -f format_files
 export FORMATTER_BINARY
 export LOG_FILE
+export LONG_LINES_LOG_FILE
+export LINE_LENGTH
 
 # Record the start time
 START_TIME=$(date +%s)
