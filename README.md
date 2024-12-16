@@ -51,7 +51,7 @@ principles.
 
 ## Video version
 
-[afmt intro - made on 15/12/2024](https://youtu.be/2tBctZqdjMU?si=zK6kgBr7hJcqpNa9&t=155)
+[afmt intro - made on 15/12/2024](https://youtu.be/2tBctZqdjMU?si=j5Lmip8sAg_AKTK1&t=148)
 
 ## Text version
 
