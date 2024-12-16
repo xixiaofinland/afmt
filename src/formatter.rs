@@ -24,7 +24,7 @@ fn default_max_width() -> u32 {
 }
 
 fn default_indent_size() -> u32 {
-    4
+    2
 }
 
 impl Default for Config {

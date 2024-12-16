@@ -1,12 +1,18 @@
-class A {
-    private static final String j {
-    get {
-            Boolean aaaaaaaaaaaaaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1111;
-        }
+class ExtendImplementClass extends FirstExtend implements FirstImplement, SecondImplement {
+  public virtual class VirtualExtendInnerClass extends FirstExtend {
 
 
-            set {
-            Boolean aaaaaaaaaaaaaaaaaaaaaaaaaaaaa = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > 1111;
-        }
-    }
+  }
+
+  private abstract class AbstractImplementInnerClass implements FirstImplement {
+
+  }
+
+  global class ExtendImplementInnerClass extends FirstExtend implements FirstImplement, SecondImplement {
+
+  }
+
+  public override Integer compareTo(Object anotherObject) {
+
+  }
 }

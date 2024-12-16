@@ -1,4 +1,4 @@
-public class SimpleMethod implements FirstSampleInterface, SecondSampleInterface {
+public class SimpleMethod  {
   public String longMethodNameWithNoParamsShouldNotBreakInEmptyParamListAndYetSomehowDoes() {}
 
   public String sayHello() {

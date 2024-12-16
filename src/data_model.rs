@@ -109,21 +109,31 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             result.push(n.build(b));
         }
 
-        result.push(b.txt_("class"));
-        result.push(b.txt(&self.name));
+        let mut docs = vec![];
+
+        docs.push(b.txt_("class"));
+        docs.push(b.txt(&self.name));
 
         if let Some(ref n) = self.type_parameters {
-            result.push(n.build(b));
+            docs.push(n.build(b));
         }
+
+        if self.superclass.is_some() || self.interface.is_some() {
+            docs.push(b.softline());
+        }
+
         if let Some(ref n) = self.superclass {
-            result.push(n.build(b));
+            docs.push(n.build(b));
         }
 
         if let Some(ref n) = self.interface {
-            result.push(n.build(b));
+            docs.push(n.build(b));
         }
 
-        result.push(b.txt(" "));
+        // because the group() need, we move `{` from body node here
+        docs.push(b.txt(" {"));
+        result.push(b.group_indent_concat(docs));
+
         result.push(self.body.build(b));
     }
 }
@@ -263,7 +273,7 @@ impl SuperClass {
 
 impl<'a> DocBuild<'a> for SuperClass {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(" extends "));
+        result.push(b.txt_("extends"));
         result.push(self.type_.build(b));
     }
 }
@@ -386,7 +396,7 @@ impl ClassBody {
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.surround_body(&self.class_members, "{", "}"));
+        result.push(b.surround_body(&self.class_members, "", "}"));
     }
 }
 
@@ -710,7 +720,7 @@ impl<'a> DocBuild<'a> for Interface {
         let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
 
-        let implements_group = b.concat(vec![b._txt_("implements"), doc]);
+        let implements_group = b.concat(vec![b.txt_("implements"), doc]);
         result.push(implements_group);
     }
 }
