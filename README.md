@@ -7,7 +7,7 @@
 `afmt` (Apex format tool) is written in Rust 🦀 and utilizes the [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
 **Note:** it's in its early stages. Currently the code comments are not
-implement yet ([progress
+implemented yet ([progress
 track](https://github.com/xixiaofinland/afmt#-progress)), they are
 ignored/erased, so don't expect to use it in production code yet.
 
