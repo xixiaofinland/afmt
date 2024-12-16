@@ -103,7 +103,7 @@ impl<'a> DocBuilder<'a> {
         M: DocBuild<'a>,
     {
         if elems.is_empty() {
-            return self.concat(vec![self.txt("{"), self.nl(), self.txt("}")]);
+            return self.concat(vec![self.txt(open), self.nl(), self.txt(close)]);
         }
 
         let multi_line = self.concat(vec![
