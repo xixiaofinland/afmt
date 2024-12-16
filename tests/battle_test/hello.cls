@@ -1,18 +1,39 @@
-class ExtendImplementClass extends FirstExtend implements FirstImplement, SecondImplement {
-  public virtual class VirtualExtendInnerClass extends FirstExtend {
+class Chaining {
+  {
+    [SELECT Id, Name FROM acc].super.a;
 
+    a
+      ?.super.DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
 
-  }
+    a.super.DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
 
-  private abstract class AbstractImplementInnerClass implements FirstImplement {
+    super.DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
 
-  }
+    super?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
 
-  global class ExtendImplementInnerClass extends FirstExtend implements FirstImplement, SecondImplement {
+    a.this
+      ?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
 
-  }
+    this?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
 
-  public override Integer compareTo(Object anotherObject) {
-
+    t.a().b().c().d();
   }
 }
