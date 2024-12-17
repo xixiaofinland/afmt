@@ -1,6 +1,7 @@
 class Chaining {
   {
-    [SELECT Id, Name FROM acc].super.a;
+    [SELECT Id, Name FROM acc]
+    .super.a;
 
     a
       ?.super.DuperVeryInsanelyLongVariableNameThatWillSurelyBreak

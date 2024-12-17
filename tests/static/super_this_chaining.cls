@@ -1,36 +1,42 @@
 class Chaining {
   {
-    [SELECT Id, Name FROM acc]
-    .super.a;
+    [SELECT Id, Name FROM acc].super.a;
 
     a
-      ?.super.DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      ?.super
+      .DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
       .getOneSet()
       .getAnotherSet()
       .getYetAnotherSet();
 
-    a.super.DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+    a
+      .super
+      .DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
       .getOneSet()
       .getAnotherSet()
       .getYetAnotherSet();
 
-    super.DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+    super
+      .DuperVeryInsanelyLongVariableNameThatWillSurelyBreak
       .getOneSet()
       .getAnotherSet()
       .getYetAnotherSet();
 
-    super?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
-      .getOneSet()
-      .getAnotherSet()
-      .getYetAnotherSet();
-
-    a.this
+    super
       ?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
       .getOneSet()
       .getAnotherSet()
       .getYetAnotherSet();
 
-    this?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+    a
+      .this
+      ?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
+      .getOneSet()
+      .getAnotherSet()
+      .getYetAnotherSet();
+
+    this
+      ?.superDuperVeryInsanelyLongVariableNameThatWillSurelyBreak
       .getOneSet()
       .getAnotherSet()
       .getYetAnotherSet();
