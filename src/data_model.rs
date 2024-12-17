@@ -801,7 +801,6 @@ pub enum MethodInvocationKind {
     Complex {
         object: ObjectExpression,
         property_navigation: PropertyNavigation,
-        super_navigation: Option<SuperNavigation>,
         type_arguments: Option<TypeArguments>,
         name: String,
         arguments: ArgumentList,
@@ -819,7 +818,6 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
             Self::Complex {
                 object,
                 property_navigation,
-                super_navigation,
                 type_arguments,
                 name,
                 arguments,
@@ -836,14 +834,6 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
 
                     docs.push(property_navigation.build(b));
 
-                    if let Some(ref n) = super_navigation {
-                        docs.push(n.build(b));
-
-                        if context.is_parent_a_chaining_node || context.is_top_most_in_a_chain {
-                            docs.push(b.maybeline());
-                        }
-                    }
-
                     if let Some(ref n) = type_arguments {
                         docs.push(n.build(b));
                     }
@@ -858,10 +848,6 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
                     result.push(b.concat(docs))
                 } else {
                     docs.push(property_navigation.build(b));
-
-                    if let Some(ref n) = super_navigation {
-                        docs.push(n.build(b));
-                    }
 
                     if let Some(ref n) = type_arguments {
                         docs.push(n.build(b));
@@ -895,20 +881,6 @@ impl MethodInvocation {
                 PropertyNavigation::Dot
             };
 
-            //TODO: update AST to easily locate super/super_navigation as there can be two supers
-            let super_node_in_navigation = {
-                let super_nodes = node.try_cs_by_k("super");
-                if super_nodes.len() == 2 {
-                    Some(super_nodes[1])
-                } else if obj.kind() != "super" && super_nodes.len() == 1 {
-                    Some(super_nodes[0])
-                } else {
-                    None
-                }
-            };
-
-            let super_navigation = super_node_in_navigation.map(|n| SuperNavigation::new(n));
-
             let type_arguments = node
                 .try_c_by_k("type_arguments")
                 .map(|n| TypeArguments::new(n));
@@ -917,7 +889,6 @@ impl MethodInvocation {
             MethodInvocationKind::Complex {
                 object,
                 property_navigation,
-                super_navigation,
                 type_arguments,
                 name,
                 arguments,
