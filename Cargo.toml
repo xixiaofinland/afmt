@@ -1,6 +1,6 @@
 [package]
 name = "afmt"
-version = "0.0.23"
+version = "0.0.25"
 edition = "2021"
 description = "An Salesforce Apex lang formatter"
 license = "MIT OR Apache-2.0"
