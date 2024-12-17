@@ -626,6 +626,7 @@ impl From<Point> for DataPoint {
 pub struct CommentBuckets {
     pub pre_comments: Vec<Comment>,
     pub post_comments: Vec<Comment>,
+    pub dangling_comments: Vec<Comment>,
 }
 
 #[derive(Debug)]

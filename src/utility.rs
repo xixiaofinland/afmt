@@ -32,7 +32,7 @@ pub fn source_code() -> &'static str {
 pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
     loop {
         let node = cursor.node();
-        if node.is_named() && node.is_extra() {
+        if node.is_extra() {
             comments.push(Comment::from_node(node));
         }
 
