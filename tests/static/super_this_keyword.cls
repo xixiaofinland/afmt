@@ -4,12 +4,12 @@ class SuperThis {
 
     a?.Super.Set();
 
-    Super.a.set();
+    super.a.set();
 
-    a.tHis.set();
-    a.THis.set();
+    a.this.set();
+    a.this.set();
 
     this.a.set();
-    This.a.set();
+    this.a.set();
   }
 }

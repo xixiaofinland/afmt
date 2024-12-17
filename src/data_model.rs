@@ -2039,7 +2039,7 @@ impl<'a> DocBuild<'a> for UnaryExpression {
 pub struct FieldAccess {
     pub object: MethodObject,
     pub property_navigation: PropertyNavigation,
-    pub field: String,
+    pub field: FieldOption,
     pub context: Option<ChainingContext>,
 }
 
@@ -2054,7 +2054,7 @@ impl FieldAccess {
 
         let property_navigation = get_property_navigation(&node);
 
-        let field = node.cvalue_by_n("field");
+        let field = FieldOption::new(node.c_by_n("field"));
         let context = build_chaining_context(&node);
 
         Self {
@@ -2079,7 +2079,7 @@ impl<'a> DocBuild<'a> for FieldAccess {
         }
 
         docs.push(self.property_navigation.build(b));
-        docs.push(b.txt(&self.field));
+        docs.push(self.field.build(b));
 
         if self
             .context
@@ -2089,6 +2089,35 @@ impl<'a> DocBuild<'a> for FieldAccess {
             result.push(b.group_indent_concat(docs));
         } else {
             result.push(b.concat(docs));
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum FieldOption {
+    This(This),
+    Identifier(String),
+
+}
+
+impl FieldOption {
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "this" => Self::This(This::new(node)),
+            _ => Self::Identifier(node.value()),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FieldOption {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        match self {
+            Self::This(n) => {
+                result.push(n.build(b));
+            }
+            Self::Identifier(n) => {
+                result.push(b.txt(n));
+            }
         }
     }
 }
