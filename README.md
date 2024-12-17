@@ -129,9 +129,9 @@ Execution time: 555.29┬╡s
 ```
 <br>
 
-## Config it in Tools:
+## Use it in editors:
 
-[VSCode](./md/VSCode_Setup.md)
+[Guidance in VSCode](./md/VSCode_Setup.md)
 
 # 📡 Technical Documentation
 
