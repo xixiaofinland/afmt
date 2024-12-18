@@ -450,9 +450,15 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         result.push(self.type_.build(b));
         result.push(b.txt(" "));
 
-        let decl_docs = b.to_docs(&self.declarators);
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let doc = b.group_indent(b.intersperse(&decl_docs, sep));
+        let docs = b.to_docs(&self.declarators);
+
+        // prevent unnessary indentation when only one element;
+        let doc = if docs.len() == 1 {
+            docs[0]
+        } else {
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            b.group(b.indent(b.intersperse(&docs, sep)))
+        };
         result.push(doc);
 
         if let Some(ref n) = self.accessor_list {
@@ -2098,7 +2104,6 @@ impl<'a> DocBuild<'a> for FieldAccess {
 pub enum FieldOption {
     This(This),
     Identifier(String),
-
 }
 
 impl FieldOption {
