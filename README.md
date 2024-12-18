@@ -18,10 +18,12 @@ provide well-formatted Apex code by leveraging the same line-wrapping algorithm:
 [Wadler's
 Pretty-Print](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
 
-However, unlike Prettier's "opinionated" approach, `afmt` strives to provide a
-more configurable user experience. As a result, the formatting outcomes
-of the two tools vary, reflecting their fundamentally different guiding
-principles.
+While currently showing minor formatting differences, the tools fundamentally
+diverge in their design philosophy. Prettier Apex maintains an opinionated
+approach to code formatting, whereas afmt is designed with extensibility
+in mind. This means afmt will progressively introduce more configuration
+options, addressing user customization needs that Prettier's design
+intentionally avoids.
 <br>
 
 ## Other Highlights:
