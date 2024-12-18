@@ -6,12 +6,18 @@ use crate::{
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
     static THREAD_SOURCE_CODE: Cell<Option<&'static str>>
         = const{ Cell::new(None) };
+}
+thread_local! {
+    static THREAD_COMMENTS: RefCell<Vec<Comment>> = RefCell::new(Vec::new());
+}
+thread_local! {
+    static THREAD_COMMENT_INDEX: Cell<usize> = Cell::new(0);
 }
 
 /// Sets the source code for the current thread.
@@ -25,8 +31,32 @@ pub fn set_thread_source_code(code: String) {
 }
 
 /// Retrieves the source code for the current thread.
-pub fn source_code() -> &'static str {
+pub fn get_source_code() -> &'static str {
     THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
+}
+
+/// Sets the comments for the current thread.
+/// This should be called after collecting comments.
+pub fn set_thread_comments(comments: Vec<Comment>) {
+    THREAD_COMMENTS.with(|tc| {
+        *tc.borrow_mut() = comments;
+    });
+}
+
+/// Retrieves the next comment from the thread-local comments vector.
+pub fn get_next_comment() -> Option<Comment> {
+    let mut result = None;
+    THREAD_COMMENTS.with(|tc| {
+        let comments = tc.borrow();
+        THREAD_COMMENT_INDEX.with(|index| {
+            let current = index.get();
+            if current < comments.len() {
+                result = Some(comments[current].clone());
+                index.set(current + 1);
+            }
+        });
+    });
+    result
 }
 
 pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
@@ -65,7 +95,7 @@ pub fn assert_check(node: Node, expected_kind: &str) {
 }
 
 pub fn has_trailing_new_line(node: &Node) -> bool {
-    let source_code = source_code();
+    let source_code = get_source_code();
     let index = node.end_byte();
 
     // Ensure the index is within bounds

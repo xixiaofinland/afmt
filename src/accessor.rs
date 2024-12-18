@@ -1,7 +1,7 @@
 use colored::Colorize;
 use tree_sitter::Node;
 
-use crate::utility::source_code;
+use crate::utility::get_source_code;
 
 // `c` => child
 // `cv` => child value
@@ -50,7 +50,7 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 
     fn v<'a>(&self) -> &'a str {
-        self.utf8_text(source_code().as_bytes())
+        self.utf8_text(get_source_code().as_bytes())
             .unwrap_or_else(|_| panic!("{}: get AST source_code value failed.", self.kind().red()))
     }
 

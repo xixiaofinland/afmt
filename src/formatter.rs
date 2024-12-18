@@ -1,7 +1,7 @@
 use crate::data_model::*;
 use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
-use crate::utility::{collect_comments, enrich, set_thread_source_code};
+use crate::utility::{collect_comments, enrich, get_next_comment, set_thread_comments, set_thread_source_code};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use serde::Deserialize;
@@ -141,6 +141,7 @@ impl Formatter {
         let mut cursor = ast_tree.walk();
         let mut comments = Vec::new();
         collect_comments(&mut cursor, &mut comments);
+        set_thread_comments(comments); // Store comments in thread-local storage
 
         // traverse the tree to build enriched data
         let root: Root = enrich(&ast_tree);

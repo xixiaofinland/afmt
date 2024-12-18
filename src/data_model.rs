@@ -591,7 +591,7 @@ impl VoidType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataRange {
     pub start_byte: usize,
     pub end_byte: usize,
@@ -613,7 +613,7 @@ impl From<Range> for DataRange {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataPoint {
     pub row: usize,
     pub column: usize,
@@ -635,7 +635,7 @@ pub struct CommentBuckets {
     pub dangling_comments: Vec<Comment>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Comment {
     pub id: usize,
     pub content: String,
@@ -662,7 +662,7 @@ impl Comment {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CommentType {
     Line,
     Block,
