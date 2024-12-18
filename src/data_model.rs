@@ -7,7 +7,7 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
-use tree_sitter::{Node, Point, Range};
+use tree_sitter::{Node, Range};
 
 pub trait DocBuild<'a> {
     fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
@@ -72,13 +72,14 @@ pub struct ClassDeclaration {
     pub superclass: Option<SuperClass>,
     pub interface: Option<Interface>,
     pub body: ClassBody,
-    pub range: DataRange,
+    pub range: Range,
 }
 
 impl ClassDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_declaration");
-        let buckets = None;
+        let buckets = associate_comments(node.range());
+        eprintln!("gopro[26]: data_model.rs:81: buckets={:#?}", buckets);
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let name = node.cvalue_by_n("name");
@@ -88,7 +89,6 @@ impl ClassDeclaration {
         let superclass = node.try_c_by_k("superclass").map(|n| SuperClass::new(n));
         let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
         let body = ClassBody::new(node.c_by_n("body"));
-        let range = DataRange::from(node.range());
 
         Self {
             buckets,
@@ -98,7 +98,7 @@ impl ClassDeclaration {
             superclass,
             interface,
             body,
-            range,
+            range: node.range(),
         }
     }
 }
@@ -407,7 +407,7 @@ pub struct FieldDeclaration {
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
     pub accessor_list: Option<AccessorList>,
-    pub range: DataRange,
+    pub range: Range,
 }
 
 impl FieldDeclaration {
@@ -436,7 +436,7 @@ impl FieldDeclaration {
             type_,
             declarators,
             accessor_list,
-            range: DataRange::from(node.range()),
+            range: node.range(),
         }
     }
 }
@@ -591,42 +591,42 @@ impl VoidType {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct DataRange {
-    pub start_byte: usize,
-    pub end_byte: usize,
-    pub start_point: DataPoint,
-    pub end_point: DataPoint,
-}
-
-impl From<Range> for DataRange {
-    fn from(r: Range) -> Self {
-        let start_point = DataPoint::from(r.start_point);
-        let end_point = DataPoint::from(r.end_point);
-
-        Self {
-            start_byte: r.start_byte,
-            end_byte: r.end_byte,
-            start_point,
-            end_point,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct DataPoint {
-    pub row: usize,
-    pub column: usize,
-}
-
-impl From<Point> for DataPoint {
-    fn from(p: Point) -> Self {
-        Self {
-            row: p.row,
-            column: p.column,
-        }
-    }
-}
+//#[derive(Debug, Clone)]
+//pub struct DataRange {
+//    pub start_byte: usize,
+//    pub end_byte: usize,
+//    pub start_point: DataPoint,
+//    pub end_point: DataPoint,
+//}
+//
+//impl From<Range> for DataRange {
+//    fn from(r: Range) -> Self {
+//        let start_point = DataPoint::from(r.start_point);
+//        let end_point = DataPoint::from(r.end_point);
+//
+//        Self {
+//            start_byte: r.start_byte,
+//            end_byte: r.end_byte,
+//            start_point,
+//            end_point,
+//        }
+//    }
+//}
+//
+//#[derive(Debug, Clone)]
+//pub struct DataPoint {
+//    pub row: usize,
+//    pub column: usize,
+//}
+//
+//impl From<Point> for DataPoint {
+//    fn from(p: Point) -> Self {
+//        Self {
+//            row: p.row,
+//            column: p.column,
+//        }
+//    }
+//}
 
 #[derive(Debug, Default)]
 pub struct CommentBuckets {
@@ -641,7 +641,7 @@ pub struct Comment {
     pub content: String,
     pub comment_type: CommentType,
     pub is_processed: bool,
-    pub range: DataRange,
+    pub range: Range,
 }
 
 impl Comment {
@@ -657,7 +657,7 @@ impl Comment {
                 "block_comment" => CommentType::Block,
                 _ => panic_unknown_node(node, "Comment"),
             },
-            range: DataRange::from(node.range()),
+            range: node.range(),
         }
     }
 }

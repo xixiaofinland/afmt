@@ -7,7 +7,7 @@ use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
 use std::cell::{Cell, RefCell};
-use tree_sitter::{Node, Tree, TreeCursor};
+use tree_sitter::{Node, Range, Tree, TreeCursor};
 
 thread_local! {
     static THREAD_SOURCE_CODE: Cell<Option<&'static str>>
@@ -226,4 +226,42 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
         name,
         node.value()
     );
+}
+
+pub fn associate_comments(range: Range) -> Option<CommentBuckets> {
+    let mut buckets = CommentBuckets::default();
+    let mut has_comments = false;
+
+    loop {
+        match get_next_comment() {
+            Some(comment) => {
+                if comment.range.end_byte < range.start_byte {
+                    buckets.pre_comments.push(comment);
+                    has_comments = true;
+                } else if comment.range.start_byte > range.end_byte {
+                    if is_immediately_following_line(&comment, &range) {
+                        buckets.post_comments.push(comment);
+                        has_comments = true;
+                    } else {
+                        break;
+                    }
+                } else {
+                    buckets.dangling_comments.push(comment);
+                    has_comments = true;
+                }
+            }
+            None => break,
+        }
+    }
+
+    if has_comments {
+        Some(buckets)
+    } else {
+        None
+    }
+}
+
+fn is_immediately_following_line(comment: &Comment, range: &Range) -> bool {
+    comment.range.start_point.row == range.end_point.row
+        || comment.range.start_point.row == range.end_point.row + 1
 }
