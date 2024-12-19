@@ -14,10 +14,10 @@ thread_local! {
         = const{ Cell::new(None) };
 }
 thread_local! {
-    static THREAD_COMMENTS: RefCell<Vec<Comment>> = RefCell::new(Vec::new());
+    static THREAD_COMMENTS: RefCell<Vec<Comment>> = const { RefCell::new(Vec::new()) };
 }
 thread_local! {
-    static THREAD_COMMENT_INDEX: Cell<usize> = Cell::new(0);
+    static THREAD_COMMENT_INDEX: Cell<usize> = const { Cell::new(0) };
 }
 
 /// Sets the source code for the current thread.
@@ -35,29 +35,39 @@ pub fn get_source_code() -> &'static str {
     THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
 }
 
-/// Sets the comments for the current thread.
-/// This should be called after collecting comments.
-pub fn set_thread_comments(comments: Vec<Comment>) {
-    THREAD_COMMENTS.with(|tc| {
-        *tc.borrow_mut() = comments;
-    });
-}
-
-/// Retrieves the next comment from the thread-local comments vector.
-pub fn get_next_comment() -> Option<Comment> {
-    let mut result = None;
-    THREAD_COMMENTS.with(|tc| {
-        let comments = tc.borrow();
-        THREAD_COMMENT_INDEX.with(|index| {
-            let current = index.get();
-            if current < comments.len() {
-                result = Some(comments[current].clone());
-                index.set(current + 1);
-            }
-        });
-    });
-    result
-}
+///// Sets the comments for the current thread.
+//pub fn set_thread_comments(comments: Vec<Comment>) {
+//    THREAD_COMMENTS.with(|tc| {
+//        *tc.borrow_mut() = comments;
+//    });
+//}
+//
+//pub fn peek_next_comment() -> Option<Comment> {
+//    THREAD_COMMENTS.with(|tc| {
+//        let comments = tc.borrow();
+//        THREAD_COMMENT_INDEX.with(|index| {
+//            if index.get() < comments.len() {
+//                Some(comments[index.get()].clone())
+//            } else {
+//                None
+//            }
+//        })
+//    })
+//}
+//
+//pub fn consume_next_comment() -> Option<Comment> {
+//    THREAD_COMMENTS.with(|tc| {
+//        let comments = tc.borrow();
+//        THREAD_COMMENT_INDEX.with(|index| {
+//            let current = index.get();
+//            if current < comments.len() {
+//                index.set(current + 1);
+//                return Some(comments[current].clone());
+//            }
+//            None
+//        })
+//    })
+//}
 
 pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
     loop {
@@ -228,40 +238,35 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
     );
 }
 
-pub fn associate_comments(range: Range) -> Option<CommentBuckets> {
-    let mut buckets = CommentBuckets::default();
-    let mut has_comments = false;
-
-    loop {
-        match get_next_comment() {
-            Some(comment) => {
-                if comment.range.end_byte < range.start_byte {
-                    buckets.pre_comments.push(comment);
-                    has_comments = true;
-                } else if comment.range.start_byte > range.end_byte {
-                    if is_immediately_following_line(&comment, &range) {
-                        buckets.post_comments.push(comment);
-                        has_comments = true;
-                    } else {
-                        break;
-                    }
-                } else {
-                    buckets.dangling_comments.push(comment);
-                    has_comments = true;
-                }
-            }
-            None => break,
-        }
-    }
-
-    if has_comments {
-        Some(buckets)
-    } else {
-        None
-    }
-}
-
-fn is_immediately_following_line(comment: &Comment, range: &Range) -> bool {
-    comment.range.start_point.row == range.end_point.row
-        || comment.range.start_point.row == range.end_point.row + 1
-}
+//pub fn associate_comments(range: Range) -> Option<CommentBuckets> {
+//    let mut buckets = CommentBuckets::default();
+//    let mut has_comments = false;
+//
+//    while let Some(comment) = get_next_comment() {
+//        if comment.range.end_byte < range.start_byte {
+//            buckets.pre_comments.push(comment);
+//            has_comments = true;
+//        } else if comment.range.start_byte > range.end_byte {
+//            if is_immediately_following_line(&comment, &range) {
+//                buckets.post_comments.push(comment);
+//                has_comments = true;
+//            } else {
+//                break;
+//            }
+//        } else {
+//            buckets.dangling_comments.push(comment);
+//            has_comments = true;
+//        }
+//    }
+//
+//    if has_comments {
+//        Some(buckets)
+//    } else {
+//        None
+//    }
+//}
+//
+//fn is_immediately_following_line(comment: &Comment, range: &Range) -> bool {
+//    comment.range.start_point.row == range.end_point.row
+//        || comment.range.start_point.row == range.end_point.row + 1
+//}

@@ -5,6 +5,7 @@ use crate::{
     enum_def::*,
     utility::*,
 };
+use clap::builder;
 use colored::Colorize;
 use std::fmt::Debug;
 use tree_sitter::{Node, Range};
@@ -78,8 +79,8 @@ pub struct ClassDeclaration {
 impl ClassDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_declaration");
-        let buckets = associate_comments(node.range());
-        eprintln!("gopro[26]: data_model.rs:81: buckets={:#?}", buckets);
+        //let buckets = associate_comments(node.range());
+        let buckets = None;
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let name = node.cvalue_by_n("name");
