@@ -9,9 +9,9 @@
     <div id="greeting">Greeting will appear here</div>
 
     <script>
-        async function init() {
+        async function init()
             try {
-                const wasm = await import('./pkg/apex_formatter_wasm.js');
+                const wasm = await import('./afmt.js');
                 await wasm.default();
 
                 document.getElementById('status').textContent = 'WASM Status: Loaded Successfully!';
