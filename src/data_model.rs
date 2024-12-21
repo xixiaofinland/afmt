@@ -47,7 +47,7 @@ impl Root {
                             c,
                         ))))
                 }
-                _ => panic_unknown_node(c, "Root"),
+                _ => panic_unknown_node_with_source_code(c, "Root"),
             }
         }
         root
@@ -298,7 +298,7 @@ impl Modifiers {
                 }
                 "modifier" => this.modifiers.push(Modifier::new(c.first_c())),
                 "line_comment" | "block_comment" => continue,
-                _ => panic_unknown_node(c, "Modifiers"),
+                _ => panic_unknown_node_with_source_code(c, "Modifiers"),
             }
         }
         this
@@ -558,7 +558,7 @@ impl AssignmentLeft {
             "identifier" => Self::Identifier(node.value()),
             "field_access" => Self::Field(FieldAccess::new(node)),
             "array_access" => Self::Array(ArrayAccess::new(node)),
-            _ => panic_unknown_node(node, "AssignmentLeft"),
+            _ => panic_unknown_node_with_source_code(node, "AssignmentLeft"),
         }
     }
 }
@@ -656,7 +656,7 @@ impl Comment {
             comment_type: match node.kind() {
                 "line_comment" => CommentType::Line,
                 "block_comment" => CommentType::Block,
-                _ => panic_unknown_node(node, "Comment"),
+                _ => panic_unknown_node_with_source_code(node, "Comment"),
             },
             range: node.range(),
         }
@@ -1606,7 +1606,7 @@ impl ScopedTypeIdentifier {
             "type_identifier" => ScopedChoice::TypeIdentifier(prefix_node.value()),
             "scoped_type_identifier" => ScopedChoice::Scoped(Box::new(Self::new(prefix_node))),
             "generic_type" => ScopedChoice::Generic(Box::new(GenericType::new(prefix_node))),
-            _ => panic_unknown_node(prefix_node, "ScopedTypeIdentifier"),
+            _ => panic_unknown_node_with_source_code(prefix_node, "ScopedTypeIdentifier"),
         };
 
         let annotations: Vec<_> = node
@@ -1795,7 +1795,7 @@ impl ConstructInvocation {
         let constructor = node.try_c_by_n("constructor").map(|n| match n.kind() {
             "this" => Constructor::This,
             "super" => Constructor::Super,
-            _ => panic_unknown_node(n, "Constructor"),
+            _ => panic_unknown_node_with_source_code(n, "Constructor"),
         });
 
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
@@ -2351,7 +2351,7 @@ impl DmlSecurityMode {
         match child.kind() {
             "user" => Self::User(child.value()),
             "system" => Self::System(child.value()),
-            _ => panic_unknown_node(n, "DmlSecurityMode"),
+            _ => panic_unknown_node_with_source_code(n, "DmlSecurityMode"),
         }
     }
 }
@@ -2853,7 +2853,7 @@ impl InterfaceBody {
                     "interface_declaration" => {
                         InterfaceMember::Interface(InterfaceDeclaration::new(n))
                     }
-                    _ => panic_unknown_node(n, "InterfaceBody"),
+                    _ => panic_unknown_node_with_source_code(n, "InterfaceBody"),
                 };
 
                 BodyMember {
@@ -4030,7 +4030,7 @@ impl UsingSearch {
         match node.kind() {
             "using_phrase_search" => Self::Phrase,
             "using_advanced_search" => Self::Advanced,
-            _ => panic_unknown_node(node, "UsingSearch"),
+            _ => panic_unknown_node_with_source_code(node, "UsingSearch"),
         }
     }
 }
@@ -4082,7 +4082,7 @@ impl UsingClauseOption {
             "using_scope_clause" => Self::Scope(UsingScopeClause::new(node)),
             "using_lookup_clause" => Self::Lookup(UsingLookupClause::new(node)),
             "using_listview_clause" => Self::Listview(UsingListviewClause::new(node)),
-            _ => panic_unknown_node(node, "UsingClauseOption"),
+            _ => panic_unknown_node_with_source_code(node, "UsingClauseOption"),
         }
     }
 }
@@ -4651,7 +4651,7 @@ impl SoqlWithType {
             let child = node.first_c();
             match child.kind() {
                 "with_user_id_type" => Self::UserId(child.cvalue_by_k("string_literal")),
-                _ => panic_unknown_node(node, "WithType"),
+                _ => panic_unknown_node_with_source_code(node, "WithType"),
             }
         };
         with_type
@@ -4700,7 +4700,7 @@ impl SoslWithType {
             }
             "with_highlight" => Self::Highlight,
             "with_pricebook_expression" => Self::PriceBook(WithPriceBookExpression::new(child)),
-            _ => panic_unknown_node(child, "SoslWithType"),
+            _ => panic_unknown_node_with_source_code(child, "SoslWithType"),
         }
     }
 }
@@ -4831,7 +4831,7 @@ impl WithDivisionExpression {
         match child.kind() {
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
             "string_literal" => Self::StringLiteral(child.value()),
-            _ => panic_unknown_node(node, "WithDivisionExpression"),
+            _ => panic_unknown_node_with_source_code(node, "WithDivisionExpression"),
         }
     }
 }
