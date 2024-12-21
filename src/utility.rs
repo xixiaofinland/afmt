@@ -229,6 +229,14 @@ fn is_a_chaining_node(node: &Node) -> bool {
     .contains(&node.kind())
 }
 
+pub fn panic_unknown_node(name: &str, type_: &str) -> ! {
+    panic!(
+        "## unknown node: {} in {}",
+        name,
+        type_,
+    );
+}
+
 pub fn panic_unknown_node_with_source_code(node: Node, name: &str) -> ! {
     panic!(
         "## unknown node: {} in {}\n## Source_code: {}",

@@ -2385,7 +2385,7 @@ impl From<&str> for DmlType {
             "undelete" => DmlType::Undelete,
             "merge" => DmlType::Merge,
             "upsert" => DmlType::Upsert,
-            _ => panic!("## unknown node: {} in DmlExpression dml_type ", t.red()),
+            _ => panic_unknown_node(t, "DmlExpression dml_type"),
         }
     }
 }
@@ -4526,7 +4526,7 @@ impl GroupByClause {
                     have_clause = Some(HavingClause::new(child));
                 }
                 other => {
-                    panic!("## unknown node: {} in GroupByClause", other.red());
+                    panic_unknown_node(other, "GroupByClause");
                 }
             }
         }
