@@ -22,13 +22,14 @@ pub trait DocBuild<'a> {
 #[derive(Debug, Default)]
 pub struct Root {
     pub members: Vec<BodyMember<RootMember>>,
+    pub danglings: Option<Vec<Comment>>,
 }
 
 impl Root {
     pub fn new(node: Node) -> Self {
         assert_check(node, "parser_output");
 
-        let members = node
+        let members: Vec<_> = node
             .children_vec()
             .into_iter()
             .map(|n| BodyMember {
@@ -37,12 +38,24 @@ impl Root {
             })
             .collect();
 
-        Self { members }
+        let danglings = if members.is_empty() {
+            Some(get_comment_children(node))
+        } else {
+            None
+        };
+
+        Self { members, danglings }
     }
 }
 
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        eprintln!("gopro[27]: data_model.rs:52: self={:#?}", self);
+        if let Some(ref d) = self.danglings {
+            let docs: Vec<_> = d.iter().map(|n| n.build(b)).collect();
+            return result.push(b.concat(docs));
+        }
+
         let doc = b.intersperse_body_members(&self.members);
         result.push(doc);
         result.push(b.nl());
@@ -577,49 +590,18 @@ impl VoidType {
     }
 }
 
-//#[derive(Debug, Clone)]
-//pub struct DataRange {
-//    pub start_byte: usize,
-//    pub end_byte: usize,
-//    pub start_point: DataPoint,
-//    pub end_point: DataPoint,
-//}
-//
-//impl From<Range> for DataRange {
-//    fn from(r: Range) -> Self {
-//        let start_point = DataPoint::from(r.start_point);
-//        let end_point = DataPoint::from(r.end_point);
-//
-//        Self {
-//            start_byte: r.start_byte,
-//            end_byte: r.end_byte,
-//            start_point,
-//            end_point,
-//        }
-//    }
-//}
-//
-//#[derive(Debug, Clone)]
-//pub struct DataPoint {
-//    pub row: usize,
-//    pub column: usize,
-//}
-//
-//impl From<Point> for DataPoint {
-//    fn from(p: Point) -> Self {
-//        Self {
-//            row: p.row,
-//            column: p.column,
-//        }
-//    }
-//}
-
 #[derive(Debug, Default)]
 pub struct CommentBuckets {
     pub pre_comments: Vec<Comment>,
     pub post_comments: Vec<Comment>,
-    pub dangling_comments: Vec<Comment>,
 }
+
+//impl CommentBuckets {
+//    pub fn assign(node: Node) -> Self {
+//        let mut buckets = CommentBuckets::default();
+//        buckets
+//    }
+//}
 
 #[derive(Debug, Clone)]
 pub struct Comment {
@@ -645,6 +627,13 @@ impl Comment {
             },
             range: node.range(),
         }
+    }
+}
+
+impl<'a> DocBuild<'a> for Comment {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt(&self.content));
+        result.push(b.nl());
     }
 }
 

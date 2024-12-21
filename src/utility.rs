@@ -238,6 +238,22 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
     );
 }
 
+pub fn get_comment_children(node: Node) -> Vec<Comment> {
+    node.children_vec()
+        .into_iter()
+        .filter(|n| n.is_extra())
+        .map(|n| Comment::from_node(n))
+        .collect()
+}
+
+pub fn has_code_children(node: Node) -> bool {
+    node.children_vec().into_iter().any(|n| !n.is_extra())
+}
+
+pub fn has_comment_children(node: Node) -> bool {
+    node.children_vec().into_iter().any(|n| n.is_extra())
+}
+
 //pub fn associate_comments(range: Range) -> Option<CommentBuckets> {
 //    let mut buckets = CommentBuckets::default();
 //    let mut has_comments = false;
