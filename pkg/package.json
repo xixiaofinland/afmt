@@ -14,5 +14,8 @@
   "types": "afmt.d.ts",
   "sideEffects": [
     "./snippets/*"
-  ]
+  ],
+  "scripts": {
+    "start": "serve"
+  }
 }
