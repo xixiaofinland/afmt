@@ -5,8 +5,6 @@ use crate::{
     enum_def::*,
     utility::*,
 };
-use clap::builder;
-use colored::Colorize;
 use std::fmt::Debug;
 use tree_sitter::{Node, Range};
 

@@ -1,7 +1,7 @@
 use colored::Colorize;
 use tree_sitter::Node;
 
-use crate::utility::get_source_code;
+use crate::utility::{get_source_code, panic_missing_mandatory_child};
 
 // `c` => child
 // `cv` => child value
@@ -46,12 +46,12 @@ impl<'t> Accessor<'t> for Node<'t> {
             }
             sibling = node.next_named_sibling();
         }
-        panic!("{}: next_named node missing.", self.kind().red());
+        panic!("## {}: next_named node missing.", self.kind());
     }
 
     fn v<'a>(&self) -> &'a str {
         self.utf8_text(get_source_code().as_bytes())
-            .unwrap_or_else(|_| panic!("{}: get AST source_code value failed.", self.kind().red()))
+            .unwrap_or_else(|_| panic!("## {}: get AST source_code value failed.", self.kind()))
     }
 
     fn value(&self) -> String {
@@ -83,14 +83,8 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 
     fn c_by_k(&self, kind: &str) -> Node<'t> {
-        self.try_c_by_k(kind).unwrap_or_else(|| {
-            panic!(
-                "## {}: missing mandatory kind child: {}\n ##Source_code: {}",
-                self.kind().red(),
-                kind.red(),
-                self.value(),
-            )
-        })
+        self.try_c_by_k(kind)
+            .unwrap_or_else(|| panic_missing_mandatory_child(self, kind))
     }
 
     fn try_first_c(&self) -> Option<Node<'t>> {
@@ -113,8 +107,8 @@ impl<'t> Accessor<'t> for Node<'t> {
             index += 1;
         }
         panic!(
-            "{}: missing a mandatory child in first_c().",
-            self.kind().red()
+            "## {}: missing a mandatory child in first_c().",
+            self.kind()
         );
     }
 
@@ -124,14 +118,9 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 
     fn cv_by_n<'a>(&self, name: &str) -> &'a str {
-        let node = self.child_by_field_name(name).unwrap_or_else(|| {
-            panic!(
-                "## {}: missing mandatory name child: {}\n ##Source_code: {}",
-                self.kind().red(),
-                name.red(),
-                self.value(),
-            )
-        });
+        let node = self
+            .child_by_field_name(name)
+            .unwrap_or_else(|| panic_missing_mandatory_child(self, name));
         node.v()
     }
 
@@ -144,26 +133,15 @@ impl<'t> Accessor<'t> for Node<'t> {
     }
 
     fn c_by_n(&self, name: &str) -> Node<'t> {
-        self.child_by_field_name(name).unwrap_or_else(|| {
-            panic!(
-                "## {}: missing mandatory name child: {}\n ##Source_code: {}",
-                self.kind().red(),
-                name.red(),
-                self.value(),
-            )
-        })
+        self.child_by_field_name(name)
+            .unwrap_or_else(|| panic_missing_mandatory_child(self, name))
     }
 
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>> {
         let mut cursor = self.walk();
         let children: Vec<Node<'t>> = self.children_by_field_name(name, &mut cursor).collect();
         if children.is_empty() {
-            panic!(
-                "## {}: missing mandatory name children: {}\n ##Source_code: {}",
-                self.kind().red(),
-                name.red(),
-                self.value(),
-            );
+            panic_missing_mandatory_child(self, name)
         }
         children
     }
@@ -171,12 +149,7 @@ impl<'t> Accessor<'t> for Node<'t> {
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>> {
         let children = self.try_cs_by_k(kind);
         if children.is_empty() {
-            panic!(
-                "## {}: missing mandatory kind children: {}\n ##Source_code: {}",
-                self.kind().red(),
-                kind.red(),
-                self.value(),
-            );
+            panic_missing_mandatory_child(self, kind)
         }
         children
     }

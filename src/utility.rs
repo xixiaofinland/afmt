@@ -230,10 +230,15 @@ fn is_a_chaining_node(node: &Node) -> bool {
 }
 
 pub fn panic_unknown_node(name: &str, type_: &str) -> ! {
+    panic!("## unknown node: {} in {}", name, type_,);
+}
+
+pub fn panic_missing_mandatory_child(node: &Node, name: &str) -> ! {
     panic!(
-        "## unknown node: {} in {}",
+        "## {}: missing mandatory child(ren): {}\n ##Source_code: {}",
+        node.kind().red(),
         name,
-        type_,
+        node.value()
     );
 }
 
