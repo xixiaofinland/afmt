@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apex Code Formatter</title>
+    <style>
+        body {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            height: 500px;
+        }
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        textarea, pre {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 0;
+        }
+        pre {
+            background: #f5f5f5;
+            overflow: auto;
+        }
+        h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Apex Code Formatter</h2>
+    <div class="container">
+        <div class="panel">
+            <h3>Input</h3>
+            <textarea id="input" placeholder="Paste your Apex code here..."></textarea>
+        </div>
+        <div class="panel">
+            <h3>Formatted Output</h3>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the WASM module
+        async function init() {
+            try {
+                const wasm = await import('./afmt.js');
+                await wasm.default();
+                const formatter = new wasm.ApexFormatter();
+
+                const input = document.getElementById('input');
+                const output = document.getElementById('output');
+
+                input.addEventListener('input', async () => {
+                    try {
+                        const formatted = await formatter.format(input.value);
+                        output.textContent = formatted;
+                    } catch (error) {
+                        output.textContent = `Error: ${error.message}`;
+                    }
+                });
+
+                console.log('WASM module loaded successfully');
+            } catch (error) {
+                console.error('Failed to load WASM module:', error);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
