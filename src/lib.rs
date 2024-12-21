@@ -7,10 +7,13 @@ mod enum_def;
 pub mod formatter;
 mod utility;
 use anyhow::Result;
-use wasm_bindgen::prelude::*;
+
+mod wasm_entry;
+pub use wasm_entry::*;
 
 use formatter::Formatter;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn format(f: Formatter) -> Vec<Result<String>> {
     f.format()
 
@@ -19,9 +22,4 @@ pub fn format(f: Formatter) -> Vec<Result<String>> {
     //    Ok(data) => println!("\n###\n{}\n###\n", data),
     //    Err(_) => eprintln!("error in result"),
     //}
-}
-
-#[wasm_bindgen]
-pub fn greet() -> String {
-    "hello".to_string()
 }

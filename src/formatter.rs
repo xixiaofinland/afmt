@@ -4,10 +4,16 @@ use crate::doc_builder::DocBuilder;
 use crate::utility::{collect_comments, enrich, set_thread_source_code};
 use anyhow::{anyhow, Result};
 use serde::Deserialize;
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::sync::mpsc;
+#[cfg(not(target_arch = "wasm32"))]
 use std::thread;
+#[cfg(not(target_arch = "wasm32"))]
 use std::{fs, path::Path};
+
 use tree_sitter::{Language, Node, Parser, Tree};
+use wasm_bindgen::prelude::*;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
@@ -105,11 +111,7 @@ impl Formatter {
                 let result = std::panic::catch_unwind(|| {
                     let source_code = fs::read_to_string(Path::new(&file))
                         .map_err(|e| {
-                            anyhow!(format!(
-                                "Failed to read file: {} {}",
-                                &file,
-                                e.to_string()
-                            ))
+                            anyhow!(format!("Failed to read file: {} {}", &file, e.to_string()))
                         })
                         .unwrap();
 
@@ -205,6 +207,43 @@ impl Formatter {
         }
 
         last_error_node // Return the last (deepest) error node
+    }
+}
+
+#[wasm_bindgen]
+pub struct Formatter2 {}
+
+#[wasm_bindgen]
+impl Formatter2 {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    #[wasm_bindgen]
+    pub fn format_one(source_code: String) -> String {
+        format!("Formatted: {}", source_code)
+        //let ast_tree = Formatter2::parse(&source_code);
+        //
+        //set_thread_source_code(source_code); // important to set thread level source code now;
+        //
+        //let root: Root = enrich(&ast_tree);
+        //
+        //let c = PrettyConfig::new(2);
+        //let b = DocBuilder::new(c);
+        //let doc_ref = root.build(&b);
+        //
+        //pretty_print(doc_ref, 80)
+    }
+
+    fn parse(source_code: &str) -> Tree {
+        let mut parser = Parser::new();
+        parser
+            .set_language(&language())
+            .expect("Error loading Apex grammar");
+
+        let ast_tree = parser.parse(source_code, None).unwrap();
+        ast_tree
     }
 }
 

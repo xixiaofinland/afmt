@@ -9,27 +9,23 @@
     <div id="greeting">Greeting will appear here</div>
 
     <script>
-        async function init()
+        // Initialize the WASM module
+        async function init() {
             try {
                 const wasm = await import('./afmt.js');
                 await wasm.default();
 
+                // Update status to show WASM loaded
                 document.getElementById('status').textContent = 'WASM Status: Loaded Successfully!';
 
-                try {
-                    // Now handling the Result from greet()
-                    const greeting = await wasm.greet();
-                    document.getElementById('greeting').textContent = `Formatting Result: ${greeting}`;
-                } catch (formatError) {
-                    document.getElementById('greeting').textContent = `Formatting Error: ${formatError}`;
-                    console.error('Formatting error:', formatError);
-                }
+                // Call greet() and show the result
+                const greeting = wasm.greet();
+                document.getElementById('greeting').textContent = `Greeting from WASM: ${greeting}`;
 
                 console.log('WASM module loaded successfully');
             } catch (error) {
                 document.getElementById('status').textContent = 'WASM Status: Failed to Load';
                 console.error('Failed to load WASM module:', error);
-                console.error('Error details:', error.toString());
             }
         }
 
