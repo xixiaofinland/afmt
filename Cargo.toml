@@ -13,6 +13,9 @@ criterion = { version = "0.5", features = ["html_reports"] }
 name = "afmt_benchmark"
 harness = false
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
 anyhow = "1.0.86"
 clap = "4.5.16"
@@ -23,6 +26,7 @@ serde = { version = "1.0.210", features = ["derive"] }
 toml = "0.8.19"
 tree-sitter = "0.24.3"
 typed-arena = "2.0.2"
+wasm-bindgen = "0.2.99"
 
 [build-dependencies]
 cc = "1.1.10"

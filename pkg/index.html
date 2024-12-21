@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WASM Test</title>
+</head>
+<body>
+    <h2>WebAssembly Test</h2>
+    <div id="status">WASM Status: Loading...</div>
+    <div id="greeting">Greeting will appear here</div>
+
+    <script>
+        async function init() {
+            try {
+                const wasm = await import('./pkg/apex_formatter_wasm.js');
+                await wasm.default();
+
+                document.getElementById('status').textContent = 'WASM Status: Loaded Successfully!';
+
+                try {
+                    // Now handling the Result from greet()
+                    const greeting = await wasm.greet();
+                    document.getElementById('greeting').textContent = `Formatting Result: ${greeting}`;
+                } catch (formatError) {
+                    document.getElementById('greeting').textContent = `Formatting Error: ${formatError}`;
+                    console.error('Formatting error:', formatError);
+                }
+
+                console.log('WASM module loaded successfully');
+            } catch (error) {
+                document.getElementById('status').textContent = 'WASM Status: Failed to Load';
+                console.error('Failed to load WASM module:', error);
+                console.error('Error details:', error.toString());
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
