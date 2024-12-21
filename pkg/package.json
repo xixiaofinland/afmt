@@ -7,17 +7,12 @@
   "files": [
     "afmt_bg.wasm",
     "afmt.js",
-    "afmt.d.ts"
+    "afmt.d.ts",
+    "LICENSE.md"
   ],
   "main": "afmt.js",
   "types": "afmt.d.ts",
   "sideEffects": [
     "./snippets/*"
-  ],
-  "scripts": {
-    "start": "serve"
-  },
-  "devDependencies": {
-    "serve": "^14.2.4"
-  }
+  ]
 }

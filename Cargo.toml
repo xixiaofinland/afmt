@@ -14,7 +14,7 @@ name = "afmt_benchmark"
 harness = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 anyhow = "1.0.86"
