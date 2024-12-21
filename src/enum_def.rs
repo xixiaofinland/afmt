@@ -1,4 +1,3 @@
-use tree_sitter::Node;
 use crate::{
     accessor::Accessor,
     data_model::*,
@@ -6,6 +5,7 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     utility::{assert_check, panic_unknown_node},
 };
+use tree_sitter::Node;
 
 #[derive(Debug)]
 pub enum RootMember {
@@ -13,6 +13,18 @@ pub enum RootMember {
     Enum(Box<EnumDeclaration>),
     Interface(Box<InterfaceDeclaration>),
     Trigger(Box<TriggerDeclaration>),
+}
+
+impl RootMember {
+    pub fn new(n: Node) -> Self {
+        match n.kind() {
+            "class_declaration" => Self::Class(Box::new(ClassDeclaration::new(n))),
+            "enum_declaration" => Self::Enum(Box::new(EnumDeclaration::new(n))),
+            "trigger_declaration" => Self::Trigger(Box::new(TriggerDeclaration::new(n))),
+            "interface_declaration" => Self::Interface(Box::new(InterfaceDeclaration::new(n))),
+            _ => panic_unknown_node(n, "Root"),
+        }
+    }
 }
 
 impl<'a> DocBuild<'a> for RootMember {

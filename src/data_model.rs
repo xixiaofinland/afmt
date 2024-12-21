@@ -5,7 +5,6 @@ use crate::{
     enum_def::*,
     utility::*,
 };
-use clap::builder;
 use colored::Colorize;
 use std::fmt::Debug;
 use tree_sitter::{Node, Range};
@@ -28,29 +27,14 @@ pub struct Root {
 impl Root {
     pub fn new(node: Node) -> Self {
         assert_check(node, "parser_output");
-        let mut root = Root::default();
 
-        for c in node.children_vec() {
-            match c.kind() {
-                "class_declaration" => root
-                    .members
-                    .push(RootMember::Class(Box::new(ClassDeclaration::new(c)))),
-                "enum_declaration" => root
-                    .members
-                    .push(RootMember::Enum(Box::new(EnumDeclaration::new(c)))),
-                "trigger_declaration" => root
-                    .members
-                    .push(RootMember::Trigger(Box::new(TriggerDeclaration::new(c)))),
-                "interface_declaration" => {
-                    root.members
-                        .push(RootMember::Interface(Box::new(InterfaceDeclaration::new(
-                            c,
-                        ))))
-                }
-                _ => panic_unknown_node(c, "Root"),
-            }
-        }
-        root
+        let members = node
+            .children_vec()
+            .into_iter()
+            .map(|n| RootMember::new(n))
+            .collect();
+
+        Self { members }
     }
 }
 
