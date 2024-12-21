@@ -1,4 +1,3 @@
-use colored::Colorize;
 use tree_sitter::Node;
 
 use crate::utility::{get_source_code, panic_missing_mandatory_child};
@@ -51,7 +50,7 @@ impl<'t> Accessor<'t> for Node<'t> {
 
     fn v<'a>(&self) -> &'a str {
         self.utf8_text(get_source_code().as_bytes())
-            .unwrap_or_else(|_| panic!("## {}: get AST source_code value failed.", self.kind()))
+            .unwrap_or_else(|_| panic!("## {}: get source_code value failed.", self.kind()))
     }
 
     fn value(&self) -> String {
