@@ -3,7 +3,6 @@ use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
 use crate::utility::{collect_comments, enrich, set_thread_source_code};
 use anyhow::{anyhow, Result};
-use colored::Colorize;
 use serde::Deserialize;
 use std::sync::mpsc;
 use std::thread;
@@ -87,7 +86,7 @@ impl Formatter {
     ) -> Result<Formatter> {
         let config = match config_path {
             Some(path) => Config::from_file(path)
-                .map_err(|e| anyhow!(format!("{}: {}", e.to_string().yellow(), path)))?,
+                .map_err(|e| anyhow!(format!("{}: {}", e.to_string(), path)))?,
             None => Config::default(),
         };
         Ok(Formatter::new(config, source_files))
@@ -108,8 +107,8 @@ impl Formatter {
                         .map_err(|e| {
                             anyhow!(format!(
                                 "Failed to read file: {} {}",
-                                &file.red(),
-                                e.to_string().yellow()
+                                &file,
+                                e.to_string()
                             ))
                         })
                         .unwrap();
@@ -167,8 +166,8 @@ impl Formatter {
             if let Some(error_node) = Self::find_last_error_node(root_node) {
                 let error_snippet = &source_code[error_node.start_byte()..error_node.end_byte()];
                 println!(
-                    "Error in node kind: {}, at byte range: {}-{}, snippet: {}",
-                    error_node.kind().yellow(),
+                    "## Error in node kind: {}, at byte range: {}-{}, snippet: {}",
+                    error_node.kind(),
                     error_node.start_byte(),
                     error_node.end_byte(),
                     error_snippet,
@@ -176,15 +175,15 @@ impl Formatter {
                 if let Some(p) = error_node.parent() {
                     let parent_snippet = &source_code[p.start_byte()..p.end_byte()];
                     println!(
-                        "Parent node kind: {}, at byte range: {}-{}, snippet: {}",
-                        p.kind().yellow(),
+                        "## Parent node kind: {}, at byte range: {}-{}, snippet: {}",
+                        p.kind(),
                         p.start_byte(),
                         p.end_byte(),
                         parent_snippet,
                     );
                 }
             }
-            panic!("{}", "Parser encounters an error node in the tree.".red());
+            panic!("{}", "## Parser encounters an error node in the tree.");
         }
 
         ast_tree

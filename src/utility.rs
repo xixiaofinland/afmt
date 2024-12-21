@@ -7,7 +7,7 @@ use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
 use std::cell::{Cell, RefCell};
-use tree_sitter::{Node, Range, Tree, TreeCursor};
+use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
     static THREAD_SOURCE_CODE: Cell<Option<&'static str>>
@@ -92,16 +92,6 @@ pub fn enrich(ast_tree: &Tree) -> Root {
     Root::new(root_node)
     //eprintln!("Root={:#?}", std::mem::size_of::<Root>());
     //eprintln!("Class={:#?}", std::mem::size_of::<FieldDeclaration>());
-}
-
-pub fn assert_check(node: Node, expected_kind: &str) {
-    assert!(
-        node.kind() == expected_kind,
-        "## Expected node kind '{}', found '{}'.\n## Source_code: {}",
-        expected_kind.yellow(),
-        node.kind().red(),
-        node.value()
-    );
 }
 
 pub fn has_trailing_new_line(node: &Node) -> bool {
@@ -227,6 +217,16 @@ fn is_a_chaining_node(node: &Node) -> bool {
         "query_expression",
     ]
     .contains(&node.kind())
+}
+
+pub fn assert_check(node: Node, expected_kind: &str) {
+    assert!(
+        node.kind() == expected_kind,
+        "## Expected node kind '{}', found '{}'.\n## Source_code: {}",
+        expected_kind.yellow(),
+        node.kind().red(),
+        node.value()
+    );
 }
 
 pub fn panic_unknown_node(name: &str, type_: &str) -> ! {
