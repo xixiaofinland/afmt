@@ -129,10 +129,6 @@ Execution time: 555.29┬╡s
 ```
 <br>
 
-## Use it in editors:
-
-[Guidance in VSCode](./md/VSCode_Setup.md)
-
 # 📡 Technical Documentation
 
 [Technical Doc](md/Technical.md)
