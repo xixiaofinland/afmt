@@ -21,7 +21,7 @@ pub trait DocBuild<'a> {
 
 #[derive(Debug, Default)]
 pub struct Root {
-    pub members: Vec<RootMember>,
+    pub members: Vec<BodyMember<RootMember>>,
 }
 
 impl Root {
@@ -31,7 +31,10 @@ impl Root {
         let members = node
             .children_vec()
             .into_iter()
-            .map(|n| RootMember::new(n))
+            .map(|n| BodyMember {
+                member: RootMember::new(n),
+                has_trailing_newline: has_trailing_new_line(&n),
+            })
             .collect();
 
         Self { members }
@@ -40,9 +43,7 @@ impl Root {
 
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.members);
-        let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
-        let doc = b.intersperse(&docs, sep);
+        let doc = b.intersperse_body_members(&self.members);
         result.push(doc);
         result.push(b.nl());
     }
