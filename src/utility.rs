@@ -84,10 +84,10 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
                 // After returning, we know child is fully processed
                 last_code_node_id = Some(child_id);
             }
+        }
 
-            if !cursor.goto_next_sibling() {
-                break;
-            }
+        if !cursor.goto_next_sibling() {
+            break;
         }
     }
 
