@@ -2,7 +2,7 @@ use crate::{
     accessor::Accessor,
     data_model::*,
     enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
-    node_comment::{CommentMap, NodeComment},
+    node_comment::{Comment, CommentMap, NodeComment},
 };
 use colored::Colorize;
 #[allow(unused_imports)]
@@ -36,7 +36,7 @@ pub fn get_source_code() -> &'static str {
     THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
 }
 
-pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
+pub fn collect_comments<'t>(cursor: &mut TreeCursor<'t>, comment_map: &mut CommentMap<'t>) {
     let node = cursor.node();
 
     if !node.is_named() || node.is_extra() {
@@ -64,7 +64,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
         if child.is_named() {
             if child.is_extra() {
                 // It's a comment node => treat as "pending pre-comment"
-                pending_pre_comments.push(child.id());
+                pending_pre_comments.push(child);
             } else {
                 // It's a child code node
                 let child_id = child.id();
