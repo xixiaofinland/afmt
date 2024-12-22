@@ -7,7 +7,7 @@ use crate::{
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell, Ref, RefCell};
 use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
@@ -15,16 +15,19 @@ thread_local! {
         = const{ Cell::new(None) };
 }
 
-thread_local! {
-    static THREAD_COMMENT_MAP: RefCell<Option<CommentMap>> = const { RefCell::new(None) };
-}
-
 pub fn set_thread_source_code(source_code: String) {
-    // Leak the `String` to obtain a `&'static str`
     let leaked_code: &'static str = Box::leak(source_code.into_boxed_str());
     THREAD_SOURCE_CODE.with(|sc| {
         sc.set(Some(leaked_code));
     });
+}
+
+pub fn get_source_code() -> &'static str {
+    THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
+}
+
+thread_local! {
+    static THREAD_COMMENT_MAP: RefCell<Option<CommentMap>> = const { RefCell::new(None) };
 }
 
 pub fn set_thread_comment_map(comment_map: CommentMap) {
@@ -33,10 +36,13 @@ pub fn set_thread_comment_map(comment_map: CommentMap) {
     });
 }
 
-/// Retrieves the source code for the current thread.
-pub fn get_source_code() -> &'static str {
-    THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
-}
+//pub fn get_comment_map() -> Ref<'_, CommentMap> {
+//    THREAD_COMMENT_MAP.with(|cm| {
+//        Ref::map(cm.borrow(), |opt| {
+//            opt.as_ref().expect("CommentMap not set for this thread")
+//        })
+//    })
+//}
 
 pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let node = cursor.node();
