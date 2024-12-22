@@ -7,7 +7,7 @@ use crate::{
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
-use std::cell::{Cell, Ref, RefCell};
+use std::cell::Cell;
 use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
@@ -16,6 +16,7 @@ thread_local! {
 }
 
 pub fn set_thread_source_code(source_code: String) {
+    // TODO: use OnceCell to not leak?
     let leaked_code: &'static str = Box::leak(source_code.into_boxed_str());
     THREAD_SOURCE_CODE.with(|sc| {
         if sc.get().is_some() {
@@ -34,7 +35,7 @@ thread_local! {
 }
 
 pub fn set_thread_comment_map(comment_map: CommentMap) {
-    // Leak the CommentMap to obtain a 'static reference
+    // TODO: use OnceCell to not leak?
     let leaked_map: &'static CommentMap = Box::leak(Box::new(comment_map));
 
     THREAD_COMMENT_MAP.with(|cm| {
