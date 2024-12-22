@@ -18,6 +18,9 @@ thread_local! {
 pub fn set_thread_source_code(source_code: String) {
     let leaked_code: &'static str = Box::leak(source_code.into_boxed_str());
     THREAD_SOURCE_CODE.with(|sc| {
+        if sc.get().is_some() {
+            panic!("Source code is already set for this thread");
+        }
         sc.set(Some(leaked_code));
     });
 }
