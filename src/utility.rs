@@ -95,14 +95,14 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
             // Assign remaining pending comments as "post" for the last code node
             comment_map
                 .entry(last_id)
-                .or_insert_with(|| NodeComment::new())
+                .or_insert_with(NodeComment::new)
                 .post_comments
                 .append(&mut pending_pre_comments);
         } else {
             // No code children => treat all as "dangling" for the current node
             comment_map
                 .entry(current_id)
-                .or_insert_with(|| NodeComment::new())
+                .or_insert_with(NodeComment::new)
                 .dangling_comments
                 .append(&mut pending_pre_comments);
         }
