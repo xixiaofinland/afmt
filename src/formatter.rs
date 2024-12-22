@@ -142,6 +142,7 @@ impl Formatter {
         let mut cursor = ast_tree.walk();
         let mut comment_map = CommentMap::new();
         collect_comments(&mut cursor, &mut comment_map);
+        eprintln!("gopro[28]: formatter.rs:143: comment_map={:#?}", comment_map);
 
         // traverse the tree to build enriched data
         let root: Root = enrich(&ast_tree);

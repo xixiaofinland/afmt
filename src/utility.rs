@@ -36,58 +36,6 @@ pub fn get_source_code() -> &'static str {
     THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
 }
 
-///// Sets the comments for the current thread.
-//pub fn set_thread_comments(comments: Vec<Comment>) {
-//    THREAD_COMMENTS.with(|tc| {
-//        *tc.borrow_mut() = comments;
-//    });
-//}
-//
-//pub fn peek_next_comment() -> Option<Comment> {
-//    THREAD_COMMENTS.with(|tc| {
-//        let comments = tc.borrow();
-//        THREAD_COMMENT_INDEX.with(|index| {
-//            if index.get() < comments.len() {
-//                Some(comments[index.get()].clone())
-//            } else {
-//                None
-//            }
-//        })
-//    })
-//}
-//
-//pub fn consume_next_comment() -> Option<Comment> {
-//    THREAD_COMMENTS.with(|tc| {
-//        let comments = tc.borrow();
-//        THREAD_COMMENT_INDEX.with(|index| {
-//            let current = index.get();
-//            if current < comments.len() {
-//                index.set(current + 1);
-//                return Some(comments[current].clone());
-//            }
-//            None
-//        })
-//    })
-//}
-
-//pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
-//    loop {
-//        let node = cursor.node();
-//        if node.is_extra() {
-//            comments.push(Comment::from_node(node));
-//        }
-//
-//        if cursor.goto_first_child() {
-//            collect_comments(cursor, comments);
-//            cursor.goto_parent();
-//        }
-//
-//        if !cursor.goto_next_sibling() {
-//            break;
-//        }
-//    }
-//}
-
 pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let node = cursor.node();
 
@@ -98,10 +46,9 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let current_id = node.id();
     comment_map
         .entry(current_id)
-        .or_insert_with(|| NodeComment::new(current_id));
+        .or_insert_with(NodeComment::new);
 
     // If this node has no children, we simply return
-    // (no pre/post/dangling logic needed)
     if !cursor.goto_first_child() {
         return;
     }
@@ -126,9 +73,9 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
                 if !pending_pre_comments.is_empty() {
                     comment_map
                         .entry(child_id)
-                        .or_insert_with(|| NodeComment::new(child_id))
+                        .or_insert_with(NodeComment::new)
                         .pre_comments
-                        .extend(pending_pre_comments.drain(..));
+                        .append(&mut pending_pre_comments);
                 }
 
                 // Recurse down into the child code node
@@ -148,21 +95,21 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
             // Assign remaining pending comments as "post" for the last code node
             comment_map
                 .entry(last_id)
-                .or_insert_with(|| NodeComment::new(last_id))
+                .or_insert_with(|| NodeComment::new())
                 .post_comments
-                .extend(pending_pre_comments.drain(..));
+                .append(&mut pending_pre_comments);
         } else {
             // No code children => treat all as "dangling" for the current node
             comment_map
                 .entry(current_id)
-                .or_insert_with(|| NodeComment::new(current_id))
+                .or_insert_with(|| NodeComment::new())
                 .dangling_comments
                 .append(&mut pending_pre_comments);
         }
-
-        // Step back up to the parent node
-        cursor.goto_parent();
     }
+
+    // Step back up to the parent node
+    cursor.goto_parent();
 }
 
 pub fn enrich(ast_tree: &Tree) -> Root {
@@ -322,14 +269,6 @@ pub fn get_comment_children(node: Node) -> Vec<Comment> {
         .filter(|n| n.is_extra())
         .map(|n| Comment::from_node(n))
         .collect()
-}
-
-pub fn has_code_children(node: Node) -> bool {
-    node.all_children_vec().into_iter().any(|n| !n.is_extra())
-}
-
-pub fn has_comment_children(node: Node) -> bool {
-    node.all_children_vec().into_iter().any(|n| n.is_extra())
 }
 
 //pub fn associate_comments(range: Range) -> Option<CommentBuckets> {
