@@ -50,7 +50,6 @@ impl Root {
 
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        eprintln!("gopro[27]: data_model.rs:52: self={:#?}", self);
         if let Some(ref d) = self.danglings {
             let docs: Vec<_> = d.iter().map(|n| n.build(b)).collect();
             return result.push(b.concat(docs));

@@ -25,6 +25,7 @@ pub trait Accessor<'t> {
     fn cvalue_by_n(&self, name: &str) -> String;
     fn cvalue_by_k(&self, name: &str) -> String;
 
+    fn all_children_vec(&self) -> Vec<Node<'t>>;
     fn children_vec(&self) -> Vec<Node<'t>>;
     fn cs_by_k(&self, kind: &str) -> Vec<Node<'t>>;
     fn cs_by_n(&self, name: &str) -> Vec<Node<'t>>;
@@ -63,6 +64,11 @@ impl<'t> Accessor<'t> for Node<'t> {
         self.named_children(&mut cursor)
             .filter(|node| !node.is_extra())
             .collect()
+    }
+
+    fn all_children_vec(&self) -> Vec<Node<'t>> {
+        let mut cursor = self.walk();
+        self.named_children(&mut cursor).collect()
     }
 
     fn try_c_by_k(&self, kind: &str) -> Option<Node<'t>> {

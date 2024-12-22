@@ -239,7 +239,7 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
 }
 
 pub fn get_comment_children(node: Node) -> Vec<Comment> {
-    node.children_vec()
+    node.all_children_vec()
         .into_iter()
         .filter(|n| n.is_extra())
         .map(|n| Comment::from_node(n))
@@ -247,11 +247,11 @@ pub fn get_comment_children(node: Node) -> Vec<Comment> {
 }
 
 pub fn has_code_children(node: Node) -> bool {
-    node.children_vec().into_iter().any(|n| !n.is_extra())
+    node.all_children_vec().into_iter().any(|n| !n.is_extra())
 }
 
 pub fn has_comment_children(node: Node) -> bool {
-    node.children_vec().into_iter().any(|n| n.is_extra())
+    node.all_children_vec().into_iter().any(|n| n.is_extra())
 }
 
 //pub fn associate_comments(range: Range) -> Option<CommentBuckets> {
