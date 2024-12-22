@@ -1,4 +1,5 @@
 mod accessor;
+mod node_comment;
 pub mod args;
 mod data_model;
 mod doc;

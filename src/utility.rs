@@ -2,12 +2,13 @@ use crate::{
     accessor::Accessor,
     data_model::*,
     enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
+    node_comment::{CommentMap, NodeComment},
 };
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
 use std::cell::{Cell, RefCell};
-use tree_sitter::{Node, Range, Tree, TreeCursor};
+use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
     static THREAD_SOURCE_CODE: Cell<Option<&'static str>>
@@ -69,21 +70,98 @@ pub fn get_source_code() -> &'static str {
 //    })
 //}
 
-pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
+//pub fn collect_comments(cursor: &mut TreeCursor, comments: &mut Vec<Comment>) {
+//    loop {
+//        let node = cursor.node();
+//        if node.is_extra() {
+//            comments.push(Comment::from_node(node));
+//        }
+//
+//        if cursor.goto_first_child() {
+//            collect_comments(cursor, comments);
+//            cursor.goto_parent();
+//        }
+//
+//        if !cursor.goto_next_sibling() {
+//            break;
+//        }
+//    }
+//}
+
+pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
+    let node = cursor.node();
+
+    if !node.is_named() || node.is_extra() {
+        return;
+    }
+
+    let current_id = node.id();
+    comment_map
+        .entry(current_id)
+        .or_insert_with(|| NodeComment::new(current_id));
+
+    // If this node has no children, we simply return
+    // (no pre/post/dangling logic needed)
+    if !cursor.goto_first_child() {
+        return;
+    }
+
+    // We'll track comments that appear before the next code node in this vector
+    let mut pending_pre_comments = Vec::new();
+    // Track the last visited code node
+    let mut last_code_node_id: Option<usize> = None;
+
     loop {
-        let node = cursor.node();
-        if node.is_extra() {
-            comments.push(Comment::from_node(node));
+        let child = cursor.node();
+
+        if child.is_named() {
+            if child.is_extra() {
+                // It's a comment node => treat as "pending pre-comment"
+                pending_pre_comments.push(child.id());
+            } else {
+                // It's a child code node
+                let child_id = child.id();
+
+                // Assign any pending comments to the child's pre-comments
+                if !pending_pre_comments.is_empty() {
+                    comment_map
+                        .entry(child_id)
+                        .or_insert_with(|| NodeComment::new(child_id))
+                        .pre_comments
+                        .extend(pending_pre_comments.drain(..));
+                }
+
+                // Recurse down into the child code node
+                collect_comments(cursor, comment_map);
+
+                // After returning, we know child is fully processed
+                last_code_node_id = Some(child_id);
+            }
+
+            if !cursor.goto_next_sibling() {
+                break;
+            }
         }
 
-        if cursor.goto_first_child() {
-            collect_comments(cursor, comments);
-            cursor.goto_parent();
+        // After processing all children:
+        if let Some(last_id) = last_code_node_id {
+            // Assign remaining pending comments as "post" for the last code node
+            comment_map
+                .entry(last_id)
+                .or_insert_with(|| NodeComment::new(last_id))
+                .post_comments
+                .extend(pending_pre_comments.drain(..));
+        } else {
+            // No code children => treat all as "dangling" for the current node
+            comment_map
+                .entry(current_id)
+                .or_insert_with(|| NodeComment::new(current_id))
+                .dangling_comments
+                .append(&mut pending_pre_comments);
         }
 
-        if !cursor.goto_next_sibling() {
-            break;
-        }
+        // Step back up to the parent node
+        cursor.goto_parent();
     }
 }
 
