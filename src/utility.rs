@@ -14,20 +14,22 @@ thread_local! {
     static THREAD_SOURCE_CODE: Cell<Option<&'static str>>
         = const{ Cell::new(None) };
 }
+
 thread_local! {
-    static THREAD_COMMENTS: RefCell<Vec<Comment>> = const { RefCell::new(Vec::new()) };
-}
-thread_local! {
-    static THREAD_COMMENT_INDEX: Cell<usize> = const { Cell::new(0) };
+    static THREAD_COMMENT_MAP: RefCell<Option<CommentMap>> = const { RefCell::new(None) };
 }
 
-/// Sets the source code for the current thread.
-/// This should be called once per thread before processing.
-pub fn set_thread_source_code(code: String) {
+pub fn set_thread_source_code(source_code: String) {
     // Leak the `String` to obtain a `&'static str`
-    let leaked_code: &'static str = Box::leak(code.into_boxed_str());
+    let leaked_code: &'static str = Box::leak(source_code.into_boxed_str());
     THREAD_SOURCE_CODE.with(|sc| {
         sc.set(Some(leaked_code));
+    });
+}
+
+pub fn set_thread_comment_map(comment_map: CommentMap) {
+    THREAD_COMMENT_MAP.with(|cm| {
+        *cm.borrow_mut() = Some(comment_map);
     });
 }
 
@@ -36,7 +38,7 @@ pub fn get_source_code() -> &'static str {
     THREAD_SOURCE_CODE.with(|sc| sc.get().expect("Source code not set for this thread"))
 }
 
-pub fn collect_comments<'t>(cursor: &mut TreeCursor<'t>, comment_map: &mut CommentMap<'t>) {
+pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let node = cursor.node();
 
     if !node.is_named() || node.is_extra() {
@@ -64,7 +66,7 @@ pub fn collect_comments<'t>(cursor: &mut TreeCursor<'t>, comment_map: &mut Comme
         if child.is_named() {
             if child.is_extra() {
                 // It's a comment node => treat as "pending pre-comment"
-                pending_pre_comments.push(child);
+                pending_pre_comments.push(Comment::from_node(child));
             } else {
                 // It's a child code node
                 let child_id = child.id();
@@ -270,36 +272,3 @@ pub fn get_comment_children(node: Node) -> Vec<Comment> {
         .map(|n| Comment::from_node(n))
         .collect()
 }
-
-//pub fn associate_comments(range: Range) -> Option<CommentBuckets> {
-//    let mut buckets = CommentBuckets::default();
-//    let mut has_comments = false;
-//
-//    while let Some(comment) = get_next_comment() {
-//        if comment.range.end_byte < range.start_byte {
-//            buckets.pre_comments.push(comment);
-//            has_comments = true;
-//        } else if comment.range.start_byte > range.end_byte {
-//            if is_immediately_following_line(&comment, &range) {
-//                buckets.post_comments.push(comment);
-//                has_comments = true;
-//            } else {
-//                break;
-//            }
-//        } else {
-//            buckets.dangling_comments.push(comment);
-//            has_comments = true;
-//        }
-//    }
-//
-//    if has_comments {
-//        Some(buckets)
-//    } else {
-//        None
-//    }
-//}
-//
-//fn is_immediately_following_line(comment: &Comment, range: &Range) -> bool {
-//    comment.range.start_point.row == range.end_point.row
-//        || comment.range.start_point.row == range.end_point.row + 1
-//}

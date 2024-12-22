@@ -2,7 +2,7 @@ use crate::data_model::*;
 use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
 use crate::node_comment::CommentMap;
-use crate::utility::{collect_comments, enrich, set_thread_source_code};
+use crate::utility::{collect_comments, enrich, set_thread_comment_map, set_thread_source_code};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use serde::Deserialize;
@@ -135,14 +135,12 @@ impl Formatter {
 
     pub fn format_one(source_code: String, config: Config) -> String {
         let ast_tree = Formatter::parse(&source_code);
-
         set_thread_source_code(source_code); // important to set thread level source code now;
 
-        // traverse the tree to collect all comment nodes
         let mut cursor = ast_tree.walk();
         let mut comment_map = CommentMap::new();
         collect_comments(&mut cursor, &mut comment_map);
-        eprintln!("gopro[28]: formatter.rs:143: comment_map={:#?}", comment_map);
+        set_thread_comment_map(comment_map); // important to set thread level comment map;
 
         // traverse the tree to build enriched data
         let root: Root = enrich(&ast_tree);
