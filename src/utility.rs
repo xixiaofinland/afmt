@@ -27,22 +27,24 @@ pub fn get_source_code() -> &'static str {
 }
 
 thread_local! {
-    static THREAD_COMMENT_MAP: RefCell<Option<CommentMap>> = const { RefCell::new(None) };
+    static THREAD_COMMENT_MAP: Cell<Option<&'static CommentMap>> = const{ Cell::new(None) };
 }
 
 pub fn set_thread_comment_map(comment_map: CommentMap) {
+    // Leak the CommentMap to obtain a 'static reference
+    let leaked_map: &'static CommentMap = Box::leak(Box::new(comment_map));
+
     THREAD_COMMENT_MAP.with(|cm| {
-        *cm.borrow_mut() = Some(comment_map);
+        if cm.get().is_some() {
+            panic!("CommentMap is already set for this thread");
+        }
+        cm.set(Some(leaked_map));
     });
 }
 
-//pub fn get_comment_map() -> Ref<'_, CommentMap> {
-//    THREAD_COMMENT_MAP.with(|cm| {
-//        Ref::map(cm.borrow(), |opt| {
-//            opt.as_ref().expect("CommentMap not set for this thread")
-//        })
-//    })
-//}
+pub fn get_comment_map() -> &'static CommentMap {
+    THREAD_COMMENT_MAP.with(|cm| cm.get().expect("CommentMap not set for this thread"))
+}
 
 pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let node = cursor.node();
