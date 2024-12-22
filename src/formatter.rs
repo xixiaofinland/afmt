@@ -2,7 +2,7 @@ use crate::data_model::*;
 use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
 use crate::node_comment::CommentMap;
-use crate::utility::{collect_comments, enrich, set_thread_source_code};
+use crate::utility::{collect_comments, enrich, get_source_code, set_thread_comment_map, set_thread_source_code};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use serde::Deserialize;
@@ -140,7 +140,7 @@ impl Formatter {
         let mut cursor = ast_tree.walk();
         let mut comment_map = CommentMap::new();
         collect_comments(&mut cursor, &mut comment_map);
-        //set_thread_comment_map(comment_map); // important to set thread level comment map;
+        set_thread_comment_map(comment_map); // important to set thread level comment map;
 
         // traverse the tree to build enriched data
         let root: Root = enrich(&ast_tree);
@@ -150,7 +150,6 @@ impl Formatter {
         let b = DocBuilder::new(c);
         let doc_ref = root.build(&b);
 
-        //pretty print
         pretty_print(doc_ref, config.max_width)
     }
 
