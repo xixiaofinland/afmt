@@ -1,8 +1,5 @@
 use crate::{
-    accessor::Accessor,
-    data_model::*,
-    enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
-    context::{Comment, CommentMap, CommentBucket},
+    accessor::Accessor, context::{Comment, CommentBucket, CommentMap}, data_model::*, doc::DocRef, doc_builder::DocBuilder, enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith}
 };
 use colored::Colorize;
 #[allow(unused_imports)]
@@ -130,6 +127,59 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
 
     // Step back up to the parent node
     cursor.goto_parent();
+}
+
+/// Handles dangling comments.
+/// If dangling comments are present, they are printed, and the function returns `true` indicating that processing should stop.
+/// Otherwise, it returns `false`.
+pub fn handle_dangling_comments<'a>(
+    b: &'a DocBuilder<'a>,
+    bucket: &CommentBucket,
+    result: &mut Vec<DocRef<'a>>,
+) -> bool {
+    if !bucket.dangling_comments.is_empty() {
+        let docs: Vec<_> = bucket
+            .dangling_comments
+            .iter()
+            .map(|comment_node| comment_node.build(b))
+            .collect();
+        result.push(b.concat(docs));
+        true // Indicates that processing should stop
+    } else {
+        false
+    }
+}
+
+/// Handles pre-comments by printing them before processing the node.
+pub fn handle_pre_comments<'a>(
+    b: &'a DocBuilder<'a>,
+    bucket: &CommentBucket,
+    result: &mut Vec<DocRef<'a>>,
+) {
+    if !bucket.pre_comments.is_empty() {
+        let docs: Vec<_> = bucket
+            .pre_comments
+            .iter()
+            .map(|comment_node| comment_node.build(b))
+            .collect();
+        result.push(b.concat(docs));
+    }
+}
+
+/// Handles post-comments by printing them after processing the node.
+pub fn handle_post_comments<'a>(
+    b: &'a DocBuilder<'a>,
+    bucket: &CommentBucket,
+    result: &mut Vec<DocRef<'a>>,
+) {
+    if !bucket.post_comments.is_empty() {
+        let docs: Vec<_> = bucket
+            .post_comments
+            .iter()
+            .map(|comment_node| comment_node.build(b))
+            .collect();
+        result.push(b.concat(docs));
+    }
 }
 
 pub fn enrich(ast_tree: &Tree) -> Root {

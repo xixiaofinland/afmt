@@ -1,6 +1,6 @@
 use crate::{
     accessor::Accessor,
-    context::{Comment, NodeInfo},
+    context::NodeInfo,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::*,
@@ -8,7 +8,7 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
-use tree_sitter::{Node, Range};
+use tree_sitter::Node;
 
 pub trait DocBuild<'a> {
     fn build(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
@@ -49,7 +49,11 @@ impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
         if !bucket.dangling_comments.is_empty() {
-            let docs: Vec<_> = bucket.dangling_comments.iter().map(|n| n.build(b)).collect();
+            let docs: Vec<_> = bucket
+                .dangling_comments
+                .iter()
+                .map(|n| n.build(b))
+                .collect();
             return result.push(b.concat(docs));
         }
         if !bucket.pre_comments.is_empty() {
@@ -70,7 +74,6 @@ impl<'a> DocBuild<'a> for Root {
 
 #[derive(Debug)]
 pub struct ClassDeclaration {
-    pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
     pub name: String,
     pub type_parameters: Option<TypeParameters>,
@@ -83,8 +86,6 @@ pub struct ClassDeclaration {
 impl ClassDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_declaration");
-        //let buckets = associate_comments(node.range());
-        let buckets = None;
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let name = node.cvalue_by_n("name");
@@ -97,7 +98,6 @@ impl ClassDeclaration {
         let node_info = NodeInfo::from(&node);
 
         Self {
-            buckets,
             modifiers,
             name,
             type_parameters,
@@ -113,7 +113,11 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
         if !bucket.dangling_comments.is_empty() {
-            let docs: Vec<_> = bucket.dangling_comments.iter().map(|n| n.build(b)).collect();
+            let docs: Vec<_> = bucket
+                .dangling_comments
+                .iter()
+                .map(|n| n.build(b))
+                .collect();
             return result.push(b.concat(docs));
         }
         if !bucket.pre_comments.is_empty() {
@@ -301,7 +305,7 @@ impl<'a> DocBuild<'a> for SuperClass {
 
 #[derive(Debug, Default)]
 pub struct Modifiers {
-    //pub buckets: CommentBuckets,
+    //pub buckets: CommentBucket,
     annotation: Option<Annotation>,
     modifiers: Vec<Modifier>,
 }
@@ -423,18 +427,15 @@ impl<'a> DocBuild<'a> for ClassBody {
 
 #[derive(Debug)]
 pub struct FieldDeclaration {
-    pub buckets: Option<CommentBuckets>,
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
     pub accessor_list: Option<AccessorList>,
-    pub range: Range,
 }
 
 impl FieldDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "field_declaration");
-        let buckets = None;
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
 
@@ -452,12 +453,10 @@ impl FieldDeclaration {
             .map(|n| AccessorList::new(n));
 
         Self {
-            buckets,
             modifiers,
             type_,
             declarators,
             accessor_list,
-            range: node.range(),
         }
     }
 }
@@ -612,12 +611,6 @@ impl VoidType {
     }
 }
 
-#[derive(Debug, Default)]
-pub struct CommentBuckets {
-    pub pre_comments: Vec<Comment>,
-    pub post_comments: Vec<Comment>,
-}
-
 #[derive(Debug)]
 pub struct Block {
     pub statements: Vec<BodyMember<Statement>>,
@@ -723,24 +716,24 @@ pub struct SuperNavigation {
     pub property_navigation: PropertyNavigation,
 }
 
-impl SuperNavigation {
-    pub fn new(node: Node) -> Self {
-        assert_check(node, "super");
-
-        let super_expression = Super {};
-        let next_node = node.next_named();
-        let property_navigation = if next_node.kind() == "safe_navigation_operator" {
-            PropertyNavigation::SafeNavigationOperator
-        } else {
-            PropertyNavigation::Dot
-        };
-
-        Self {
-            super_expression,
-            property_navigation,
-        }
-    }
-}
+//impl SuperNavigation {
+//    pub fn new(node: Node) -> Self {
+//        assert_check(node, "super");
+//
+//        let super_expression = Super {};
+//        let next_node = node.next_named();
+//        let property_navigation = if next_node.kind() == "safe_navigation_operator" {
+//            PropertyNavigation::SafeNavigationOperator
+//        } else {
+//            PropertyNavigation::Dot
+//        };
+//
+//        Self {
+//            super_expression,
+//            property_navigation,
+//        }
+//    }
+//}
 
 impl<'a> DocBuild<'a> for SuperNavigation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
