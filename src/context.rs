@@ -9,21 +9,6 @@ use crate::{
 pub type CommentMap = HashMap<usize, CommentBucket>;
 
 #[derive(Debug)]
-pub struct FmtContext {
-    pub source_code: String,
-    pub comment_map: CommentMap,
-}
-
-impl FmtContext {
-    pub fn new(source_code: String, comment_map: CommentMap) -> Self {
-        Self {
-            source_code,
-            comment_map,
-        }
-    }
-}
-
-#[derive(Debug)]
 pub struct NodeInfo {
     pub id: usize,
     pub range: Range,

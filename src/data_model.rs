@@ -1,9 +1,9 @@
 use crate::{
     accessor::Accessor,
+    context::{Comment, NodeInfo},
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::*,
-    context::Comment,
     utility::*,
 };
 use colored::Colorize;
