@@ -20,10 +20,10 @@ pub trait DocBuild<'a> {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Root {
     pub members: Vec<BodyMember<RootMember>>,
-    pub danglings: Option<Vec<Comment>>,
+    pub node_info: NodeInfo,
 }
 
 impl Root {
@@ -39,26 +39,32 @@ impl Root {
             })
             .collect();
 
-        let danglings = if members.is_empty() {
-            Some(get_comment_children(node))
-        } else {
-            None
-        };
+        let node_info = NodeInfo::from(&node);
 
-        Self { members, danglings }
+        Self { members, node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for Root {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref d) = self.danglings {
-            let docs: Vec<_> = d.iter().map(|n| n.build(b)).collect();
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if !bucket.dangling_comments.is_empty() {
+            let docs: Vec<_> = bucket.dangling_comments.iter().map(|n| n.build(b)).collect();
             return result.push(b.concat(docs));
+        }
+        if !bucket.pre_comments.is_empty() {
+            let docs: Vec<_> = bucket.pre_comments.iter().map(|n| n.build(b)).collect();
+            result.push(b.concat(docs));
         }
 
         let doc = b.intersperse_body_members(&self.members);
         result.push(doc);
         result.push(b.nl());
+
+        if !bucket.post_comments.is_empty() {
+            let docs: Vec<_> = bucket.post_comments.iter().map(|n| n.build(b)).collect();
+            result.push(b.concat(docs));
+        }
     }
 }
 
@@ -71,7 +77,7 @@ pub struct ClassDeclaration {
     pub superclass: Option<SuperClass>,
     pub interface: Option<Interface>,
     pub body: ClassBody,
-    pub range: Range,
+    pub node_info: NodeInfo,
 }
 
 impl ClassDeclaration {
@@ -88,6 +94,7 @@ impl ClassDeclaration {
         let superclass = node.try_c_by_k("superclass").map(|n| SuperClass::new(n));
         let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
         let body = ClassBody::new(node.c_by_n("body"));
+        let node_info = NodeInfo::from(&node);
 
         Self {
             buckets,
@@ -97,13 +104,23 @@ impl ClassDeclaration {
             superclass,
             interface,
             body,
-            range: node.range(),
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ClassDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if !bucket.dangling_comments.is_empty() {
+            let docs: Vec<_> = bucket.dangling_comments.iter().map(|n| n.build(b)).collect();
+            return result.push(b.concat(docs));
+        }
+        if !bucket.pre_comments.is_empty() {
+            let docs: Vec<_> = bucket.pre_comments.iter().map(|n| n.build(b)).collect();
+            result.push(b.concat(docs));
+        }
+
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
         }
@@ -134,6 +151,11 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         result.push(b.group_indent_concat(docs));
 
         result.push(self.body.build(b));
+
+        if !bucket.post_comments.is_empty() {
+            let docs: Vec<_> = bucket.post_comments.iter().map(|n| n.build(b)).collect();
+            result.push(b.concat(docs));
+        }
     }
 }
 

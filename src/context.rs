@@ -15,8 +15,11 @@ pub struct NodeInfo {
 }
 
 impl NodeInfo {
-    pub fn new(id: usize, range: Range) -> Self {
-        Self { id, range }
+    pub fn from(node: &Node) -> Self {
+        Self {
+            id: node.id(),
+            range: node.range(),
+        }
     }
 }
 

@@ -49,11 +49,11 @@ pub fn set_thread_comment_map(comment_map: CommentMap) {
 pub fn get_comment_bucket(node_id: &usize) -> &CommentBucket {
     get_comment_map()
         .get(node_id)
-        .unwrap_or_else(|| panic!("comment_map missing bucket for node: {}", node_id))
+        .unwrap_or_else(|| panic!("## comment_map missing bucket for node: {}", node_id))
 }
 
 fn get_comment_map() -> &'static CommentMap {
-    THREAD_COMMENT_MAP.with(|cm| cm.get().expect("CommentMap not set for this thread"))
+    THREAD_COMMENT_MAP.with(|cm| cm.get().expect("## CommentMap not set for this thread"))
 }
 
 pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
