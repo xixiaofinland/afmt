@@ -56,19 +56,10 @@ impl<'a> DocBuild<'a> for Root {
                 .collect();
             return result.push(b.concat(docs));
         }
-        if !bucket.pre_comments.is_empty() {
-            let docs: Vec<_> = bucket.pre_comments.iter().map(|n| n.build(b)).collect();
-            result.push(b.concat(docs));
-        }
 
         let doc = b.intersperse_body_members(&self.members);
         result.push(doc);
         result.push(b.nl());
-
-        if !bucket.post_comments.is_empty() {
-            let docs: Vec<_> = bucket.post_comments.iter().map(|n| n.build(b)).collect();
-            result.push(b.concat(docs));
-        }
     }
 }
 
@@ -115,7 +106,6 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         if handle_dangling_comments(b, bucket, result) {
             return;
         }
-
         handle_pre_comments(b, bucket, result);
 
         if let Some(ref n) = self.modifiers {
@@ -293,34 +283,42 @@ impl<'a> DocBuild<'a> for SuperClass {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Modifiers {
-    //pub buckets: CommentBucket,
     annotation: Option<Annotation>,
     modifiers: Vec<Modifier>,
+    pub node_info: NodeInfo,
 }
 
 impl Modifiers {
     pub fn new(node: Node) -> Self {
         assert_check(node, "modifiers");
-        let mut this = Self::default();
 
-        for c in node.children_vec() {
-            match c.kind() {
-                "annotation" => {
-                    this.annotation = Some(Annotation::new(c));
-                }
-                "modifier" => this.modifiers.push(Modifier::new(c.first_c())),
-                "line_comment" | "block_comment" => continue,
-                _ => panic_unknown_node(c, "Modifiers"),
-            }
+        let annotation = node.try_c_by_k("annotation").map(Annotation::new);
+
+        let modifiers = node
+            .try_cs_by_k("modifier").into_iter()
+            .map(|c| Modifier::new(c.first_c()))
+            .collect();
+
+        let node_info = NodeInfo::from(&node);
+
+        Self {
+            annotation,
+            modifiers,
+            node_info,
         }
-        this
     }
 }
 
 impl<'a> DocBuild<'a> for Modifiers {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         if let Some(ref n) = self.annotation {
             result.push(n.build(b));
         }
@@ -331,6 +329,8 @@ impl<'a> DocBuild<'a> for Modifiers {
             result.push(b.intersperse(&docs, sep));
             result.push(b.txt(" "));
         }
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
