@@ -265,6 +265,7 @@ impl<'a> DocBuild<'a> for FormalParameter {
 #[derive(Debug)]
 pub struct SuperClass {
     pub type_: Type,
+    pub node_info: NodeInfo,
 }
 
 impl SuperClass {
@@ -272,14 +273,24 @@ impl SuperClass {
         assert_check(node, "superclass");
 
         let type_ = Type::new(node.first_c());
-        Self { type_ }
+        let node_info = NodeInfo::from(&node);
+
+        Self { type_, node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for SuperClass {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         result.push(b.txt_("extends"));
         result.push(self.type_.build(b));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -391,6 +402,7 @@ impl<'a> DocBuild<'a> for AnnotationKeyValue {
 #[derive(Debug)]
 pub struct ClassBody {
     pub class_members: Vec<BodyMember<ClassMember>>,
+    pub node_info: NodeInfo,
 }
 
 impl ClassBody {
@@ -405,14 +417,23 @@ impl ClassBody {
                 has_trailing_newline: has_trailing_new_line(&n),
             })
             .collect();
+        let node_info = NodeInfo::from(&node);
 
-        Self { class_members }
+        Self { class_members, node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         result.push(b.surround_body(&self.class_members, "", "}"));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -638,6 +659,7 @@ impl<'a> DocBuild<'a> for Block {
 #[derive(Debug)]
 pub struct Interface {
     pub types: Vec<Type>,
+    pub node_info: NodeInfo,
 }
 
 impl Interface {
@@ -650,19 +672,28 @@ impl Interface {
             .into_iter()
             .map(|n| Type::new(n))
             .collect();
+        let node_info = NodeInfo::from(&node);
 
-        Self { types }
+        Self { types, node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         let docs = b.to_docs(&self.types);
         let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
 
         let implements_group = b.concat(vec![b.txt_("implements"), doc]);
         result.push(implements_group);
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -1778,6 +1809,7 @@ impl<'a> DocBuild<'a> for Constructor {
 #[derive(Debug)]
 pub struct TypeParameters {
     pub type_parameters: Vec<TypeParameter>,
+    pub node_info: NodeInfo,
 }
 
 impl TypeParameters {
@@ -1787,12 +1819,23 @@ impl TypeParameters {
             .into_iter()
             .map(|n| TypeParameter::new(n))
             .collect();
-        Self { type_parameters }
+        let node_info = NodeInfo::from(&node);
+
+        Self {
+            type_parameters,
+            node_info,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for TypeParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         let docs = b.to_docs(&self.type_parameters);
 
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
@@ -1800,6 +1843,8 @@ impl<'a> DocBuild<'a> for TypeParameters {
         let close = Insertable::new(Some(b.maybeline()), Some(">"), None);
         let doc = b.group_surround(&docs, sep, open, close);
         result.push(doc);
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -1807,6 +1852,7 @@ impl<'a> DocBuild<'a> for TypeParameters {
 pub struct TypeParameter {
     annotations: Vec<Annotation>,
     pub type_identifier: String,
+    pub node_info: NodeInfo,
 }
 
 impl TypeParameter {
@@ -1818,16 +1864,27 @@ impl TypeParameter {
             .collect();
 
         let type_identifier = node.cvalue_by_k("type_identifier");
+        let node_info = NodeInfo::from(&node);
+
         Self {
             annotations,
             type_identifier,
+            node_info
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TypeParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         result.push(b.txt(&self.type_identifier));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
