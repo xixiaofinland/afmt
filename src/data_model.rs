@@ -3,7 +3,7 @@ use crate::{
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::*,
-    node_comment::Comment,
+    context::Comment,
     utility::*,
 };
 use colored::Colorize;

@@ -2,7 +2,7 @@ use crate::{
     accessor::Accessor,
     data_model::*,
     enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
-    node_comment::{Comment, CommentMap, CommentBucket},
+    context::{Comment, CommentMap, CommentBucket},
 };
 use colored::Colorize;
 #[allow(unused_imports)]
