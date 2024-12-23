@@ -66,7 +66,7 @@ impl<'a> DocBuild<'a> for Root {
 #[derive(Debug)]
 pub struct ClassDeclaration {
     pub modifiers: Option<Modifiers>,
-    pub name: String,
+    pub name: StringNode,
     pub type_parameters: Option<TypeParameters>,
     pub superclass: Option<SuperClass>,
     pub interface: Option<Interface>,
@@ -79,7 +79,7 @@ impl ClassDeclaration {
         assert_check(node, "class_declaration");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name");
+        let name = StringNode::new(node.c_by_n("name"));
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
@@ -115,7 +115,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
         let mut docs = vec![];
 
         docs.push(b.txt_("class"));
-        docs.push(b.txt(&self.name));
+        docs.push(self.name.build(b));
 
         if let Some(ref n) = self.type_parameters {
             docs.push(n.build(b));
@@ -297,7 +297,8 @@ impl Modifiers {
         let annotation = node.try_c_by_k("annotation").map(Annotation::new);
 
         let modifiers = node
-            .try_cs_by_k("modifier").into_iter()
+            .try_cs_by_k("modifier")
+            .into_iter()
             .map(|c| Modifier::new(c.first_c()))
             .collect();
 
@@ -4917,5 +4918,36 @@ impl<'a> DocBuild<'a> for DottedIdentifier {
         let sep = Insertable::new(None, Some("."), None);
         let doc = b.intersperse(&docs, sep);
         result.push(doc);
+    }
+}
+
+// a general node to store String value only
+// it's used for the purpose of handling comment bucket logic
+#[derive(Debug)]
+pub struct StringNode {
+    pub value: String,
+    pub node_info: NodeInfo,
+}
+
+impl StringNode {
+    pub fn new(node: Node) -> Self {
+        let value = node.value();
+        let node_info = NodeInfo::from(&node);
+
+        Self { value, node_info }
+    }
+}
+
+impl<'a> DocBuild<'a> for StringNode {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
+        result.push(b.txt(&self.value));
+
+        handle_post_comments(b, bucket, result);
     }
 }
