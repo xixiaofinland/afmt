@@ -112,18 +112,11 @@ impl ClassDeclaration {
 impl<'a> DocBuild<'a> for ClassDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            let docs: Vec<_> = bucket
-                .dangling_comments
-                .iter()
-                .map(|n| n.build(b))
-                .collect();
-            return result.push(b.concat(docs));
+        if handle_dangling_comments(b, bucket, result) {
+            return;
         }
-        if !bucket.pre_comments.is_empty() {
-            let docs: Vec<_> = bucket.pre_comments.iter().map(|n| n.build(b)).collect();
-            result.push(b.concat(docs));
-        }
+
+        handle_pre_comments(b, bucket, result);
 
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
@@ -156,10 +149,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
         result.push(self.body.build(b));
 
-        if !bucket.post_comments.is_empty() {
-            let docs: Vec<_> = bucket.post_comments.iter().map(|n| n.build(b)).collect();
-            result.push(b.concat(docs));
-        }
+        handle_post_comments(b, bucket, result);
     }
 }
 
