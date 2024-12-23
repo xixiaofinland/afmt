@@ -1,18 +1,21 @@
 use std::collections::HashMap;
 use tree_sitter::{Node, Range};
 
-use crate::{accessor::Accessor, data_model::DocBuild, doc::DocRef, doc_builder::DocBuilder, utility::panic_unknown_node};
+use crate::{
+    accessor::Accessor, data_model::DocBuild, doc::DocRef, doc_builder::DocBuilder,
+    utility::panic_unknown_node,
+};
 
-pub type CommentMap = HashMap<usize, NodeComment>;
+pub type CommentMap = HashMap<usize, CommentBucket>;
 
 #[derive(Debug)]
-pub struct NodeComment {
+pub struct CommentBucket {
     pub pre_comments: Vec<Comment>,
     pub post_comments: Vec<Comment>,
     pub dangling_comments: Vec<Comment>,
 }
 
-impl NodeComment {
+impl CommentBucket {
     pub fn new() -> Self {
         Self {
             pre_comments: Vec::new(),
@@ -59,4 +62,3 @@ impl<'a> DocBuild<'a> for Comment {
         result.push(b.nl());
     }
 }
-

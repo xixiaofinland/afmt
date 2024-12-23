@@ -1,5 +1,10 @@
 use crate::{
-    accessor::Accessor, doc::DocRef, doc_builder::{DocBuilder, Insertable}, enum_def::*, node_comment::Comment, utility::*
+    accessor::Accessor,
+    doc::DocRef,
+    doc_builder::{DocBuilder, Insertable},
+    enum_def::*,
+    node_comment::{Comment, FmtContext},
+    utility::*,
 };
 use colored::Colorize;
 use std::fmt::Debug;

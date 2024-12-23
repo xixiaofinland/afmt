@@ -2,7 +2,7 @@ use crate::{
     accessor::Accessor,
     data_model::*,
     enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
-    node_comment::{Comment, CommentMap, NodeComment},
+    node_comment::{Comment, CommentMap, CommentBucket},
 };
 use colored::Colorize;
 #[allow(unused_imports)]
@@ -46,7 +46,13 @@ pub fn set_thread_comment_map(comment_map: CommentMap) {
     });
 }
 
-pub fn get_comment_map() -> &'static CommentMap {
+pub fn get_comment_bucket(node_id: &usize) -> &CommentBucket {
+    get_comment_map()
+        .get(node_id)
+        .unwrap_or_else(|| panic!("comment_map missing bucket for node: {}", node_id))
+}
+
+fn get_comment_map() -> &'static CommentMap {
     THREAD_COMMENT_MAP.with(|cm| cm.get().expect("CommentMap not set for this thread"))
 }
 
@@ -60,7 +66,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let current_id = node.id();
     comment_map
         .entry(current_id)
-        .or_insert_with(NodeComment::new);
+        .or_insert_with(CommentBucket::new);
 
     // If this node has no children, we simply return
     if !cursor.goto_first_child() {
@@ -87,7 +93,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
                 if !pending_pre_comments.is_empty() {
                     comment_map
                         .entry(child_id)
-                        .or_insert_with(NodeComment::new)
+                        .or_insert_with(CommentBucket::new)
                         .pre_comments
                         .append(&mut pending_pre_comments);
                 }
@@ -110,14 +116,14 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
         // Assign remaining pending comments as "post" for the last code node
         comment_map
             .entry(last_id)
-            .or_insert_with(NodeComment::new)
+            .or_insert_with(CommentBucket::new)
             .post_comments
             .append(&mut pending_pre_comments);
     } else {
         // No code children => treat all as "dangling" for the current node
         comment_map
             .entry(current_id)
-            .or_insert_with(NodeComment::new)
+            .or_insert_with(CommentBucket::new)
             .dangling_comments
             .append(&mut pending_pre_comments);
     }
