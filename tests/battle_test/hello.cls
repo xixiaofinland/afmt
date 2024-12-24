@@ -1,7 +1,3 @@
-//comment a;
-
-// comment1;
-class /*t*/ A /*t2*/ {
+class A {
     // comment3;
-    // comment4;
 }
