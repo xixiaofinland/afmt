@@ -1,3 +1,10 @@
+// First Test Comment
+
+/**
+* First ApexDoc
+*/
 Class A{
- public /*h*/  static String hello(){}
+{
+  System.debug('SOMETHING');
+  }
 }
