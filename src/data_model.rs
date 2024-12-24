@@ -66,7 +66,7 @@ impl<'a> DocBuild<'a> for Root {
 #[derive(Debug)]
 pub struct ClassDeclaration {
     pub modifiers: Option<Modifiers>,
-    pub name: StringNode,
+    pub name: ValueNode,
     pub type_parameters: Option<TypeParameters>,
     pub superclass: Option<SuperClass>,
     pub interface: Option<Interface>,
@@ -79,7 +79,7 @@ impl ClassDeclaration {
         assert_check(node, "class_declaration");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = StringNode::new(node.c_by_n("name"));
+        let name = ValueNode::new(node.c_by_n("name"));
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
@@ -5018,15 +5018,15 @@ impl<'a> DocBuild<'a> for DottedIdentifier {
     }
 }
 
-// a general node to store String value only
+// a general node to store simple String value only
 // it's used for the purpose of handling comment bucket logic
 #[derive(Debug)]
-pub struct StringNode {
+pub struct ValueNode {
     pub value: String,
     pub node_info: NodeInfo,
 }
 
-impl StringNode {
+impl ValueNode {
     pub fn new(node: Node) -> Self {
         let value = node.value();
         let node_info = NodeInfo::from(&node);
@@ -5035,7 +5035,7 @@ impl StringNode {
     }
 }
 
-impl<'a> DocBuild<'a> for StringNode {
+impl<'a> DocBuild<'a> for ValueNode {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
         if handle_dangling_comments(b, bucket, result) {
