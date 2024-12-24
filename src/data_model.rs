@@ -208,6 +208,7 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
 #[derive(Debug)]
 pub struct FormalParameters {
     pub formal_parameters: Vec<FormalParameter>,
+    pub node_info: NodeInfo,
 }
 
 impl FormalParameters {
@@ -215,22 +216,34 @@ impl FormalParameters {
         let formal_parameters = node
             .try_cs_by_k("formal_parameter")
             .into_iter()
-            .map(|n| FormalParameter::new(n))
+            .map(FormalParameter::new)
             .collect();
+        let node_info = NodeInfo::from(&node);
 
-        Self { formal_parameters }
+        Self {
+            formal_parameters,
+            node_info,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let modifiers_doc = b.to_docs(&self.formal_parameters);
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
+        let parameters_doc = b.to_docs(&self.formal_parameters);
 
         let sep = Insertable::new(None, Some(","), Some(b.softline()));
         let open = Insertable::new(None, Some("("), Some(b.maybeline()));
         let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround(&modifiers_doc, sep, open, close);
+        let doc = b.group_surround(&parameters_doc, sep, open, close);
         result.push(doc);
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -240,28 +253,37 @@ pub struct FormalParameter {
     pub type_: UnannotatedType,
     pub name: String,
     pub dimensions: Option<Dimensions>,
+    pub node_info: NodeInfo,
 }
 
 impl FormalParameter {
     pub fn new(node: Node) -> Self {
         assert_check(node, "formal_parameter");
 
-        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        let modifiers = node.try_c_by_k("modifiers").map(Modifiers::new);
         let type_ = UnannotatedType::new(node.c_by_n("type"));
         let name = node.cvalue_by_n("name");
-        let dimensions = node.try_c_by_k("dimensions").map(|n| Dimensions::new(n));
+        let dimensions = node.try_c_by_k("dimensions").map(Dimensions::new);
+        let node_info = NodeInfo::from(&node);
 
         Self {
             modifiers,
             type_,
             name,
             dimensions,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FormalParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
         }
@@ -271,6 +293,8 @@ impl<'a> DocBuild<'a> for FormalParameter {
             result.push(b.txt(" "));
             result.push(d.build(b));
         }
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
