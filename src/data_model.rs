@@ -151,6 +151,7 @@ pub struct MethodDeclaration {
     pub formal_parameters: FormalParameters,
     pub body: Option<Block>,
     //pub dimentions
+    pub node_info: NodeInfo,
 }
 
 impl MethodDeclaration {
@@ -162,6 +163,7 @@ impl MethodDeclaration {
         let name = node.cvalue_by_n("name");
         let formal_parameters = FormalParameters::new(node.c_by_n("parameters"));
         let body = node.try_c_by_n("body").map(|n| Block::new(n));
+        let node_info = NodeInfo::from(&node);
 
         Self {
             modifiers,
@@ -169,12 +171,19 @@ impl MethodDeclaration {
             name,
             formal_parameters,
             body,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for MethodDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
         }
@@ -190,6 +199,8 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
         } else {
             result.push(b.txt(";"));
         }
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -310,7 +321,7 @@ impl Modifiers {
         let modifiers = node
             .try_cs_by_k("modifier")
             .into_iter()
-            .map(|c| Modifier::new(c.first_c()))
+            .map(Modifier::new)
             .collect();
 
         let node_info = NodeInfo::from(&node);
@@ -326,9 +337,6 @@ impl Modifiers {
 impl<'a> DocBuild<'a> for Modifiers {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if handle_dangling_comments(b, bucket, result) {
-            return;
-        }
         handle_pre_comments(b, bucket, result);
 
         if let Some(ref n) = self.annotation {
@@ -341,6 +349,34 @@ impl<'a> DocBuild<'a> for Modifiers {
             result.push(b.intersperse(&docs, sep));
             result.push(b.txt(" "));
         }
+
+        handle_post_comments(b, bucket, result);
+    }
+}
+
+#[derive(Debug)]
+pub struct Modifier {
+    kind: ModifierKind,
+    node_info: NodeInfo,
+}
+
+impl Modifier {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "modifier");
+
+        let kind = ModifierKind::new(node.first_c());
+        let node_info = NodeInfo::from(&node);
+
+        Self { kind, node_info }
+    }
+}
+
+impl<'a> DocBuild<'a> for Modifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        handle_pre_comments(b, bucket, result);
+
+        result.push(self.kind.build(b));
 
         handle_post_comments(b, bucket, result);
     }
@@ -419,7 +455,10 @@ impl ClassBody {
             .collect();
         let node_info = NodeInfo::from(&node);
 
-        Self { class_members, node_info }
+        Self {
+            class_members,
+            node_info,
+        }
     }
 }
 
@@ -1870,7 +1909,7 @@ impl TypeParameter {
         Self {
             annotations,
             type_identifier,
-            node_info
+            node_info,
         }
     }
 }

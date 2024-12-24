@@ -1,3 +1,3 @@
-class A {
-    // comment3;
+Class A{
+ public /*h*/  static String hello(){}
 }

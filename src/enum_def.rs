@@ -471,7 +471,7 @@ impl<'a> DocBuild<'a> for Literal_ {
 }
 
 #[derive(Debug)]
-pub enum Modifier {
+pub enum ModifierKind {
     Abstract,
     Final,
     Global,
@@ -489,7 +489,7 @@ pub enum Modifier {
     WithoutSharing,
 }
 
-impl Modifier {
+impl ModifierKind {
     pub fn new(n: Node) -> Self {
         let kind = n.kind();
         match kind {
@@ -513,7 +513,7 @@ impl Modifier {
     }
 }
 
-impl<'a> DocBuild<'a> for Modifier {
+impl<'a> DocBuild<'a> for ModifierKind {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Abstract => {
