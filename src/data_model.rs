@@ -394,7 +394,7 @@ impl Annotation {
 
         let arguments = node
             .try_c_by_n("arguments")
-            .map(|n| AnnotationArgumentList::new(n));
+            .map(AnnotationArgumentList::new);
 
         Self { name, arguments }
     }
