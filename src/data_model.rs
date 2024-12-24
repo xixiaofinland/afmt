@@ -147,7 +147,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 pub struct MethodDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
-    pub name: String,
+    pub name: ValueNode,
     pub formal_parameters: FormalParameters,
     pub body: Option<Block>,
     //pub dimentions
@@ -160,7 +160,7 @@ impl MethodDeclaration {
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = node.cvalue_by_n("name");
+        let name = ValueNode::new(node.c_by_n("name"));
         let formal_parameters = FormalParameters::new(node.c_by_n("parameters"));
         let body = node.try_c_by_n("body").map(|n| Block::new(n));
         let node_info = NodeInfo::from(&node);
@@ -189,7 +189,8 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
         }
 
         result.push(self.type_.build(b));
-        result.push(b._txt(&self.name));
+        result.push(b.txt(" "));
+        result.push(self.name.build(b));
         result.push(self.formal_parameters.build(b));
 
         if let Some(ref n) = self.body {
