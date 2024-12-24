@@ -251,7 +251,7 @@ impl<'a> DocBuild<'a> for FormalParameters {
 pub struct FormalParameter {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
-    pub name: String,
+    pub name: ValueNode,
     pub dimensions: Option<Dimensions>,
     pub node_info: NodeInfo,
 }
@@ -262,7 +262,7 @@ impl FormalParameter {
 
         let modifiers = node.try_c_by_k("modifiers").map(Modifiers::new);
         let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = node.cvalue_by_n("name");
+        let name = ValueNode::new(node.c_by_n("name"));
         let dimensions = node.try_c_by_k("dimensions").map(Dimensions::new);
         let node_info = NodeInfo::from(&node);
 
@@ -288,7 +288,8 @@ impl<'a> DocBuild<'a> for FormalParameter {
             result.push(n.build(b));
         }
         result.push(self.type_.build(b));
-        result.push(b._txt(&self.name));
+        result.push(b.txt(" "));
+        result.push(self.name.build(b));
         if let Some(ref d) = self.dimensions {
             result.push(b.txt(" "));
             result.push(d.build(b));
