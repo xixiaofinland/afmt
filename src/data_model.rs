@@ -157,14 +157,12 @@ pub struct MethodDeclaration {
 impl MethodDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_declaration");
-
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         let type_ = UnannotatedType::new(node.c_by_n("type"));
         let name = ValueNode::new(node.c_by_n("name"));
         let formal_parameters = FormalParameters::new(node.c_by_n("parameters"));
         let body = node.try_c_by_n("body").map(|n| Block::new(n));
         let node_info = NodeInfo::from(&node);
-
         Self {
             modifiers,
             type_,
@@ -692,6 +690,7 @@ impl VoidType {
 #[derive(Debug)]
 pub struct Block {
     pub statements: Vec<BodyMember<Statement>>,
+    pub node_info: NodeInfo,
 }
 
 impl Block {
@@ -706,19 +705,31 @@ impl Block {
                 has_trailing_newline: has_trailing_new_line(&n),
             })
             .collect();
+        let node_info = NodeInfo::from(&node);
 
-        Self { statements }
+        Self {
+            statements,
+            node_info,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for Block {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         if self.statements.is_empty() {
             return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
         }
 
         let docs = b.surround_body(&self.statements, "{", "}");
         result.push(docs);
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
