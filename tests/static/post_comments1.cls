@@ -8,4 +8,3 @@ class A {
 /**
 block comment
 */
-

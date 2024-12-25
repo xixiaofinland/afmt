@@ -172,7 +172,7 @@ pub fn handle_pre_comments<'a>(
             docs.push(b.nl());
         }
 
-        if comment.has_newline_above() {
+        if comment.print_newline_above() {
             docs.push(b.nl());
         }
 
@@ -185,7 +185,7 @@ pub fn handle_pre_comments<'a>(
                 docs.push(b.nl());
             }
 
-            if comment.has_newline_below() {
+            if comment.print_newline_below() {
                 docs.push(b.nl());
             }
         }
@@ -206,30 +206,28 @@ pub fn handle_post_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.post_comments.iter().enumerate() {
-        if i == 0 {
-            if comment.has_leading_content() {
-                docs.push(b.txt(" "));
-            } else {
-                docs.push(b.nl());
-            }
-
-            if comment.has_newline_above() {
-                docs.push(b.nl());
-            }
-        }
-
-        if comment.has_trailing_content() {
+        if comment.has_leading_content() {
             docs.push(b.txt(" "));
-        } else if comment.has_next_node() {
+        } else {
             docs.push(b.nl());
         }
 
-        if comment.has_newline_below() {
-            docs.push(b.nl());
+        if comment.print_newline_above() {
             docs.push(b.nl());
         }
 
         docs.push(comment.build(b));
+
+        if i == bucket.post_comments.len() - 1 && !comment.has_next_node() {
+            if comment.has_trailing_content() {
+                docs.push(b.txt(" "));
+            }
+
+            if comment.print_newline_below() {
+                docs.push(b.nl());
+                docs.push(b.nl());
+            }
+        }
     }
 
     result.push(b.concat(docs));

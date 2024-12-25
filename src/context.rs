@@ -86,11 +86,11 @@ impl Comment {
         self.metadata.has_trailing_content
     }
 
-    pub fn has_newline_above(&self) -> bool {
+    pub fn print_newline_above(&self) -> bool {
         self.metadata.print_newline_above
     }
 
-    pub fn has_newline_below(&self) -> bool {
+    pub fn print_newline_below(&self) -> bool {
         self.metadata.print_newline_below
     }
 
