@@ -169,10 +169,12 @@ pub fn handle_pre_comments<'a>(
     for (i, comment) in bucket.pre_comments.iter().enumerate() {
         if comment.has_newline_above() {
             docs.push(b.nl());
+            docs.push(b.nl());
         }
         docs.push(comment.build(b));
 
         if i == bucket.pre_comments.len() - 1 && comment.has_newline_below() {
+            docs.push(b.nl());
             docs.push(b.nl());
         }
     }

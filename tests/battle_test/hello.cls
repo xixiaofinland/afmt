@@ -6,10 +6,7 @@
 /**
 * First ApexDoc
 */
-
-
-
-Class A{
+Class/*t*/A{
 {
   System.debug('SOMETHING');
   }
