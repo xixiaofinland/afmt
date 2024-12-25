@@ -140,7 +140,6 @@ impl Formatter {
         let mut cursor = ast_tree.walk();
         let mut comment_map = CommentMap::new();
         collect_comments(&mut cursor, &mut comment_map);
-        eprintln!("gopro[39]: formatter.rs:143: comment_map={:#?}", &comment_map);
         set_thread_comment_map(comment_map); // important to set thread level comment map;
 
         // traverse the tree to build enriched data

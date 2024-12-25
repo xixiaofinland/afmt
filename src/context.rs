@@ -93,36 +93,18 @@ impl Comment {
     pub fn has_newline_below(&self) -> bool {
         self.metadata.has_newline_below
     }
+
+    pub fn has_prev_node(&self) -> bool {
+        self.metadata.has_prev_node
+    }
+    pub fn has_next_node(&self) -> bool {
+        self.metadata.has_next_node
+    }
 }
 
 impl<'a> DocBuild<'a> for Comment {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        match self.comment_type {
-            CommentType::Line => {
-                if self.has_leading_content() {
-                    result.push(b.txt(" "));
-                    result.push(b.txt(&self.value));
-                } else {
-                    result.push(b.nl());
-                    result.push(b.txt(&self.value));
-                }
-            }
-            CommentType::Block => {
-                if self.has_trailing_content() {
-                    result.push(b.txt(" "));
-                    result.push(b.txt(&self.value));
-                } else {
-                    result.push(b.nl());
-                    result.push(b.txt(&self.value));
-                }
-
-                if self.metadata.has_trailing_content {
-                    result.push(b.txt(" "));
-                } else {
-                     result.push(b.nl());
-                }
-            }
-        }
+        result.push(b.txt(&self.value));
     }
 }
 
@@ -132,12 +114,17 @@ pub struct CommentMetadata {
     pub has_trailing_content: bool,
     pub has_newline_above: bool,
     pub has_newline_below: bool,
+    pub has_prev_node: bool,
+    pub has_next_node: bool,
 }
 
 impl CommentMetadata {
     pub fn from(node: &Node, comment_type: CommentType) -> Self {
         let prev = node.prev_named_sibling();
         let next = node.next_named_sibling();
+
+        let has_prev_node = prev.is_some();
+        let has_next_node = next.is_some();
 
         let has_leading_content = if let Some(prev_node) = prev {
             node.start_position().row == prev_node.end_position().row
@@ -173,6 +160,8 @@ impl CommentMetadata {
             has_trailing_content,
             has_newline_above,
             has_newline_below,
+            has_prev_node,
+            has_next_node,
         }
     }
 }
