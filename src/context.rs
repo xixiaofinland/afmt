@@ -87,11 +87,11 @@ impl Comment {
     }
 
     pub fn has_newline_above(&self) -> bool {
-        self.metadata.has_newline_above
+        self.metadata.print_newline_above
     }
 
     pub fn has_newline_below(&self) -> bool {
-        self.metadata.has_newline_below
+        self.metadata.print_newline_below
     }
 
     pub fn has_prev_node(&self) -> bool {
@@ -112,8 +112,8 @@ impl<'a> DocBuild<'a> for Comment {
 pub struct CommentMetadata {
     pub has_leading_content: bool,
     pub has_trailing_content: bool,
-    pub has_newline_above: bool,
-    pub has_newline_below: bool,
+    pub print_newline_above: bool,
+    pub print_newline_below: bool,
     pub has_prev_node: bool,
     pub has_next_node: bool,
 }
@@ -143,13 +143,13 @@ impl CommentMetadata {
             }
         };
 
-        let has_newline_above = if let Some(prev_node) = prev {
+        let print_newline_above = if let Some(prev_node) = prev {
             node.start_position().row > prev_node.end_position().row + 1
         } else {
             false
         };
 
-        let has_newline_below = if let Some(next_node) = next {
+        let print_newline_below = if let Some(next_node) = next {
             node.end_position().row < next_node.start_position().row - 1
         } else {
             false
@@ -158,8 +158,8 @@ impl CommentMetadata {
         CommentMetadata {
             has_leading_content,
             has_trailing_content,
-            has_newline_above,
-            has_newline_below,
+            print_newline_above,
+            print_newline_below,
             has_prev_node,
             has_next_node,
         }

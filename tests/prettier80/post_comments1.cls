@@ -1,5 +1,6 @@
-Class A{
-
+class A {
+  {
+  }
 }
 
 // line comment
