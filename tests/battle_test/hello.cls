@@ -1,16 +1,12 @@
+
 //h
-
-
-// First Test Comment
-
 
 /**
 * First ApexDoc
 */
 
 
-Class/*t*/A{
+Class A{
 {
-  System.debug('SOMETHING');
-  }
+}
 }
