@@ -682,15 +682,28 @@ impl<'a> DocBuild<'a> for AssignmentLeft {
 }
 
 #[derive(Debug)]
-pub struct VoidType {
-    pub value: String,
+pub struct BoolType {
+    pub node_info: NodeInfo,
 }
 
-impl VoidType {
+impl BoolType {
     pub fn new(node: Node) -> Self {
-        Self {
-            value: node.value(),
+        let node_info = NodeInfo::from(&node);
+        Self { node_info }
+    }
+}
+
+impl<'a> DocBuild<'a> for BoolType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
         }
+        handle_pre_comments(b, bucket, result);
+
+        result.push(b.txt("boolean"));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 

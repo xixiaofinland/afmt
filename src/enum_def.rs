@@ -138,9 +138,9 @@ impl<'a> DocBuild<'a> for UnannotatedType {
 
 #[derive(Debug)]
 pub enum SimpleType {
-    Identifier(String),
-    Void(VoidType),
-    Bool,
+    Identifier(ValueNode),
+    Void(ValueNode),
+    Bool(BoolType),
     Generic(GenericType),
     Scoped(ScopedTypeIdentifier),
     Java(JavaType),
@@ -149,9 +149,9 @@ pub enum SimpleType {
 impl SimpleType {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "type_identifier" => Self::Identifier(n.value()),
-            "void_type" => Self::Void(VoidType::new(n)),
-            "boolean_type" => Self::Bool,
+            "type_identifier" => Self::Identifier(ValueNode::new(n)),
+            "void_type" => Self::Void(ValueNode::new(n)),
+            "boolean_type" => Self::Bool(BoolType::new(n)),
             "java_type" => Self::Java(JavaType::new(n)),
             "generic_type" => Self::Generic(GenericType::new(n)),
             "scoped_type_identifier" => Self::Scoped(ScopedTypeIdentifier::new(n)),
@@ -164,16 +164,16 @@ impl<'a> DocBuild<'a> for SimpleType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Java(n) => {
                 result.push(n.build(b));
             }
             Self::Void(n) => {
-                result.push(b.txt(&n.value));
+                result.push(n.build(b));
             }
-            Self::Bool => {
-                result.push(b.txt("boolean"));
+            Self::Bool(n) => {
+                result.push(n.build(b));
             }
             Self::Generic(n) => {
                 result.push(n.build(b));
