@@ -139,7 +139,7 @@ pub fn handle_dangling_comments<'a>(
     bucket: &CommentBucket,
 ) -> Vec<&'a Doc<'a>> {
     if bucket.dangling_comments.is_empty() {
-        panic!("handle_dangling_comments should not have empty dangling_comments input")
+        panic!("handle_dangling_comments() should not have empty dangling_comments input")
     }
 
     let mut docs = Vec::new();
