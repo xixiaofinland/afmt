@@ -489,8 +489,11 @@ impl ClassBody {
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
         handle_pre_comments(b, bucket, result);
+
         result.push(b.surround_body(&self.class_members, "", "}"));
         handle_post_comments(b, bucket, result);
     }
