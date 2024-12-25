@@ -2,7 +2,7 @@ use crate::{
     accessor::Accessor,
     context::{Comment, CommentBucket, CommentMap},
     data_model::*,
-    doc::{Doc, DocRef},
+    doc::DocRef,
     doc_builder::DocBuilder,
     enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
 };
@@ -137,12 +137,13 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
 pub fn handle_dangling_comments<'a>(
     b: &'a DocBuilder<'a>,
     bucket: &CommentBucket,
-) -> Vec<&'a Doc<'a>> {
+    result: &mut Vec<DocRef<'a>>,
+) -> Vec<&Doc<'a>> {
+    let mut docs = Vec::new();
     if bucket.dangling_comments.is_empty() {
         panic!("handle_dangling_comments should not have empty dangling_comments input")
     }
 
-    let mut docs = Vec::new();
     for (i, comment) in bucket.dangling_comments.iter().enumerate() {
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
@@ -168,7 +169,7 @@ pub fn handle_dangling_comments<'a>(
             }
         }
     }
-    docs
+    b.concat(docs);
 }
 
 pub fn handle_pre_comments<'a>(
