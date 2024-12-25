@@ -740,13 +740,18 @@ impl Block {
 impl<'a> DocBuild<'a> for Block {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if handle_dangling_comments(b, bucket, result) {
-            return;
-        }
-        handle_pre_comments(b, bucket, result);
 
         if self.statements.is_empty() {
-            return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+            if bucket.dangling_comments.is_empty() {
+                return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+            } else {
+                result.push(b.txt("{"));
+                result.push(b.indent(b.nl()));
+                handle_dangling_comments(b, bucket, result);
+                result.push(b.nl());
+                result.push(b.txt("}"));
+                return;
+            }
         }
 
         let docs = b.surround_body(&self.statements, "{", "}");
