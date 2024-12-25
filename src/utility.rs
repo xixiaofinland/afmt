@@ -143,11 +143,32 @@ pub fn handle_dangling_comments<'a>(
         return false;
     }
 
-    let docs: Vec<_> = bucket
-        .dangling_comments
-        .iter()
-        .map(|comment_node| comment_node.build(b))
-        .collect();
+    let mut docs = Vec::new();
+    for (i, comment) in bucket.dangling_comments.iter().enumerate() {
+        if comment.has_leading_content() {
+            docs.push(b.txt(" "));
+        } else if comment.has_prev_node() {
+            docs.push(b.nl());
+        }
+
+        if comment.print_newline_above() {
+            docs.push(b.nl());
+        }
+
+        docs.push(comment.build(b));
+
+        if i == bucket.dangling_comments.len() - 1 {
+            if comment.has_trailing_content() {
+                docs.push(b.txt(" "));
+            } else {
+                docs.push(b.nl());
+            }
+
+            if comment.print_newline_below() {
+                docs.push(b.nl());
+            }
+        }
+    }
     result.push(b.concat(docs));
     true
 }
