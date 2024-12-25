@@ -1318,6 +1318,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
 pub struct GenericType {
     pub generic_identifier: GenericIdentifier,
     pub type_arguments: TypeArguments,
+    pub node_info: NodeInfo,
 }
 
 impl GenericType {
@@ -1333,18 +1334,28 @@ impl GenericType {
         };
 
         let type_arguments = TypeArguments::new(node.c_by_k("type_arguments"));
+        let node_info = NodeInfo::from(&node);
 
         Self {
             generic_identifier,
             type_arguments,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for GenericType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         result.push(self.generic_identifier.build(b));
         result.push(self.type_arguments.build(b));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -1656,6 +1667,7 @@ pub struct ScopedTypeIdentifier {
     pub scoped_choice: ScopedChoice,
     pub annotations: Vec<Annotation>,
     pub type_identifier: String,
+    pub node_info: NodeInfo,
 }
 
 impl ScopedTypeIdentifier {
@@ -1681,17 +1693,25 @@ impl ScopedTypeIdentifier {
             .pop()
             .expect("## mandatory node type_identifier missing in ScopedTypeIdentifier");
         let type_identifier = type_identifier_node.value();
+        let node_info = NodeInfo::from(&node);
 
         Self {
             scoped_choice,
             annotations,
             type_identifier,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         result.push(self.scoped_choice.build(b));
         result.push(b.txt("."));
         if !self.annotations.is_empty() {
@@ -1702,6 +1722,8 @@ impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
             result.push(b.txt(" "));
         }
         result.push(b.txt(&self.type_identifier));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -3464,22 +3486,33 @@ impl<'a> DocBuild<'a> for JavaFieldAccess {
 #[derive(Debug)]
 pub struct JavaType {
     pub scoped_type_identifier: ScopedTypeIdentifier,
+    pub node_info: NodeInfo,
 }
 
 impl JavaType {
     pub fn new(node: Node) -> Self {
         let scoped_type_identifier =
             ScopedTypeIdentifier::new(node.c_by_k("scoped_type_identifier"));
+        let node_info = NodeInfo::from(&node);
         Self {
             scoped_type_identifier,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for JavaType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         result.push(b.txt("java:"));
         result.push(self.scoped_type_identifier.build(b));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
