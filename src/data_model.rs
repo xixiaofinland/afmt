@@ -3520,6 +3520,7 @@ impl<'a> DocBuild<'a> for JavaType {
 pub struct ArrayType {
     pub element: UnannotatedType,
     pub dimensions: Dimensions,
+    pub node_info: NodeInfo,
 }
 
 impl ArrayType {
@@ -3528,17 +3529,27 @@ impl ArrayType {
 
         let element = UnannotatedType::new(node.c_by_n("element"));
         let dimensions = Dimensions::new(node.c_by_n("dimensions"));
+        let node_info = NodeInfo::from(&node);
         Self {
             element,
             dimensions,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         result.push(self.element.build(b));
         result.push(self.dimensions.build(b));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
