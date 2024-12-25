@@ -35,7 +35,7 @@ impl Root {
             .into_iter()
             .map(|n| BodyMember {
                 member: RootMember::new(n),
-                has_trailing_newline: has_trailing_new_line(&n),
+                has_trailing_newline: print_trailing_new_line(&n),
             })
             .collect();
 
@@ -474,7 +474,7 @@ impl ClassBody {
             .into_iter()
             .map(|n| BodyMember {
                 member: ClassMember::new(n),
-                has_trailing_newline: has_trailing_new_line(&n),
+                has_trailing_newline: print_trailing_new_line(&n),
             })
             .collect();
         let node_info = NodeInfo::from(&node);
@@ -697,7 +697,7 @@ impl Block {
             .into_iter()
             .map(|n| BodyMember {
                 member: Statement::new(n),
-                has_trailing_newline: has_trailing_new_line(&n),
+                has_trailing_newline: print_trailing_new_line(&n),
             })
             .collect();
         let node_info = NodeInfo::from(&node);
@@ -1761,14 +1761,14 @@ impl ConstructorBody {
         for (i, c) in node.children_vec().into_iter().enumerate() {
             if i == 0 && c.kind() == "explicit_constructor_invocation" {
                 let member = ConstructInvocation::new(c);
-                let has_trailing_newline = has_trailing_new_line(&c);
+                let has_trailing_newline = print_trailing_new_line(&c);
                 constructor_invocation = Some(BodyMember {
                     member,
                     has_trailing_newline,
                 });
             } else {
                 let member = Statement::new(c);
-                let has_trailing_newline = has_trailing_new_line(&c);
+                let has_trailing_newline = print_trailing_new_line(&c);
                 statements.push(BodyMember {
                     member,
                     has_trailing_newline,
@@ -2920,7 +2920,7 @@ impl InterfaceBody {
 
                 BodyMember {
                     member,
-                    has_trailing_newline: has_trailing_new_line(&n),
+                    has_trailing_newline: print_trailing_new_line(&n),
                 }
             })
             .collect();

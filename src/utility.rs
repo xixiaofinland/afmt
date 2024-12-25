@@ -268,32 +268,13 @@ pub fn assert_check(node: Node, expected_kind: &str) {
     );
 }
 
-pub fn has_trailing_new_line(node: &Node) -> bool {
-    let source_code = get_source_code();
-    let index = node.end_byte();
-
-    // Ensure the index is within bounds
-    if index >= source_code.len() {
-        return false;
+pub fn print_trailing_new_line(node: &Node) -> bool {
+    let next = node.next_named_sibling();
+    if let Some(next_node) = next {
+        node.end_position().row < next_node.start_position().row - 1
+    } else {
+        false
     }
-
-    let remaining_code = &source_code[index..];
-    let mut newline_count = 0;
-
-    for char in remaining_code.chars() {
-        match char {
-            '\n' => {
-                newline_count += 1;
-                if newline_count >= 2 {
-                    break; // Found two consecutive newlines
-                }
-            }
-            ' ' | '\t' | '\r' => continue, // Skip other whitespace
-            _ => break,                    // Encountered a non-whitespace character
-        }
-    }
-
-    newline_count >= 2 // Return true if there are two or more consecutive newlines
 }
 
 pub fn get_precedence(op: &str) -> u8 {
