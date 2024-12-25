@@ -502,6 +502,7 @@ pub struct FieldDeclaration {
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
     pub accessor_list: Option<AccessorList>,
+    pub node_info: NodeInfo,
 }
 
 impl FieldDeclaration {
@@ -522,18 +523,27 @@ impl FieldDeclaration {
         let accessor_list = node
             .try_c_by_k("accessor_list")
             .map(|n| AccessorList::new(n));
+        let node_info = NodeInfo::from(&node);
 
         Self {
             modifiers,
             type_,
             declarators,
             accessor_list,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+
+        handle_pre_comments(b, bucket, result);
+
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
         }
@@ -558,6 +568,8 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
         } else {
             result.push(b.txt(";"));
         }
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -2814,16 +2826,17 @@ impl<'a> DocBuild<'a> for StaticInitializer {
 #[derive(Debug)]
 pub struct InterfaceDeclaration {
     pub modifiers: Option<Modifiers>,
-    pub name: String,
+    pub name: ValueNode,
     pub type_parameters: Option<TypeParameters>,
     pub extends: Option<ExtendsInterface>,
     pub body: InterfaceBody,
+    pub node_info: NodeInfo,
 }
 
 impl InterfaceDeclaration {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name");
+        let name = ValueNode::new(node.c_by_n("name"));
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
@@ -2831,6 +2844,7 @@ impl InterfaceDeclaration {
             .try_c_by_k("extends_interfaces")
             .map(|n| ExtendsInterface::new(n));
         let body = InterfaceBody::new(node.c_by_n("body"));
+        let node_info = NodeInfo::from(&node);
 
         Self {
             modifiers,
@@ -2838,18 +2852,25 @@ impl InterfaceDeclaration {
             type_parameters,
             extends,
             body,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for InterfaceDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         if let Some(ref n) = self.modifiers {
             result.push(n.build(b));
         }
 
         result.push(b.txt_("interface"));
-        result.push(b.txt(&self.name));
+        result.push(self.name.build(b));
 
         if let Some(ref n) = self.type_parameters {
             result.push(n.build(b));
@@ -2861,12 +2882,15 @@ impl<'a> DocBuild<'a> for InterfaceDeclaration {
 
         result.push(b.txt(" "));
         result.push(self.body.build(b));
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
 #[derive(Debug)]
 pub struct ExtendsInterface {
     pub types: Vec<Type>,
+    pub node_info: NodeInfo,
 }
 
 impl ExtendsInterface {
@@ -2877,18 +2901,27 @@ impl ExtendsInterface {
             .into_iter()
             .map(|n| Type::new(n))
             .collect();
-        Self { types }
+        let node_info = NodeInfo::from(&node);
+        Self { types, node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for ExtendsInterface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let bucket = get_comment_bucket(&self.node_info.id);
+        if handle_dangling_comments(b, bucket, result) {
+            return;
+        }
+        handle_pre_comments(b, bucket, result);
+
         let docs = b.to_docs(&self.types);
         let sep = Insertable::new(None, Some(", "), None);
         let doc = b.intersperse(&docs, sep);
 
         let extends_group = b.concat(vec![b._txt_("extends"), doc]);
         result.push(extends_group);
+
+        handle_post_comments(b, bucket, result);
     }
 }
 
