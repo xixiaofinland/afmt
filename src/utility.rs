@@ -134,25 +134,22 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     cursor.goto_parent();
 }
 
-/// Handles dangling comments.
-/// If dangling comments are present, they are printed, and the function returns `true` indicating that processing should stop.
-/// Otherwise, it returns `false`.
 pub fn handle_dangling_comments<'a>(
     b: &'a DocBuilder<'a>,
     bucket: &CommentBucket,
     result: &mut Vec<DocRef<'a>>,
 ) -> bool {
-    if !bucket.dangling_comments.is_empty() {
-        let docs: Vec<_> = bucket
-            .dangling_comments
-            .iter()
-            .map(|comment_node| comment_node.build(b))
-            .collect();
-        result.push(b.concat(docs));
-        true // Indicates that processing should stop
-    } else {
-        false
+    if bucket.dangling_comments.is_empty() {
+        return false;
     }
+
+    let docs: Vec<_> = bucket
+        .dangling_comments
+        .iter()
+        .map(|comment_node| comment_node.build(b))
+        .collect();
+    result.push(b.concat(docs));
+    true
 }
 
 pub fn handle_pre_comments<'a>(

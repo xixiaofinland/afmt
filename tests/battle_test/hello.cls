@@ -1,9 +1,11 @@
+Class A{
+{
 
 /**
 block comment
-*/ // line comment
+*/
 
-class A {
-  {
-  }
+// line comment
+}
+
 }
