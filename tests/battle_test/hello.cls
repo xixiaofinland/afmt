@@ -1,10 +1,10 @@
 Class A{
-
-}
-
-// line comment
+{
 
 /**
 block comment
 */
+// line comment
+}
 
+}
