@@ -1,5 +1,10 @@
 use crate::{
-    accessor::Accessor, context::{Comment, CommentBucket, CommentMap}, data_model::*, doc::DocRef, doc_builder::DocBuilder, enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith}
+    accessor::Accessor,
+    context::{Comment, CommentBucket, CommentMap},
+    data_model::*,
+    doc::DocRef,
+    doc_builder::DocBuilder,
+    enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
 };
 use colored::Colorize;
 #[allow(unused_imports)]
@@ -156,14 +161,23 @@ pub fn handle_pre_comments<'a>(
     bucket: &CommentBucket,
     result: &mut Vec<DocRef<'a>>,
 ) {
-    if !bucket.pre_comments.is_empty() {
-        let docs: Vec<_> = bucket
-            .pre_comments
-            .iter()
-            .map(|comment_node| comment_node.build(b))
-            .collect();
-        result.push(b.concat(docs));
+    if bucket.pre_comments.is_empty() {
+        return;
     }
+
+    let mut docs = Vec::new();
+    for (i, comment) in bucket.pre_comments.iter().enumerate() {
+        if comment.has_newline_above() {
+            docs.push(b.nl());
+        }
+        docs.push(comment.build(b));
+
+        if i == bucket.pre_comments.len() - 1 && comment.has_newline_below() {
+            docs.push(b.nl());
+        }
+    }
+
+    result.push(b.concat(docs));
 }
 
 /// Handles post-comments by printing them after processing the node.
@@ -172,14 +186,23 @@ pub fn handle_post_comments<'a>(
     bucket: &CommentBucket,
     result: &mut Vec<DocRef<'a>>,
 ) {
-    if !bucket.post_comments.is_empty() {
-        let docs: Vec<_> = bucket
-            .post_comments
-            .iter()
-            .map(|comment_node| comment_node.build(b))
-            .collect();
-        result.push(b.concat(docs));
+    if bucket.post_comments.is_empty() {
+        return;
     }
+
+    let mut docs = Vec::new();
+    for (i, comment) in bucket.post_comments.iter().enumerate() {
+        if i == 0 && comment.has_newline_above() {
+            docs.push(b.nl());
+        }
+        docs.push(comment.build(b));
+
+        if comment.has_newline_below() {
+            docs.push(b.nl());
+        }
+    }
+
+    result.push(b.concat(docs));
 }
 
 pub fn enrich(ast_tree: &Tree) -> Root {
