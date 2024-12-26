@@ -494,8 +494,13 @@ impl ClassBody {
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
+
         if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
+            result.push(b.indent(b.nl()));
+            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
+            result.push(b.nl());
+            result.push(b.txt("}"));
+            return;
         }
 
         handle_pre_comments(b, bucket, result);
@@ -748,18 +753,6 @@ impl<'a> DocBuild<'a> for Block {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
 
-        //if self.statements.is_empty() {
-        //    if bucket.dangling_comments.is_empty() {
-        //        return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
-        //    } else {
-        //        result.push(b.txt("{"));
-        //        result.push(b.indent(b.nl()));
-        //        result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
-        //        result.push(b.nl());
-        //        result.push(b.txt("}"));
-        //        return;
-        //    }
-        //}
         if !bucket.dangling_comments.is_empty() {
             result.push(b.txt("{"));
             result.push(b.indent(b.nl()));
