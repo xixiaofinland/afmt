@@ -146,11 +146,8 @@ pub fn handle_dangling_comments<'a>(
     for (i, comment) in bucket.dangling_comments.iter().enumerate() {
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
-        } else if comment.has_prev_node() {
-            docs.push(b.nl());
-        }
-
-        if comment.print_newline_above() {
+        } else if comment.print_newline_above() {
+            docs.push(b.nl_with_no_indent());
             docs.push(b.nl());
         }
 
@@ -159,11 +156,10 @@ pub fn handle_dangling_comments<'a>(
         if i == bucket.dangling_comments.len() - 1 && comment.has_next_node() {
             if comment.has_trailing_content() {
                 docs.push(b.txt(" "));
-            } else {
+            } else if comment.print_newline_below() {
+                docs.push(b.nl_with_no_indent());
                 docs.push(b.nl());
-            }
-
-            if comment.print_newline_below() {
+            } else {
                 docs.push(b.nl());
             }
         }
@@ -184,11 +180,10 @@ pub fn handle_pre_comments<'a>(
     for (i, comment) in bucket.pre_comments.iter().enumerate() {
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
-        } else if comment.has_prev_node() {
+        } else if comment.print_newline_above() {
+            docs.push(b.nl_with_no_indent());
             docs.push(b.nl());
-        }
-
-        if comment.print_newline_above() {
+        } else if comment.has_prev_node() {
             docs.push(b.nl());
         }
 

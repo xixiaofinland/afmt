@@ -748,18 +748,28 @@ impl<'a> DocBuild<'a> for Block {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
 
-        if self.statements.is_empty() {
-            if bucket.dangling_comments.is_empty() {
-                return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
-            } else {
-                result.push(b.txt("{"));
-                result.push(b.indent(b.nl()));
-                result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
-                result.push(b.nl());
-                result.push(b.txt("}"));
-                return;
-            }
+        //if self.statements.is_empty() {
+        //    if bucket.dangling_comments.is_empty() {
+        //        return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+        //    } else {
+        //        result.push(b.txt("{"));
+        //        result.push(b.indent(b.nl()));
+        //        result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
+        //        result.push(b.nl());
+        //        result.push(b.txt("}"));
+        //        return;
+        //    }
+        //}
+        if !bucket.dangling_comments.is_empty() {
+            result.push(b.txt("{"));
+            result.push(b.indent(b.nl()));
+            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
+            result.push(b.nl());
+            result.push(b.txt("}"));
+            return;
         }
+
+        handle_pre_comments(b, bucket, result);
 
         let docs = b.surround_body(&self.statements, "{", "}");
         result.push(docs);
@@ -793,7 +803,7 @@ impl Interface {
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -1363,7 +1373,7 @@ impl GenericType {
 impl<'a> DocBuild<'a> for GenericType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -1724,7 +1734,7 @@ impl ScopedTypeIdentifier {
 impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -1968,7 +1978,7 @@ impl TypeParameters {
 impl<'a> DocBuild<'a> for TypeParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -2015,7 +2025,7 @@ impl TypeParameter {
 impl<'a> DocBuild<'a> for TypeParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -2915,7 +2925,7 @@ impl InterfaceDeclaration {
 impl<'a> DocBuild<'a> for InterfaceDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -2965,7 +2975,7 @@ impl ExtendsInterface {
 impl<'a> DocBuild<'a> for ExtendsInterface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -3526,7 +3536,7 @@ impl JavaType {
 impl<'a> DocBuild<'a> for JavaType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -3564,7 +3574,7 @@ impl ArrayType {
 impl<'a> DocBuild<'a> for ArrayType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
@@ -5184,7 +5194,7 @@ impl ValueNode {
 impl<'a> DocBuild<'a> for ValueNode {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty(){
+        if !bucket.dangling_comments.is_empty() {
             return result.push(b.concat(handle_dangling_comments(b, bucket)));
         }
 
