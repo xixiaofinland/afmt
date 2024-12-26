@@ -1655,25 +1655,18 @@ impl ScopedTypeIdentifier {
 
 impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.scoped_choice.build(b));
+            result.push(b.txt("."));
+            if !self.annotations.is_empty() {
+                let docs = b.to_docs(&self.annotations);
 
-        handle_pre_comments(b, bucket, result);
-
-        result.push(self.scoped_choice.build(b));
-        result.push(b.txt("."));
-        if !self.annotations.is_empty() {
-            let docs = b.to_docs(&self.annotations);
-
-            let sep = Insertable::new(None, Some(" "), None);
-            result.push(b.intersperse(&docs, sep));
-            result.push(b.txt(" "));
-        }
-        result.push(b.txt(&self.type_identifier));
-
-        handle_post_comments(b, bucket, result);
+                let sep = Insertable::new(None, Some(" "), None);
+                result.push(b.intersperse(&docs, sep));
+                result.push(b.txt(" "));
+            }
+            result.push(b.txt(&self.type_identifier));
+        });
     }
 }
 
