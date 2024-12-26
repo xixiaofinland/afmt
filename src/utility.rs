@@ -155,14 +155,7 @@ pub fn handle_dangling_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.dangling_comments.iter().enumerate() {
-        if comment.has_leading_content() {
-            docs.push(b.txt(" "));
-        } else if comment.print_newline_above() {
-            docs.push(b.nl_with_no_indent());
-            docs.push(b.nl());
-        } else if comment.has_prev_node() {
-            docs.push(b.nl());
-        }
+        handle_comment_pre(comment, b, &mut docs);
 
         docs.push(comment.build(b));
 
@@ -191,14 +184,7 @@ pub fn handle_pre_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.pre_comments.iter().enumerate() {
-        if comment.has_leading_content() {
-            docs.push(b.txt(" "));
-        } else if comment.print_newline_above() {
-            docs.push(b.nl_with_no_indent());
-            docs.push(b.nl());
-        } else if comment.has_prev_node() {
-            docs.push(b.nl());
-        }
+        handle_comment_pre(comment, b, &mut docs);
 
         docs.push(comment.build(b));
 
@@ -230,14 +216,7 @@ pub fn handle_post_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.post_comments.iter().enumerate() {
-        if comment.has_leading_content() {
-            docs.push(b.txt(" "));
-        } else if comment.print_newline_above() {
-            docs.push(b.nl_with_no_indent());
-            docs.push(b.nl());
-        } else if comment.has_prev_node() {
-            docs.push(b.nl());
-        }
+        handle_comment_pre(comment, b, &mut docs);
 
         docs.push(comment.build(b));
 
