@@ -1892,22 +1892,15 @@ impl TypeParameters {
 
 impl<'a> DocBuild<'a> for TypeParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.type_parameters);
 
-        handle_pre_comments(b, bucket, result);
-
-        let docs = b.to_docs(&self.type_parameters);
-
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some(">"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
-
-        handle_post_comments(b, bucket, result);
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some(">"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 
