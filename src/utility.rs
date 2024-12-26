@@ -207,16 +207,16 @@ pub fn handle_post_comments<'a>(
 
         docs.push(comment.build(b));
 
-        if i == bucket.post_comments.len() - 1 && !comment.has_next_node() {
-            if comment.has_trailing_content() {
-                docs.push(b.txt(" "));
-            }
-
-            if comment.print_newline_below() {
-                docs.push(b.nl());
-                docs.push(b.nl());
-            }
-        }
+        //if i == bucket.post_comments.len() - 1 && !comment.has_next_node() {
+        //    if comment.has_trailing_content() {
+        //        docs.push(b.txt(" "));
+        //    }
+        //
+        //    if comment.print_newline_below() {
+        //        docs.push(b.nl());
+        //        docs.push(b.nl());
+        //    }
+        //}
     }
 
     result.push(b.concat(docs));
