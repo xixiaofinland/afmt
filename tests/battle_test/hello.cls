@@ -1,10 +1,18 @@
+// pre1
 
-Class A{
-// line comment
+/*
+pre2
+  */
 
-/**
-block comment
+class A { //d0
+  // d1
+
+  /*
+d2
 */
-{
 }
-}
+
+//p1
+
+/*p2*/
+
