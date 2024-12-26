@@ -3453,17 +3453,10 @@ impl ArrayType {
 
 impl<'a> DocBuild<'a> for ArrayType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
-
-        handle_pre_comments(b, bucket, result);
-
-        result.push(self.element.build(b));
-        result.push(self.dimensions.build(b));
-
-        handle_post_comments(b, bucket, result);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.element.build(b));
+            result.push(self.dimensions.build(b));
+        });
     }
 }
 
