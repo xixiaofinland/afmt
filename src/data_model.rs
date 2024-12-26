@@ -754,7 +754,7 @@ impl<'a> DocBuild<'a> for Block {
             } else {
                 result.push(b.txt("{"));
                 result.push(b.indent(b.nl()));
-                result.push(b.concat(handle_dangling_comments(b, bucket)));
+                result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
                 result.push(b.nl());
                 result.push(b.txt("}"));
                 return;
