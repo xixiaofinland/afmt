@@ -20,18 +20,18 @@ mod tests {
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
-    //#[test]
-    //fn extra() {
-    //    let (total, failed) = run_scenario("tests/prettier10000", "prettier10000");
-    //    assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
-    //}
+    #[test]
+    fn extra() {
+        let (total, failed) = run_scenario("tests/comments", "comments");
+        assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
+    }
 
     #[test]
     fn all() {
         let scenarios = [
             ("tests/static", "static"),
             ("tests/prettier80", "prettier80"),
-            //("tests/prettier10000", "prettier10000"),
+            ("tests/comments", "comments"),
         ];
 
         let mut total_tests = 0;
@@ -88,7 +88,7 @@ mod tests {
         match scenario_name {
             "static" => run_static_test_files(source),
             "prettier80" => run_prettier_test_files(source, "p80"),
-            "prettier10000" => run_prettier_test_files(source, "p10000"),
+            "comments" => run_static_test_files(source),
             _ => panic!("Unknown scenario: {}", scenario_name),
         }
     }
