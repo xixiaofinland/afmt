@@ -364,12 +364,9 @@ impl Modifier {
 
 impl<'a> DocBuild<'a> for Modifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        handle_pre_comments(b, bucket, result);
-
-        result.push(self.kind.build(b));
-
-        handle_post_comments(b, bucket, result);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.kind.build(b));
+        });
     }
 }
 
@@ -456,8 +453,11 @@ impl ClassBody {
 impl<'a> DocBuild<'a> for ClassBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
+        handle_pre_comments(b, bucket, result);
 
-        if !bucket.dangling_comments.is_empty() {
+        if bucket.dangling_comments.is_empty() {
+            result.push(b.surround_body(&self.class_members, "", "}"));
+        } else {
             result.push(b.indent(b.nl()));
             result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
             result.push(b.nl());
@@ -465,9 +465,6 @@ impl<'a> DocBuild<'a> for ClassBody {
             return;
         }
 
-        handle_pre_comments(b, bucket, result);
-
-        result.push(b.surround_body(&self.class_members, "", "}"));
         handle_post_comments(b, bucket, result);
     }
 }
