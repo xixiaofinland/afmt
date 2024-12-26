@@ -2868,21 +2868,14 @@ impl ExtendsInterface {
 
 impl<'a> DocBuild<'a> for ExtendsInterface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.types);
+            let sep = Insertable::new(None, Some(", "), None);
+            let doc = b.intersperse(&docs, sep);
 
-        handle_pre_comments(b, bucket, result);
-
-        let docs = b.to_docs(&self.types);
-        let sep = Insertable::new(None, Some(", "), None);
-        let doc = b.intersperse(&docs, sep);
-
-        let extends_group = b.concat(vec![b._txt_("extends"), doc]);
-        result.push(extends_group);
-
-        handle_post_comments(b, bucket, result);
+            let extends_group = b.concat(vec![b._txt_("extends"), doc]);
+            result.push(extends_group);
+        });
     }
 }
 
