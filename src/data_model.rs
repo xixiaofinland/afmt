@@ -144,7 +144,7 @@ pub struct MethodDeclaration {
     pub name: ValueNode,
     pub formal_parameters: FormalParameters,
     pub body: Option<Block>,
-    //pub dimentions
+    //pub dimensions
     pub node_info: NodeInfo,
 }
 
@@ -2599,18 +2599,23 @@ impl<'a> DocBuild<'a> for ArrayCreationVariant {
 }
 
 #[derive(Debug)]
-pub struct Dimensions {}
+pub struct Dimensions {
+    pub node_info: NodeInfo,
+}
 
 impl Dimensions {
     pub fn new(node: Node) -> Self {
         assert_check(node, "dimensions");
-        Self {}
+        let node_info = NodeInfo::from(&node);
+        Self { node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for Dimensions {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("[]"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("[]"));
+        });
     }
 }
 
