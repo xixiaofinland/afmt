@@ -1687,7 +1687,6 @@ impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
             result.push(b.txt("."));
             if !self.annotations.is_empty() {
                 let docs = b.to_docs(&self.annotations);
-
                 let sep = Insertable::new(None, Some(" "), None);
                 result.push(b.intersperse(&docs, sep));
                 result.push(b.txt(" "));
@@ -1962,7 +1961,6 @@ impl<'a> DocBuild<'a> for TypeParameter {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             if !self.annotations.is_empty() {
                 let docs = b.to_docs(&self.annotations);
-
                 let sep = Insertable::new(None, Some(" "), None);
                 result.push(b.intersperse(&docs, sep));
                 result.push(b.txt(" "));
