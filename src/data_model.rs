@@ -374,6 +374,7 @@ impl<'a> DocBuild<'a> for Modifier {
 pub struct Annotation {
     pub name: String,
     pub arguments: Option<AnnotationArgumentList>,
+    pub node_info: NodeInfo,
 }
 
 impl Annotation {
@@ -383,19 +384,25 @@ impl Annotation {
         let arguments = node
             .try_c_by_n("arguments")
             .map(AnnotationArgumentList::new);
+        let node_info = NodeInfo::from(&node);
 
-        Self { name, arguments }
+        Self {
+            name,
+            arguments,
+            node_info,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(format!("@{}", self.name)));
-
-        if let Some(a) = &self.arguments {
-            result.push(a.build(b));
-        }
-        result.push(b.nl());
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt(format!("@{}", self.name)));
+            if let Some(a) = &self.arguments {
+                result.push(a.build(b));
+            }
+            result.push(b.nl());
+        });
     }
 }
 
