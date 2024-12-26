@@ -510,39 +510,32 @@ impl FieldDeclaration {
 
 impl<'a> DocBuild<'a> for FieldDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
 
-        handle_pre_comments(b, bucket, result);
-
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-
-        result.push(self.type_.build(b));
-        result.push(b.txt(" "));
-
-        let docs = b.to_docs(&self.declarators);
-
-        // prevent unnessary indentation when only one element;
-        let doc = if docs.len() == 1 {
-            docs[0]
-        } else {
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
-            b.group(b.indent(b.intersperse(&docs, sep)))
-        };
-        result.push(doc);
-
-        if let Some(ref n) = self.accessor_list {
+            result.push(self.type_.build(b));
             result.push(b.txt(" "));
-            result.push(n.build(b));
-        } else {
-            result.push(b.txt(";"));
-        }
 
-        handle_post_comments(b, bucket, result);
+            let docs = b.to_docs(&self.declarators);
+
+            // prevent unnessary indentation when only one element;
+            let doc = if docs.len() == 1 {
+                docs[0]
+            } else {
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                b.group(b.indent(b.intersperse(&docs, sep)))
+            };
+            result.push(doc);
+
+            if let Some(ref n) = self.accessor_list {
+                result.push(b.txt(" "));
+                result.push(n.build(b));
+            } else {
+                result.push(b.txt(";"));
+            }
+        });
     }
 }
 
