@@ -156,7 +156,7 @@ pub fn handle_dangling_comments<'a>(
 
         docs.push(comment.build(b));
 
-        if i == bucket.dangling_comments.len() - 1 {
+        if i == bucket.dangling_comments.len() - 1 && comment.has_next_node() {
             if comment.has_trailing_content() {
                 docs.push(b.txt(" "));
             } else {

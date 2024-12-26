@@ -5,7 +5,7 @@ Class A{
               block comment
 */
 
-            // line comment
+            //line comment
 }
 
 }
