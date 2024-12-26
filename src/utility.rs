@@ -143,21 +143,9 @@ pub fn handle_dangling_comments<'a>(
     }
 
     let mut docs = Vec::new();
-    for (i, comment) in bucket.dangling_comments.iter().enumerate() {
+    for comment in &bucket.dangling_comments {
         handle_comment_heading_logic(comment, b, &mut docs);
-
         docs.push(comment.build(b));
-
-        //if i == bucket.dangling_comments.len() - 1 && comment.has_next_node() {
-        //    if comment.has_trailing_content() {
-        //        docs.push(b.txt(" "));
-        //    } else if comment.print_newline_below() {
-        //        docs.push(b.nl_with_no_indent());
-        //        docs.push(b.nl());
-        //    } else {
-        //        docs.push(b.nl());
-        //    }
-        //}
     }
     docs
 }
@@ -202,27 +190,18 @@ pub fn handle_post_comments<'a>(
     }
 
     let mut docs = Vec::new();
-    for (i, comment) in bucket.post_comments.iter().enumerate() {
+    for comment in &bucket.post_comments {
         handle_comment_heading_logic(comment, b, &mut docs);
-
         docs.push(comment.build(b));
-
-        //if i == bucket.post_comments.len() - 1 && !comment.has_next_node() {
-        //    if comment.has_trailing_content() {
-        //        docs.push(b.txt(" "));
-        //    }
-        //
-        //    if comment.print_newline_below() {
-        //        docs.push(b.nl());
-        //        docs.push(b.nl());
-        //    }
-        //}
     }
-
     result.push(b.concat(docs));
 }
 
-fn handle_comment_heading_logic<'a>(comment: &Comment, b: &'a DocBuilder<'a>, docs: &mut Vec<DocRef<'a>>) {
+fn handle_comment_heading_logic<'a>(
+    comment: &Comment,
+    b: &'a DocBuilder<'a>,
+    docs: &mut Vec<DocRef<'a>>,
+) {
     if comment.has_leading_content() {
         docs.push(b.txt(" "));
     } else if comment.print_newline_above() {

@@ -754,7 +754,6 @@ impl<'a> DocBuild<'a> for Block {
         let bucket = get_comment_bucket(&self.node_info.id);
 
         handle_pre_comments(b, bucket, result);
-
         if bucket.dangling_comments.is_empty() {
             let docs = b.surround_body(&self.statements, "{", "}");
             result.push(docs);
@@ -766,7 +765,6 @@ impl<'a> DocBuild<'a> for Block {
             result.push(b.txt("}"));
             return;
         }
-
         handle_post_comments(b, bucket, result);
     }
 }
