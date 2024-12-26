@@ -737,7 +737,9 @@ impl Interface {
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
-            result.push(self.type_list.build(b));
+            let doc = self.type_list.build(b);
+            let impl_group = b.concat(vec![b.txt_("implements"), doc]);
+            result.push(impl_group);
         });
     }
 }
@@ -769,9 +771,7 @@ impl<'a> DocBuild<'a> for TypeList {
             let docs = b.to_docs(&self.types);
             let sep = Insertable::new(None, Some(", "), None);
             let doc = b.intersperse(&docs, sep);
-
-            let implements_group = b.concat(vec![b.txt_("implements"), doc]);
-            result.push(implements_group);
+            result.push(doc);
         });
     }
 }
@@ -2876,30 +2876,25 @@ impl<'a> DocBuild<'a> for InterfaceDeclaration {
 
 #[derive(Debug)]
 pub struct ExtendsInterface {
-    pub types: Vec<Type>,
+    pub type_list: TypeList,
     pub node_info: NodeInfo,
 }
 
 impl ExtendsInterface {
     pub fn new(node: Node) -> Self {
-        let types = node
-            .c_by_k("type_list")
-            .children_vec()
-            .into_iter()
-            .map(|n| Type::new(n))
-            .collect();
+        let type_list = TypeList::new(node.c_by_k("type_list"));
         let node_info = NodeInfo::from(&node);
-        Self { types, node_info }
+        Self {
+            type_list,
+            node_info,
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ExtendsInterface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
-            let docs = b.to_docs(&self.types);
-            let sep = Insertable::new(None, Some(", "), None);
-            let doc = b.intersperse(&docs, sep);
-
+            let doc = self.type_list.build(b);
             let extends_group = b.concat(vec![b._txt_("extends"), doc]);
             result.push(extends_group);
         });
