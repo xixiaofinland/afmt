@@ -1,4 +1,5 @@
-// long block comments in middle triggers line wrapping
-public class /*tttttttttttttttttttttttttttttttttttttttttttttttt*/ A implements B.C {
+// finalize these
+public class  A /*1*/ implements /*2*/ B.C  { /*3*/
+// 5
 }
 

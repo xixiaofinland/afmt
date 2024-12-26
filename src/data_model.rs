@@ -716,7 +716,7 @@ impl<'a> DocBuild<'a> for Block {
 
 #[derive(Debug)]
 pub struct Interface {
-    pub types: Vec<Type>,
+    pub type_list: TypeList,
     pub node_info: NodeInfo,
 }
 
@@ -724,8 +724,35 @@ impl Interface {
     pub fn new(node: Node) -> Self {
         assert_check(node, "interfaces");
 
+        let type_list = TypeList::new(node.c_by_k("type_list"));
+        let node_info = NodeInfo::from(&node);
+
+        Self {
+            type_list,
+            node_info,
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for Interface {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.type_list.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct TypeList {
+    pub types: Vec<Type>,
+    pub node_info: NodeInfo,
+}
+
+impl TypeList {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "type_list");
+
         let types = node
-            .c_by_k("type_list")
             .children_vec()
             .into_iter()
             .map(|n| Type::new(n))
@@ -736,7 +763,7 @@ impl Interface {
     }
 }
 
-impl<'a> DocBuild<'a> for Interface {
+impl<'a> DocBuild<'a> for TypeList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             let docs = b.to_docs(&self.types);

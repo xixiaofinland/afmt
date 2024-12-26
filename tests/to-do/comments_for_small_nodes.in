@@ -1,0 +1,4 @@
+// finalize these
+public class  A /*1*/ implements /*2*/ B.C /*3*/ {
+// 5
+}
