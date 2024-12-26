@@ -661,16 +661,9 @@ impl BoolType {
 
 impl<'a> DocBuild<'a> for BoolType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
-
-        handle_pre_comments(b, bucket, result);
-
-        result.push(b.txt("boolean"));
-
-        handle_post_comments(b, bucket, result);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("boolean"));
+        });
     }
 }
 
@@ -745,21 +738,14 @@ impl Interface {
 
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.types);
+            let sep = Insertable::new(None, Some(", "), None);
+            let doc = b.intersperse(&docs, sep);
 
-        handle_pre_comments(b, bucket, result);
-
-        let docs = b.to_docs(&self.types);
-        let sep = Insertable::new(None, Some(", "), None);
-        let doc = b.intersperse(&docs, sep);
-
-        let implements_group = b.concat(vec![b.txt_("implements"), doc]);
-        result.push(implements_group);
-
-        handle_post_comments(b, bucket, result);
+            let implements_group = b.concat(vec![b.txt_("implements"), doc]);
+            result.push(implements_group);
+        });
     }
 }
 
