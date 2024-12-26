@@ -148,16 +148,16 @@ pub fn handle_dangling_comments<'a>(
 
         docs.push(comment.build(b));
 
-        if i == bucket.dangling_comments.len() - 1 && comment.has_next_node() {
-            if comment.has_trailing_content() {
-                docs.push(b.txt(" "));
-            } else if comment.print_newline_below() {
-                docs.push(b.nl_with_no_indent());
-                docs.push(b.nl());
-            } else {
-                docs.push(b.nl());
-            }
-        }
+        //if i == bucket.dangling_comments.len() - 1 && comment.has_next_node() {
+        //    if comment.has_trailing_content() {
+        //        docs.push(b.txt(" "));
+        //    } else if comment.print_newline_below() {
+        //        docs.push(b.nl_with_no_indent());
+        //        docs.push(b.nl());
+        //    } else {
+        //        docs.push(b.nl());
+        //    }
+        //}
     }
     docs
 }
@@ -180,11 +180,10 @@ pub fn handle_pre_comments<'a>(
         if i == bucket.pre_comments.len() - 1 {
             if comment.has_trailing_content() {
                 docs.push(b.txt(" "));
-            } else {
+            } else if comment.print_newline_below() {
+                docs.push(b.nl_with_no_indent());
                 docs.push(b.nl());
-            }
-
-            if comment.print_newline_below() {
+            } else {
                 docs.push(b.nl());
             }
         }
