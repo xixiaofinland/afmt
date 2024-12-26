@@ -134,6 +134,27 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     cursor.goto_parent();
 }
 
+pub fn build_with_comments<'a, F>(
+    b: &'a DocBuilder<'a>,
+    id: &usize,
+    result: &mut Vec<DocRef<'a>>,
+    handle_members: F,
+) where
+    F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
+{
+    let bucket = get_comment_bucket(id);
+    handle_pre_comments(b, bucket, result);
+
+    if bucket.dangling_comments.is_empty() {
+        handle_members(b, result);
+    } else {
+        result.push(b.concat(handle_dangling_comments(b, bucket)));
+        return;
+    }
+
+    handle_post_comments(b, bucket, result);
+}
+
 pub fn handle_dangling_comments<'a>(
     b: &'a DocBuilder<'a>,
     bucket: &CommentBucket,
