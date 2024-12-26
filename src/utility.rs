@@ -221,11 +221,10 @@ pub fn handle_post_comments<'a>(
     for (i, comment) in bucket.post_comments.iter().enumerate() {
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
-        } else {
+        } else if comment.print_newline_above() {
+            docs.push(b.nl_with_no_indent());
             docs.push(b.nl());
-        }
-
-        if comment.print_newline_above() {
+        } else if comment.has_prev_node() {
             docs.push(b.nl());
         }
 
