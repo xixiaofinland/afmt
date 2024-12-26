@@ -134,6 +134,17 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     cursor.goto_parent();
 }
 
+fn handle_comment_pre<'a>(comment: &Comment, b: &'a DocBuilder<'a>, docs: &mut Vec<DocRef<'a>>) {
+    if comment.has_leading_content() {
+        docs.push(b.txt(" "));
+    } else if comment.print_newline_above() {
+        docs.push(b.nl_with_no_indent());
+        docs.push(b.nl());
+    } else if comment.has_prev_node() {
+        docs.push(b.nl());
+    }
+}
+
 pub fn handle_dangling_comments<'a>(
     b: &'a DocBuilder<'a>,
     bucket: &CommentBucket,
