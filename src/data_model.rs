@@ -1960,6 +1960,13 @@ impl TypeParameter {
 impl<'a> DocBuild<'a> for TypeParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if !self.annotations.is_empty() {
+                let docs = b.to_docs(&self.annotations);
+
+                let sep = Insertable::new(None, Some(" "), None);
+                result.push(b.intersperse(&docs, sep));
+                result.push(b.txt(" "));
+            }
             result.push(b.txt(&self.type_identifier));
         });
     }
