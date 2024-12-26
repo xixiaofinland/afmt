@@ -380,11 +380,3 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
         node.value()
     );
 }
-
-pub fn get_comment_children(node: Node) -> Vec<Comment> {
-    node.all_children_vec()
-        .into_iter()
-        .filter(|n| n.is_extra())
-        .map(|n| Comment::from_node(n))
-        .collect()
-}
