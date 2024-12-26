@@ -104,7 +104,21 @@ impl Comment {
 
 impl<'a> DocBuild<'a> for Comment {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.value));
+        match self.comment_type {
+            CommentType::Line => {
+                result.push(b.txt(&self.value));
+            }
+            CommentType::Block => {
+                let lines: &Vec<&str> = &self.value.split('\n').collect();
+                for (i, line) in lines.iter().enumerate() {
+                    result.push(b.txt(line.trim()));
+
+                    if i < lines.len() - 1 {
+                        result.push(b.nl());
+                    }
+                }
+            }
+        }
     }
 }
 
