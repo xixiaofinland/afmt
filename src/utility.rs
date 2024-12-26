@@ -144,7 +144,7 @@ pub fn handle_dangling_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.dangling_comments.iter().enumerate() {
-        handle_comment_pre(comment, b, &mut docs);
+        handle_comment_heading_logic(comment, b, &mut docs);
 
         docs.push(comment.build(b));
 
@@ -173,7 +173,7 @@ pub fn handle_pre_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.pre_comments.iter().enumerate() {
-        handle_comment_pre(comment, b, &mut docs);
+        handle_comment_heading_logic(comment, b, &mut docs);
 
         docs.push(comment.build(b));
 
@@ -203,7 +203,7 @@ pub fn handle_post_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.post_comments.iter().enumerate() {
-        handle_comment_pre(comment, b, &mut docs);
+        handle_comment_heading_logic(comment, b, &mut docs);
 
         docs.push(comment.build(b));
 
@@ -222,7 +222,7 @@ pub fn handle_post_comments<'a>(
     result.push(b.concat(docs));
 }
 
-fn handle_comment_pre<'a>(comment: &Comment, b: &'a DocBuilder<'a>, docs: &mut Vec<DocRef<'a>>) {
+fn handle_comment_heading_logic<'a>(comment: &Comment, b: &'a DocBuilder<'a>, docs: &mut Vec<DocRef<'a>>) {
     if comment.has_leading_content() {
         docs.push(b.txt(" "));
     } else if comment.print_newline_above() {
