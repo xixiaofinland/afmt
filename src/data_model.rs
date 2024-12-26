@@ -330,21 +330,18 @@ impl Modifiers {
 
 impl<'a> DocBuild<'a> for Modifiers {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        handle_pre_comments(b, bucket, result);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.annotation {
+                result.push(n.build(b));
+            }
 
-        if let Some(ref n) = self.annotation {
-            result.push(n.build(b));
-        }
-
-        if !self.modifiers.is_empty() {
-            let docs = b.to_docs(&self.modifiers);
-            let sep = Insertable::new(None, Some(" "), None);
-            result.push(b.intersperse(&docs, sep));
-            result.push(b.txt(" "));
-        }
-
-        handle_post_comments(b, bucket, result);
+            if !self.modifiers.is_empty() {
+                let docs = b.to_docs(&self.modifiers);
+                let sep = Insertable::new(None, Some(" "), None);
+                result.push(b.intersperse(&docs, sep));
+                result.push(b.txt(" "));
+            }
+        });
     }
 }
 
