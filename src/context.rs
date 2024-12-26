@@ -164,7 +164,7 @@ impl CommentMetadata {
         };
 
         let print_newline_below = if let Some(next_node) = next {
-            node.end_position().row < next_node.start_position().row - 1
+            node.end_position().row < next_node.start_position().row.saturating_sub(1)
         } else {
             false
         };
