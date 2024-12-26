@@ -258,25 +258,18 @@ impl FormalParameter {
 
 impl<'a> DocBuild<'a> for FormalParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let bucket = get_comment_bucket(&self.node_info.id);
-        if !bucket.dangling_comments.is_empty() {
-            return result.push(b.concat(handle_dangling_comments(b, bucket)));
-        }
-
-        handle_pre_comments(b, bucket, result);
-
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-        result.push(self.type_.build(b));
-        result.push(b.txt(" "));
-        result.push(self.name.build(b));
-        if let Some(ref d) = self.dimensions {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
+            result.push(self.type_.build(b));
             result.push(b.txt(" "));
-            result.push(d.build(b));
-        }
-
-        handle_post_comments(b, bucket, result);
+            result.push(self.name.build(b));
+            if let Some(ref d) = self.dimensions {
+                result.push(b.txt(" "));
+                result.push(d.build(b));
+            }
+        });
     }
 }
 
