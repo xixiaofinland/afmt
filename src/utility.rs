@@ -58,7 +58,7 @@ pub fn get_comment_map() -> &'static CommentMap {
     THREAD_COMMENT_MAP.with(|cm| cm.get().expect("## CommentMap not set for this thread"))
 }
 
-pub fn print_missing_comments<'a>() {
+pub fn assert_no_missing_comments<'a>() {
     let missing_comments: Vec<&'static Comment> = get_comment_map()
         .values()
         .flat_map(|bucket| {
