@@ -397,9 +397,8 @@ impl Annotation {
 impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
-            result.push(b.txt("@{"));
+            result.push(b.txt("@"));
             result.push(self.name.build(b));
-            result.push(b.txt("}"));
 
             if let Some(a) = &self.arguments {
                 result.push(a.build(b));
