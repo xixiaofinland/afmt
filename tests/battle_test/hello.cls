@@ -1,3 +1,5 @@
-// long block comments in middle triggers line wrapping
-public class /*tttttttttttttttttttttttttttttttttttttttttttttttt*/ A implements B.C {
+@isTest( seeAllData=true // Class annotation inline comment 1
+  isParallel = false // Class annotation inline comment 2 
+)
+class Comments {
 }
