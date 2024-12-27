@@ -250,7 +250,7 @@ fn handle_comment_heading_logic<'a>(
     docs: &mut Vec<DocRef<'a>>,
 ) {
     if comment.has_leading_content() {
-        return;
+        return docs.push(b.txt(" "));
     }
     if comment.print_newline_above() {
         docs.push(b.nl_with_no_indent());

@@ -143,8 +143,12 @@ impl<'a> PrettyPrinter<'a> {
                     self.col = 0;
                 }
                 Doc::Text(text, width) => {
-                    result.push_str(text);
-                    self.col += width;
+                    if text == " " && result.ends_with(' ') {
+                        // do nothing to avoid "double spacing" in comment node handling
+                    } else {
+                        result.push_str(text);
+                        self.col += width;
+                    }
                 }
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
