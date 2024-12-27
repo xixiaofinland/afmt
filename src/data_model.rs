@@ -403,8 +403,8 @@ impl<'a> DocBuild<'a> for Annotation {
             if let Some(a) = &self.arguments {
                 result.push(a.build(b));
             }
-            result.push(b.nl());
         });
+        result.push(b.nl());
     }
 }
 

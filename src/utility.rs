@@ -153,14 +153,34 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let mut pending_pre_comments = Vec::new();
     // Track the last visited code node
     let mut last_code_node_id: Option<usize> = None;
+    let mut last_code_node_row: Option<usize> = None;
 
     loop {
         let child = cursor.node();
 
         if child.is_named() {
             if child.is_extra() {
-                // It's a comment node => treat as "pending pre-comment"
-                pending_pre_comments.push(Comment::from_node(child));
+                // It's a comment node
+                let comment = Comment::from_node(child);
+
+                if let Some(last_id) = last_code_node_id {
+                    if let Some(last_row) = last_code_node_row {
+                        // If the comment is "inline" with the preceding code node, treat it as post-comment
+                        if child.end_position().row == last_row {
+                            comment_map
+                                .entry(last_id)
+                                .or_insert_with(CommentBucket::new)
+                                .post_comments
+                                .push(comment);
+                        } else {
+                            // Not inline => accumulate in pending_pre_comments
+                            pending_pre_comments.push(comment);
+                        }
+                    }
+                } else {
+                    // No preceding code node => just push
+                    pending_pre_comments.push(comment);
+                }
             } else {
                 // It's a child code node
                 let child_id = child.id();
@@ -179,6 +199,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
 
                 // After returning, we know child is fully processed
                 last_code_node_id = Some(child_id);
+                last_code_node_row = Some(child.end_position().row);
             }
         }
 
