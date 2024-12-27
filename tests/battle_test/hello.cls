@@ -1,3 +1,5 @@
-class Comments { 
-  // comments with trailing empty spaces      
+class A {
+  @TestVisible
+  // comment1
+  private String s;
 }
