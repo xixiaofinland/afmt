@@ -3,7 +3,7 @@ use crate::data_model::*;
 use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
 use crate::utility::{
-    collect_comments, enrich, get_comment_map, assert_no_missing_comments, set_thread_comment_map,
+    assert_no_missing_comments, collect_comments, enrich, get_comment_map, set_thread_comment_map,
     set_thread_source_code,
 };
 use anyhow::{anyhow, Result};
@@ -154,6 +154,10 @@ impl Formatter {
         let doc_ref = root.build(&b);
 
         let result = pretty_print(doc_ref, config.max_width);
+        eprintln!(
+            "gopro[48]: formatter.rs:157: get_comment_map()={:#?}",
+            get_comment_map()
+        );
         assert_no_missing_comments();
 
         result

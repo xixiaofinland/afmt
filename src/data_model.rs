@@ -1369,6 +1369,7 @@ pub struct IfStatement {
     pub condition: ParenthesizedExpression,
     pub consequence: Statement,
     pub alternative: Option<Statement>,
+    pub node_info: NodeInfo,
 }
 
 impl IfStatement {
@@ -1376,61 +1377,66 @@ impl IfStatement {
         let condition = ParenthesizedExpression::new(node.c_by_n("condition"));
         let consequence = Statement::new(node.c_by_n("consequence"));
         let alternative = node.try_c_by_n("alternative").map(|a| Statement::new(a));
+        let node_info = NodeInfo::from(&node);
+
         Self {
             condition,
             consequence,
             alternative,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for IfStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("if "));
-        result.push(self.condition.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("if "));
+            result.push(self.condition.build(b));
 
-        if self.consequence.is_block() {
-            result.push(b.txt(" "));
-            result.push(self.consequence.build(b));
-        } else {
-            result.push(b.indent(b.nl()));
-            result.push(b.indent(self.consequence.build(b)));
-        }
+            if self.consequence.is_block() {
+                result.push(b.txt(" "));
+                result.push(self.consequence.build(b));
+            } else {
+                result.push(b.indent(b.nl()));
+                result.push(b.indent(self.consequence.build(b)));
+            }
 
-        // Handle the 'else' part
-        if let Some(ref a) = self.alternative {
-            match a {
-                Statement::If(_) => {
-                    if self.consequence.is_block() {
-                        result.push(b.txt(" else "));
-                    } else {
-                        result.push(b.nl());
-                        result.push(b.txt("else "));
+            // Handle the 'else' part
+            if let Some(ref a) = self.alternative {
+                match a {
+                    Statement::If(_) => {
+                        if self.consequence.is_block() {
+                            result.push(b.txt(" else "));
+                        } else {
+                            result.push(b.nl());
+                            result.push(b.txt("else "));
+                        }
+                        result.push(a.build(b)); // Recursively build the nested 'else if' statement
                     }
-                    result.push(a.build(b)); // Recursively build the nested 'else if' statement
-                }
-                Statement::Block(_) => {
-                    if self.consequence.is_block() {
-                        result.push(b.txt(" else "));
-                    } else {
-                        result.push(b.nl());
-                        result.push(b.txt("else "));
+                    Statement::Block(_) => {
+                        if self.consequence.is_block() {
+                            result.push(b.txt(" else "));
+                        } else {
+                            result.push(b.nl());
+                            result.push(b.txt("else "));
+                        }
+                        result.push(a.build(b));
                     }
-                    result.push(a.build(b));
-                }
-                // Handle "else" with a single statement
-                _ => {
-                    if self.consequence.is_block() {
-                        result.push(b.txt(" else "));
-                    } else {
-                        result.push(b.nl());
-                        result.push(b.txt("else"));
-                        result.push(b.indent(b.nl()));
+                    // Handle "else" with a single statement
+                    _ => {
+                        if self.consequence.is_block() {
+                            result.push(b.txt(" else "));
+                        } else {
+                            result.push(b.nl());
+                            result.push(b.txt("else"));
+                            result.push(b.indent(b.nl()));
+                        }
+                        result.push(a.build(b)); // Build the else statement
                     }
-                    result.push(a.build(b)); // Build the else statement
                 }
             }
-        }
+        });
     }
 }
 

@@ -1,4 +1,5 @@
-// finalize these
-public class  A /*1*/ implements /*2*/ B.C /*3*/ {
-// 5
+// check leading comment before class `{`
+public class  A  implements  B.C /*3*/ {
+  public static void Hello() /*4*/ {
+  }
 }
