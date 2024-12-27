@@ -922,6 +922,7 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
 #[derive(Debug)]
 pub struct MethodInvocation {
     pub kind: MethodInvocationKind,
+    pub node_info: NodeInfo,
 }
 
 impl MethodInvocation {
@@ -955,14 +956,17 @@ impl MethodInvocation {
         } else {
             MethodInvocationKind::Simple { name, arguments }
         };
+        let node_info = NodeInfo::from(&node);
 
-        Self { kind }
+        Self { kind, node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.kind.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.kind.build(b));
+        });
     }
 }
 
@@ -5107,6 +5111,32 @@ impl<'a> DocBuild<'a> for ValueNode {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(b.txt(&self.value));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct ExpressionStatement {
+    pub exp: Expression,
+    pub node_info: NodeInfo,
+}
+
+impl ExpressionStatement {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "expression_statement");
+
+        let exp = Expression::new(node.first_c());
+        let node_info = NodeInfo::from(&node);
+
+        Self { exp, node_info }
+    }
+}
+
+impl<'a> DocBuild<'a> for ExpressionStatement {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.exp.build(b));
+            result.push(b.txt(";"));
         });
     }
 }

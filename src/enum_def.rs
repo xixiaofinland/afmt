@@ -588,7 +588,7 @@ impl<'a> DocBuild<'a> for ModifierKind {
 #[derive(Debug)]
 pub enum Statement {
     If(Box<IfStatement>),
-    Exp(Expression),
+    Exp(ExpressionStatement),
     Local(LocalVariableDeclaration),
     Block(Box<Block>),
     For(Box<ForStatement>),
@@ -609,7 +609,7 @@ impl Statement {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "if_statement" => Self::If(Box::new(IfStatement::new(n))),
-            "expression_statement" => Self::Exp(Expression::new(n.first_c())),
+            "expression_statement" => Self::Exp(ExpressionStatement::new(n)),
             "local_variable_declaration" => Self::Local(LocalVariableDeclaration::new(n)),
             "block" => Self::Block(Box::new(Block::new(n))),
             "for_statement" => Self::For(Box::new(ForStatement::new(n))),
@@ -640,7 +640,6 @@ impl<'a> DocBuild<'a> for Statement {
             }
             Self::Exp(n) => {
                 result.push(n.build(b));
-                result.push(b.txt(";"));
             }
             Self::Local(n) => {
                 result.push(n.build(b));

@@ -1,9 +1,7 @@
-public class  A{ /*3*/
-// 5
-  /*1*/public/*2*/static/*3*/ void /*4*/hello()/*5*/{
-  // test1;
-   System.debug('h'); //tt
-  // test2;
+public class A {
+  public static void hello() {
+    // test1;
+    System.debug('h');     // test2;
+    // test3;
   }
 }
-
