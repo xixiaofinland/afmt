@@ -87,7 +87,7 @@ pub fn print_comment_map(tree: &Tree) {
         eprintln!("pre_comments: {:#?},", bucket.pre_comments);
         eprintln!("post_comments: {:#?},", bucket.post_comments);
         eprintln!("dangling_comments: {:#?},", bucket.dangling_comments);
-        eprintln!("    }},");
+        eprintln!("--------------------");
     }
 }
 
