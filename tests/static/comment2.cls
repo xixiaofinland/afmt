@@ -1,4 +1,4 @@
 // long block comments in middle triggers line wrapping
-public class /*tttttttttttttttttttttttttttttttttttttttttttttttt*/ A
+public /*tttttttttttttttttttttttttttttttttttttttttttttttt*/ class A
   implements B.C {
 }
