@@ -375,6 +375,7 @@ pub struct Annotation {
     pub name: ValueNode,
     pub arguments: Option<AnnotationArgumentList>,
     pub node_info: NodeInfo,
+    pub is_followed_by_comment_in_new_line: bool,
 }
 
 impl Annotation {
@@ -386,10 +387,15 @@ impl Annotation {
             .map(AnnotationArgumentList::new);
         let node_info = NodeInfo::from(&node);
 
+        let is_followed_by_comment_in_new_line = node.next_named_sibling().map_or(false, |n| {
+            n.is_extra() && node.end_position().row != n.start_position().row
+        });
+
         Self {
             name,
             arguments,
             node_info,
+            is_followed_by_comment_in_new_line,
         }
     }
 }
@@ -404,7 +410,10 @@ impl<'a> DocBuild<'a> for Annotation {
                 result.push(a.build(b));
             }
         });
-        result.push(b.nl());
+
+        if !self.is_followed_by_comment_in_new_line {
+            result.push(b.nl());
+        }
     }
 }
 
