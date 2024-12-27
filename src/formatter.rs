@@ -2,7 +2,10 @@ use crate::context::CommentMap;
 use crate::data_model::*;
 use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
-use crate::utility::{collect_comments, enrich, set_thread_comment_map, set_thread_source_code};
+use crate::utility::{
+    collect_comments, enrich, get_comment_map, print_missing_comments, set_thread_comment_map,
+    set_thread_source_code,
+};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use serde::Deserialize;
@@ -150,7 +153,10 @@ impl Formatter {
         let b = DocBuilder::new(c);
         let doc_ref = root.build(&b);
 
-        pretty_print(doc_ref, config.max_width)
+        let result = pretty_print(doc_ref, config.max_width);
+        print_missing_comments();
+
+        result
     }
 
     pub fn parse(source_code: &str) -> Tree {

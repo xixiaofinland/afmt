@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::Cell, collections::HashMap};
 use tree_sitter::{Node, Range};
 
 use crate::{
@@ -52,6 +52,7 @@ pub struct Comment {
     pub value: String,
     pub comment_type: CommentType,
     pub metadata: CommentMetadata,
+    pub is_printed: Cell<bool>,
 }
 
 impl Comment {
@@ -75,6 +76,7 @@ impl Comment {
             value,
             comment_type,
             metadata,
+            is_printed: Cell::new(false),
         }
     }
 
@@ -97,8 +99,17 @@ impl Comment {
     pub fn has_prev_node(&self) -> bool {
         self.metadata.has_prev_node
     }
+
     pub fn has_next_node(&self) -> bool {
         self.metadata.has_next_node
+    }
+
+    pub fn mark_as_printed(&self) {
+        self.is_printed.set(true);
+    }
+
+    pub fn is_printed(&self) -> bool {
+        self.is_printed.get()
     }
 }
 

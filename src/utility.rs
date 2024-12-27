@@ -54,8 +54,29 @@ pub fn get_comment_bucket(node_id: &usize) -> &CommentBucket {
         .unwrap_or_else(|| panic!("## comment_map missing bucket for node: {}", node_id))
 }
 
-fn get_comment_map() -> &'static CommentMap {
+pub fn get_comment_map() -> &'static CommentMap {
     THREAD_COMMENT_MAP.with(|cm| cm.get().expect("## CommentMap not set for this thread"))
+}
+
+pub fn print_missing_comments<'a>() {
+    let missing_comments: Vec<&'static Comment> = get_comment_map()
+        .values()
+        .flat_map(|bucket| {
+            bucket
+                .pre_comments
+                .iter()
+                .chain(bucket.post_comments.iter())
+                .chain(bucket.dangling_comments.iter())
+        })
+        .filter(|comment| !comment.is_printed())
+        .collect();
+
+    if !missing_comments.is_empty() {
+        for comment in missing_comments {
+            eprintln!("Erased comment: {}", comment.value.red());
+        }
+        panic!("## There are erased comment node(s)");
+    }
 }
 
 pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
@@ -168,6 +189,7 @@ pub fn handle_dangling_comments<'a>(
         handle_comment_heading_logic(comment, b, &mut docs);
         docs.push(comment.build(b));
         handle_comment_trailing_logic(comment, b, &mut docs);
+        comment.mark_as_printed();
     }
     docs
 }
@@ -197,6 +219,7 @@ pub fn handle_pre_comments<'a>(
                 docs.push(b.nl());
             }
         }
+        comment.mark_as_printed();
     }
 
     result.push(b.concat(docs));
@@ -216,6 +239,7 @@ pub fn handle_post_comments<'a>(
         handle_comment_heading_logic(comment, b, &mut docs);
         docs.push(comment.build(b));
         handle_comment_trailing_logic(comment, b, &mut docs);
+        comment.mark_as_printed();
     }
     result.push(b.concat(docs));
 }
