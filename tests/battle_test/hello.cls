@@ -1,5 +1,4 @@
 class A {
-  @TestVisible
-  // comment1
+  @TestVisible // comment1
   private String s;
 }

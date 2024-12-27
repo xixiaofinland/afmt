@@ -59,11 +59,12 @@ pub fn get_comment_map() -> &'static CommentMap {
 }
 
 // Used for debugging purpose only
-pub fn print_comment_map() {
+pub fn print_comment_map(tree: &Tree) {
     let comment_map = get_comment_map();
+    let node_map = build_id_node_map(tree);
 
     let filtered_map: HashMap<usize, &CommentBucket> = comment_map
-        .into_iter()
+        .iter()
         .filter(|(_, bucket)| {
             !bucket.pre_comments.is_empty()
                 || !bucket.post_comments.is_empty()
@@ -72,13 +73,45 @@ pub fn print_comment_map() {
         .map(|(k, v)| (*k, v))
         .collect();
 
-    eprintln!(
-        "gopro[48]: formatter.rs:157: filtered_comment_map={:#?}",
-        filtered_map
-    );
+    for (node_id, bucket) in &filtered_map {
+        if let Some(node) = node_map.get(node_id) {
+            eprintln!(
+                "{}, {} ({}) : CommentBucket {{",
+                node_id,
+                node.kind(),
+                node.value().chars().take(8).collect::<String>()
+            );
+        } else {
+            eprintln!("{} (Unknown Node) : CommentBucket {{", node_id);
+        }
+        eprintln!("pre_comments: {:#?},", bucket.pre_comments);
+        eprintln!("post_comments: {:#?},", bucket.post_comments);
+        eprintln!("dangling_comments: {:#?},", bucket.dangling_comments);
+        eprintln!("    }},");
+    }
 }
 
-pub fn assert_no_missing_comments<'a>() {
+fn build_id_node_map(ast_tree: &Tree) -> HashMap<usize, Node> {
+    let mut cursor = ast_tree.walk();
+    let mut node_map = HashMap::new();
+
+    loop {
+        let node = cursor.node();
+        node_map.insert(node.id(), node);
+
+        if cursor.goto_first_child() {
+            continue;
+        }
+
+        while !cursor.goto_next_sibling() {
+            if !cursor.goto_parent() {
+                return node_map;
+            }
+        }
+    }
+}
+
+pub fn assert_no_missing_comments() {
     let missing_comments: Vec<&'static Comment> = get_comment_map()
         .values()
         .flat_map(|bucket| {

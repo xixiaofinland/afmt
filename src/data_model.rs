@@ -372,14 +372,14 @@ impl<'a> DocBuild<'a> for Modifier {
 
 #[derive(Debug)]
 pub struct Annotation {
-    pub name: String,
+    pub name: ValueNode,
     pub arguments: Option<AnnotationArgumentList>,
     pub node_info: NodeInfo,
 }
 
 impl Annotation {
     pub fn new(node: Node) -> Self {
-        let name = node.cvalue_by_n("name");
+        let name = ValueNode::new(node.c_by_n("name"));
 
         let arguments = node
             .try_c_by_n("arguments")
@@ -397,7 +397,10 @@ impl Annotation {
 impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
-            result.push(b.txt(format!("@{}", self.name)));
+            result.push(b.txt("@{"));
+            result.push(self.name.build(b));
+            result.push(b.txt("}"));
+
             if let Some(a) = &self.arguments {
                 result.push(a.build(b));
             }
