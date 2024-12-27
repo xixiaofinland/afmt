@@ -78,8 +78,8 @@ pub fn print_comment_map(tree: &Tree) {
             eprintln!(
                 "{}, {} ({}) : CommentBucket {{",
                 node_id,
-                node.kind(),
-                node.value().chars().take(8).collect::<String>()
+                node.kind().yellow(),
+                node.value().chars().take(8).collect::<String>().yellow()
             );
         } else {
             eprintln!("{} (Unknown Node) : CommentBucket {{", node_id);
