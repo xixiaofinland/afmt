@@ -9,7 +9,7 @@ use crate::{
 use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
-use std::cell::Cell;
+use std::{cell::Cell, collections::HashMap};
 use tree_sitter::{Node, Tree, TreeCursor};
 
 thread_local! {
@@ -56,6 +56,25 @@ pub fn get_comment_bucket(node_id: &usize) -> &CommentBucket {
 
 pub fn get_comment_map() -> &'static CommentMap {
     THREAD_COMMENT_MAP.with(|cm| cm.get().expect("## CommentMap not set for this thread"))
+}
+
+pub fn print_comment_map() {
+    let comment_map = get_comment_map();
+
+    let filtered_map: HashMap<usize, &CommentBucket> = comment_map
+        .into_iter()
+        .filter(|(_, bucket)| {
+            !bucket.pre_comments.is_empty()
+                || !bucket.post_comments.is_empty()
+                || !bucket.dangling_comments.is_empty()
+        })
+        .map(|(k, v)| (*k, v))
+        .collect();
+
+    eprintln!(
+        "gopro[48]: formatter.rs:157: filtered_comment_map={:#?}",
+        filtered_map
+    );
 }
 
 pub fn assert_no_missing_comments<'a>() {

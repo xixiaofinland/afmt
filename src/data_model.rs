@@ -408,25 +408,30 @@ impl<'a> DocBuild<'a> for Annotation {
 
 #[derive(Debug)]
 pub struct AnnotationKeyValue {
-    key: String,
-    value: String,
+    key: ValueNode,
+    value: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl AnnotationKeyValue {
     pub fn new(node: Node) -> Self {
         assert_check(node, "annotation_key_value");
+
         Self {
-            key: node.cvalue_by_n("key"),
-            value: node.cvalue_by_n("value"),
+            key: ValueNode::new(node.c_by_n("key")),
+            value: ValueNode::new(node.c_by_n("value")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AnnotationKeyValue {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.key));
-        result.push(b.txt("="));
-        result.push(b.txt(&self.value));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.key.build(b));
+            result.push(b.txt("="));
+            result.push(self.value.build(b));
+        });
     }
 }
 

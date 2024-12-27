@@ -1,6 +1,5 @@
-@isTest(
-  seeAllData=true // Class annotation inline comment 1
-  isParallel = false // Class annotation inline comment 2 
-)
-class Comments {
+class A {
+  @TestVisible
+  // comment1
+  private String s;
 }
