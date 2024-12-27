@@ -129,7 +129,8 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
             }
 
             // because the group() need, we move `{` from body node here
-            docs.push(b.txt(" {"));
+            docs.push(b.txt(" "));
+            docs.push(b.txt("{"));
             result.push(b.group_indent_concat(docs));
 
             result.push(self.body.build(b));
