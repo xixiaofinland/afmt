@@ -144,6 +144,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Text(text, width) => {
                     if text == " " && result.ends_with(' ') {
+                        // TODO: better way to handle this challenge?
                         // do nothing to avoid "double spacing" in comment node handling
                     } else {
                         result.push_str(text);
