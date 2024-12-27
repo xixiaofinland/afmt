@@ -58,6 +58,7 @@ pub fn get_comment_map() -> &'static CommentMap {
     THREAD_COMMENT_MAP.with(|cm| cm.get().expect("## CommentMap not set for this thread"))
 }
 
+// Used for debugging purpose only
 pub fn print_comment_map() {
     let comment_map = get_comment_map();
 
