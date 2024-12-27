@@ -1,6 +1,6 @@
-// check leading comment before class `{`
-public class  A  implements  B.C /*3*/ {
-  public static void Hello() /*4*/ {
-
-  }
+@isTest(
+  seeAllData=true // Class annotation inline comment 1
+  isParallel = false // Class annotation inline comment 2 
+)
+class Comments {
 }

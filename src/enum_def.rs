@@ -740,7 +740,7 @@ impl<'a> DocBuild<'a> for PropertyNavigation {
 #[derive(Debug)]
 pub enum AnnotationArgumentList {
     Nil,
-    Value(String),
+    Value(ValueNode),
     KeyValues(Vec<AnnotationKeyValue>),
 }
 
@@ -753,7 +753,7 @@ impl AnnotationArgumentList {
         let key_values = n.try_cs_by_k("annotation_key_value");
 
         if key_values.is_empty() {
-            Self::Value(n.cvalue_by_n("value"))
+            Self::Value(ValueNode::new(n.c_by_n("value")))
         } else {
             let key_values = key_values
                 .into_iter()
@@ -770,7 +770,7 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
             Self::Nil => {}
             Self::Value(v) => {
                 result.push(b.txt("("));
-                result.push(b.txt(v));
+                result.push(v.build(b));
                 result.push(b.txt(")"));
             }
             Self::KeyValues(vec) => {
