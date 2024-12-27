@@ -152,8 +152,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     // We'll track comments that appear before the next code node in this vector
     let mut pending_pre_comments = Vec::new();
     // Track the last visited code node
-    let mut last_code_node_id: Option<usize> = None;
-    let mut last_code_node_row: Option<usize> = None;
+    let mut last_code_node_info: Option<(usize, usize)> = None;
 
     loop {
         let child = cursor.node();
@@ -163,22 +162,17 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
                 // It's a comment node
                 let comment = Comment::from_node(child);
 
-                if let Some(last_id) = last_code_node_id {
-                    if let Some(last_row) = last_code_node_row {
-                        // If the comment is "inline" with the preceding code node, treat it as post-comment
-                        if child.end_position().row == last_row {
-                            comment_map
-                                .entry(last_id)
-                                .or_insert_with(CommentBucket::new)
-                                .post_comments
-                                .push(comment);
-                        } else {
-                            // Not inline => accumulate in pending_pre_comments
-                            pending_pre_comments.push(comment);
-                        }
+                if let Some((last_id, last_row)) = last_code_node_info {
+                    if child.end_position().row == last_row {
+                        comment_map
+                            .entry(last_id)
+                            .or_insert_with(CommentBucket::new)
+                            .post_comments
+                            .push(comment);
+                    } else {
+                        pending_pre_comments.push(comment);
                     }
                 } else {
-                    // No preceding code node => just push
                     pending_pre_comments.push(comment);
                 }
             } else {
@@ -198,8 +192,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
                 collect_comments(cursor, comment_map);
 
                 // After returning, we know child is fully processed
-                last_code_node_id = Some(child_id);
-                last_code_node_row = Some(child.end_position().row);
+                last_code_node_info = Some((child_id, child.end_position().row));
             }
         }
 
@@ -209,7 +202,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     }
 
     // After processing all children:
-    if let Some(last_id) = last_code_node_id {
+    if let Some((last_id, _)) = last_code_node_info {
         // Assign remaining pending comments as "post" for the last code node
         comment_map
             .entry(last_id)
