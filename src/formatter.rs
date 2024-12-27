@@ -154,10 +154,10 @@ impl Formatter {
         let doc_ref = root.build(&b);
 
         let result = pretty_print(doc_ref, config.max_width);
-        eprintln!(
-            "gopro[48]: formatter.rs:157: get_comment_map()={:#?}",
-            get_comment_map()
-        );
+        //eprintln!(
+        //    "gopro[48]: formatter.rs:157: get_comment_map()={:#?}",
+        //    get_comment_map()
+        //);
         assert_no_missing_comments();
 
         result
