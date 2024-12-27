@@ -1,6 +1,8 @@
-public class A {
-  public static void hello() {
-    System.debug('h');     // test2;
-    // test3;
+public class A { /* a*/
+  // 5
+  /*1*/ public /*2*/ static /*3*/ void /*4*/ hello() /*5*/ {
+    // test1;
+    System.debug('h'); //tt
+    // test2;
   }
 }
