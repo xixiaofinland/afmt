@@ -1189,6 +1189,7 @@ pub struct LocalVariableDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
+    pub is_parent_for_statement: bool,
     pub node_info: NodeInfo,
 }
 
@@ -1207,6 +1208,7 @@ impl LocalVariableDeclaration {
             modifiers,
             type_: UnannotatedType::new(node.c_by_n("type")),
             declarators,
+            is_parent_for_statement: node.parent().map_or(false, |n| n.kind() == "for_statement"),
             node_info: NodeInfo::from(&node),
         }
     }
@@ -1232,7 +1234,11 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
                 b.group(b.indent(b.intersperse(&docs, sep)))
             };
 
-            result.push(doc);
+            if self.is_parent_for_statement {
+                result.push(doc);
+            } else {
+                result.push(b.concat(vec![doc, b.txt(";")]));
+            }
         });
     }
 }

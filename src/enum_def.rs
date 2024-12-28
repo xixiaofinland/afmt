@@ -643,7 +643,6 @@ impl<'a> DocBuild<'a> for Statement {
             }
             Self::Local(n) => {
                 result.push(n.build(b));
-                result.push(b.txt(";"));
             }
             Self::Block(n) => {
                 result.push(n.build(b));
