@@ -317,14 +317,11 @@ fn handle_comment_heading_logic<'a>(
     docs: &mut Vec<DocRef<'a>>,
 ) {
     if comment.has_leading_content() {
-        return docs.push(b.txt(" "));
-    }
-    if comment.print_newline_above() {
+        docs.push(b.txt(" "));
+    } else if comment.print_newline_above() {
         docs.push(b.nl_with_no_indent());
         docs.push(b.nl());
-        return;
-    }
-    if comment.has_prev_node() {
+    } else if comment.has_prev_node() {
         docs.push(b.nl());
     }
 }
