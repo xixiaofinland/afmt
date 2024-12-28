@@ -5533,3 +5533,28 @@ impl<'a> DocBuild<'a> for SelectClause {
         });
     }
 }
+
+#[derive(Debug)]
+pub struct StorageIdentifier {
+    pub variant: StorageIdentifierVariant,
+    pub node_info: NodeInfo,
+}
+
+impl StorageIdentifier {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "storage_identifier");
+
+        Self {
+            variant: StorageIdentifierVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for StorageIdentifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
+        });
+    }
+}

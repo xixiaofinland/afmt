@@ -1087,12 +1087,12 @@ impl<'a> DocBuild<'a> for StorageVariant {
 }
 
 #[derive(Debug)]
-pub enum StorageIdentifier {
+pub enum StorageIdentifierVariant {
     Identifier(String),
     Dotted(Vec<String>),
 }
 
-impl StorageIdentifier {
+impl StorageIdentifierVariant {
     pub fn new(node: Node) -> Self {
         assert_check(node, "storage_identifier");
         let c = node.first_c();
@@ -1110,7 +1110,7 @@ impl StorageIdentifier {
     }
 }
 
-impl<'a> DocBuild<'a> for StorageIdentifier {
+impl<'a> DocBuild<'a> for StorageIdentifierVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
