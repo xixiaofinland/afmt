@@ -3493,24 +3493,26 @@ impl<'a> DocBuild<'a> for ArrayType {
 
 #[derive(Debug)]
 pub struct TriggerDeclaration {
-    pub name: String,
-    pub object: String,
+    pub name: ValueNode,
     pub events: Vec<TriggerEvent>,
+    pub object: ValueNode,
     pub body: TriggerBody,
     pub node_info: NodeInfo,
 }
 
 impl TriggerDeclaration {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "trigger_declaration");
+
         let events = node
             .cs_by_k("trigger_event")
             .into_iter()
-            .map(|n| TriggerEvent::new(n.first_c()))
+            .map(|n| TriggerEvent::new(n))
             .collect();
 
         Self {
-            name: node.cvalue_by_n("name"),
-            object: node.cvalue_by_n("object"),
+            name: ValueNode::new(node.c_by_n("name")),
+            object: ValueNode::new(node.c_by_n("object")),
             events,
             body: TriggerBody::new(node.c_by_n("body")),
             node_info: NodeInfo::from(&node),
@@ -3522,12 +3524,11 @@ impl<'a> DocBuild<'a> for TriggerDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(b.txt_("trigger"));
-            result.push(b.txt(&self.name));
+            result.push(self.name.build(b));
             result.push(b._txt_("on"));
-            result.push(b.txt(&self.object));
+            result.push(self.object.build(b));
 
             let docs = b.to_docs(&self.events);
-
             let sep = Insertable::new(None, Some(","), Some(b.softline()));
             let open = Insertable::new(None, Some("("), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
@@ -3536,6 +3537,31 @@ impl<'a> DocBuild<'a> for TriggerDeclaration {
 
             result.push(b.txt(" "));
             result.push(self.body.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct TriggerEvent {
+    pub event: TriggerEventVariant,
+    pub node_info: NodeInfo,
+}
+
+impl TriggerEvent {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "trigger_event");
+
+        Self {
+            event: TriggerEventVariant::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for TriggerEvent {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.event.build(b));
         });
     }
 }

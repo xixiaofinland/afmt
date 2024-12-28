@@ -795,7 +795,7 @@ pub struct BodyMember<M> {
 }
 
 #[derive(Debug)]
-pub enum TriggerEvent {
+pub enum TriggerEventVariant {
     BeforeInsert,
     BeforeUpdate,
     BeforeDelete,
@@ -805,7 +805,7 @@ pub enum TriggerEvent {
     AfterUndelete,
 }
 
-impl TriggerEvent {
+impl TriggerEventVariant {
     pub fn new(n: Node) -> Self {
         match n.kind() {
             "before_insert" => Self::BeforeInsert,
@@ -820,7 +820,7 @@ impl TriggerEvent {
     }
 }
 
-impl<'a> DocBuild<'a> for TriggerEvent {
+impl<'a> DocBuild<'a> for TriggerEventVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::BeforeInsert => {
