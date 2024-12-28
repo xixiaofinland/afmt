@@ -1,3 +1,3 @@
-interface InlineTrailingCommentAfterInterface { // Inline Comment
+trigger InlineTrailingCommentAfterTrigger on Account(after insert) { /* Block Comment */
 
 }
