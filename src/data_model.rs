@@ -3544,19 +3544,26 @@ impl<'a> DocBuild<'a> for VersionExpression {
 #[derive(Debug)]
 pub struct JavaFieldAccess {
     pub field_access: FieldAccess,
+    pub node_info: NodeInfo,
 }
 
 impl JavaFieldAccess {
     pub fn new(node: Node) -> Self {
-        let field_access = FieldAccess::new(node.c_by_k("field_access"));
-        Self { field_access }
+        assert_check(node, "java_field_access");
+
+        Self {
+            field_access: FieldAccess::new(node.c_by_k("field_access")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for JavaFieldAccess {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("java:"));
-        result.push(self.field_access.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("java:"));
+            result.push(self.field_access.build(b));
+        });
     }
 }
 
@@ -4047,12 +4054,13 @@ pub struct SoqlQueryBody {
     pub for_clause: Vec<String>,
     //update_c;
     pub all_rows_clause: Option<()>,
+    pub node_info: NodeInfo,
 }
 
 impl SoqlQueryBody {
     pub fn new(node: Node) -> Self {
-        let select_clause = SelectClause::new(node.c_by_n("select_clause"));
-        let from_clause = FromClause::new(node.c_by_n("from_clause"));
+        assert_check(node, "soql_query_body");
+
         let where_clause = node.try_c_by_n("where_clause").map(|n| WhereClause::new(n));
         let with_clause = node
             .try_c_by_n("with_clause")
@@ -4075,8 +4083,8 @@ impl SoqlQueryBody {
             .collect();
 
         Self {
-            select_clause,
-            from_clause,
+            select_clause: SelectClause::new(node.c_by_n("select_clause")),
+            from_clause: FromClause::new(node.c_by_n("from_clause")),
             where_clause,
             with_clause,
             group_by_clause,
@@ -4085,49 +4093,52 @@ impl SoqlQueryBody {
             offset_clause,
             for_clause,
             all_rows_clause,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoqlQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![];
-        docs.push(self.select_clause.build(b));
-        docs.push(self.from_clause.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let mut docs = vec![];
+            docs.push(self.select_clause.build(b));
+            docs.push(self.from_clause.build(b));
 
-        if let Some(ref n) = self.where_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.with_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.group_by_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.order_by_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.limit_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.offset_clause {
-            docs.push(n.build(b));
-        }
-        if self.all_rows_clause.is_some() {
-            docs.push(b.txt("ALL ROWS"));
-        }
-        if !self.for_clause.is_empty() {
-            let for_types: Vec<DocRef<'_>> = self.for_clause.iter().map(|n| b.txt(n)).collect();
-            let sep = Insertable::new(None, Some(", "), None);
-            let for_types_doc = b.intersperse(&for_types, sep);
+            if let Some(ref n) = self.where_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.with_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.group_by_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.order_by_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.limit_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.offset_clause {
+                docs.push(n.build(b));
+            }
+            if self.all_rows_clause.is_some() {
+                docs.push(b.txt("ALL ROWS"));
+            }
+            if !self.for_clause.is_empty() {
+                let for_types: Vec<DocRef<'_>> = self.for_clause.iter().map(|n| b.txt(n)).collect();
+                let sep = Insertable::new(None, Some(", "), None);
+                let for_types_doc = b.intersperse(&for_types, sep);
 
-            let for_clause_doc = b.concat(vec![b.txt_("FOR"), for_types_doc]);
-            docs.push(for_clause_doc);
-        }
+                let for_clause_doc = b.concat(vec![b.txt_("FOR"), for_types_doc]);
+                docs.push(for_clause_doc);
+            }
 
-        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let doc = b.intersperse(&docs, sep);
-        result.push(doc);
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+            let doc = b.intersperse(&docs, sep);
+            result.push(doc);
+        });
     }
 }
 
