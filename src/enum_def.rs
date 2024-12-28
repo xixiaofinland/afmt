@@ -1588,7 +1588,7 @@ pub enum FunctionExpressionVariant {
         field: Option<FieldIdentifier>,
         bound: Option<BoundApexExpression>,
         geo: GeoLocationType,
-        string_literal: String,
+        string_literal: ValueNode,
     },
     WithoutGEO {
         function_name: ValueNode,
@@ -1610,7 +1610,7 @@ impl FunctionExpressionVariant {
                     .try_c_by_k("bound_apex_expression")
                     .map(|n| BoundApexExpression::new(n)),
                 geo: GeoLocationType::new(node.c_by_k("geo_location_type")),
-                string_literal: node.cvalue_by_k("string_literal"),
+                string_literal: ValueNode::new(node.c_by_k("string_literal")),
             }
         } else {
             Self::WithoutGEO {
@@ -1649,7 +1649,7 @@ impl<'a> DocBuild<'a> for FunctionExpressionVariant {
                 result.push(b.txt_(","));
                 result.push(geo.build(b));
                 result.push(b.txt_(","));
-                result.push(b.txt(string_literal));
+                result.push(string_literal.build(b));
                 result.push(b.txt(")"));
             }
             Self::WithoutGEO {
