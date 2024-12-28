@@ -9,19 +9,19 @@ mod tests {
     use std::process::Command;
 
     #[test]
-    fn manual() {
+    fn statics() {
         let (total, failed) = run_scenario("tests/static", "static");
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
     #[test]
-    fn prettier() {
+    fn prettier80() {
         let (total, failed) = run_scenario("tests/prettier80", "prettier80");
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
 
     #[test]
-    fn extra() {
+    fn comments() {
         let (total, failed) = run_scenario("tests/comments", "comments");
         assert_eq!(failed, 0, "{} out of {} tests failed", failed, total);
     }
