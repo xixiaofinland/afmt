@@ -1279,26 +1279,27 @@ impl VariableDeclarator {
 impl<'a> DocBuild<'a> for VariableDeclarator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         // TODO: handle dotted expression use-case
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let mut docs = vec![self.name.build(b)];
 
-        let mut docs = vec![self.name.build(b)];
+            if self.value.is_none() {
+                result.push(b.concat(docs));
+                return;
+            }
 
-        if self.value.is_none() {
-            result.push(b.concat(docs));
-            return;
-        }
+            let value = self.value.as_ref().unwrap();
+            docs.push(b._txt("="));
 
-        let value = self.value.as_ref().unwrap();
-        docs.push(b._txt("="));
-
-        if self.is_value_child_a_query_node {
-            docs.push(b.txt(" "));
-            docs.push(value.build(b));
-            result.push(b.concat(docs));
-        } else {
-            docs.push(b.softline());
-            docs.push(value.build(b));
-            result.push(b.group_indent_concat(docs));
-        }
+            if self.is_value_child_a_query_node {
+                docs.push(b.txt(" "));
+                docs.push(value.build(b));
+                result.push(b.concat(docs));
+            } else {
+                docs.push(b.softline());
+                docs.push(value.build(b));
+                result.push(b.group_indent_concat(docs));
+            }
+        });
     }
 }
 
