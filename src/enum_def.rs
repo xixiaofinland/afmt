@@ -4,7 +4,9 @@ use crate::{
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{assert_check, build_with_comments, is_followed_by_comment_in_new_line, panic_unknown_node},
+    utility::{
+        assert_check, build_with_comments, is_followed_by_comment_in_new_line, panic_unknown_node,
+    },
 };
 use tree_sitter::Node;
 
@@ -1299,9 +1301,9 @@ pub enum GeoLocationTypeVariant {
     Field(FieldIdentifier),
     Bound(BoundApexExpression),
     Func {
-        function_name: String,
-        decimal1: String,
-        decimal2: String,
+        function_name: ValueNode,
+        decimal1: ValueNode,
+        decimal2: ValueNode,
     },
 }
 
@@ -1321,9 +1323,9 @@ impl GeoLocationTypeVariant {
                 }
 
                 Self::Func {
-                    function_name: child.value(),
-                    decimal1: decimals[0].value(),
-                    decimal2: decimals[1].value(),
+                    function_name: ValueNode::new(child),
+                    decimal1: ValueNode::new(decimals[0]),
+                    decimal2: ValueNode::new(decimals[1]),
                 }
             }
 
@@ -1346,11 +1348,11 @@ impl<'a> DocBuild<'a> for GeoLocationTypeVariant {
                 decimal1,
                 decimal2,
             } => {
-                result.push(b.txt(function_name));
+                result.push(function_name.build(b));
                 result.push(b.txt("("));
-                result.push(b.txt(decimal1));
+                result.push(decimal1.build(b));
                 result.push(b.txt_(","));
-                result.push(b.txt(decimal2));
+                result.push(decimal2.build(b));
                 result.push(b.txt(")"));
             }
         }
