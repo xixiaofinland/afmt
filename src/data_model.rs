@@ -561,34 +561,31 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
 #[derive(Debug)]
 pub struct AssignmentExpression {
     pub left: AssignmentLeft,
-    pub op: String,
+    pub op: AssignmentOperator,
     pub right: Expression,
     pub is_right_child_a_query_node: bool,
+    pub node_info: NodeInfo,
 }
 
 impl AssignmentExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "assignment_expression");
 
-        let left = AssignmentLeft::new(node.c_by_n("left"));
-        let op = node.cvalue_by_n("operator");
-
         let right_child = node.c_by_n("right");
-        let right = Expression::new(right_child);
-        let is_right_child_a_query_node = is_query_expression(&right_child);
 
         Self {
-            left,
-            op,
-            right,
-            is_right_child_a_query_node,
+            left: AssignmentLeft::new(node.c_by_n("left")),
+            op: AssignmentOperator::new(node.c_by_n("operator")),
+            right: Expression::new(right_child),
+            is_right_child_a_query_node: is_query_expression(&right_child),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![self.left.build(b), b._txt(&self.op)];
+        let mut docs = vec![self.left.build(b), b.txt(" "), self.op.build(b)];
         if self.is_right_child_a_query_node {
             docs.push(b.txt(" "));
             docs.push(self.right.build(b));
@@ -1265,12 +1262,16 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
 
 #[derive(Debug)]
 pub struct AssignmentOperator {
+    pub value: String,
     pub node_info: NodeInfo,
 }
 
 impl AssignmentOperator {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "assignment_operator");
+
         Self {
+            value: node.value(),
             node_info: NodeInfo::from(&node),
         }
     }
@@ -1279,7 +1280,7 @@ impl AssignmentOperator {
 impl<'a> DocBuild<'a> for AssignmentOperator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
-            result.push(b.txt("="));
+            result.push(b.txt(&self.value));
         });
     }
 }
