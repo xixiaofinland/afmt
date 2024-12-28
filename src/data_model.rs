@@ -974,26 +974,34 @@ impl<'a> DocBuild<'a> for MethodObject {
 #[derive(Debug)]
 pub struct TypeArguments {
     pub types: Vec<Type>,
+    pub node_info: NodeInfo,
 }
 
 impl TypeArguments {
     pub fn new(node: Node) -> Self {
-        let mut types = Vec::new();
-        for c in node.children_vec() {
-            types.push(Type::new(c));
+        let types = node
+            .children_vec()
+            .into_iter()
+            .map(|n| Type::new(n))
+            .collect();
+
+        Self {
+            types,
+            node_info: NodeInfo::from(&node),
         }
-        Self { types }
     }
 }
 
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.types);
-        let sep = Insertable::new(None, Some(", "), None);
-        let open = Insertable::new(None, Some("<"), None);
-        let close = Insertable::new(None, Some(">"), None);
-        let doc = b.surround(&docs, sep, open, close);
-        result.push(doc);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.types);
+            let sep = Insertable::new(None, Some(", "), None);
+            let open = Insertable::new(None, Some("<"), None);
+            let close = Insertable::new(None, Some(">"), None);
+            let doc = b.surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 
