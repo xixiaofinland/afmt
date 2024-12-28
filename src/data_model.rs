@@ -4790,7 +4790,7 @@ impl GroupByClause {
         for child in node.children_vec() {
             match child.kind() {
                 "field_identifier" => {
-                    exps.push(GroupByExpression::Field(FieldIdentifierVariant::new(child)));
+                    exps.push(GroupByExpression::Field(FieldIdentifier::new(child)));
                 }
                 "function_expression" => {
                     exps.push(GroupByExpression::Func(FunctionExpressionVariant::new(
@@ -4827,7 +4827,7 @@ impl<'a> DocBuild<'a> for GroupByClause {
 
 #[derive(Debug)]
 pub enum GroupByExpression {
-    Field(FieldIdentifierVariant),
+    Field(FieldIdentifier),
     Func(FunctionExpressionVariant),
 }
 

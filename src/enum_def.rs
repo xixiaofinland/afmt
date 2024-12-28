@@ -936,7 +936,7 @@ pub enum SelectableExpression {
 impl SelectableExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifierVariant::new(node))),
+            "field_identifier" => Self::Value(ValueExpression::Field(FieldIdentifier::new(node))),
             "function_expression" => Self::Value(ValueExpression::Function(Box::new(
                 FunctionExpression::new(node),
             ))),
@@ -1267,14 +1267,14 @@ impl<'a> DocBuild<'a> for ConditionExpression {
 
 #[derive(Debug)]
 pub enum ValueExpression {
-    Field(FieldIdentifierVariant),
+    Field(FieldIdentifier),
     Function(Box<FunctionExpression>),
 }
 
 impl ValueExpression {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "field_identifier" => Self::Field(FieldIdentifierVariant::new(n)),
+            "field_identifier" => Self::Field(FieldIdentifier::new(n)),
             "function_expression" => Self::Function(Box::new(FunctionExpression::new(n))),
             _ => panic_unknown_node(n, "ValueExpression"),
         }
@@ -1296,7 +1296,7 @@ impl<'a> DocBuild<'a> for ValueExpression {
 
 #[derive(Debug)]
 pub enum GeoLocationType {
-    Field(FieldIdentifierVariant),
+    Field(FieldIdentifier),
     Bound(BoundApexExpression),
     Func {
         function_name: String,
@@ -1309,7 +1309,7 @@ impl GeoLocationType {
     pub fn new(node: Node) -> Self {
         let child = node.first_c();
         match child.kind() {
-            "field_identifier" => Self::Field(FieldIdentifierVariant::new(child)),
+            "field_identifier" => Self::Field(FieldIdentifier::new(child)),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(child)),
             "identifier" => {
                 let decimals = node.cs_by_k("decimal");
@@ -1583,7 +1583,7 @@ impl<'a> DocBuild<'a> for OffsetClause {
 pub enum FunctionExpressionVariant {
     WithGEO {
         function_name: ValueNode,
-        field: Option<FieldIdentifierVariant>,
+        field: Option<FieldIdentifier>,
         bound: Option<BoundApexExpression>,
         geo: GeoLocationType,
         string_literal: String,
@@ -1603,7 +1603,7 @@ impl FunctionExpressionVariant {
                 function_name: ValueNode::new(node.c_by_n("function_name")),
                 field: node
                     .try_c_by_k("field_identifier")
-                    .map(|n| FieldIdentifierVariant::new(n)),
+                    .map(|n| FieldIdentifier::new(n)),
                 bound: node
                     .try_c_by_k("bound_apex_expression")
                     .map(|n| BoundApexExpression::new(n)),
