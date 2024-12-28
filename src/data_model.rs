@@ -1249,28 +1249,29 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
 
 #[derive(Debug)]
 pub struct VariableDeclarator {
-    pub name: String,
+    pub name: ValueNode,
     //pub dimenssions
+    //pub op: AssignmentOperator,
     pub value: Option<VariableInitializer>,
     pub is_value_child_a_query_node: bool,
+    pub node_info: NodeInfo,
 }
 
 impl VariableDeclarator {
     pub fn new(node: Node) -> Self {
         assert_check(node, "variable_declarator");
-        let name = node.cvalue_by_n("name");
 
         let mut is_value_child_a_query_node = false;
-
         let value = node.try_c_by_n("value").map(|n| {
             is_value_child_a_query_node = is_query_expression(&n);
             VariableInitializer::Exp(Expression::new(n))
         });
 
         Self {
-            name,
+            name: ValueNode::new(node.c_by_n("name")),
             value,
             is_value_child_a_query_node,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -1279,7 +1280,7 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         // TODO: handle dotted expression use-case
 
-        let mut docs = vec![b.txt(&self.name)];
+        let mut docs = vec![self.name.build(b)];
 
         if self.value.is_none() {
             result.push(b.concat(docs));
@@ -1298,6 +1299,25 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
             docs.push(value.build(b));
             result.push(b.group_indent_concat(docs));
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct AssignmentOperator {
+    pub node_info: NodeInfo,
+}
+
+impl AssignmentOperator {
+    pub fn new(node: Node) -> Self {
+        Self {
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AssignmentOperator {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("="));
     }
 }
 
