@@ -2211,14 +2211,14 @@ impl<'a> DocBuild<'a> for FieldAccess {
 #[derive(Debug)]
 pub enum FieldOption {
     This(This),
-    Identifier(String),
+    Identifier(ValueNode),
 }
 
 impl FieldOption {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "this" => Self::This(This::new(node)),
-            _ => Self::Identifier(node.value()),
+            _ => Self::Identifier(ValueNode::new(node)),
         }
     }
 }
@@ -2230,7 +2230,7 @@ impl<'a> DocBuild<'a> for FieldOption {
                 result.push(n.build(b));
             }
             Self::Identifier(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
         }
     }
