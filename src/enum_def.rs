@@ -429,7 +429,7 @@ impl<'a> DocBuild<'a> for ClassLiteral {
 #[derive(Debug)]
 pub enum Literal_ {
     Bool(ValueNodeLowerCase),
-    Null,
+    Null(ValueNodeLowerCase),
     Int(ValueNode),
     Decimal(ValueNodeLowerCase),
     Str(ValueNode),
@@ -439,7 +439,7 @@ impl Literal_ {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "boolean" => Self::Bool(ValueNodeLowerCase::new(node)),
-            "null_literal" => Self::Null,
+            "null_literal" => Self::Null(ValueNodeLowerCase::new(node)),
             "int" => Self::Int(ValueNode::new(node)),
             "string_literal" => Self::Str(ValueNode::new(node)),
             "decimal_floating_point_literal" => Self::Decimal(ValueNodeLowerCase::new(node)),
@@ -454,8 +454,8 @@ impl<'a> DocBuild<'a> for Literal_ {
             Self::Bool(n) => {
                 result.push(n.build(b));
             }
-            Self::Null => {
-                result.push(b.txt("null"));
+            Self::Null(n) => {
+                result.push(n.build(b));
             }
             Self::Int(n) => {
                 result.push(n.build(b));
