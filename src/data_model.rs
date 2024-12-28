@@ -651,8 +651,11 @@ pub struct BoolType {
 
 impl BoolType {
     pub fn new(node: Node) -> Self {
-        let node_info = NodeInfo::from(&node);
-        Self { node_info }
+        assert_check(node, "boolean_type");
+
+        Self {
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
@@ -721,12 +724,9 @@ impl Interface {
     pub fn new(node: Node) -> Self {
         assert_check(node, "interfaces");
 
-        let type_list = TypeList::new(node.c_by_k("type_list"));
-        let node_info = NodeInfo::from(&node);
-
         Self {
-            type_list,
-            node_info,
+            type_list: TypeList::new(node.c_by_k("type_list")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -756,9 +756,11 @@ impl TypeList {
             .into_iter()
             .map(|n| Type::new(n))
             .collect();
-        let node_info = NodeInfo::from(&node);
 
-        Self { types, node_info }
+        Self {
+            types,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
@@ -946,9 +948,11 @@ impl MethodInvocation {
         } else {
             MethodInvocationKind::Simple { name, arguments }
         };
-        let node_info = NodeInfo::from(&node);
 
-        Self { kind, node_info }
+        Self {
+            kind,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
