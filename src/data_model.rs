@@ -4790,7 +4790,7 @@ impl GroupByClause {
         for child in node.children_vec() {
             match child.kind() {
                 "field_identifier" => {
-                    exps.push(GroupByExpression::Field(FieldIdentifier::new(child)));
+                    exps.push(GroupByExpression::Field(FieldIdentifierVariant::new(child)));
                 }
                 "function_expression" => {
                     exps.push(GroupByExpression::Func(FunctionExpressionVariant::new(
@@ -4827,7 +4827,7 @@ impl<'a> DocBuild<'a> for GroupByClause {
 
 #[derive(Debug)]
 pub enum GroupByExpression {
-    Field(FieldIdentifier),
+    Field(FieldIdentifierVariant),
     Func(FunctionExpressionVariant),
 }
 
@@ -5410,6 +5410,31 @@ impl FunctionExpression {
 }
 
 impl<'a> DocBuild<'a> for FunctionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct FieldIdentifier {
+    pub variant: FieldIdentifierVariant,
+    pub node_info: NodeInfo,
+}
+
+impl FieldIdentifier {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "field_identifier");
+
+        Self {
+            variant: FieldIdentifierVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FieldIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.variant.build(b));
