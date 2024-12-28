@@ -2915,7 +2915,6 @@ impl<'a> DocBuild<'a> for InterfaceDeclaration {
 
             result.push(b.txt_("interface"));
             result.push(self.name.build(b));
-
             if let Some(ref n) = self.type_parameters {
                 result.push(n.build(b));
             }
@@ -2958,6 +2957,7 @@ impl<'a> DocBuild<'a> for ExtendsInterface {
 #[derive(Debug)]
 pub struct InterfaceBody {
     members: Vec<BodyMember<InterfaceMember>>,
+    pub node_info: NodeInfo,
 }
 
 impl InterfaceBody {
@@ -2985,13 +2985,28 @@ impl InterfaceBody {
             })
             .collect();
 
-        Self { members }
+        Self {
+            members,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for InterfaceBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.surround_body(&self.members, "{", "}"));
+        let bucket = get_comment_bucket(&self.node_info.id);
+        handle_pre_comments(b, bucket, result);
+
+        if bucket.dangling_comments.is_empty() {
+            result.push(b.surround_body(&self.members, "{", "}"));
+            handle_post_comments(b, bucket, result);
+        } else {
+            result.push(b.txt("{"));
+            result.push(b.indent(b.nl()));
+            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
+            result.push(b.nl());
+            result.push(b.txt("}"));
+        }
     }
 }
 

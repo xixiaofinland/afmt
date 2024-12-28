@@ -1,3 +1,3 @@
-enum Season { /* Block Comment */
+interface InlineTrailingCommentAfterInterface { // Inline Comment
 
 }
