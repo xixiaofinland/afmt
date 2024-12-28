@@ -2518,22 +2518,29 @@ impl DmlType {
 pub struct ArrayAccess {
     pub array: PrimaryExpression,
     pub index: Expression,
+    pub node_info: NodeInfo,
 }
 
 impl ArrayAccess {
     pub fn new(node: Node) -> Self {
-        let array = PrimaryExpression::new(node.c_by_n("array"));
-        let index = Expression::new(node.c_by_n("index"));
-        Self { array, index }
+        assert_check(node, "array_access");
+
+        Self {
+            array: PrimaryExpression::new(node.c_by_n("array")),
+            index: Expression::new(node.c_by_n("index")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayAccess {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.array.build(b));
-        result.push(b.txt("["));
-        result.push(self.index.build(b));
-        result.push(b.txt("]"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.array.build(b));
+            result.push(b.txt("["));
+            result.push(self.index.build(b));
+            result.push(b.txt("]"));
+        });
     }
 }
 
