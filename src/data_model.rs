@@ -2708,22 +2708,27 @@ impl<'a> DocBuild<'a> for Dimensions {
 #[derive(Debug)]
 pub struct DimensionsExpr {
     pub exp: Expression,
+    pub node_info: NodeInfo,
 }
 
 impl DimensionsExpr {
     pub fn new(node: Node) -> Self {
         assert_check(node, "dimensions_expr");
 
-        let exp = Expression::new(node.first_c());
-        Self { exp }
+        Self {
+            exp: Expression::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for DimensionsExpr {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("["));
-        result.push(self.exp.build(b));
-        result.push(b.txt("]"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("["));
+            result.push(self.exp.build(b));
+            result.push(b.txt("]"));
+        });
     }
 }
 
