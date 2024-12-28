@@ -485,9 +485,6 @@ impl FieldDeclaration {
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
 
-        let type_node = node.c_by_n("type");
-        let type_ = UnannotatedType::new(type_node);
-
         let declarators = node
             .cs_by_n("declarator")
             .into_iter()
@@ -497,14 +494,13 @@ impl FieldDeclaration {
         let accessor_list = node
             .try_c_by_k("accessor_list")
             .map(|n| AccessorList::new(n));
-        let node_info = NodeInfo::from(&node);
 
         Self {
             modifiers,
-            type_,
+            type_: UnannotatedType::new(node.c_by_n("type")),
             declarators,
             accessor_list,
-            node_info,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
