@@ -1019,17 +1019,17 @@ impl<'a> DocBuild<'a> for AliasExpression {
 
 #[derive(Debug)]
 pub enum FieldIdentifier {
-    Identifier(String),
+    Identifier(ValueNode),
     Dotted(DottedIdentifier),
 }
 
 impl FieldIdentifier {
     pub fn new(node: Node) -> Self {
         assert_check(node, "field_identifier");
-        let c = node.first_c();
 
+        let c = node.first_c();
         match c.kind() {
-            "identifier" => Self::Identifier(c.value()),
+            "identifier" => Self::Identifier(ValueNode::new(c)),
             "dotted_identifier" => Self::Dotted(DottedIdentifier::new(c)),
             _ => panic_unknown_node(c, "FieldIdentifier"),
         }
@@ -1040,7 +1040,7 @@ impl<'a> DocBuild<'a> for FieldIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Dotted(n) => {
                 result.push(n.build(b));

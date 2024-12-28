@@ -5235,7 +5235,8 @@ impl<'a> DocBuild<'a> for WithPriceBookExpression {
 
 #[derive(Debug)]
 pub struct DottedIdentifier {
-    identifiers: Vec<String>,
+    identifiers: Vec<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl DottedIdentifier {
@@ -5245,19 +5246,24 @@ impl DottedIdentifier {
         let identifiers = node
             .cs_by_k("identifier")
             .into_iter()
-            .map(|n| n.value())
+            .map(|n| ValueNode::new(n))
             .collect();
 
-        Self { identifiers }
+        Self {
+            identifiers,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for DottedIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs: Vec<_> = self.identifiers.iter().map(|s| b.txt(s)).collect();
-        let sep = Insertable::new(None, Some("."), None);
-        let doc = b.intersperse(&docs, sep);
-        result.push(doc);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs: Vec<_> = self.identifiers.iter().map(|n| n.build(b)).collect();
+            let sep = Insertable::new(None, Some("."), None);
+            let doc = b.intersperse(&docs, sep);
+            result.push(doc);
+        });
     }
 }
 
