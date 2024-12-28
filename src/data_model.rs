@@ -1752,9 +1752,10 @@ impl<'a> DocBuild<'a> for ScopedChoice {
 pub struct ConstructorDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_parameters: Option<TypeParameters>,
-    pub name: String,
+    pub name: ValueNode,
     pub parameters: FormalParameters,
     pub body: ConstructorBody,
+    pub node_info: NodeInfo,
 }
 
 impl ConstructorDeclaration {
@@ -1763,32 +1764,33 @@ impl ConstructorDeclaration {
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
-        let name = node.cvalue_by_n("name");
-        let parameters = FormalParameters::new(node.c_by_n("parameters"));
-        let body = ConstructorBody::new(node.c_by_n("body"));
+
         Self {
             modifiers,
             type_parameters,
-            name,
-            parameters,
-            body,
+            name: ValueNode::new(node.c_by_n("name")),
+            parameters: FormalParameters::new(node.c_by_n("parameters")),
+            body: ConstructorBody::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ConstructorDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-        if let Some(ref n) = self.type_parameters {
-            result.push(n.build(b));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
+            if let Some(ref n) = self.type_parameters {
+                result.push(n.build(b));
+            }
 
-        result.push(b.txt(&self.name));
-        result.push(self.parameters.build(b));
-        result.push(b.txt(" "));
-        result.push(self.body.build(b));
+            result.push(self.name.build(b));
+            result.push(self.parameters.build(b));
+            result.push(b.txt(" "));
+            result.push(self.body.build(b));
+        });
     }
 }
 
@@ -1796,6 +1798,7 @@ impl<'a> DocBuild<'a> for ConstructorDeclaration {
 pub struct ConstructorBody {
     pub constructor_invocation: Option<BodyMember<ConstructInvocation>>,
     pub statements: Vec<BodyMember<Statement>>,
+    pub node_info: NodeInfo,
 }
 
 impl ConstructorBody {
@@ -1814,34 +1817,46 @@ impl ConstructorBody {
         Self {
             constructor_invocation,
             statements,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ConstructorBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if self.constructor_invocation.is_none() && self.statements.is_empty() {
-            return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
-        }
+        let bucket = get_comment_bucket(&self.node_info.id);
+        handle_pre_comments(b, bucket, result);
 
-        result.push(b.txt("{"));
-        result.push(b.indent(b.nl()));
-
-        if let Some(c) = &self.constructor_invocation {
-            result.push(c.member.build(b));
-            result.push(b.txt(";"));
-
-            if !self.statements.is_empty() {
-                if c.has_trailing_newline {
-                    result.push(b.nl_with_no_indent());
-                }
-                result.push(b.nl());
+        if bucket.dangling_comments.is_empty() {
+            if self.constructor_invocation.is_none() && self.statements.is_empty() {
+                return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
             }
-        }
-        result.push(b.indent(b.intersperse_body_members(&self.statements)));
 
-        result.push(b.nl());
-        result.push(b.txt("}"));
+            result.push(b.txt("{"));
+
+            if let Some(c) = &self.constructor_invocation {
+                result.push(b.indent(b.concat(vec![b.nl(), c.member.build(b), b.txt(";")])));
+
+                if !self.statements.is_empty() {
+                    if c.has_trailing_newline {
+                        result.push(b.nl_with_no_indent());
+                    }
+                    result.push(b.nl());
+                }
+            } else {
+                result.push(b.indent(b.nl()));
+            }
+
+            result.push(b.indent(b.intersperse_body_members(&self.statements)));
+            result.push(b.nl());
+            result.push(b.txt("}"));
+        } else {
+            result.push(b.txt("{"));
+            result.push(b.indent(b.nl()));
+            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
+            result.push(b.nl());
+            result.push(b.txt("}"));
+        }
     }
 }
 
@@ -1851,6 +1866,7 @@ pub struct ConstructInvocation {
     pub type_arguments: Option<TypeArguments>,
     pub constructor: Option<Constructor>,
     pub arguments: ArgumentList,
+    pub node_info: NodeInfo,
 }
 
 impl ConstructInvocation {
@@ -1869,32 +1885,33 @@ impl ConstructInvocation {
             _ => panic_unknown_node(n, "Constructor"),
         });
 
-        let arguments = ArgumentList::new(node.c_by_n("arguments"));
-
         Self {
             object,
             type_arguments,
             constructor,
-            arguments,
+            arguments: ArgumentList::new(node.c_by_n("arguments")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ConstructInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref o) = self.object {
-            result.push(o.build(b));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref o) = self.object {
+                result.push(o.build(b));
+            }
 
-        if let Some(ref t) = self.type_arguments {
-            result.push(t.build(b));
-        }
+            if let Some(ref t) = self.type_arguments {
+                result.push(t.build(b));
+            }
 
-        if let Some(ref c) = self.constructor {
-            result.push(c.build(b));
-        }
+            if let Some(ref c) = self.constructor {
+                result.push(c.build(b));
+            }
 
-        result.push(self.arguments.build(b));
+            result.push(self.arguments.build(b));
+        });
     }
 }
 
@@ -3050,12 +3067,12 @@ pub struct ConstantDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
+    pub node_info: NodeInfo,
 }
 
 impl ConstantDeclaration {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnannotatedType::new(node.c_by_n("type"));
         let declarators = node
             .cs_by_n("declarator")
             .into_iter()
@@ -3064,26 +3081,29 @@ impl ConstantDeclaration {
 
         Self {
             modifiers,
-            type_,
+            type_: UnannotatedType::new(node.c_by_n("type")),
             declarators,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ConstantDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
 
-        result.push(self.type_.build(b));
-        result.push(b.txt(" "));
+            result.push(self.type_.build(b));
+            result.push(b.txt(" "));
 
-        let docs = b.to_docs(&self.declarators);
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let doc = b.group(b.intersperse(&docs, sep));
-        result.push(doc);
-        result.push(b.txt(";"));
+            let docs = b.to_docs(&self.declarators);
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let doc = b.group(b.intersperse(&docs, sep));
+            result.push(doc);
+            result.push(b.txt(";"));
+        });
     }
 }
 
