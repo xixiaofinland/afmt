@@ -1805,21 +1805,9 @@ impl ConstructorBody {
 
         for (i, c) in node.children_vec().into_iter().enumerate() {
             if i == 0 && c.kind() == "explicit_constructor_invocation" {
-                let member = ConstructInvocation::new(c);
-                let has_trailing_newline = print_trailing_new_line(&c);
-                constructor_invocation = Some(BodyMember {
-                    member,
-                    has_trailing_newline,
-                    is_next_comment_node: is_followed_by_comment(&c),
-                });
+                constructor_invocation = Some(BodyMember::new(&c, ConstructInvocation::new(c)));
             } else {
-                let member = Statement::new(c);
-                let has_trailing_newline = print_trailing_new_line(&c);
-                statements.push(BodyMember {
-                    member,
-                    has_trailing_newline,
-                    is_next_comment_node: is_followed_by_comment(&c),
-                });
+                statements.push(BodyMember::new(&c, Statement::new(c)));
             }
         }
 
@@ -2965,11 +2953,7 @@ impl InterfaceBody {
                     _ => panic_unknown_node(n, "InterfaceBody"),
                 };
 
-                BodyMember {
-                    member,
-                    has_trailing_newline: print_trailing_new_line(&n),
-                    is_next_comment_node: is_followed_by_comment(&n),
-                }
+                BodyMember::new(&n, member)
             })
             .collect();
 
