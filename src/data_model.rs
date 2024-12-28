@@ -1263,7 +1263,7 @@ impl VariableDeclarator {
 
         let mut is_value_child_a_query_node = false;
         let op = node
-            .try_c_by_n("assignment_expression")
+            .try_c_by_k("assignment_operator")
             .map(AssignmentOperator::new);
         let value = node.try_c_by_n("value").map(|n| {
             is_value_child_a_query_node = is_query_expression(&n);
