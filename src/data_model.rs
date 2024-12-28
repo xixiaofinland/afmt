@@ -1005,9 +1005,10 @@ impl<'a> DocBuild<'a> for TypeArguments {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ArgumentList {
     pub expressions: Vec<Expression>,
+    pub node_info: NodeInfo,
 }
 
 impl ArgumentList {
@@ -1017,19 +1018,25 @@ impl ArgumentList {
             .into_iter()
             .map(|n| Expression::new(n))
             .collect();
-        Self { expressions }
+
+        Self {
+            expressions,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.expressions);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.expressions);
 
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 
