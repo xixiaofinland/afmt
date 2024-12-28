@@ -5357,3 +5357,29 @@ impl<'a> DocBuild<'a> for SafeNavigationOperator {
         });
     }
 }
+
+#[derive(Debug)]
+pub struct CountExpression {
+    pub function_name: ValueNode,
+    pub node_info: NodeInfo,
+}
+
+impl CountExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "count_expression");
+
+        Self {
+            function_name: ValueNode::new(node.c_by_n("function_name")),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for CountExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.function_name.build(b));
+            result.push(b.txt("()"));
+        });
+    }
+}

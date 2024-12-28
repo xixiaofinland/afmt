@@ -881,7 +881,7 @@ impl<'a> DocBuild<'a> for TriggerEventVariant {
 
 #[derive(Debug)]
 pub enum SelectClause {
-    Count(String),
+    Count(CountExpression),
     Selectable(Vec<SelectableExpression>),
 }
 
@@ -890,7 +890,7 @@ impl SelectClause {
         assert_check(node, "select_clause");
 
         if let Some(count_node) = node.try_c_by_k("count_expression") {
-            Self::Count(count_node.cvalue_by_n("function_name"))
+            Self::Count(CountExpression::new(count_node))
         } else {
             Self::Selectable(
                 node.children_vec()
@@ -910,8 +910,7 @@ impl<'a> DocBuild<'a> for SelectClause {
 
         match self {
             Self::Count(n) => {
-                doc_vec.push(b.txt(n));
-                doc_vec.push(b.txt("()"));
+                doc_vec.push(n.build(b));
             }
             Self::Selectable(vec) => {
                 let docs = b.to_docs(vec);
