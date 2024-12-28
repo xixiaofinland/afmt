@@ -4660,23 +4660,29 @@ impl<'a> DocBuild<'a> for OrderExpression {
 #[derive(Debug)]
 pub struct SubQuery {
     pub soql_query_body: Box<SoqlQueryBody>,
+    pub node_info: NodeInfo,
 }
 
 impl SubQuery {
     pub fn new(node: Node) -> Self {
         let soql_query_body = Box::new(SoqlQueryBody::new(node.c_by_k("soql_query_body")));
-        Self { soql_query_body }
+        Self {
+            soql_query_body,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SubQuery {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![self.soql_query_body.build(b)];
-        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = vec![self.soql_query_body.build(b)];
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 
