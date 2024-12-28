@@ -971,50 +971,57 @@ impl<'a> DocBuild<'a> for SelectableExpression {
 
 #[derive(Debug)]
 pub struct FieldsExpression {
-    fields_type: String,
+    fields_type: ValueNodeUpperCase,
+    pub node_info: NodeInfo,
 }
 
 impl FieldsExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "fields_expression");
 
-        let fields_type = node.cvalue_by_k("fields_type").to_uppercase();
-        Self { fields_type }
+        Self {
+            fields_type: ValueNodeUpperCase::new(node.c_by_k("fields_type")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldsExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("FIELDS("));
-        result.push(b.txt(&self.fields_type));
-        result.push(b.txt(")"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("FIELDS("));
+            result.push(self.fields_type.build(b));
+            result.push(b.txt(")"));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct AliasExpression {
     value_exp: ValueExpression,
-    identifier: String,
+    identifier: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl AliasExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "alias_expression");
 
-        let value_exp = ValueExpression::new(node.first_c());
-        let identifier = node.cvalue_by_k("identifier");
         Self {
-            value_exp,
-            identifier,
+            value_exp: ValueExpression::new(node.first_c()),
+            identifier: ValueNode::new(node.c_by_k("identifier")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AliasExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.value_exp.build(b));
-        result.push(b.txt(" "));
-        result.push(b.txt(&self.identifier));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.value_exp.build(b));
+            result.push(b.txt(" "));
+            result.push(self.identifier.build(b));
+        });
     }
 }
 

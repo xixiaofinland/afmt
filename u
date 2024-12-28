@@ -5341,7 +5341,7 @@ impl ValueNodeUpperCase {
 impl<'a> DocBuild<'a> for ValueNodeUpperCase {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
-            result.push(b.txt(self.value.to_uppercase()));
+            result.push(b.txt(self.value.to_uppercasep()));
         });
     }
 }
