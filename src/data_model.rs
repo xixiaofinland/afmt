@@ -2588,13 +2588,12 @@ impl<'a> DocBuild<'a> for ArrayAccess {
 pub struct ArrayCreationExpression {
     pub type_: SimpleType,
     pub variant: ArrayCreationVariant,
+    pub node_info: NodeInfo,
 }
 
 impl ArrayCreationExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "array_creation_expression");
-
-        let type_ = SimpleType::new(node.c_by_n("type"));
 
         let value_node = node.try_c_by_n("value");
         let dimensions_node = node.try_c_by_n("dimensions");
@@ -2623,15 +2622,21 @@ impl ArrayCreationExpression {
             }
         };
 
-        Self { type_, variant }
+        Self {
+            type_: SimpleType::new(node.c_by_n("type")),
+            variant,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayCreationExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("new"));
-        result.push(self.type_.build(b));
-        result.push(self.variant.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("new"));
+            result.push(self.type_.build(b));
+            result.push(self.variant.build(b));
+        });
     }
 }
 
