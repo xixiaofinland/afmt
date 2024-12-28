@@ -129,7 +129,7 @@ impl<'a> DocBuilder<'a> {
             member_docs.push(m.member.build(self));
 
             // let comment logic to handle newlines if exists
-            if i < members.len() - 1 && !m.is_next_comment_node {
+            if i < members.len() - 1 && !m.is_followed_by_comment_in_new_line {
                 if m.has_trailing_newline {
                     member_docs.push(self.nl_with_no_indent());
                 }

@@ -3,7 +3,7 @@ use crate::{
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{assert_check, is_followed_by_comment, panic_unknown_node, print_trailing_new_line},
+    utility::{assert_check, is_followed_by_comment_in_new_line, panic_unknown_node},
 };
 use tree_sitter::Node;
 
@@ -792,16 +792,30 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool,
-    pub is_next_comment_node: bool,
+    pub is_followed_by_comment_in_new_line: bool,
 }
 
 impl<M> BodyMember<M> {
     pub fn new(node: &Node, member: M) -> Self {
         Self {
             member,
-            has_trailing_newline: print_trailing_new_line(node),
-            is_next_comment_node: is_followed_by_comment(node),
+            has_trailing_newline: Self::print_trailing_new_line(node),
+            is_followed_by_comment_in_new_line: is_followed_by_comment_in_new_line(node),
         }
+    }
+
+    fn print_trailing_new_line(node: &Node) -> bool {
+        let mut next = node.next_named_sibling();
+
+        // Iterate until a non-extra node is found
+        while let Some(next_node) = next {
+            if !next_node.is_extra() {
+                return node.end_position().row < next_node.start_position().row - 1;
+            }
+            next = next_node.next_named_sibling();
+        }
+
+        false
     }
 }
 

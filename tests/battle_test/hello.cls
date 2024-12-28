@@ -1,11 +1,7 @@
 class A{
   {
+    Integer a = 1; /* Comment 1 */
 
-    Integer  /* Comment 3 */ c =  1;
-
-    /* Comment 4 */ Integer d =  1;
-
-    /* Comment 5 */
-    Integer e =  1;
+    Integer b  =  1 /* Comment 2 */;
   }
 }

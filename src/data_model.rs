@@ -362,15 +362,11 @@ impl Annotation {
             .try_c_by_n("arguments")
             .map(AnnotationArgumentList::new);
 
-        let is_followed_by_comment_in_new_line = node.next_named_sibling().map_or(false, |n| {
-            n.is_extra() && node.end_position().row != n.start_position().row
-        });
-
         Self {
             name: ValueNode::new(node.c_by_n("name")),
             arguments,
             node_info: NodeInfo::from(&node),
-            is_followed_by_comment_in_new_line,
+            is_followed_by_comment_in_new_line: is_followed_by_comment_in_new_line(&node),
         }
     }
 }

@@ -354,14 +354,6 @@ pub fn assert_check(node: Node, expected_kind: &str) {
     );
 }
 
-pub fn print_trailing_new_line(node: &Node) -> bool {
-    let next = node.next_named_sibling();
-    if let Some(next_node) = next {
-        node.end_position().row < next_node.start_position().row - 1
-    } else {
-        false
-    }
-}
 
 pub fn get_precedence(op: &str) -> u8 {
     match op {
@@ -469,6 +461,8 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
     );
 }
 
-pub fn is_followed_by_comment(node: &Node) -> bool {
-    node.next_named_sibling().map_or(false, |n| n.is_extra())
+pub fn is_followed_by_comment_in_new_line(node: &Node) -> bool {
+    node.next_named_sibling().map_or(false, |n| {
+        n.is_extra() && node.end_position().row != n.start_position().row
+    })
 }
