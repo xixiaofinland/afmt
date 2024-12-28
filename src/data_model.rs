@@ -1320,13 +1320,10 @@ impl GenericType {
             panic!("## can't build generic_identifier node in GenericType");
         };
 
-        let type_arguments = TypeArguments::new(node.c_by_k("type_arguments"));
-        let node_info = NodeInfo::from(&node);
-
         Self {
             generic_identifier,
-            type_arguments,
-            node_info,
+            type_arguments: TypeArguments::new(node.c_by_k("type_arguments")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -1368,16 +1365,15 @@ pub struct IfStatement {
 
 impl IfStatement {
     pub fn new(node: Node) -> Self {
-        let condition = ParenthesizedExpression::new(node.c_by_n("condition"));
-        let consequence = Statement::new(node.c_by_n("consequence"));
+        assert_check(node, "if_statement");
+
         let alternative = node.try_c_by_n("alternative").map(|a| Statement::new(a));
-        let node_info = NodeInfo::from(&node);
 
         Self {
-            condition,
-            consequence,
+            condition: ParenthesizedExpression::new(node.c_by_n("condition")),
+            consequence: Statement::new(node.c_by_n("consequence")),
             alternative,
-            node_info,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -1679,14 +1675,12 @@ impl ScopedTypeIdentifier {
             .cs_by_k("type_identifier")
             .pop()
             .expect("## mandatory node type_identifier missing in ScopedTypeIdentifier");
-        let type_identifier = type_identifier_node.value();
-        let node_info = NodeInfo::from(&node);
 
         Self {
             scoped_choice,
             annotations,
-            type_identifier,
-            node_info,
+            type_identifier: type_identifier_node.value(),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -1913,16 +1907,17 @@ pub struct TypeParameters {
 
 impl TypeParameters {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "type_parameters");
+
         let type_parameters: Vec<_> = node
             .cs_by_k("type_parameter")
             .into_iter()
             .map(|n| TypeParameter::new(n))
             .collect();
-        let node_info = NodeInfo::from(&node);
 
         Self {
             type_parameters,
-            node_info,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -1956,13 +1951,10 @@ impl TypeParameter {
             .map(|n| Annotation::new(n))
             .collect();
 
-        let type_identifier = node.cvalue_by_k("type_identifier");
-        let node_info = NodeInfo::from(&node);
-
         Self {
             annotations,
-            type_identifier,
-            node_info,
+            type_identifier: node.cvalue_by_k("type_identifier"),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -2610,8 +2602,10 @@ pub struct Dimensions {
 impl Dimensions {
     pub fn new(node: Node) -> Self {
         assert_check(node, "dimensions");
-        let node_info = NodeInfo::from(&node);
-        Self { node_info }
+
+        Self {
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
@@ -2849,24 +2843,23 @@ pub struct InterfaceDeclaration {
 
 impl InterfaceDeclaration {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "interface_declaration");
+
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = ValueNode::new(node.c_by_n("name"));
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
         let extends = node
             .try_c_by_k("extends_interfaces")
             .map(|n| ExtendsInterface::new(n));
-        let body = InterfaceBody::new(node.c_by_n("body"));
-        let node_info = NodeInfo::from(&node);
 
         Self {
             modifiers,
-            name,
+            name: ValueNode::new(node.c_by_n("name")),
             type_parameters,
             extends,
-            body,
-            node_info,
+            body: InterfaceBody::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -2903,11 +2896,9 @@ pub struct ExtendsInterface {
 
 impl ExtendsInterface {
     pub fn new(node: Node) -> Self {
-        let type_list = TypeList::new(node.c_by_k("type_list"));
-        let node_info = NodeInfo::from(&node);
         Self {
-            type_list,
-            node_info,
+            type_list: TypeList::new(node.c_by_k("type_list")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -3455,10 +3446,10 @@ impl JavaType {
     pub fn new(node: Node) -> Self {
         let scoped_type_identifier =
             ScopedTypeIdentifier::new(node.c_by_k("scoped_type_identifier"));
-        let node_info = NodeInfo::from(&node);
+
         Self {
             scoped_type_identifier,
-            node_info,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -3483,13 +3474,10 @@ impl ArrayType {
     pub fn new(node: Node) -> Self {
         assert_check(node, "array_type");
 
-        let element = UnannotatedType::new(node.c_by_n("element"));
-        let dimensions = Dimensions::new(node.c_by_n("dimensions"));
-        let node_info = NodeInfo::from(&node);
         Self {
-            element,
-            dimensions,
-            node_info,
+            element: UnannotatedType::new(node.c_by_n("element")),
+            dimensions: Dimensions::new(node.c_by_n("dimensions")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -5102,10 +5090,10 @@ pub struct ValueNode {
 
 impl ValueNode {
     pub fn new(node: Node) -> Self {
-        let value = node.value();
-        let node_info = NodeInfo::from(&node);
-
-        Self { value, node_info }
+        Self {
+            value: node.value(),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
@@ -5127,10 +5115,10 @@ impl ExpressionStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "expression_statement");
 
-        let exp = Expression::new(node.first_c());
-        let node_info = NodeInfo::from(&node);
-
-        Self { exp, node_info }
+        Self {
+            exp: Expression::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
