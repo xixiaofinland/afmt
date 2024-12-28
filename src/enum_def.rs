@@ -1581,7 +1581,7 @@ impl<'a> DocBuild<'a> for OffsetClause {
 }
 
 #[derive(Debug)]
-pub enum FunctionExpression {
+pub enum FunctionExpressionVariant {
     WithGEO {
         function_name: String,
         field: Option<FieldIdentifier>,
@@ -1595,7 +1595,7 @@ pub enum FunctionExpression {
     },
 }
 
-impl FunctionExpression {
+impl FunctionExpressionVariant {
     pub fn new(node: Node) -> Self {
         assert_check(node, "function_expression");
 
@@ -1627,7 +1627,7 @@ impl FunctionExpression {
     }
 }
 
-impl<'a> DocBuild<'a> for FunctionExpression {
+impl<'a> DocBuild<'a> for FunctionExpressionVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::WithGEO {

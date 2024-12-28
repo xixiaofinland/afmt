@@ -4793,7 +4793,9 @@ impl GroupByClause {
                     exps.push(GroupByExpression::Field(FieldIdentifier::new(child)));
                 }
                 "function_expression" => {
-                    exps.push(GroupByExpression::Func(FunctionExpression::new(child)));
+                    exps.push(GroupByExpression::Func(FunctionExpressionVariant::new(
+                        child,
+                    )));
                 }
                 "having_clause" => {
                     have_clause = Some(HavingClause::new(child));
@@ -4826,7 +4828,7 @@ impl<'a> DocBuild<'a> for GroupByClause {
 #[derive(Debug)]
 pub enum GroupByExpression {
     Field(FieldIdentifier),
-    Func(FunctionExpression),
+    Func(FunctionExpressionVariant),
 }
 
 impl<'a> DocBuild<'a> for GroupByExpression {
@@ -5386,6 +5388,31 @@ impl<'a> DocBuild<'a> for CountExpression {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.function_name.build(b));
             result.push(b.txt("()"));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct FunctionExpression {
+    pub variant: FunctionExpressionVariant,
+    pub node_info: NodeInfo,
+}
+
+impl FunctionExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "function_expression");
+
+        Self {
+            variant: FunctionExpressionVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for FunctionExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
         });
     }
 }
