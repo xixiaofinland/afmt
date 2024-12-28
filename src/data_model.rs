@@ -79,23 +79,20 @@ impl ClassDeclaration {
         assert_check(node, "class_declaration");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = ValueNode::new(node.c_by_n("name"));
         let type_parameters = node
             .try_c_by_k("type_parameters")
             .map(|n| TypeParameters::new(n));
         let superclass = node.try_c_by_k("superclass").map(|n| SuperClass::new(n));
         let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
-        let body = ClassBody::new(node.c_by_n("body"));
-        let node_info = NodeInfo::from(&node);
 
         Self {
             modifiers,
-            name,
+            name: ValueNode::new(node.c_by_n("name")),
             type_parameters,
             superclass,
             interface,
-            body,
-            node_info,
+            body: ClassBody::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -152,19 +149,14 @@ pub struct MethodDeclaration {
 impl MethodDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_declaration");
-        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = ValueNode::new(node.c_by_n("name"));
-        let formal_parameters = FormalParameters::new(node.c_by_n("parameters"));
-        let body = node.try_c_by_n("body").map(|n| Block::new(n));
-        let node_info = NodeInfo::from(&node);
+
         Self {
-            modifiers,
-            type_,
-            name,
-            formal_parameters,
-            body,
-            node_info,
+            modifiers: node.try_c_by_k("modifiers").map(|n| Modifiers::new(n)),
+            type_: UnannotatedType::new(node.c_by_n("type")),
+            name: ValueNode::new(node.c_by_n("name")),
+            formal_parameters: FormalParameters::new(node.c_by_n("parameters")),
+            body: node.try_c_by_n("body").map(|n| Block::new(n)),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -3532,44 +3524,46 @@ pub struct TriggerDeclaration {
     pub object: String,
     pub events: Vec<TriggerEvent>,
     pub body: TriggerBody,
+    pub node_info: NodeInfo,
 }
 
 impl TriggerDeclaration {
     pub fn new(node: Node) -> Self {
-        let name = node.cvalue_by_n("name");
-        let object = node.cvalue_by_n("object");
         let events = node
             .cs_by_k("trigger_event")
             .into_iter()
             .map(|n| TriggerEvent::new(n.first_c()))
             .collect();
-        let body = TriggerBody::new(node.c_by_n("body"));
+
         Self {
-            name,
-            object,
+            name: node.cvalue_by_n("name"),
+            object: node.cvalue_by_n("object"),
             events,
-            body,
+            body: TriggerBody::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TriggerDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("trigger"));
-        result.push(b.txt(&self.name));
-        result.push(b._txt_("on"));
-        result.push(b.txt(&self.object));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("trigger"));
+            result.push(b.txt(&self.name));
+            result.push(b._txt_("on"));
+            result.push(b.txt(&self.object));
 
-        let docs = b.to_docs(&self.events);
+            let docs = b.to_docs(&self.events);
 
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
 
-        result.push(b.txt(" "));
-        result.push(self.body.build(b));
+            result.push(b.txt(" "));
+            result.push(self.body.build(b));
+        });
     }
 }
 
