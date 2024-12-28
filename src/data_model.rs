@@ -448,15 +448,13 @@ impl<'a> DocBuild<'a> for ClassBody {
 
         if bucket.dangling_comments.is_empty() {
             result.push(b.surround_body(&self.class_members, "", "}"));
+            handle_post_comments(b, bucket, result);
         } else {
             result.push(b.indent(b.nl()));
             result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
             result.push(b.nl());
             result.push(b.txt("}"));
-            return;
         }
-
-        handle_post_comments(b, bucket, result);
     }
 }
 
@@ -2223,44 +2221,49 @@ impl<'a> DocBuild<'a> for FieldOption {
 #[derive(Debug)]
 pub struct EnumDeclaration {
     pub modifiers: Option<Modifiers>,
-    pub name: String,
+    pub name: ValueNode,
     pub interface: Option<Interface>,
     pub body: EnumBody,
+    pub node_info: NodeInfo,
 }
 
 impl EnumDeclaration {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name");
         let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
-        let body = EnumBody::new(node.c_by_n("body"));
+
         Self {
             modifiers,
-            name,
+            name: ValueNode::new(node.c_by_n("name")),
             interface,
-            body,
+            body: EnumBody::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for EnumDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-        result.push(b.txt_("enum"));
-        result.push(b.txt_(&self.name));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
+            result.push(b.txt_("enum"));
+            result.push(self.name.build(b));
+            result.push(b.txt(" "));
 
-        if let Some(ref n) = self.interface {
-            result.push(n.build(b));
-        }
-        result.push(self.body.build(b));
+            if let Some(ref n) = self.interface {
+                result.push(n.build(b));
+            }
+            result.push(self.body.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct EnumBody {
     enum_constants: Vec<EnumConstant>,
+    pub node_info: NodeInfo,
 }
 
 impl EnumBody {
@@ -2271,46 +2274,69 @@ impl EnumBody {
             .map(|n| EnumConstant::new(n))
             .collect();
 
-        Self { enum_constants }
+        Self {
+            enum_constants,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for EnumBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.enum_constants);
+        let bucket = get_comment_bucket(&self.node_info.id);
+        handle_pre_comments(b, bucket, result);
 
-        if docs.is_empty() {
-            return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+        if bucket.dangling_comments.is_empty() {
+            let docs = b.to_docs(&self.enum_constants);
+
+            if docs.is_empty() {
+                return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
+            }
+
+            let sep = Insertable::new(None, Some(","), Some(b.nl()));
+            let open = Insertable::new(None, Some("{"), Some(b.nl()));
+            let close = Insertable::new(Some(b.nl()), Some("}"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+            handle_post_comments(b, bucket, result);
+        } else {
+            result.push(b.txt("{"));
+            result.push(b.indent(b.nl()));
+            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
+            result.push(b.nl());
+            result.push(b.txt("}"));
         }
-
-        let sep = Insertable::new(None, Some(","), Some(b.nl()));
-        let open = Insertable::new(None, Some("{"), Some(b.nl()));
-        let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
     }
 }
 
 #[derive(Debug)]
 pub struct EnumConstant {
     pub modifiers: Option<Modifiers>,
-    pub name: String,
+    pub name: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl EnumConstant {
     pub fn new(node: Node) -> Self {
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let name = node.cvalue_by_n("name");
-        Self { modifiers, name }
+
+        Self {
+            modifiers,
+            name: ValueNode::new(node.c_by_n("name")),
+
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for EnumConstant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-        result.push(b.txt(&self.name));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
+            result.push(self.name.build(b));
+        });
     }
 }
 

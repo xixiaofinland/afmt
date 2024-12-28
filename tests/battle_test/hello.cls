@@ -1,7 +1,3 @@
-class A{
-  {
-    Integer a = 1; /* Comment 1 */
+enum Season { /* Block Comment */
 
-    Integer b  =  1 /* Comment 2 */;
-  }
 }
