@@ -881,12 +881,12 @@ impl<'a> DocBuild<'a> for TriggerEventVariant {
 }
 
 #[derive(Debug)]
-pub enum SelectClause {
+pub enum SelectClauseVariant {
     Count(CountExpression),
     Selectable(Vec<SelectableExpression>),
 }
 
-impl SelectClause {
+impl SelectClauseVariant {
     pub fn new(node: Node) -> Self {
         assert_check(node, "select_clause");
 
@@ -903,7 +903,7 @@ impl SelectClause {
     }
 }
 
-impl<'a> DocBuild<'a> for SelectClause {
+impl<'a> DocBuild<'a> for SelectClauseVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let mut doc_vec = Vec::new();
         doc_vec.push(b.txt("SELECT"));

@@ -5501,3 +5501,28 @@ impl<'a> DocBuild<'a> for GeoLocationType {
         });
     }
 }
+
+#[derive(Debug)]
+pub struct SelectClause {
+    pub variant: SelectClauseVariant,
+    pub node_info: NodeInfo,
+}
+
+impl SelectClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "select_clause");
+
+        Self {
+            variant: SelectClauseVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for SelectClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
+        });
+    }
+}
