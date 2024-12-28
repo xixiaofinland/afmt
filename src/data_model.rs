@@ -1062,6 +1062,7 @@ pub struct BinaryExpression {
     pub op: String,
     pub right: Expression,
     pub context: BinaryExpressionContext,
+    pub node_info: NodeInfo,
 }
 
 // TODO: clean up
@@ -1072,52 +1073,10 @@ impl BinaryExpression {
         let parent = node
             .parent()
             .expect("BinaryExpression node should always have a parent");
-        //let left_child = node.c_by_n("left");
-        //let right_child = node.c_by_n("right");
+
         let is_a_chaining_inner_node = is_binary_exp(&parent);
-
-        //let is_left_node_binary = is_binary_node(&left_child);
-        //let is_right_node_binary = is_binary_node(&right_child);
-        //let is_nested_right_expression =
-        //    is_nested_expression && node.id() == parent.c_by_n("right").id();
-
-        //let left_child_has_same_precedence = is_left_node_binary
-        //    && precedence == get_precedence(left_child.c_by_n("operator").kind());
-
         let has_parent_same_precedence = is_binary_exp(&parent)
             && precedence == get_precedence(parent.c_by_n("operator").kind());
-
-        // struct properties below;
-
-        // a = b > c > d -> the "b > c" node;
-        //let is_a_left_child_that_should_not_group = (left_child_has_same_precedence
-        //    || !is_left_node_binary)
-        //    && is_nested_expression
-        //    && parent_has_same_precedence
-        //    && !is_nested_right_expression;
-
-        // a = b > c && d && e -> the node (d);
-        //let has_a_right_child_that_should_not_group = !is_a_left_child_that_should_not_group
-        //    && is_nested_expression
-        //    && parent_has_same_precedence
-        //    && !is_nested_right_expression;
-
-        // a = b > 1 && c > 1;
-        //let has_left_and_rigth_children_same_precedence = is_left_node_binary
-        //    && is_right_node_binary
-        //    && get_precedence(left_child.c_by_n("operator").kind())
-        //        == get_precedence(right_child.c_by_n("operator").kind());
-
-        //a = b > c > d -> the node (b > c > d);
-        //let is_top_most_parent_node_that_should_not_group =
-        //    left_child_has_same_precedence && !is_nested_expression;
-
-        // If this expression is directly inside parentheses, we want to give it
-        // an extra level indentation, e.g.:
-        // createObject(
-        //   firstBoolean &&
-        //      secondBoolean
-        // );
 
         BinaryExpressionContext {
             has_parent_same_precedence,
@@ -1129,59 +1088,56 @@ impl BinaryExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "binary_expression");
 
-        let left = Expression::new(node.c_by_n("left"));
-        let op = node.c_by_n("operator").kind().to_string();
-        let right = Expression::new(node.c_by_n("right"));
-
-        let context = Self::build_context(&node);
-
         Self {
-            left,
-            op,
-            right,
-            context,
+            left: Expression::new(node.c_by_n("left")),
+            op: node.c_by_n("operator").kind().to_string(),
+            right: Expression::new(node.c_by_n("right")),
+            context: Self::build_context(&node),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let left_doc = self.left.build(b);
-        let op_doc = b.txt(&self.op);
-        let right_doc = self.right.build(b);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let left_doc = self.left.build(b);
+            let op_doc = b.txt(&self.op);
+            let right_doc = self.right.build(b);
 
-        let context = &self.context;
+            let context = &self.context;
 
-        // chaining case: deligate to the parent to handle group() or align()
-        if context.has_parent_same_precedence {
-            return result.push(b.concat(vec![
+            // chaining case: deligate to the parent to handle group() or align()
+            if context.has_parent_same_precedence {
+                return result.push(b.concat(vec![
+                    left_doc,
+                    b.softline(),
+                    op_doc,
+                    b.txt(" "),
+                    right_doc,
+                ]));
+            }
+
+            // group() using the current line indent level
+            if !context.is_a_chaining_inner_node && !context.is_parent_return_statement {
+                return result.push(b.group_concat(vec![
+                    left_doc,
+                    b.softline(),
+                    op_doc,
+                    b.txt(" "),
+                    right_doc,
+                ]));
+            }
+
+            // otherwise:
+            result.push(b.group_indent_concat(vec![
                 left_doc,
                 b.softline(),
                 op_doc,
                 b.txt(" "),
                 right_doc,
-            ]));
-        }
-
-        // group() using the current line indent level
-        if !context.is_a_chaining_inner_node && !context.is_parent_return_statement {
-            return result.push(b.group_concat(vec![
-                left_doc,
-                b.softline(),
-                op_doc,
-                b.txt(" "),
-                right_doc,
-            ]));
-        }
-
-        // otherwise:
-        result.push(b.group_indent_concat(vec![
-            left_doc,
-            b.softline(),
-            op_doc,
-            b.txt(" "),
-            right_doc,
-        ]))
+            ]))
+        });
     }
 }
 
@@ -1460,26 +1416,31 @@ impl<'a> DocBuild<'a> for IfStatement {
 #[derive(Debug)]
 pub struct ParenthesizedExpression {
     pub exp: Expression,
+    pub node_info: NodeInfo,
 }
 
 impl ParenthesizedExpression {
     pub fn new(node: Node) -> Self {
-        let exp = Expression::new(node.first_c());
-        Self { exp }
+        Self {
+            exp: Expression::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ParenthesizedExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        // to align with prettier apex
-        result.push(b.txt("("));
-        let doc = b.concat(vec![
-            b.indent(b.maybeline()),
-            b.indent(self.exp.build(b)),
-            b.maybeline(),
-        ]);
-        result.push(b.group(doc));
-        result.push(b.txt(")"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            // to align with prettier apex
+            result.push(b.txt("("));
+            let doc = b.concat(vec![
+                b.indent(b.maybeline()),
+                b.indent(self.exp.build(b)),
+                b.maybeline(),
+            ]);
+            result.push(b.group(doc));
+            result.push(b.txt(")"));
+        });
     }
 }
 
