@@ -428,22 +428,22 @@ impl<'a> DocBuild<'a> for ClassLiteral {
 
 #[derive(Debug)]
 pub enum Literal_ {
-    Bool(String),
+    Bool(ValueNodeLowerCase),
     Null,
-    Int(String),
-    Decimal(String),
-    Str(String),
+    Int(ValueNode),
+    Decimal(ValueNodeLowerCase),
+    Str(ValueNode),
 }
 
 impl Literal_ {
-    pub fn new(n: Node) -> Self {
-        match n.kind() {
-            "boolean" => Self::Bool(n.value().to_lowercase()),
+    pub fn new(node: Node) -> Self {
+        match node.kind() {
+            "boolean" => Self::Bool(ValueNodeLowerCase::new(node)),
             "null_literal" => Self::Null,
-            "int" => Self::Int(n.value()),
-            "string_literal" => Self::Str(n.value()),
-            "decimal_floating_point_literal" => Self::Decimal(n.value().to_lowercase()),
-            _ => panic_unknown_node(n, "Literal_"),
+            "int" => Self::Int(ValueNode::new(node)),
+            "string_literal" => Self::Str(ValueNode::new(node)),
+            "decimal_floating_point_literal" => Self::Decimal(ValueNodeLowerCase::new(node)),
+            _ => panic_unknown_node(node, "Literal_"),
         }
     }
 }
@@ -452,19 +452,19 @@ impl<'a> DocBuild<'a> for Literal_ {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Bool(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Null => {
                 result.push(b.txt("null"));
             }
             Self::Int(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Decimal(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Str(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
         }
     }

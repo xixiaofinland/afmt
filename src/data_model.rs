@@ -5218,6 +5218,29 @@ impl<'a> DocBuild<'a> for ValueNode {
 }
 
 #[derive(Debug)]
+pub struct ValueNodeLowerCase {
+    pub value: String,
+    pub node_info: NodeInfo,
+}
+
+impl ValueNodeLowerCase {
+    pub fn new(node: Node) -> Self {
+        Self {
+            value: node.value(),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ValueNodeLowerCase {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt(self.value.to_lowercase()));
+        });
+    }
+}
+
+#[derive(Debug)]
 pub struct ExpressionStatement {
     pub exp: Expression,
     pub node_info: NodeInfo,
