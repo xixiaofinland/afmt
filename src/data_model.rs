@@ -1202,6 +1202,7 @@ pub struct LocalVariableDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
+    pub node_info: NodeInfo,
 }
 
 impl LocalVariableDeclaration {
@@ -1209,7 +1210,6 @@ impl LocalVariableDeclaration {
         assert_check(node, "local_variable_declaration");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnannotatedType::new(node.c_by_n("type"));
         let declarators = node
             .cs_by_n("declarator")
             .into_iter()
@@ -1218,32 +1218,35 @@ impl LocalVariableDeclaration {
 
         Self {
             modifiers,
-            type_,
+            type_: UnannotatedType::new(node.c_by_n("type")),
             declarators,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for LocalVariableDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
 
-        result.push(self.type_.build(b));
-        result.push(b.txt(" "));
+            result.push(self.type_.build(b));
+            result.push(b.txt(" "));
 
-        let docs = b.to_docs(&self.declarators);
+            let docs = b.to_docs(&self.declarators);
 
-        // prevent unnessary indentation when only one element;
-        let doc = if docs.len() == 1 {
-            docs[0]
-        } else {
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
-            b.group(b.indent(b.intersperse(&docs, sep)))
-        };
+            // prevent unnessary indentation when only one element;
+            let doc = if docs.len() == 1 {
+                docs[0]
+            } else {
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                b.group(b.indent(b.intersperse(&docs, sep)))
+            };
 
-        result.push(doc);
+            result.push(doc);
+        });
     }
 }
 
@@ -1325,7 +1328,9 @@ impl AssignmentOperator {
 
 impl<'a> DocBuild<'a> for AssignmentOperator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("="));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("="));
+        });
     }
 }
 
