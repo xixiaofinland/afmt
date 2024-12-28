@@ -4642,23 +4642,28 @@ impl<'a> DocBuild<'a> for SubQuery {
 pub struct MapCreationExpression {
     type_: SimpleType,
     value: MapInitializer,
+    pub node_info: NodeInfo,
 }
 
 impl MapCreationExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "map_creation_expression");
 
-        let type_ = SimpleType::new(node.c_by_n("type"));
-        let value = MapInitializer::new(node.c_by_n("value"));
-        Self { type_, value }
+        Self {
+            type_: SimpleType::new(node.c_by_n("type")),
+            value: MapInitializer::new(node.c_by_n("value")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for MapCreationExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("new"));
-        result.push(self.type_.build(b));
-        result.push(self.value.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("new"));
+            result.push(self.type_.build(b));
+            result.push(self.value.build(b));
+        });
     }
 }
 
