@@ -78,19 +78,14 @@ impl ClassDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_declaration");
 
-        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_parameters = node
-            .try_c_by_k("type_parameters")
-            .map(|n| TypeParameters::new(n));
-        let superclass = node.try_c_by_k("superclass").map(|n| SuperClass::new(n));
-        let interface = node.try_c_by_k("interfaces").map(|n| Interface::new(n));
-
         Self {
-            modifiers,
+            modifiers: node.try_c_by_k("modifiers").map(|n| Modifiers::new(n)),
             name: ValueNode::new(node.c_by_n("name")),
-            type_parameters,
-            superclass,
-            interface,
+            type_parameters: node
+                .try_c_by_k("type_parameters")
+                .map(|n| TypeParameters::new(n)),
+            superclass: node.try_c_by_k("superclass").map(|n| SuperClass::new(n)),
+            interface: node.try_c_by_k("interfaces").map(|n| Interface::new(n)),
             body: ClassBody::new(node.c_by_n("body")),
             node_info: NodeInfo::from(&node),
         }
@@ -234,18 +229,12 @@ impl FormalParameter {
     pub fn new(node: Node) -> Self {
         assert_check(node, "formal_parameter");
 
-        let modifiers = node.try_c_by_k("modifiers").map(Modifiers::new);
-        let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = ValueNode::new(node.c_by_n("name"));
-        let dimensions = node.try_c_by_k("dimensions").map(Dimensions::new);
-        let node_info = NodeInfo::from(&node);
-
         Self {
-            modifiers,
-            type_,
-            name,
-            dimensions,
-            node_info,
+            modifiers: node.try_c_by_k("modifiers").map(Modifiers::new),
+            type_: UnannotatedType::new(node.c_by_n("type")),
+            name: ValueNode::new(node.c_by_n("name")),
+            dimensions: node.try_c_by_k("dimensions").map(Dimensions::new),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -277,10 +266,10 @@ impl SuperClass {
     pub fn new(node: Node) -> Self {
         assert_check(node, "superclass");
 
-        let type_ = Type::new(node.first_c());
-        let node_info = NodeInfo::from(&node);
-
-        Self { type_, node_info }
+        Self {
+            type_: Type::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
