@@ -4237,20 +4237,26 @@ impl<'a> DocBuild<'a> for UpdateClause {
 #[derive(Debug)]
 pub struct BoundApexExpression {
     pub exp: Box<Expression>,
+    pub node_info: NodeInfo,
 }
 
 impl BoundApexExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "bound_apex_expression");
-        let exp = Box::new(Expression::new(node.first_c()));
-        Self { exp }
+
+        Self {
+            exp: Box::new(Expression::new(node.first_c())),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for BoundApexExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(":"));
-        result.push(self.exp.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt(":"));
+            result.push(self.exp.build(b));
+        });
     }
 }
 
@@ -5435,6 +5441,31 @@ impl FieldIdentifier {
 }
 
 impl<'a> DocBuild<'a> for FieldIdentifier {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct GeoLocationType {
+    pub variant: GeoLocationTypeVariant,
+    pub node_info: NodeInfo,
+}
+
+impl GeoLocationType {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "geo_location_type");
+
+        Self {
+            variant: GeoLocationTypeVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for GeoLocationType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.variant.build(b));

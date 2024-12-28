@@ -1295,7 +1295,7 @@ impl<'a> DocBuild<'a> for ValueExpression {
 }
 
 #[derive(Debug)]
-pub enum GeoLocationType {
+pub enum GeoLocationTypeVariant {
     Field(FieldIdentifier),
     Bound(BoundApexExpression),
     Func {
@@ -1305,7 +1305,7 @@ pub enum GeoLocationType {
     },
 }
 
-impl GeoLocationType {
+impl GeoLocationTypeVariant {
     pub fn new(node: Node) -> Self {
         let child = node.first_c();
         match child.kind() {
@@ -1332,7 +1332,7 @@ impl GeoLocationType {
     }
 }
 
-impl<'a> DocBuild<'a> for GeoLocationType {
+impl<'a> DocBuild<'a> for GeoLocationTypeVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Field(n) => {
