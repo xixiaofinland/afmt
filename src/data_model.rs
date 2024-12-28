@@ -530,6 +530,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
 #[derive(Debug)]
 pub struct ArrayInitializer {
     initializers: Vec<VariableInitializer>,
+    pub node_info: NodeInfo,
 }
 
 impl ArrayInitializer {
@@ -542,19 +543,24 @@ impl ArrayInitializer {
             .map(|n| VariableInitializer::new(n))
             .collect();
 
-        Self { initializers }
+        Self {
+            initializers,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.initializers);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.initializers);
 
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let open = Insertable::new(None, Some("{"), Some(b.softline()));
-        let close = Insertable::new(Some(b.softline()), Some("}"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let open = Insertable::new(None, Some("{"), Some(b.softline()));
+            let close = Insertable::new(Some(b.softline()), Some("}"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 
@@ -3506,26 +3512,32 @@ impl<'a> DocBuild<'a> for InstanceOfExpression {
 
 #[derive(Debug)]
 pub struct VersionExpression {
-    version_number: Option<String>,
+    version_number: Option<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl VersionExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "version_expression");
 
-        let version_number = node.try_c_by_n("version_num").map(|n| n.value());
-        Self { version_number }
+        let version_number = node.try_c_by_n("version_num").map(|n| ValueNode::new(n));
+        Self {
+            version_number,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for VersionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("Package.Version."));
-        if let Some(ref n) = self.version_number {
-            result.push(b.txt(n));
-        } else {
-            result.push(b.txt("Request"));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("Package.Version."));
+            if let Some(ref n) = self.version_number {
+                result.push(n.build(b));
+            } else {
+                result.push(b.txt("Request"));
+            }
+        });
     }
 }
 
@@ -3700,6 +3712,7 @@ impl<'a> DocBuild<'a> for TriggerBody {
 pub struct QueryExpression {
     pub query_body: QueryBody,
     pub context: Option<ChainingContext>,
+    pub node_info: NodeInfo,
 }
 
 impl QueryExpression {
@@ -3711,39 +3724,41 @@ impl QueryExpression {
         } else {
             QueryBody::Sosl(SoslQueryBody::new(node.c_by_k("sosl_query_body")))
         };
-        let context = build_chaining_context(&node);
 
         Self {
             query_body,
-            context,
+            context: build_chaining_context(&node),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if self.context.is_some() {
-            let mut docs = vec![];
-            docs.push(b.txt("["));
-            docs.push(b.maybeline());
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if self.context.is_some() {
+                let mut docs = vec![];
+                docs.push(b.txt("["));
+                docs.push(b.maybeline());
 
-            let body_docs = vec![self.query_body.build(b)];
-            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-            docs.push(b.intersperse(&body_docs, sep));
+                let body_docs = vec![self.query_body.build(b)];
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+                docs.push(b.intersperse(&body_docs, sep));
 
-            // TODO: Why dedent() is needed here? This is the only place in the code place.
-            docs.push(b.dedent(b.maybeline()));
-            docs.push(b.txt("]"));
+                // TODO: Why dedent() is needed here? This is the only place in the code place.
+                docs.push(b.dedent(b.maybeline()));
+                docs.push(b.txt("]"));
 
-            result.push(b.group_concat(docs));
-        } else {
-            let docs = vec![self.query_body.build(b)];
-            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-            let open = Insertable::new(None, Some("["), Some(b.maybeline()));
-            let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
-            let doc = b.group_surround(&docs, sep, open, close);
-            result.push(doc);
-        }
+                result.push(b.group_concat(docs));
+            } else {
+                let docs = vec![self.query_body.build(b)];
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+                let open = Insertable::new(None, Some("["), Some(b.maybeline()));
+                let close = Insertable::new(Some(b.maybeline()), Some("]"), None);
+                let doc = b.group_surround(&docs, sep, open, close);
+                result.push(doc);
+            }
+        });
     }
 }
 
