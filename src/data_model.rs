@@ -293,20 +293,16 @@ impl Modifiers {
     pub fn new(node: Node) -> Self {
         assert_check(node, "modifiers");
 
-        let annotation = node.try_c_by_k("annotation").map(Annotation::new);
-
         let modifiers = node
             .try_cs_by_k("modifier")
             .into_iter()
             .map(Modifier::new)
             .collect();
 
-        let node_info = NodeInfo::from(&node);
-
         Self {
-            annotation,
+            annotation: node.try_c_by_k("annotation").map(Annotation::new),
             modifiers,
-            node_info,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
@@ -338,10 +334,10 @@ impl Modifier {
     pub fn new(node: Node) -> Self {
         assert_check(node, "modifier");
 
-        let kind = ModifierKind::new(node.first_c());
-        let node_info = NodeInfo::from(&node);
-
-        Self { kind, node_info }
+        Self {
+            kind: ModifierKind::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
@@ -363,21 +359,20 @@ pub struct Annotation {
 
 impl Annotation {
     pub fn new(node: Node) -> Self {
-        let name = ValueNode::new(node.c_by_n("name"));
+        assert_check(node, "annotation");
 
         let arguments = node
             .try_c_by_n("arguments")
             .map(AnnotationArgumentList::new);
-        let node_info = NodeInfo::from(&node);
 
         let is_followed_by_comment_in_new_line = node.next_named_sibling().map_or(false, |n| {
             n.is_extra() && node.end_position().row != n.start_position().row
         });
 
         Self {
-            name,
+            name: ValueNode::new(node.c_by_n("name")),
             arguments,
-            node_info,
+            node_info: NodeInfo::from(&node),
             is_followed_by_comment_in_new_line,
         }
     }
