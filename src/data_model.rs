@@ -779,7 +779,7 @@ impl ObjectExpression {
     pub fn new(node: Node) -> Self {
         //TODO: handle incoming comment node
         match node.kind() {
-            "super" => Self::Super(Super {}),
+            "super" => Self::Super(Super::new(node)),
             _ => Self::Primary(Box::new(PrimaryExpression::new(node))),
         }
     }
@@ -1026,26 +1026,48 @@ impl<'a> DocBuild<'a> for ArgumentList {
 }
 
 #[derive(Debug)]
-pub struct Super {}
+pub struct Super {
+    pub node_info: NodeInfo,
+}
+
+impl Super {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "super");
+
+        Self {
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
 
 impl<'a> DocBuild<'a> for Super {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("super"))
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("super"))
+        });
     }
 }
 
 #[derive(Debug)]
-pub struct This {}
+pub struct This {
+    pub node_info: NodeInfo,
+}
 
 impl This {
-    pub fn new(_: Node) -> Self {
-        Self {}
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "this");
+
+        Self {
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for This {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("this"))
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("this"))
+        });
     }
 }
 
@@ -2132,7 +2154,7 @@ impl FieldAccess {
 
         let obj_node = node.c_by_n("object");
         let object = if obj_node.kind() == "super" {
-            MethodObject::Super(Super {})
+            MethodObject::Super(Super::new(obj_node))
         } else {
             MethodObject::Primary(Box::new(PrimaryExpression::new(obj_node)))
         };
