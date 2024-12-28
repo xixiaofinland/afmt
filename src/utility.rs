@@ -468,3 +468,7 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
         node.value()
     );
 }
+
+pub fn is_followed_by_comment(node: &Node) -> bool {
+    node.next_named_sibling().map_or(false, |n| n.is_extra())
+}

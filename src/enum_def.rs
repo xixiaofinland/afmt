@@ -3,7 +3,7 @@ use crate::{
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{assert_check, panic_unknown_node},
+    utility::{assert_check, is_followed_by_comment, panic_unknown_node, print_trailing_new_line},
 };
 use tree_sitter::Node;
 
@@ -792,6 +792,17 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool,
+    pub is_next_comment_node: bool,
+}
+
+impl<M> BodyMember<M> {
+    pub fn new(node: &Node, member: M) -> Self {
+        Self {
+            member,
+            has_trailing_newline: print_trailing_new_line(node),
+            is_next_comment_node: is_followed_by_comment(node),
+        }
+    }
 }
 
 #[derive(Debug)]

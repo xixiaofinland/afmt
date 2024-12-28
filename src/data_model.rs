@@ -33,10 +33,7 @@ impl Root {
         let members: Vec<_> = node
             .children_vec()
             .into_iter()
-            .map(|n| BodyMember {
-                member: RootMember::new(n),
-                has_trailing_newline: print_trailing_new_line(&n),
-            })
+            .map(|n| BodyMember::new(&n, RootMember::new(n)))
             .collect();
 
         let node_info = NodeInfo::from(&node);
@@ -437,10 +434,7 @@ impl ClassBody {
         let class_members: Vec<_> = node
             .children_vec()
             .into_iter()
-            .map(|n| BodyMember {
-                member: ClassMember::new(n),
-                has_trailing_newline: print_trailing_new_line(&n),
-            })
+            .map(|n| BodyMember::new(&n, ClassMember::new(n)))
             .collect();
         let node_info = NodeInfo::from(&node);
 
@@ -680,10 +674,7 @@ impl Block {
         let statements: Vec<BodyMember<Statement>> = node
             .children_vec()
             .into_iter()
-            .map(|n| BodyMember {
-                member: Statement::new(n),
-                has_trailing_newline: print_trailing_new_line(&n),
-            })
+            .map(|n| BodyMember::new(&n, Statement::new(n)))
             .collect();
         let node_info = NodeInfo::from(&node);
 
@@ -1819,6 +1810,7 @@ impl ConstructorBody {
                 constructor_invocation = Some(BodyMember {
                     member,
                     has_trailing_newline,
+                    is_next_comment_node: is_followed_by_comment(&c),
                 });
             } else {
                 let member = Statement::new(c);
@@ -1826,6 +1818,7 @@ impl ConstructorBody {
                 statements.push(BodyMember {
                     member,
                     has_trailing_newline,
+                    is_next_comment_node: is_followed_by_comment(&c),
                 });
             }
         }
@@ -2975,6 +2968,7 @@ impl InterfaceBody {
                 BodyMember {
                     member,
                     has_trailing_newline: print_trailing_new_line(&n),
+                    is_next_comment_node: is_followed_by_comment(&n),
                 }
             })
             .collect();
