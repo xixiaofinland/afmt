@@ -192,16 +192,17 @@ pub struct FormalParameters {
 
 impl FormalParameters {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "formal_parameters");
+
         let formal_parameters = node
             .try_cs_by_k("formal_parameter")
             .into_iter()
             .map(FormalParameter::new)
             .collect();
-        let node_info = NodeInfo::from(&node);
 
         Self {
             formal_parameters,
-            node_info,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
