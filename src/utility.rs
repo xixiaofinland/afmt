@@ -354,7 +354,6 @@ pub fn assert_check(node: Node, expected_kind: &str) {
     );
 }
 
-
 pub fn get_precedence(op: &str) -> u8 {
     match op {
         "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" => 1, // Assignment
@@ -407,14 +406,6 @@ pub fn get_comparsion(node: &Node) -> Comparison {
         })
     } else {
         unreachable!()
-    }
-}
-
-pub fn get_property_navigation(parent_node: &Node) -> PropertyNavigation {
-    if parent_node.try_c_by_k("safe_navigation_operator").is_some() {
-        PropertyNavigation::SafeNavigationOperator
-    } else {
-        PropertyNavigation::Dot
     }
 }
 

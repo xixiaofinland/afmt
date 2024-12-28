@@ -8,6 +8,7 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
+use toml::Value;
 use tree_sitter::Node;
 
 pub trait DocBuild<'a> {
@@ -585,22 +586,24 @@ impl AssignmentExpression {
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![self.left.build(b), b.txt(" "), self.op.build(b)];
-        if self.is_right_child_a_query_node {
-            docs.push(b.txt(" "));
-            docs.push(self.right.build(b));
-            result.push(b.concat(docs));
-        } else {
-            docs.push(b.softline());
-            docs.push(self.right.build(b));
-            result.push(b.group_indent_concat(docs));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let mut docs = vec![self.left.build(b), b.txt(" "), self.op.build(b)];
+            if self.is_right_child_a_query_node {
+                docs.push(b.txt(" "));
+                docs.push(self.right.build(b));
+                result.push(b.concat(docs));
+            } else {
+                docs.push(b.softline());
+                docs.push(self.right.build(b));
+                result.push(b.group_indent_concat(docs));
+            }
+        });
     }
 }
 
 #[derive(Debug)]
 pub enum AssignmentLeft {
-    Identifier(String),
+    Identifier(ValueNode),
     Field(FieldAccess),
     Array(ArrayAccess),
 }
@@ -608,7 +611,7 @@ pub enum AssignmentLeft {
 impl AssignmentLeft {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "identifier" => Self::Identifier(node.value()),
+            "identifier" => Self::Identifier(ValueNode::new(node)),
             "field_access" => Self::Field(FieldAccess::new(node)),
             "array_access" => Self::Array(ArrayAccess::new(node)),
             _ => panic_unknown_node(node, "AssignmentLeft"),
@@ -620,7 +623,7 @@ impl<'a> DocBuild<'a> for AssignmentLeft {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Field(n) => {
                 result.push(n.build(b));
@@ -2120,10 +2123,13 @@ pub struct FieldAccess {
     pub property_navigation: PropertyNavigation,
     pub field: FieldOption,
     pub context: Option<ChainingContext>,
+    pub node_info: NodeInfo,
 }
 
 impl FieldAccess {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "field_access");
+
         let obj_node = node.c_by_n("object");
         let object = if obj_node.kind() == "super" {
             MethodObject::Super(Super {})
@@ -2131,44 +2137,50 @@ impl FieldAccess {
             MethodObject::Primary(Box::new(PrimaryExpression::new(obj_node)))
         };
 
-        let property_navigation = get_property_navigation(&node);
-
-        let field = FieldOption::new(node.c_by_n("field"));
-        let context = build_chaining_context(&node);
-
         Self {
             object,
-            property_navigation,
-            field,
-            context,
+            property_navigation: Self::get_property_navigation(&node),
+            field: FieldOption::new(node.c_by_n("field")),
+            context: build_chaining_context(&node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+
+    fn get_property_navigation(parent_node: &Node) -> PropertyNavigation {
+        if parent_node.try_c_by_k("safe_navigation_operator").is_some() {
+            PropertyNavigation::SafeNavigationOperator
+        } else {
+            PropertyNavigation::Dot
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldAccess {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![];
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let mut docs = vec![];
 
-        docs.push(self.object.build(b));
+            docs.push(self.object.build(b));
 
-        if let Some(ref context) = self.context {
-            if context.is_parent_a_chaining_node || context.is_top_most_in_a_chain {
-                docs.push(b.maybeline());
+            if let Some(ref context) = self.context {
+                if context.is_parent_a_chaining_node || context.is_top_most_in_a_chain {
+                    docs.push(b.maybeline());
+                }
             }
-        }
 
-        docs.push(self.property_navigation.build(b));
-        docs.push(self.field.build(b));
+            docs.push(self.property_navigation.build(b));
+            docs.push(self.field.build(b));
 
-        if self
-            .context
-            .as_ref()
-            .map_or(false, |context| context.is_top_most_in_a_chain)
-        {
-            result.push(b.group_indent_concat(docs));
-        } else {
-            result.push(b.concat(docs));
-        }
+            if self
+                .context
+                .as_ref()
+                .map_or(false, |context| context.is_top_most_in_a_chain)
+            {
+                result.push(b.group_indent_concat(docs));
+            } else {
+                result.push(b.concat(docs));
+            }
+        });
     }
 }
 
