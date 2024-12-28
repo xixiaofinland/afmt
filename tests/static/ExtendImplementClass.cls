@@ -1,5 +1,5 @@
 class ExtendImplementClass
-  extends FirstExtendimplements FirstImplement, SecondImplement {
+  extends FirstExtend implements FirstImplement, SecondImplement {
   public virtual class VirtualExtendInnerClass extends FirstExtend {
   }
 
@@ -7,7 +7,7 @@ class ExtendImplementClass
   }
 
   global class ExtendImplementInnerClass
-    extends FirstExtendimplements FirstImplement, SecondImplement {
+    extends FirstExtend implements FirstImplement, SecondImplement {
   }
 
   public override Integer compareTo(Object anotherObject) {

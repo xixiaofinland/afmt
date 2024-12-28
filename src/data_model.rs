@@ -111,6 +111,9 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
 
             if let Some(ref n) = self.superclass {
                 docs.push(n.build(b));
+                if self.interface.is_some() {
+                    docs.push(b.txt(" "));
+                }
             }
 
             if let Some(ref n) = self.interface {
@@ -2873,20 +2876,24 @@ impl<'a> DocBuild<'a> for FinallyClause {
 #[derive(Debug)]
 pub struct StaticInitializer {
     pub block: Block,
+    pub node_info: NodeInfo,
 }
 
 impl StaticInitializer {
     pub fn new(node: Node) -> Self {
         Self {
             block: Block::new(node.c_by_k("block")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for StaticInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("static"));
-        result.push(self.block.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("static"));
+            result.push(self.block.build(b));
+        });
     }
 }
 
