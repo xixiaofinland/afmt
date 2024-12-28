@@ -5,6 +5,7 @@ use crate::{
     doc_builder::{DocBuilder, Insertable},
     utility::{assert_check, is_followed_by_comment_in_new_line, panic_unknown_node},
 };
+use toml::Value;
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -315,7 +316,7 @@ impl<'a> DocBuild<'a> for Expression {
 #[derive(Debug)]
 pub enum PrimaryExpression {
     Literal(Literal_),
-    Identifier(String),
+    Identifier(ValueNode),
     Class(ClassLiteral),
     Method(MethodInvocation),
     Parenth(ParenthesizedExpression),
@@ -338,7 +339,7 @@ impl PrimaryExpression {
             | "boolean"
             | "null_literal"
             | "string_literal" => Self::Literal(Literal_::new(n)),
-            "identifier" => Self::Identifier(n.value()),
+            "identifier" => Self::Identifier(ValueNode::new(n)),
             "class_literal" => Self::Class(ClassLiteral::new(n)),
             "method_invocation" => Self::Method(MethodInvocation::new(n)),
             "parenthesized_expression" => Self::Parenth(ParenthesizedExpression::new(n)),
@@ -363,7 +364,7 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
                 result.push(n.build(b));
             }
             Self::Identifier(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Class(n) => {
                 result.push(n.build(b));
