@@ -4,7 +4,7 @@ use crate::{
     data_model::*,
     doc::{Doc, DocRef},
     doc_builder::DocBuilder,
-    enum_def::{Comparison, PropertyNavigation, SetValue, SoqlLiteral, ValueComparedWith},
+    enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith},
 };
 use colored::Colorize;
 #[allow(unused_imports)]

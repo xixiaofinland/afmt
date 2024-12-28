@@ -719,15 +719,15 @@ impl<'a> DocBuild<'a> for Type {
 
 #[derive(Debug)]
 pub enum PropertyNavigation {
-    SafeNavigationOperator,
+    Safe(SafeNavigationOperator),
     Dot,
 }
 
 impl<'a> DocBuild<'a> for PropertyNavigation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
-            Self::SafeNavigationOperator => {
-                result.push(b.txt("?."));
+            Self::Safe(n) => {
+                result.push(n.build(b));
             }
             Self::Dot => {
                 result.push(b.txt("."));

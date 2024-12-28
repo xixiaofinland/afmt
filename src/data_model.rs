@@ -8,7 +8,6 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
-use toml::Value;
 use tree_sitter::Node;
 
 pub trait DocBuild<'a> {
@@ -914,8 +913,9 @@ impl MethodInvocation {
 
         let kind = if let Some(obj) = node.try_c_by_n("object") {
             let object = ObjectExpression::new(obj);
-            let property_navigation = if obj.next_named().kind() == "safe_navigation_operator" {
-                PropertyNavigation::SafeNavigationOperator
+            let next_named = obj.next_named();
+            let property_navigation = if next_named.kind() == "safe_navigation_operator" {
+                PropertyNavigation::Safe(SafeNavigationOperator::new(next_named))
             } else {
                 PropertyNavigation::Dot
             };
@@ -2169,11 +2169,13 @@ impl FieldAccess {
     }
 
     fn get_property_navigation(parent_node: &Node) -> PropertyNavigation {
-        if parent_node.try_c_by_k("safe_navigation_operator").is_some() {
-            PropertyNavigation::SafeNavigationOperator
-        } else {
-            PropertyNavigation::Dot
-        }
+        let property_navigation =
+            if let Some(n) = parent_node.try_c_by_k("safe_navigation_operator") {
+                PropertyNavigation::Safe(SafeNavigationOperator::new(n))
+            } else {
+                PropertyNavigation::Dot
+            };
+        property_navigation
     }
 }
 
@@ -5237,6 +5239,29 @@ impl<'a> DocBuild<'a> for ExpressionStatement {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.exp.build(b));
             result.push(b.txt(";"));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct SafeNavigationOperator {
+    pub node_info: NodeInfo,
+}
+
+impl SafeNavigationOperator {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "safe_navigation_operator");
+
+        Self {
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for SafeNavigationOperator {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("?."));
         });
     }
 }
