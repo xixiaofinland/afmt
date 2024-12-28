@@ -2000,6 +2000,7 @@ pub struct ObjectCreationExpression {
     pub type_: UnannotatedType,
     pub arguments: ArgumentList,
     pub class_body: Option<ClassBody>,
+    pub node_info: NodeInfo,
 }
 
 impl ObjectCreationExpression {
@@ -2009,34 +2010,34 @@ impl ObjectCreationExpression {
         let type_arguments = node
             .try_c_by_k("type_arguments")
             .map(|n| TypeArguments::new(n));
-
-        let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let arguments = ArgumentList::new(node.c_by_n("arguments"));
         let class_body = node.try_c_by_k("class_body").map(|n| ClassBody::new(n));
 
         Self {
             type_arguments,
-            type_,
-            arguments,
+            type_: UnannotatedType::new(node.c_by_n("type")),
+            arguments: ArgumentList::new(node.c_by_n("arguments")),
             class_body,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ObjectCreationExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("new"));
-        if let Some(t) = &self.type_arguments {
-            result.push(t.build(b));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("new"));
+            if let Some(t) = &self.type_arguments {
+                result.push(t.build(b));
+            }
 
-        result.push(b.txt(" "));
-        result.push(self.type_.build(b));
-        result.push(self.arguments.build(b));
+            result.push(b.txt(" "));
+            result.push(self.type_.build(b));
+            result.push(self.arguments.build(b));
 
-        if let Some(c) = &self.class_body {
-            result.push(c.build(b));
-        }
+            if let Some(c) = &self.class_body {
+                result.push(c.build(b));
+            }
+        });
     }
 }
 

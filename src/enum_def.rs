@@ -1,9 +1,10 @@
 use crate::{
     accessor::Accessor,
+    context::NodeInfo,
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{assert_check, is_followed_by_comment_in_new_line, panic_unknown_node},
+    utility::{assert_check, build_with_comments, is_followed_by_comment_in_new_line, panic_unknown_node},
 };
 use toml::Value;
 use tree_sitter::Node;
@@ -409,21 +410,26 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
 #[derive(Debug)]
 pub struct ClassLiteral {
     pub type_: UnannotatedType,
+    pub node_info: NodeInfo,
 }
 
 impl ClassLiteral {
     pub fn new(node: Node) -> Self {
         assert_check(node, "class_literal");
 
-        let type_ = UnannotatedType::new(node.first_c());
-        Self { type_ }
+        Self {
+            type_: UnannotatedType::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ClassLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.type_.build(b));
-        result.push(b.txt("class"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.type_.build(b));
+            result.push(b.txt("class"));
+        });
     }
 }
 
