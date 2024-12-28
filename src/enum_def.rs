@@ -8,6 +8,7 @@ use crate::{
         assert_check, build_with_comments, is_followed_by_comment_in_new_line, panic_unknown_node,
     },
 };
+use toml::Value;
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -1088,8 +1089,8 @@ impl<'a> DocBuild<'a> for StorageVariant {
 
 #[derive(Debug)]
 pub enum StorageIdentifierVariant {
-    Identifier(String),
-    Dotted(Vec<String>),
+    Identifier(ValueNode),
+    Dotted(Vec<ValueNode>),
 }
 
 impl StorageIdentifierVariant {
@@ -1098,11 +1099,11 @@ impl StorageIdentifierVariant {
         let c = node.first_c();
 
         match c.kind() {
-            "identifier" => Self::Identifier(c.value()),
+            "identifier" => Self::Identifier(ValueNode::new(c)),
             "dotted_identifier" => Self::Dotted(
                 c.cs_by_k("identifier")
                     .into_iter()
-                    .map(|n| n.value())
+                    .map(|n| ValueNode::new(n))
                     .collect(),
             ),
             _ => panic_unknown_node(c, "StorageIdentifier"),
@@ -1114,10 +1115,10 @@ impl<'a> DocBuild<'a> for StorageIdentifierVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Identifier(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Dotted(vec) => {
-                let docs: Vec<_> = vec.iter().map(|s| b.txt(s)).collect();
+                let docs: Vec<_> = vec.iter().map(|n| n.build(b)).collect();
                 let sep = Insertable::new(None, Some("."), None);
                 let doc = b.intersperse(&docs, sep);
                 result.push(doc);
