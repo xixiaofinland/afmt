@@ -1251,7 +1251,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
 pub struct VariableDeclarator {
     pub name: ValueNode,
     //pub dimenssions
-    //pub op: AssignmentOperator,
+    pub op: Option<AssignmentOperator>,
     pub value: Option<VariableInitializer>,
     pub is_value_child_a_query_node: bool,
     pub node_info: NodeInfo,
@@ -1262,6 +1262,9 @@ impl VariableDeclarator {
         assert_check(node, "variable_declarator");
 
         let mut is_value_child_a_query_node = false;
+        let op = node
+            .try_c_by_n("assignment_expression")
+            .map(AssignmentOperator::new);
         let value = node.try_c_by_n("value").map(|n| {
             is_value_child_a_query_node = is_query_expression(&n);
             VariableInitializer::Exp(Expression::new(n))
@@ -1269,6 +1272,7 @@ impl VariableDeclarator {
 
         Self {
             name: ValueNode::new(node.c_by_n("name")),
+            op,
             value,
             is_value_child_a_query_node,
             node_info: NodeInfo::from(&node),
@@ -1288,7 +1292,10 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
             }
 
             let value = self.value.as_ref().unwrap();
-            docs.push(b._txt("="));
+            docs.push(b.txt(" "));
+            if let Some(ref n) = self.op {
+                docs.push(n.build(b));
+            }
 
             if self.is_value_child_a_query_node {
                 docs.push(b.txt(" "));
