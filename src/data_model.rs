@@ -568,7 +568,7 @@ impl<'a> DocBuild<'a> for ArrayInitializer {
 #[derive(Debug)]
 pub struct AssignmentExpression {
     pub left: AssignmentLeft,
-    pub op: AssignmentOperator,
+    pub op: ValueNode,
     pub right: Expression,
     pub is_right_child_a_query_node: bool,
     pub node_info: NodeInfo,
@@ -582,7 +582,7 @@ impl AssignmentExpression {
 
         Self {
             left: AssignmentLeft::new(node.c_by_n("left")),
-            op: AssignmentOperator::new(node.c_by_n("operator")),
+            op: ValueNode::new(node.c_by_n("operator")),
             right: Expression::new(right_child),
             is_right_child_a_query_node: is_query_expression(&right_child),
             node_info: NodeInfo::from(&node),
@@ -1146,6 +1146,7 @@ impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             let left_doc = self.left.build(b);
+            //let op_doc = self.op.build(b);
             let op_doc = b.txt(&self.op);
             let right_doc = self.right.build(b);
 
@@ -1248,7 +1249,7 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
 pub struct VariableDeclarator {
     pub name: ValueNode,
     //pub dimenssions
-    pub op: Option<AssignmentOperator>,
+    pub op: Option<ValueNode>,
     pub value: Option<VariableInitializer>,
     pub is_value_child_a_query_node: bool,
     pub node_info: NodeInfo,
@@ -1259,9 +1260,7 @@ impl VariableDeclarator {
         assert_check(node, "variable_declarator");
 
         let mut is_value_child_a_query_node = false;
-        let op = node
-            .try_c_by_k("assignment_operator")
-            .map(AssignmentOperator::new);
+        let op = node.try_c_by_k("assignment_operator").map(ValueNode::new);
         let value = node.try_c_by_n("value").map(|n| {
             is_value_child_a_query_node = is_query_expression(&n);
             VariableInitializer::Exp(Expression::new(n))
@@ -1308,23 +1307,21 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
 }
 
 #[derive(Debug)]
-pub struct AssignmentOperator {
+pub struct BinaryExpressionOperator {
     pub value: String,
     pub node_info: NodeInfo,
 }
 
-impl AssignmentOperator {
+impl BinaryExpressionOperator {
     pub fn new(node: Node) -> Self {
-        assert_check(node, "assignment_operator");
-
         Self {
-            value: node.value(),
+            value: node.kind().to_string(),
             node_info: NodeInfo::from(&node),
         }
     }
 }
 
-impl<'a> DocBuild<'a> for AssignmentOperator {
+impl<'a> DocBuild<'a> for BinaryExpressionOperator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(b.txt(&self.value));
@@ -4076,7 +4073,9 @@ impl SoqlQueryBody {
         let offset_clause = node
             .try_c_by_n("offset_clause")
             .map(|n| OffsetClause::new(n));
-        let all_rows_clause = node.try_c_by_n("all_rows_clause").map(|n|AllRowsClause::new(n));
+        let all_rows_clause = node
+            .try_c_by_n("all_rows_clause")
+            .map(|n| AllRowsClause::new(n));
         let for_clause = node
             .try_cs_by_k("for_clause")
             .into_iter()
