@@ -1607,7 +1607,7 @@ impl<'a> DocBuild<'a> for EnhancedForStatement {
     }
 }
 #[derive(Debug)]
-pub enum UpdateExpression {
+pub enum UpdateExpressionVariant {
     Pre {
         operator: String,
         operand: Box<Expression>,
@@ -1618,7 +1618,7 @@ pub enum UpdateExpression {
     },
 }
 
-impl UpdateExpression {
+impl UpdateExpressionVariant {
     pub fn new(node: Node) -> Self {
         assert_check(node, "update_expression");
 
@@ -1639,7 +1639,7 @@ impl UpdateExpression {
     }
 }
 
-impl<'a> DocBuild<'a> for UpdateExpression {
+impl<'a> DocBuild<'a> for UpdateExpressionVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Pre { operator, operand } => {
@@ -5748,6 +5748,31 @@ impl<'a> DocBuild<'a> for AllRowsClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(b.txt("ALL ROWS"));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateExpression {
+    pub variant: UpdateExpressionVariant,
+    pub node_info: NodeInfo,
+}
+
+impl UpdateExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "update_expression");
+
+        Self {
+            variant: UpdateExpressionVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for UpdateExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
         });
     }
 }
