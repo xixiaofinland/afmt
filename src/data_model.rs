@@ -2118,20 +2118,29 @@ impl<'a> DocBuild<'a> for WhileStatement {
 pub struct UnaryExpression {
     pub operator: String,
     pub operand: Box<Expression>,
+    pub node_info: NodeInfo,
 }
 
 impl UnaryExpression {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "unary_expression");
+
         let operator = node.cvalue_by_n("operator");
-        let operand = Box::new(Expression::new(node.c_by_n("operand")));
-        Self { operator, operand }
+        Self {
+            operator,
+            operand: Box::new(Expression::new(node.c_by_n("operand"))),
+
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for UnaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.operator));
-        result.push(self.operand.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt(&self.operator));
+            result.push(self.operand.build(b));
+        });
     }
 }
 
