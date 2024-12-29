@@ -1159,7 +1159,7 @@ impl<'a> DocBuild<'a> for LimitValue {
 #[derive(Debug)]
 pub enum BooleanExpression {
     And(AndExpression),
-    Or(Vec<ConditionExpression>),
+    Or(OrExpression),
     Not(ConditionExpression),
     Condition(Box<ConditionExpression>),
 }
@@ -1168,12 +1168,7 @@ impl BooleanExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
             "and_expression" => Self::And(AndExpression::new(node)),
-            "or_expression" => Self::Or(
-                node.children_vec()
-                    .into_iter()
-                    .map(|n| ConditionExpression::new(n))
-                    .collect(),
-            ),
+            "or_expression" => Self::Or(OrExpression::new(node)),
             "not_expression" => Self::Not(ConditionExpression::new(node.first_c())),
             _ => Self::Condition(Box::new(ConditionExpression::new(node))),
         }
@@ -1194,17 +1189,8 @@ impl BooleanExpression {
         parent_op: Option<&str>,
     ) -> DocRef<'a> {
         match self {
-            Self::And(n) => {
-                n.build(b)
-            }
-            Self::Or(vec) => {
-                let docs: Vec<DocRef> = vec
-                    .iter()
-                    .map(|expr| expr.build_with_parent(b, Some("OR")))
-                    .collect();
-                let sep = Insertable::new(Some(b.softline()), Some("OR "), None);
-                b.intersperse(&docs, sep)
-            }
+            Self::And(n) => n.build(b),
+            Self::Or(n) => n.build(b),
             Self::Not(n) => {
                 let expr_doc = n.build_with_parent(b, Some("NOT"));
                 b.concat(vec![b.txt_("NOT"), expr_doc])

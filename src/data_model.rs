@@ -5597,3 +5597,40 @@ impl<'a> DocBuild<'a> for AndExpression {
         });
     }
 }
+
+#[derive(Debug)]
+pub struct OrExpression {
+    pub condition_exps: Vec<ConditionExpression>,
+    pub node_info: NodeInfo,
+}
+
+impl OrExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "or_expression");
+
+        let condition_exps = node
+            .children_vec()
+            .into_iter()
+            .map(|n| ConditionExpression::new(n))
+            .collect();
+
+        Self {
+            condition_exps,
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for OrExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs: Vec<DocRef> = self
+                .condition_exps
+                .iter()
+                .map(|expr| expr.build_with_parent(b, Some("OR")))
+                .collect();
+            let sep = Insertable::new(Some(b.softline()), Some("OR "), None);
+            result.push(b.intersperse(&docs, sep));
+        });
+    }
+}
