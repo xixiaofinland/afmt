@@ -4052,7 +4052,7 @@ pub struct SoqlQueryBody {
     pub order_by_clause: Option<OrderByClause>,
     pub limit_clause: Option<LimitClause>,
     pub offset_clause: Option<OffsetClause>,
-    pub for_clause: Vec<String>,
+    pub for_clause: Vec<ForClause>,
     //update_c;
     pub all_rows_clause: Option<()>,
     pub node_info: NodeInfo,
@@ -4080,7 +4080,7 @@ impl SoqlQueryBody {
         let for_clause = node
             .try_cs_by_k("for_clause")
             .into_iter()
-            .map(|n| n.cvalue_by_k("for_type"))
+            .map(|n| ForClause::new(n))
             .collect();
 
         Self {
@@ -4128,7 +4128,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
                 docs.push(b.txt("ALL ROWS"));
             }
             if !self.for_clause.is_empty() {
-                let for_types: Vec<DocRef<'_>> = self.for_clause.iter().map(|n| b.txt(n)).collect();
+                let for_types: Vec<DocRef<'_>> = self.for_clause.iter().map(|n| n.build(b)).collect();
                 let sep = Insertable::new(None, Some(", "), None);
                 let for_types_doc = b.intersperse(&for_types, sep);
 
@@ -5724,6 +5724,31 @@ impl<'a> DocBuild<'a> for SoqlWithType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.variant.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct ForClause {
+    pub for_type: ValueNode,
+    pub node_info: NodeInfo,
+}
+
+impl ForClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "for_clause");
+
+        Self {
+            for_type: ValueNode::new(node.c_by_k("for_type")),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for ForClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.for_type.build(b));
         });
     }
 }
