@@ -8,6 +8,7 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
+use toml::Value;
 use tree_sitter::Node;
 
 pub trait DocBuild<'a> {
@@ -4605,64 +4606,81 @@ impl<'a> DocBuild<'a> for ComparableList {
 #[derive(Debug)]
 pub struct OrderByClause {
     pub exps: Vec<OrderExpression>,
+    pub node_info: NodeInfo,
 }
 
 impl OrderByClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "order_by_clause");
+
         let exps = node
             .cs_by_k("order_expression")
             .into_iter()
             .map(|n| OrderExpression::new(n))
             .collect();
-        Self { exps }
+
+        Self {
+            exps,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for OrderByClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("ORDER BY"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("ORDER BY"));
 
-        let docs = b.to_docs(&self.exps);
-        let sep = Insertable::new(None, Some(", "), None);
-        let doc = b.intersperse(&docs, sep);
-        result.push(doc);
+            let docs = b.to_docs(&self.exps);
+            let sep = Insertable::new(None, Some(", "), None);
+            let doc = b.intersperse(&docs, sep);
+            result.push(doc);
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct OrderExpression {
     pub value_expression: ValueExpression,
-    pub direction: Option<String>,
-    pub null_direction: Option<String>,
+    pub direction: Option<ValueNode>,
+    pub null_direction: Option<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl OrderExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "order_expression");
 
-        let value_expression = ValueExpression::new(node.first_c());
-        let direction = node.try_c_by_k("order_direction").map(|n| n.value());
-        let null_direction = node.try_c_by_k("order_null_direction").map(|n| n.value());
+        let direction = node
+            .try_c_by_k("order_direction")
+            .map(|n| ValueNode::new(n));
+        let null_direction = node
+            .try_c_by_k("order_null_direction")
+            .map(|n| ValueNode::new(n));
 
         Self {
-            value_expression,
+            value_expression: ValueExpression::new(node.first_c()),
             direction,
             null_direction,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for OrderExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.value_expression.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.value_expression.build(b));
 
-        if let Some(ref n) = self.direction {
-            result.push(b._txt(n));
-        }
-        if let Some(ref n) = self.null_direction {
-            result.push(b._txt(n));
-        }
+            if let Some(ref n) = self.direction {
+                result.push(b.txt(" "));
+                result.push(n.build(b));
+            }
+            if let Some(ref n) = self.null_direction {
+                result.push(b.txt(" "));
+                result.push(n.build(b));
+            }
+        });
     }
 }
 
@@ -4799,6 +4817,7 @@ impl<'a> DocBuild<'a> for MapKeyInitializer {
 pub struct GroupByClause {
     pub exps: Vec<GroupByExpression>,
     pub have_clause: Option<HavingClause>,
+    pub node_info: NodeInfo,
 }
 
 impl GroupByClause {
@@ -4814,9 +4833,7 @@ impl GroupByClause {
                     exps.push(GroupByExpression::Field(FieldIdentifier::new(child)));
                 }
                 "function_expression" => {
-                    exps.push(GroupByExpression::Func(FunctionExpressionVariant::new(
-                        child,
-                    )));
+                    exps.push(GroupByExpression::Func(FunctionExpression::new(child)));
                 }
                 "having_clause" => {
                     have_clause = Some(HavingClause::new(child));
@@ -4826,30 +4843,36 @@ impl GroupByClause {
                 }
             }
         }
-        Self { exps, have_clause }
+        Self {
+            exps,
+            have_clause,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for GroupByClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("GROUP BY"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("GROUP BY"));
 
-        let docs = b.to_docs(&self.exps);
-        let sep = Insertable::new(None, Some(", "), None);
-        let doc = b.intersperse(&docs, sep);
-        result.push(doc);
+            let docs = b.to_docs(&self.exps);
+            let sep = Insertable::new(None, Some(", "), None);
+            let doc = b.intersperse(&docs, sep);
+            result.push(doc);
 
-        if let Some(ref n) = self.have_clause {
-            result.push(b.softline());
-            result.push(n.build(b));
-        }
+            if let Some(ref n) = self.have_clause {
+                result.push(b.softline());
+                result.push(n.build(b));
+            }
+        });
     }
 }
 
 #[derive(Debug)]
 pub enum GroupByExpression {
     Field(FieldIdentifier),
-    Func(FunctionExpressionVariant),
+    Func(FunctionExpression),
 }
 
 impl<'a> DocBuild<'a> for GroupByExpression {
@@ -4868,24 +4891,30 @@ impl<'a> DocBuild<'a> for GroupByExpression {
 #[derive(Debug)]
 pub struct HavingClause {
     pub boolean_exp: BooleanExpression,
+    pub node_info: NodeInfo,
 }
 
 impl HavingClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "having_clause");
-        let boolean_exp = BooleanExpression::new(node.first_c());
-        Self { boolean_exp }
+
+        Self {
+            boolean_exp: BooleanExpression::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for HavingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![
-            b.txt("HAVING"),
-            b.softline(),
-            self.boolean_exp.build_with_parent(b, None),
-        ];
-        result.push(b.group_indent_concat(docs));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = vec![
+                b.txt("HAVING"),
+                b.softline(),
+                self.boolean_exp.build_with_parent(b, None),
+            ];
+            result.push(b.group_indent_concat(docs));
+        });
     }
 }
 
