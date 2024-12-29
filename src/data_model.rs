@@ -4054,7 +4054,7 @@ pub struct SoqlQueryBody {
     pub offset_clause: Option<OffsetClause>,
     pub for_clause: Vec<ForClause>,
     //update_c;
-    pub all_rows_clause: Option<()>,
+    pub all_rows_clause: Option<AllRowsClause>,
     pub node_info: NodeInfo,
 }
 
@@ -4076,7 +4076,7 @@ impl SoqlQueryBody {
         let offset_clause = node
             .try_c_by_n("offset_clause")
             .map(|n| OffsetClause::new(n));
-        let all_rows_clause = node.try_c_by_n("all_rows_clause").map(|_| ());
+        let all_rows_clause = node.try_c_by_n("all_rows_clause").map(|n|AllRowsClause::new(n));
         let for_clause = node
             .try_cs_by_k("for_clause")
             .into_iter()
@@ -4124,11 +4124,12 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
             if let Some(ref n) = self.offset_clause {
                 docs.push(n.build(b));
             }
-            if self.all_rows_clause.is_some() {
-                docs.push(b.txt("ALL ROWS"));
+            if let Some(ref n) = self.all_rows_clause {
+                docs.push(n.build(b));
             }
             if !self.for_clause.is_empty() {
-                let for_types: Vec<DocRef<'_>> = self.for_clause.iter().map(|n| n.build(b)).collect();
+                let for_types: Vec<DocRef<'_>> =
+                    self.for_clause.iter().map(|n| n.build(b)).collect();
                 let sep = Insertable::new(None, Some(", "), None);
                 let for_types_doc = b.intersperse(&for_types, sep);
 
@@ -5749,6 +5750,29 @@ impl<'a> DocBuild<'a> for ForClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.for_type.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct AllRowsClause {
+    pub node_info: NodeInfo,
+}
+
+impl AllRowsClause {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "all_rows_clause");
+
+        Self {
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AllRowsClause {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("ALL ROWS"));
         });
     }
 }
