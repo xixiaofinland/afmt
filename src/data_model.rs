@@ -2129,7 +2129,6 @@ impl UnaryExpression {
         Self {
             operator,
             operand: Box::new(Expression::new(node.c_by_n("operand"))),
-
             node_info: NodeInfo::from(&node),
         }
     }
@@ -2364,7 +2363,7 @@ impl<'a> DocBuild<'a> for EnumConstant {
 }
 
 #[derive(Debug)]
-pub enum DmlExpression {
+pub enum DmlExpressionVariant {
     Basic {
         dml_type: DmlType,
         security_mode: Option<DmlSecurityMode>,
@@ -2384,7 +2383,7 @@ pub enum DmlExpression {
     },
 }
 
-impl DmlExpression {
+impl DmlExpressionVariant {
     pub fn new(node: Node) -> Self {
         let security_mode = node
             .try_c_by_k("dml_security_mode")
@@ -2419,7 +2418,7 @@ impl DmlExpression {
     }
 }
 
-impl<'a> DocBuild<'a> for DmlExpression {
+impl<'a> DocBuild<'a> for DmlExpressionVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Basic {
@@ -5779,6 +5778,31 @@ impl UpdateExpression {
 }
 
 impl<'a> DocBuild<'a> for UpdateExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct DmlExpression {
+    pub variant: DmlExpressionVariant,
+    pub node_info: NodeInfo,
+}
+
+impl DmlExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "dml_expression");
+
+        Self {
+            variant: DmlExpressionVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for DmlExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.variant.build(b));
