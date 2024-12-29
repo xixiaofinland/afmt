@@ -3484,21 +3484,28 @@ impl<'a> DocBuild<'a> for WhenSObjectType {
 pub struct InstanceOfExpression {
     pub left: Expression,
     pub right: Type,
+    pub node_info: NodeInfo,
 }
 
 impl InstanceOfExpression {
     pub fn new(node: Node) -> Self {
-        let left = Expression::new(node.c_by_n("left"));
-        let right = Type::new(node.c_by_n("right"));
-        Self { left, right }
+        assert_check(node, "instanceof_expression");
+
+        Self {
+            left: Expression::new(node.c_by_n("left")),
+            right: Type::new(node.c_by_n("right")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for InstanceOfExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.left.build(b));
-        result.push(b._txt_("instanceof"));
-        result.push(self.right.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.left.build(b));
+            result.push(b._txt_("instanceof"));
+            result.push(self.right.build(b));
+        });
     }
 }
 
