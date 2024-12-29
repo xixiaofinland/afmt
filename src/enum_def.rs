@@ -1158,7 +1158,7 @@ impl<'a> DocBuild<'a> for LimitValue {
 
 #[derive(Debug)]
 pub enum BooleanExpression {
-    And(Vec<ConditionExpression>),
+    And(AndExpression),
     Or(Vec<ConditionExpression>),
     Not(ConditionExpression),
     Condition(Box<ConditionExpression>),
@@ -1167,12 +1167,7 @@ pub enum BooleanExpression {
 impl BooleanExpression {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "and_expression" => Self::And(
-                node.children_vec()
-                    .into_iter()
-                    .map(|n| ConditionExpression::new(n))
-                    .collect(),
-            ),
+            "and_expression" => Self::And(AndExpression::new(node)),
             "or_expression" => Self::Or(
                 node.children_vec()
                     .into_iter()
@@ -1199,13 +1194,8 @@ impl BooleanExpression {
         parent_op: Option<&str>,
     ) -> DocRef<'a> {
         match self {
-            Self::And(vec) => {
-                let docs: Vec<DocRef> = vec
-                    .iter()
-                    .map(|expr| expr.build_with_parent(b, Some("AND")))
-                    .collect();
-                let sep = Insertable::new(Some(b.softline()), Some("AND "), None);
-                b.intersperse(&docs, sep)
+            Self::And(n) => {
+                n.build(b)
             }
             Self::Or(vec) => {
                 let docs: Vec<DocRef> = vec
@@ -1245,7 +1235,11 @@ impl ConditionExpression {
         }
     }
 
-    fn build_with_parent<'a>(&self, b: &'a DocBuilder<'a>, parent_op: Option<&str>) -> DocRef<'a> {
+    pub fn build_with_parent<'a>(
+        &self,
+        b: &'a DocBuilder<'a>,
+        parent_op: Option<&str>,
+    ) -> DocRef<'a> {
         match self {
             Self::Comparison(n) => n.build(b),
             Self::Bool(n) => {

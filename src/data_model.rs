@@ -5560,3 +5560,40 @@ impl<'a> DocBuild<'a> for StorageIdentifier {
         });
     }
 }
+
+#[derive(Debug)]
+pub struct AndExpression {
+    pub condition_exps: Vec<ConditionExpression>,
+    pub node_info: NodeInfo,
+}
+
+impl AndExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "and_expression");
+
+        let condition_exps = node
+            .children_vec()
+            .into_iter()
+            .map(|n| ConditionExpression::new(n))
+            .collect();
+
+        Self {
+            condition_exps,
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for AndExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs: Vec<DocRef> = self
+                .condition_exps
+                .iter()
+                .map(|expr| expr.build_with_parent(b, Some("AND")))
+                .collect();
+            let sep = Insertable::new(Some(b.softline()), Some("AND "), None);
+            result.push(b.intersperse(&docs, sep));
+        });
+    }
+}
