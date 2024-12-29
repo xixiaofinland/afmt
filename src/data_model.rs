@@ -2748,33 +2748,36 @@ pub struct TernaryExpression {
     pub condition: Expression,
     pub consequence: Expression,
     pub alternative: Expression,
+    pub node_info: NodeInfo,
 }
 
 impl TernaryExpression {
     pub fn new(node: Node) -> Self {
-        let condition = Expression::new(node.c_by_n("condition"));
-        let consequence = Expression::new(node.c_by_n("consequence"));
-        let alternative = Expression::new(node.c_by_n("alternative"));
+        assert_check(node, "ternary_expression");
+
         Self {
-            condition,
-            consequence,
-            alternative,
+            condition: Expression::new(node.c_by_n("condition")),
+            consequence: Expression::new(node.c_by_n("consequence")),
+            alternative: Expression::new(node.c_by_n("alternative")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TernaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![
-            self.condition.build(b),
-            b.softline(),
-            b.txt_("?"),
-            self.consequence.build(b),
-            b.softline(),
-            b.txt_(":"),
-            self.alternative.build(b),
-        ];
-        result.push(b.group_concat(docs));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = vec![
+                self.condition.build(b),
+                b.softline(),
+                b.txt_("?"),
+                self.consequence.build(b),
+                b.softline(),
+                b.txt_(":"),
+                self.alternative.build(b),
+            ];
+            result.push(b.group_concat(docs));
+        });
     }
 }
 
@@ -3223,22 +3226,29 @@ impl<'a> DocBuild<'a> for AccessorDeclaration {
 pub struct CastExpression {
     pub type_: Type,
     pub value: Expression,
+    pub node_info: NodeInfo,
 }
 
 impl CastExpression {
     pub fn new(node: Node) -> Self {
-        let type_ = Type::new(node.c_by_n("type"));
-        let value = Expression::new(node.c_by_n("value"));
-        Self { type_, value }
+        assert_check(node, "cast_expression");
+
+        Self {
+            type_: Type::new(node.c_by_n("type")),
+            value: Expression::new(node.c_by_n("value")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for CastExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("("));
-        result.push(self.type_.build(b));
-        result.push(b.txt_(")"));
-        result.push(self.value.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("("));
+            result.push(self.type_.build(b));
+            result.push(b.txt_(")"));
+            result.push(self.value.build(b));
+        });
     }
 }
 
