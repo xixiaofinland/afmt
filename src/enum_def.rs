@@ -1160,7 +1160,7 @@ impl<'a> DocBuild<'a> for LimitValue {
 pub enum BooleanExpression {
     And(AndExpression),
     Or(OrExpression),
-    Not(ConditionExpression),
+    Not(NotExpression),
     Condition(Box<ConditionExpression>),
 }
 
@@ -1169,7 +1169,7 @@ impl BooleanExpression {
         match node.kind() {
             "and_expression" => Self::And(AndExpression::new(node)),
             "or_expression" => Self::Or(OrExpression::new(node)),
-            "not_expression" => Self::Not(ConditionExpression::new(node.first_c())),
+            "not_expression" => Self::Not(NotExpression::new(node)),
             _ => Self::Condition(Box::new(ConditionExpression::new(node))),
         }
     }
@@ -1191,10 +1191,7 @@ impl BooleanExpression {
         match self {
             Self::And(n) => n.build(b),
             Self::Or(n) => n.build(b),
-            Self::Not(n) => {
-                let expr_doc = n.build_with_parent(b, Some("NOT"));
-                b.concat(vec![b.txt_("NOT"), expr_doc])
-            }
+            Self::Not(n) => n.build(b),
             Self::Condition(expr) => expr.build_with_parent(b, parent_op),
         }
     }

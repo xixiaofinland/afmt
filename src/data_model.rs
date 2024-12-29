@@ -5634,3 +5634,30 @@ impl<'a> DocBuild<'a> for OrExpression {
         });
     }
 }
+
+#[derive(Debug)]
+pub struct NotExpression {
+    pub condition_exp: ConditionExpression,
+    pub node_info: NodeInfo,
+}
+
+impl NotExpression {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "not_expression");
+
+        Self {
+            condition_exp: ConditionExpression::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for NotExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let expr_doc = self.condition_exp.build_with_parent(b, Some("NOT"));
+            let doc = b.concat(vec![b.txt_("NOT"), expr_doc]);
+            result.push(doc);
+        });
+    }
+}
