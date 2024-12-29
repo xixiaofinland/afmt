@@ -4937,21 +4937,21 @@ impl<'a> DocBuild<'a> for SoqlWithClause {
 }
 
 #[derive(Debug)]
-pub enum SoqlWithType {
-    SimpleType(String), // Security_Enforced, User_Mode, and System_Mode
+pub enum SoqlWithTypeVariant {
+    SimpleType(ValueNode), // Security_Enforced, User_Mode, and System_Mode
     //RecordVisibility(WithRecordVisibilityExpression),
     //DataCategory(WithDataCatExpression),
-    UserId(String),
+    UserId(ValueNode),
 }
 
-impl SoqlWithType {
+impl SoqlWithTypeVariant {
     pub fn new(node: Node) -> Self {
         let with_type = if node.named_child_count() == 0 {
-            return Self::SimpleType(node.value());
+            return Self::SimpleType(ValueNode::new(node));
         } else {
             let child = node.first_c();
             match child.kind() {
-                "with_user_id_type" => Self::UserId(child.cvalue_by_k("string_literal")),
+                "with_user_id_type" => Self::UserId(ValueNode::new(child.c_by_k("string_literal"))),
                 _ => panic_unknown_node(node, "WithType"),
             }
         };
@@ -4959,15 +4959,15 @@ impl SoqlWithType {
     }
 }
 
-impl<'a> DocBuild<'a> for SoqlWithType {
+impl<'a> DocBuild<'a> for SoqlWithTypeVariant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::SimpleType(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::UserId(n) => {
                 result.push(b.txt_("UserId ="));
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
         }
     }
@@ -5663,6 +5663,31 @@ impl<'a> DocBuild<'a> for NotExpression {
             let expr_doc = self.condition_exp.build_with_parent(b, Some("NOT"));
             let doc = b.concat(vec![b.txt_("NOT"), expr_doc]);
             result.push(doc);
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct SoqlWithType {
+    pub variant: SoqlWithTypeVariant,
+    pub node_info: NodeInfo,
+}
+
+impl SoqlWithType {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "with_type");
+
+        Self {
+            variant: SoqlWithTypeVariant::new(node),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for SoqlWithType {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
         });
     }
 }
