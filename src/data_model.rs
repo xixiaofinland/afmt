@@ -4913,21 +4913,26 @@ impl<'a> DocBuild<'a> for SoslWithClause {
 #[derive(Debug)]
 pub struct SoqlWithClause {
     pub with_type: SoqlWithType,
+    pub node_info: NodeInfo,
 }
 
 impl SoqlWithClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_clause");
 
-        let with_type = SoqlWithType::new(node.c_by_k("with_type"));
-        Self { with_type }
+        Self {
+            with_type: SoqlWithType::new(node.c_by_k("with_type")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SoqlWithClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("WITH"));
-        result.push(self.with_type.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("WITH"));
+            result.push(self.with_type.build(b));
+        });
     }
 }
 
