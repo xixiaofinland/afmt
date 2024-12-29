@@ -1536,15 +1536,17 @@ impl<'a> DocBuild<'a> for ComparableListValue {
 
 #[derive(Debug)]
 pub enum OffsetClause {
-    Int(String),
+    Int(ValueNode),
     Bound(BoundApexExpression),
 }
 
 impl OffsetClause {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "offset_clause");
+
         let first_c = node.first_c();
         match first_c.kind() {
-            "int" => Self::Int(first_c.value()),
+            "int" => Self::Int(ValueNode::new(first_c)),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(first_c)),
             _ => panic_unknown_node(first_c, "OffsetClause"),
         }
@@ -1557,7 +1559,7 @@ impl<'a> DocBuild<'a> for OffsetClause {
 
         match self {
             Self::Int(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Bound(n) => {
                 result.push(n.build(b));
