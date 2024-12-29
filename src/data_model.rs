@@ -1109,7 +1109,6 @@ pub struct BinaryExpression {
     pub node_info: NodeInfo,
 }
 
-// TODO: clean up
 impl BinaryExpression {
     fn build_context(node: &Node) -> BinaryExpressionContext {
         let op = node.c_by_n("operator").kind();
@@ -1302,29 +1301,6 @@ impl<'a> DocBuild<'a> for VariableDeclarator {
                 docs.push(value.build(b));
                 result.push(b.group_indent_concat(docs));
             }
-        });
-    }
-}
-
-#[derive(Debug)]
-pub struct BinaryExpressionOperator {
-    pub value: String,
-    pub node_info: NodeInfo,
-}
-
-impl BinaryExpressionOperator {
-    pub fn new(node: Node) -> Self {
-        Self {
-            value: node.kind().to_string(),
-            node_info: NodeInfo::from(&node),
-        }
-    }
-}
-
-impl<'a> DocBuild<'a> for BinaryExpressionOperator {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
-            result.push(b.txt(&self.value));
         });
     }
 }
