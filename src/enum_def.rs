@@ -1129,14 +1129,14 @@ impl<'a> DocBuild<'a> for StorageIdentifierVariant {
 
 #[derive(Debug)]
 pub enum LimitValue {
-    Int(String),
+    Int(ValueNode),
     Bound(BoundApexExpression),
 }
 
 impl LimitValue {
     pub fn new(n: Node) -> Self {
         match n.kind() {
-            "int" => Self::Int(n.value()),
+            "int" => Self::Int(ValueNode::new(n)),
             "bound_apex_expression" => Self::Bound(BoundApexExpression::new(n)),
             _ => panic_unknown_node(n, "LimitValue"),
         }
@@ -1147,7 +1147,7 @@ impl<'a> DocBuild<'a> for LimitValue {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Int(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Bound(n) => {
                 result.push(n.build(b));

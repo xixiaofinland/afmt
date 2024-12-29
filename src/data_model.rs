@@ -4201,19 +4201,26 @@ impl<'a> DocBuild<'a> for StorageAlias {
 #[derive(Debug)]
 pub struct LimitClause {
     pub limit_value: LimitValue,
+    pub node_info: NodeInfo,
 }
 
 impl LimitClause {
     pub fn new(node: Node) -> Self {
-        let limit_value = LimitValue::new(node.first_c());
-        Self { limit_value }
+        assert_check(node, "limit_clause");
+
+        Self {
+            limit_value: LimitValue::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for LimitClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("LIMIT"));
-        result.push(self.limit_value.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("LIMIT"));
+            result.push(self.limit_value.build(b));
+        });
     }
 }
 
