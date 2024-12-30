@@ -181,8 +181,8 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::NewlineWithNoIndent)
     }
 
-    pub fn comment_nl(&'a self) -> DocRef<'a> {
-        self.arena.alloc(Doc::CommentNewline)
+    pub fn dedicated_comment_line(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::DedicatedCommentLine)
     }
 
     pub fn txt(&'a self, text: impl ToString) -> DocRef<'a> {

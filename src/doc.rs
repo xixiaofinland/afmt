@@ -9,10 +9,10 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
 pub enum Doc<'a> {
     Newline,
     NewlineWithNoIndent,
-    CommentNewline, // newline from comment node, so the group() should break for simplicity
+    DedicatedCommentLine, // newline from comment node, so the group() should break for simplicity
     Text(String, u32), // The given text should not contain line breaks
-    Softline,          // a space or a newline
-    Maybeline,         // empty or a newline
+    Softline,       // a space or a newline
+    Maybeline,      // empty or a newline
     Flat(DocRef<'a>),
     Indent(u32, DocRef<'a>),
     Dedent(u32, DocRef<'a>),
@@ -108,7 +108,7 @@ impl<'a> PrettyPrinter<'a> {
 
         while let Some(chunk) = self.chunks.pop() {
             match chunk.doc_ref {
-                Doc::Newline | Doc::CommentNewline => {
+                Doc::Newline => {
                     result.push('\n');
                     let total_indent = chunk.indent + chunk.align;
                     for _ in 0..total_indent {
@@ -116,6 +116,7 @@ impl<'a> PrettyPrinter<'a> {
                     }
                     self.col = total_indent;
                 }
+                Doc::DedicatedCommentLine => {}
                 Doc::Softline => {
                     if chunk.flat {
                         result.push(' ');
@@ -193,7 +194,7 @@ impl<'a> PrettyPrinter<'a> {
 
             match chunk.doc_ref {
                 Doc::Newline | Doc::NewlineWithNoIndent => return true,
-                Doc::CommentNewline => return false,
+                Doc::DedicatedCommentLine => return false,
                 Doc::Softline => {
                     if chunk.flat {
                         if remaining_width >= 1 {
