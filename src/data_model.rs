@@ -2390,15 +2390,15 @@ impl DmlExpressionVariant {
             .map(|n| DmlSecurityMode::new(n));
         let target = Expression::new(node.c_by_n("target"));
 
-        let dml_type = DmlType::from(node.c_by_k("dml_type").first_c().kind());
-        match dml_type {
-            DmlType::Merge => Self::Merge {
+        let dml_type = DmlType::new(node.c_by_k("dml_type"));
+        match dml_type.variant {
+            DmlTypeVariant::Merge => Self::Merge {
                 dml_type,
                 security_mode,
                 target,
                 merge_with: Expression::new(node.c_by_n("merge_with")),
             },
-            DmlType::Upsert => {
+            DmlTypeVariant::Upsert => {
                 let unannotated = node
                     .try_c_by_n("upsert_key")
                     .map(|n| Box::new(UnannotatedType::new(n)));
@@ -2426,7 +2426,8 @@ impl<'a> DocBuild<'a> for DmlExpressionVariant {
                 security_mode,
                 target: exp,
             } => {
-                result.push(b.txt_(dml_type.as_str()));
+                result.push(dml_type.build(b));
+                result.push(b.txt(" "));
                 if let Some(ref s) = security_mode {
                     result.push(s.build(b));
                     result.push(b.txt(" "));
@@ -2439,7 +2440,8 @@ impl<'a> DocBuild<'a> for DmlExpressionVariant {
                 target: exp,
                 merge_with: exp_extra,
             } => {
-                result.push(b.txt_(dml_type.as_str()));
+                result.push(dml_type.build(b));
+                result.push(b.txt(" "));
                 if let Some(ref s) = security_mode {
                     result.push(s.build(b));
                     result.push(b.txt(" "));
@@ -2456,7 +2458,8 @@ impl<'a> DocBuild<'a> for DmlExpressionVariant {
                 target: exp,
                 unannotated,
             } => {
-                result.push(b.txt_(dml_type.as_str()));
+                result.push(dml_type.build(b));
+                result.push(b.txt(" "));
 
                 let mut docs = vec![];
                 if let Some(ref s) = security_mode {
@@ -2506,7 +2509,7 @@ impl<'a> DocBuild<'a> for DmlSecurityMode {
 }
 
 #[derive(Debug)]
-pub enum DmlType {
+pub enum DmlTypeVariant {
     Insert,
     Update,
     Delete,
@@ -2515,30 +2518,32 @@ pub enum DmlType {
     Upsert,
 }
 
-impl From<&str> for DmlType {
-    fn from(t: &str) -> Self {
-        match t {
-            "insert" => DmlType::Insert,
-            "update" => DmlType::Update,
-            "delete" => DmlType::Delete,
-            "undelete" => DmlType::Undelete,
-            "merge" => DmlType::Merge,
-            "upsert" => DmlType::Upsert,
-            _ => panic!("## unknown node: {} in DmlExpression dml_type ", t.red()),
+impl DmlTypeVariant {
+    pub fn new(node: Node) -> Self {
+        let k = node.kind();
+        match k {
+            "insert" => Self::Insert,
+            "update" => Self::Update,
+            "delete" => Self::Delete,
+            "undelete" => Self::Undelete,
+            "merge" => Self::Merge,
+            "upsert" => Self::Upsert,
+            _ => panic!("## unknown node: {} in DmlTypeVariant ", k.red()),
         }
     }
 }
 
-impl DmlType {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            DmlType::Insert => "insert",
-            DmlType::Update => "update",
-            DmlType::Delete => "delete",
-            DmlType::Undelete => "undelete",
-            DmlType::Merge => "merge",
-            DmlType::Upsert => "upsert",
-        }
+impl<'a> DocBuild<'a> for DmlTypeVariant {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        let txt = match self {
+            Self::Insert => "insert",
+            Self::Update => "update",
+            Self::Delete => "delete",
+            Self::Undelete => "undelete",
+            Self::Merge => "merge",
+            Self::Upsert => "upsert",
+        };
+        result.push(b.txt(txt));
     }
 }
 
@@ -5820,6 +5825,31 @@ impl DmlExpression {
 }
 
 impl<'a> DocBuild<'a> for DmlExpression {
+    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.variant.build(b));
+        });
+    }
+}
+
+#[derive(Debug)]
+pub struct DmlType {
+    pub variant: DmlTypeVariant,
+    pub node_info: NodeInfo,
+}
+
+impl DmlType {
+    pub fn new(node: Node) -> Self {
+        assert_check(node, "dml_type");
+
+        Self {
+            variant: DmlTypeVariant::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
+    }
+}
+
+impl<'a> DocBuild<'a> for DmlType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(self.variant.build(b));
