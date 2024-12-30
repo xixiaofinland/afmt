@@ -191,7 +191,7 @@ impl<'a> PrettyPrinter<'a> {
             };
 
             match chunk.doc_ref {
-                Doc::Newline => return true,
+                Doc::Newline => return false,
                 Doc::Softline => {
                     if chunk.flat {
                         if remaining_width >= 1 {
