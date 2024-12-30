@@ -181,6 +181,10 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::NewlineWithNoIndent)
     }
 
+    pub fn comment_nl(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::CommentNewline)
+    }
+
     pub fn txt(&'a self, text: impl ToString) -> DocRef<'a> {
         let s = text.to_string();
         let width = s.len() as u32;
