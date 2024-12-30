@@ -234,7 +234,9 @@ pub fn build_with_comments<'a, F>(
     handle_pre_comments(b, bucket, result);
 
     if bucket.dangling_comments.is_empty() {
-        handle_members(b, result);
+        let mut members_docs = Vec::new();
+        handle_members(b, &mut members_docs);
+        result.push(b.concat(members_docs));
     } else {
         result.push(b.concat(handle_dangling_comments(b, bucket)));
         return;

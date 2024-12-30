@@ -1,7 +1,12 @@
 public class A {
   {
-    String aaaaaaaaaaaaaaaaaaaaaaaaaaaa = 
-      //t
-      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > cccccccccccccccccccccccccccccccccccccccc;
+    [
+      SELECT
+        
+       
+        Id, Name  
+        // t 
+        FROM Acc
+    ];
   }
 }
