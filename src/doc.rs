@@ -9,7 +9,8 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
 pub enum Doc<'a> {
     Newline,
     NewlineWithNoIndent,
-    CommentNewLine,    // newline break introduced by a comment node
+    CommentNewLine,
+    CommentNewlineWithNoIndent,
     Text(String, u32), // The given text should not contain line breaks
     Softline,          // a space or a newline
     Maybeline,         // empty or a newline
@@ -108,7 +109,7 @@ impl<'a> PrettyPrinter<'a> {
 
         while let Some(chunk) = self.chunks.pop() {
             match chunk.doc_ref {
-                Doc::Newline => {
+                Doc::Newline | Doc::CommentNewLine => {
                     result.push('\n');
                     let total_indent = chunk.indent + chunk.align;
                     for _ in 0..total_indent {
@@ -116,7 +117,6 @@ impl<'a> PrettyPrinter<'a> {
                     }
                     self.col = total_indent;
                 }
-                Doc::CommentNewLine => {}
                 Doc::Softline => {
                     if chunk.flat {
                         result.push(' ');
@@ -140,7 +140,7 @@ impl<'a> PrettyPrinter<'a> {
                         self.col = total_indent;
                     }
                 }
-                Doc::NewlineWithNoIndent => {
+                Doc::NewlineWithNoIndent | Doc::CommentNewlineWithNoIndent => {
                     result.push('\n');
                     self.col = 0;
                 }
@@ -194,7 +194,7 @@ impl<'a> PrettyPrinter<'a> {
 
             match chunk.doc_ref {
                 Doc::Newline | Doc::NewlineWithNoIndent => return true,
-                Doc::CommentNewLine => return false, // Indicate the group() should break immediately
+                Doc::CommentNewLine | Doc::CommentNewlineWithNoIndent => return false, // Indicate the group() should break immediately
                 Doc::Softline => {
                     if chunk.flat {
                         if remaining_width >= 1 {

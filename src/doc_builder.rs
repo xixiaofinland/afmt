@@ -93,7 +93,7 @@ impl<'a> DocBuilder<'a> {
         self.concat(parts)
     }
 
-    pub fn surround_body<M>(
+    pub fn surround_body_members<M>(
         &'a self,
         elems: &[BodyMember<M>],
         open: &str,
@@ -128,7 +128,6 @@ impl<'a> DocBuilder<'a> {
         for (i, m) in members.iter().enumerate() {
             member_docs.push(m.member.build(self));
 
-            // let comment logic to handle newlines if exists
             if i < members.len() - 1 && !m.is_followed_by_comment_in_new_line {
                 if m.has_trailing_newline {
                     member_docs.push(self.nl_with_no_indent());
@@ -169,8 +168,12 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Newline)
     }
 
-    pub fn comment_newline(&'a self) -> DocRef<'a> {
+    pub fn comment_nl(&'a self) -> DocRef<'a> {
         self.arena.alloc(Doc::CommentNewLine)
+    }
+
+    pub fn comment_nl_with_no_indent(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::CommentNewlineWithNoIndent)
     }
 
     pub fn softline(&'a self) -> DocRef<'a> {

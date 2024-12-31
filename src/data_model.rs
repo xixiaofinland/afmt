@@ -451,7 +451,7 @@ impl<'a> DocBuild<'a> for ClassBody {
         handle_pre_comments(b, bucket, result);
 
         if bucket.dangling_comments.is_empty() {
-            result.push(b.surround_body(&self.class_members, "", "}"));
+            result.push(b.surround_body_members(&self.class_members, "", "}"));
             handle_post_comments(b, bucket, result);
         } else {
             result.push(b.indent(b.nl()));
@@ -694,7 +694,7 @@ impl<'a> DocBuild<'a> for Block {
         handle_pre_comments(b, bucket, result);
 
         if bucket.dangling_comments.is_empty() {
-            let docs = b.surround_body(&self.statements, "{", "}");
+            let docs = b.surround_body_members(&self.statements, "{", "}");
             result.push(docs);
         } else {
             result.push(b.txt("{"));
@@ -3049,7 +3049,7 @@ impl<'a> DocBuild<'a> for InterfaceBody {
         handle_pre_comments(b, bucket, result);
 
         if bucket.dangling_comments.is_empty() {
-            result.push(b.surround_body(&self.members, "{", "}"));
+            result.push(b.surround_body_members(&self.members, "{", "}"));
             handle_post_comments(b, bucket, result);
         } else {
             result.push(b.txt("{"));

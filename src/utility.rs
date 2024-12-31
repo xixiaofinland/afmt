@@ -267,16 +267,18 @@ fn handle_pre_comment_heading_logic<'a>(
 ) {
     if comment.has_leading_content() {
         docs.push(b.txt(" "));
-    } else if comment.print_newline_above() {
-        docs.push(b.nl_with_no_indent());
-        docs.push(b.nl());
-    } else if comment.has_prev_node() {
-        docs.push(b.nl());
+    } else {
+        if comment.print_newline_above() {
+            docs.push(b.comment_nl_with_no_indent());
+            docs.push(b.nl());
+        } else if comment.has_prev_node() {
+            docs.push(b.comment_nl());
+        }
     }
 
-    if !comment.has_leading_content() && !comment.has_trailing_content() {
-        docs.push(b.comment_newline());
-    }
+    //if !comment.has_leading_content() && !comment.has_trailing_content() {
+    //    docs.push(b.comment_nl());
+    //}
 }
 
 pub fn handle_pre_comments<'a>(
