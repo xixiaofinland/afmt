@@ -9,10 +9,10 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
 pub enum Doc<'a> {
     Newline,
     NewlineWithNoIndent,
-    DedicatedCommentLine, // newline from comment node, so the group() should break for simplicity
+    CommentNewLine,    // newline break introduced by a comment node
     Text(String, u32), // The given text should not contain line breaks
-    Softline,       // a space or a newline
-    Maybeline,      // empty or a newline
+    Softline,          // a space or a newline
+    Maybeline,         // empty or a newline
     Flat(DocRef<'a>),
     Indent(u32, DocRef<'a>),
     Dedent(u32, DocRef<'a>),
@@ -116,7 +116,7 @@ impl<'a> PrettyPrinter<'a> {
                     }
                     self.col = total_indent;
                 }
-                Doc::DedicatedCommentLine => {}
+                Doc::CommentNewLine => {}
                 Doc::Softline => {
                     if chunk.flat {
                         result.push(' ');
@@ -194,7 +194,7 @@ impl<'a> PrettyPrinter<'a> {
 
             match chunk.doc_ref {
                 Doc::Newline | Doc::NewlineWithNoIndent => return true,
-                Doc::DedicatedCommentLine => return false,
+                Doc::CommentNewLine => return false, // Indicate the group() should break immediately
                 Doc::Softline => {
                     if chunk.flat {
                         if remaining_width >= 1 {
