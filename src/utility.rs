@@ -275,7 +275,7 @@ fn handle_pre_comment_heading_logic<'a>(
     }
 
     if !comment.has_leading_content() && !comment.has_trailing_content() {
-        docs.push(b.dedicated_comment_line());
+        docs.push(b.comment_newline());
     }
 }
 
