@@ -800,31 +800,41 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool,
-    pub is_followed_by_comment_in_new_line: bool,
+    pub is_followed_by_code_node: bool,
 }
 
 impl<M> BodyMember<M> {
     pub fn new(node: &Node, member: M) -> Self {
         Self {
             member,
-            has_trailing_newline: Self::print_trailing_new_line(node),
-            is_followed_by_comment_in_new_line: is_followed_by_comment_in_new_line(node),
+            has_trailing_newline: Self::has_trailing_newline(node),
+            is_followed_by_code_node: Self::is_followed_by_code_node(node),
         }
     }
 
-    fn print_trailing_new_line(node: &Node) -> bool {
-        let mut next = node.next_named_sibling();
-
-        // Iterate until a non-extra node is found
-        while let Some(next_node) = next {
-            if !next_node.is_extra() {
-                return node.end_position().row < next_node.start_position().row - 1;
-            }
-            next = next_node.next_named_sibling();
-        }
-
-        false
+    fn is_followed_by_code_node(node: &Node) -> bool {
+        node.next_named_sibling().map_or(false, |n| !n.is_extra())
     }
+
+    fn has_trailing_newline(node: &Node) -> bool {
+        node.next_named_sibling().map_or(false, |n| {
+            node.end_position().row < n.start_position().row - 1
+        })
+    }
+
+    //fn print_trailing_new_line(node: &Node) -> bool {
+    //    let mut next = node.next_named_sibling();
+    //
+    //    // Iterate until a non-extra node is found
+    //    while let Some(next_node) = next {
+    //        if !next_node.is_extra() {
+    //            return node.end_position().row < next_node.start_position().row - 1;
+    //        }
+    //        next = next_node.next_named_sibling();
+    //    }
+    //
+    //    false
+    //}
 }
 
 #[derive(Debug)]

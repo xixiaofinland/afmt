@@ -128,12 +128,19 @@ impl<'a> DocBuilder<'a> {
         for (i, m) in members.iter().enumerate() {
             member_docs.push(m.member.build(self));
 
-            if i < members.len() - 1 && !m.is_followed_by_comment_in_new_line {
-                if m.has_trailing_newline {
+            if i < members.len() - 1 {
+                if m.is_followed_by_code_node && m.has_trailing_newline {
                     member_docs.push(self.nl_with_no_indent());
                 }
                 member_docs.push(self.nl());
             }
+
+            //if i < members.len() - 1 && !m.is_followed_by_comment_in_new_line {
+            //    if m.has_trailing_newline {
+            //        member_docs.push(self.nl_with_no_indent());
+            //    }
+            //    member_docs.push(self.nl());
+            //}
         }
         self.concat(member_docs)
     }
