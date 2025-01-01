@@ -121,9 +121,7 @@ impl<'a> DocBuild<'a> for ClassDeclaration {
                 docs.push(n.build(b));
             }
 
-            // because the group() need, we move `{` from body node here
             docs.push(b.txt(" "));
-            docs.push(b.txt("{"));
             result.push(b.group_indent_concat(docs));
 
             result.push(self.body.build(b));
@@ -451,9 +449,10 @@ impl<'a> DocBuild<'a> for ClassBody {
         handle_pre_comments(b, bucket, result);
 
         if bucket.dangling_comments.is_empty() {
-            result.push(b.surround_body_members(&self.class_members, "", "}"));
+            result.push(b.surround_body_members(&self.class_members, "{", "}"));
             handle_post_comments(b, bucket, result);
         } else {
+            result.push(b.txt("{"));
             result.push(b.indent(b.nl()));
             result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
             result.push(b.nl());

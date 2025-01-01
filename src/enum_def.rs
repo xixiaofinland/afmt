@@ -5,7 +5,8 @@ use crate::{
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     utility::{
-        assert_check, build_with_comments, is_followed_by_comment_in_new_line, panic_unknown_node,
+        assert_check, build_with_comments, get_comment_bucket, is_followed_by_comment_in_new_line,
+        panic_unknown_node,
     },
 };
 use toml::Value;
@@ -799,8 +800,8 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 #[derive(Debug)]
 pub struct BodyMember<M> {
     pub member: M,
-    pub has_trailing_newline: bool,
-    pub is_followed_by_code_node: bool,
+    pub has_trailing_newline: bool, // already take comment nodes into consideration
+    //pub is_followed_by_code_node: bool,
 }
 
 impl<M> BodyMember<M> {
@@ -808,33 +809,24 @@ impl<M> BodyMember<M> {
         Self {
             member,
             has_trailing_newline: Self::has_trailing_newline(node),
-            is_followed_by_code_node: Self::is_followed_by_code_node(node),
         }
     }
 
-    fn is_followed_by_code_node(node: &Node) -> bool {
-        node.next_named_sibling().map_or(false, |n| !n.is_extra())
-    }
-
+    // take comment nodes into consideration
     fn has_trailing_newline(node: &Node) -> bool {
+        let node_id = &node.id();
+        let bucket = get_comment_bucket(node_id);
+
+        // we assume post_comments are always inline
+        // because this method is not called by last element of BodyMember
+        if let Some(last_post_comment) = bucket.post_comments.last() {
+            return last_post_comment.metadata.has_newline_below;
+        }
+
         node.next_named_sibling().map_or(false, |n| {
             node.end_position().row < n.start_position().row - 1
         })
     }
-
-    //fn print_trailing_new_line(node: &Node) -> bool {
-    //    let mut next = node.next_named_sibling();
-    //
-    //    // Iterate until a non-extra node is found
-    //    while let Some(next_node) = next {
-    //        if !next_node.is_extra() {
-    //            return node.end_position().row < next_node.start_position().row - 1;
-    //        }
-    //        next = next_node.next_named_sibling();
-    //    }
-    //
-    //    false
-    //}
 }
 
 #[derive(Debug)]

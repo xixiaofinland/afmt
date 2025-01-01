@@ -129,7 +129,7 @@ impl<'a> DocBuilder<'a> {
             member_docs.push(m.member.build(self));
 
             if i < members.len() - 1 {
-                if m.is_followed_by_code_node && m.has_trailing_newline {
+                if m.has_trailing_newline {
                     member_docs.push(self.nl_with_no_indent());
                 }
                 member_docs.push(self.nl());
