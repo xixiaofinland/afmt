@@ -3381,23 +3381,28 @@ impl<'a> DocBuild<'a> for SwitchBlock {
 pub struct SwitchRule {
     pub label: SwitchLabel,
     pub block: Block,
+    pub node_info: NodeInfo,
 }
 
 impl SwitchRule {
     pub fn new(node: Node) -> Self {
-        let label_node = node.c_by_k("switch_label");
-        let label = SwitchLabel::new(label_node);
+        assert_check(node, "switch_rule");
 
-        let block = Block::new(node.c_by_k("block"));
-        Self { label, block }
+        Self {
+            label: SwitchLabel::new(node.c_by_k("switch_label")),
+            block: Block::new(node.c_by_k("block")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SwitchRule {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.label.build(b));
-        result.push(b.txt(" "));
-        result.push(self.block.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.label.build(b));
+            result.push(b.txt(" "));
+            result.push(self.block.build(b));
+        });
     }
 }
 
@@ -3451,6 +3456,7 @@ impl<'a> DocBuild<'a> for SwitchLabel {
 pub struct WhenSObjectType {
     pub unannotated_type: UnannotatedType,
     pub identifier: String,
+    pub node_info: NodeInfo,
 }
 
 impl WhenSObjectType {
@@ -3473,15 +3479,18 @@ impl WhenSObjectType {
             unannotated_type: unannotated_type
                 .expect("Missing unannotated_type in WhenSObjectType"),
             identifier: identifier.expect("Missing identifier in WhenSObjectType"),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WhenSObjectType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.unannotated_type.build(b));
-        result.push(b.txt(" "));
-        result.push(b.txt(&self.identifier));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.unannotated_type.build(b));
+            result.push(b.txt(" "));
+            result.push(b.txt(&self.identifier));
+        });
     }
 }
 
@@ -3704,18 +3713,25 @@ impl<'a> DocBuild<'a> for TriggerEvent {
 #[derive(Debug)]
 pub struct TriggerBody {
     pub block: Block,
+    pub node_info: NodeInfo,
 }
 
 impl TriggerBody {
     pub fn new(node: Node) -> Self {
-        let block = Block::new(node.c_by_k("block"));
-        Self { block }
+        assert_check(node, "trigger_body");
+
+        Self {
+            block: Block::new(node.c_by_k("block")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for TriggerBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.block.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.block.build(b));
+        });
     }
 }
 
@@ -3802,10 +3818,13 @@ pub struct SoslQueryBody {
     pub limit_clause: Option<LimitClause>,
     //pub offset_clause: Option<OffsetClause>,
     pub update_clause: Option<UpdateClause>,
+    pub node_info: NodeInfo,
 }
 
 impl SoslQueryBody {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "sosl_query_body");
+
         let find_clause = FindClause::new(node.c_by_k("find_clause"));
         let in_clause = node.try_c_by_k("in_clause").map(|n| InClause::new(n));
         let returning_clause = node
@@ -3832,40 +3851,43 @@ impl SoslQueryBody {
             using_clause,
             limit_clause,
             update_clause,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoslQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![];
-        docs.push(self.find_clause.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let mut docs = vec![];
+            docs.push(self.find_clause.build(b));
 
-        if let Some(ref n) = self.in_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.returning_clause {
-            docs.push(n.build(b));
-        }
-        if !self.with_clauses.is_empty() {
-            let with_clauses_docs = b.to_docs(&self.with_clauses);
+            if let Some(ref n) = self.in_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.returning_clause {
+                docs.push(n.build(b));
+            }
+            if !self.with_clauses.is_empty() {
+                let with_clauses_docs = b.to_docs(&self.with_clauses);
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+                let doc = b.intersperse(&with_clauses_docs, sep);
+                docs.push(doc);
+            }
+            if let Some(ref n) = self.using_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.limit_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.update_clause {
+                docs.push(n.build(b));
+            }
+
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-            let doc = b.intersperse(&with_clauses_docs, sep);
-            docs.push(doc);
-        }
-        if let Some(ref n) = self.using_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.limit_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.update_clause {
-            docs.push(n.build(b));
-        }
-
-        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let doc = b.intersperse(&docs, sep);
-        result.push(doc);
+            let doc = b.intersperse(&docs, sep);
+            result.push(doc);
+        });
     }
 }
 
@@ -3903,23 +3925,29 @@ impl<'a> DocBuild<'a> for FindClause {
 
 #[derive(Debug)]
 pub struct InClause {
-    in_type: String,
+    in_type: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl InClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "in_clause");
 
-        let in_type = node.cvalue_by_k("in_type");
-        Self { in_type }
+        Self {
+            in_type: ValueNode::new(node.c_by_k("in_type")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for InClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("IN"));
-        result.push(b.txt(&self.in_type));
-        result.push(b._txt("FIELDS"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("IN"));
+            result.push(self.in_type.build(b));
+            result.push(b.txt(" "));
+            result.push(b.txt("FIELDS"));
+        });
     }
 }
 
