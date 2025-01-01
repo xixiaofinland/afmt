@@ -258,7 +258,7 @@ pub fn handle_dangling_comments<'a>(
         } else if comment.has_newline_above() {
             docs.push(b.nl_with_no_indent());
             docs.push(b.nl());
-        } else {
+        } else if comment.has_prev_node() {
             docs.push(b.nl());
         }
 

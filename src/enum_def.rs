@@ -820,7 +820,7 @@ impl<M> BodyMember<M> {
         // we assume post_comments are always inline
         // because this method is not called by last element of BodyMember
         if let Some(last_post_comment) = bucket.post_comments.last() {
-            return last_post_comment.metadata.has_newline_below;
+            return last_post_comment.has_newline_below();
         }
 
         node.next_named_sibling().map_or(false, |n| {

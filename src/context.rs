@@ -135,12 +135,12 @@ impl<'a> DocBuild<'a> for Comment {
 
 #[derive(Debug)]
 pub struct CommentMetadata {
-    pub has_leading_content: bool,
-    pub has_trailing_content: bool,
-    pub has_newline_above: bool,
-    pub has_newline_below: bool,
-    pub has_prev_node: bool,
-    pub has_next_node: bool,
+    has_leading_content: bool,
+    has_trailing_content: bool,
+    has_newline_above: bool,
+    has_newline_below: bool,
+    has_prev_node: bool,
+    has_next_node: bool,
 }
 
 impl CommentMetadata {
