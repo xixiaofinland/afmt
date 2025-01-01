@@ -255,7 +255,7 @@ pub fn handle_dangling_comments<'a>(
     for comment in &bucket.dangling_comments {
         handle_post_comment_heading_logic(comment, b, &mut docs);
         docs.push(comment.build(b));
-        handle_comment_trailing_logic(comment, b, &mut docs);
+        handle_post_comment_trailing_logic(comment, b, &mut docs);
         comment.mark_as_printed();
     }
     docs
@@ -268,17 +268,13 @@ fn handle_pre_comment_heading_logic<'a>(
     if comment.has_leading_content() {
         docs.push(b.txt(" "));
     } else {
-        if comment.print_newline_above() {
+        if comment.has_newline_above() {
             docs.push(b.comment_nl_with_no_indent());
             docs.push(b.nl());
         } else if comment.has_prev_node() {
             docs.push(b.comment_nl());
         }
     }
-
-    //if !comment.has_leading_content() && !comment.has_trailing_content() {
-    //    docs.push(b.comment_nl());
-    //}
 }
 
 pub fn handle_pre_comments<'a>(
@@ -299,7 +295,7 @@ pub fn handle_pre_comments<'a>(
         if comment.has_trailing_content() {
             docs.push(b.txt(" "));
         } else if i == bucket.pre_comments.len() - 1 {
-            if comment.print_newline_below() {
+            if comment.has_newline_below() {
                 docs.push(b.nl_with_no_indent());
                 docs.push(b.nl());
             } else {
@@ -319,7 +315,7 @@ fn handle_post_comment_heading_logic<'a>(
 ) {
     if comment.has_leading_content() {
         docs.push(b.txt(" "));
-    } else if comment.print_newline_above() {
+    } else if comment.has_newline_above() {
         docs.push(b.nl_with_no_indent());
         docs.push(b.nl());
     } else {
@@ -340,13 +336,13 @@ pub fn handle_post_comments<'a>(
     for comment in &bucket.post_comments {
         handle_post_comment_heading_logic(comment, b, &mut docs);
         docs.push(comment.build(b));
-        handle_comment_trailing_logic(comment, b, &mut docs);
+        handle_post_comment_trailing_logic(comment, b, &mut docs);
         comment.mark_as_printed();
     }
     result.push(b.concat(docs));
 }
 
-fn handle_comment_trailing_logic<'a>(
+fn handle_post_comment_trailing_logic<'a>(
     comment: &Comment,
     b: &'a DocBuilder<'a>,
     docs: &mut Vec<DocRef<'a>>,
@@ -355,6 +351,7 @@ fn handle_comment_trailing_logic<'a>(
         docs.push(b.txt(" "));
     }
 }
+
 
 pub fn enrich(ast_tree: &Tree) -> Root {
     let root_node = ast_tree.root_node();

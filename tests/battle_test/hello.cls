@@ -1,7 +1,7 @@
-public class PostComment {
+public class A {
   {
-    private final Integer i = s.length(); /*post1*//*post2*/
-    // Explicit no argument constructor
+    private final Integer i = s.length(); /*post1*/
 
+    private final Integer j = k.length();//p
   }
 }
