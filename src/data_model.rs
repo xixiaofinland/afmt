@@ -3954,6 +3954,7 @@ impl<'a> DocBuild<'a> for InClause {
 #[derive(Debug)]
 pub struct ReturningClause {
     sobject_returns: Vec<SObjectReturn>,
+    pub node_info: NodeInfo,
 }
 
 impl ReturningClause {
@@ -3964,18 +3965,23 @@ impl ReturningClause {
             .map(|n| SObjectReturn::new(n))
             .collect();
 
-        Self { sobject_returns }
+        Self {
+            sobject_returns,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ReturningClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("RETURNING"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("RETURNING"));
 
-        let docs = b.to_docs(&self.sobject_returns);
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let doc = b.group_indent(b.concat(vec![b.softline(), b.intersperse(&docs, sep)]));
-        result.push(doc);
+            let docs = b.to_docs(&self.sobject_returns);
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let doc = b.group_indent(b.concat(vec![b.softline(), b.intersperse(&docs, sep)]));
+            result.push(doc);
+        });
     }
 }
 
@@ -3983,15 +3989,14 @@ impl<'a> DocBuild<'a> for ReturningClause {
 
 #[derive(Debug)]
 pub struct SObjectReturn {
-    pub identifier: String,
+    pub identifier: ValueNode,
     pub sobject_return_query: Option<SObjectReturnQuery>,
+    pub node_info: NodeInfo,
 }
 
 impl SObjectReturn {
     pub fn new(node: Node) -> Self {
         assert_check(node, "sobject_return");
-
-        let identifier = node.cvalue_by_k("identifier");
 
         let sobject_return_query = node
             .try_c_by_k("selected_fields")
@@ -4013,19 +4018,22 @@ impl SObjectReturn {
             });
 
         Self {
-            identifier,
+            identifier: ValueNode::new(node.c_by_k("identifier")),
             sobject_return_query,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SObjectReturn {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.identifier));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.identifier.build(b));
 
-        if let Some(ref n) = self.sobject_return_query {
-            result.push(n.build(b));
-        }
+            if let Some(ref n) = self.sobject_return_query {
+                result.push(n.build(b));
+            }
+        });
     }
 }
 
