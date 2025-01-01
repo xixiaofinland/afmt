@@ -2,8 +2,11 @@ use std::{cell::Cell, collections::HashMap};
 use tree_sitter::{Node, Range};
 
 use crate::{
-    accessor::Accessor, data_model::DocBuild, doc::DocRef, doc_builder::DocBuilder,
-    utility::panic_unknown_node,
+    accessor::Accessor,
+    data_model::DocBuild,
+    doc::DocRef,
+    doc_builder::DocBuilder,
+    utility::{is_bracket_composite_node, panic_unknown_node},
 };
 
 pub type CommentMap = HashMap<usize, CommentBucket>;
@@ -92,6 +95,10 @@ impl Comment {
         self.metadata.has_newline_above
     }
 
+    pub fn is_followed_by_bracket_composite_node(&self) -> bool {
+        self.metadata.is_followed_by_bracket_composite_node
+    }
+
     pub fn has_newline_below(&self) -> bool {
         self.metadata.has_newline_below
     }
@@ -133,6 +140,7 @@ impl<'a> DocBuild<'a> for Comment {
 pub struct CommentMetadata {
     has_leading_content: bool,
     has_trailing_content: bool,
+    is_followed_by_bracket_composite_node: bool,
     has_newline_above: bool,
     has_newline_below: bool,
     has_prev_node: bool,
@@ -174,8 +182,8 @@ impl CommentMetadata {
             false
         };
 
-        let is_prev_node_comment = if let Some(prev_node) = prev {
-            prev_node.is_extra()
+        let is_followed_by_bracket_composite_node = if let Some(next_node) = next {
+            is_bracket_composite_node(&next_node)
         } else {
             false
         };
@@ -183,6 +191,7 @@ impl CommentMetadata {
         CommentMetadata {
             has_leading_content,
             has_trailing_content,
+            is_followed_by_bracket_composite_node,
             has_newline_above,
             has_newline_below,
             has_prev_node,

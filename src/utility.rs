@@ -347,7 +347,7 @@ pub fn handle_post_comments<'a>(
 
         docs.push(comment.build(b));
 
-        if comment.has_trailing_content() {
+        if comment.has_trailing_content() && !comment.is_followed_by_bracket_composite_node() {
             docs.push(b.txt(" "));
         }
 
@@ -472,8 +472,9 @@ pub fn panic_unknown_node(node: Node, name: &str) -> ! {
     );
 }
 
-pub fn is_followed_by_comment_in_new_line(node: &Node) -> bool {
-    node.next_named_sibling().map_or(false, |n| {
-        n.is_extra() && node.end_position().row != n.start_position().row
-    })
+pub fn is_bracket_composite_node(node: &Node) -> bool {
+    matches!(
+        node.kind(),
+        "trigger_body" | "class_body" | "block" | "enum_body"
+    )
 }

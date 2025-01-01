@@ -2271,6 +2271,8 @@ pub struct EnumBody {
 
 impl EnumBody {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "enum_body");
+
         let enum_constants = node
             .try_cs_by_k("enum_constant")
             .into_iter()
