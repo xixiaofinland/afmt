@@ -2841,50 +2841,57 @@ impl<'a> DocBuild<'a> for TryStatementTail {
 pub struct CatchClause {
     pub formal_parameter: FormalParameter,
     pub body: Block,
+    pub node_info: NodeInfo,
 }
 
 impl CatchClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "catch_clause");
 
-        let formal_parameter = FormalParameter::new(node.c_by_k("formal_parameter"));
-        let body = Block::new(node.c_by_n("body"));
         Self {
-            formal_parameter,
-            body,
+            formal_parameter: FormalParameter::new(node.c_by_k("formal_parameter")),
+            body: Block::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for CatchClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b._txt_("catch"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b._txt_("catch"));
 
-        result.push(b.txt("("));
-        result.push(self.formal_parameter.build(b));
-        result.push(b.txt_(")"));
-        result.push(self.body.build(b));
+            result.push(b.txt("("));
+            result.push(self.formal_parameter.build(b));
+            result.push(b.txt_(")"));
+            result.push(self.body.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct FinallyClause {
     pub body: Block,
+    pub node_info: NodeInfo,
 }
 
 impl FinallyClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "finally_clause");
 
-        let body = Block::new(node.c_by_k("block"));
-        Self { body }
+        Self {
+            body: Block::new(node.c_by_k("block")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for FinallyClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b._txt_("finally"));
-        result.push(self.body.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b._txt_("finally"));
+            result.push(self.body.build(b));
+        });
     }
 }
 
