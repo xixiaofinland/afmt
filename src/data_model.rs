@@ -452,11 +452,7 @@ impl<'a> DocBuild<'a> for ClassBody {
             result.push(b.surround_body_members(&self.class_members, "{", "}"));
             handle_post_comments(b, bucket, result);
         } else {
-            result.push(b.txt("{"));
-            result.push(b.indent(b.nl()));
-            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
-            result.push(b.nl());
-            result.push(b.txt("}"));
+            handle_dangling_comments_in_bracket_surround(b, bucket, result);
         }
     }
 }
@@ -696,11 +692,7 @@ impl<'a> DocBuild<'a> for Block {
             let docs = b.surround_body_members(&self.statements, "{", "}");
             result.push(docs);
         } else {
-            result.push(b.txt("{"));
-            result.push(b.indent(b.nl()));
-            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
-            result.push(b.nl());
-            result.push(b.txt("}"));
+            handle_dangling_comments_in_bracket_surround(b, bucket, result);
             return;
         }
         handle_post_comments(b, bucket, result);
@@ -1835,11 +1827,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             result.push(b.nl());
             result.push(b.txt("}"));
         } else {
-            result.push(b.txt("{"));
-            result.push(b.indent(b.nl()));
-            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
-            result.push(b.nl());
-            result.push(b.txt("}"));
+            handle_dangling_comments_in_bracket_surround(b, bucket, result);
         }
     }
 }
@@ -2321,11 +2309,7 @@ impl<'a> DocBuild<'a> for EnumBody {
             result.push(doc);
             handle_post_comments(b, bucket, result);
         } else {
-            result.push(b.txt("{"));
-            result.push(b.indent(b.nl()));
-            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
-            result.push(b.nl());
-            result.push(b.txt("}"));
+            handle_dangling_comments_in_bracket_surround(b, bucket, result);
         }
     }
 }
@@ -3051,11 +3035,7 @@ impl<'a> DocBuild<'a> for InterfaceBody {
             result.push(b.surround_body_members(&self.members, "{", "}"));
             handle_post_comments(b, bucket, result);
         } else {
-            result.push(b.txt("{"));
-            result.push(b.indent(b.nl()));
-            result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
-            result.push(b.nl());
-            result.push(b.txt("}"));
+            handle_dangling_comments_in_bracket_surround(b, bucket, result);
         }
     }
 }

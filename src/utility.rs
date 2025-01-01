@@ -243,10 +243,19 @@ pub fn build_with_comments<'a, F>(
     handle_post_comments(b, bucket, result);
 }
 
-pub fn handle_dangling_comments<'a>(
+pub fn handle_dangling_comments_in_bracket_surround<'a>(
     b: &'a DocBuilder<'a>,
     bucket: &CommentBucket,
-) -> Vec<&'a Doc<'a>> {
+    result: &mut Vec<DocRef<'a>>,
+) {
+    result.push(b.txt("{"));
+    result.push(b.indent(b.nl()));
+    result.push(b.indent(b.concat(handle_dangling_comments(b, bucket))));
+    result.push(b.nl());
+    result.push(b.txt("}"));
+}
+
+fn handle_dangling_comments<'a>(b: &'a DocBuilder<'a>, bucket: &CommentBucket) -> Vec<&'a Doc<'a>> {
     if bucket.dangling_comments.is_empty() {
         panic!("handle_dangling_comments() should not have empty dangling_comments input")
     }
