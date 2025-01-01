@@ -4688,6 +4688,7 @@ impl<'a> DocBuild<'a> for SetComparison {
 #[derive(Debug)]
 pub struct ComparableList {
     pub values: Vec<ComparableListValue>,
+    pub node_info: NodeInfo,
 }
 
 impl ComparableList {
@@ -4697,19 +4698,25 @@ impl ComparableList {
             .into_iter()
             .map(|n| ComparableListValue::new(n))
             .collect();
-        Self { values }
+
+        Self {
+            values,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ComparableList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.values);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.values);
 
-        let sep = Insertable::new(None, Some(","), Some(b.softline()));
-        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 
@@ -5031,21 +5038,26 @@ impl<'a> DocBuild<'a> for HavingClause {
 #[derive(Debug)]
 pub struct SoslWithClause {
     pub with_type: SoslWithType,
+    pub node_info: NodeInfo,
 }
 
 impl SoslWithClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_clause");
 
-        let with_type = SoslWithType::new(node.c_by_k("with_type"));
-        Self { with_type }
+        Self {
+            with_type: SoslWithType::new(node.c_by_k("with_type")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SoslWithClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![b.txt_("WITH"), self.with_type.build(b)];
-        result.push(b.group_concat(docs));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = vec![b.txt_("WITH"), self.with_type.build(b)];
+            result.push(b.group_concat(docs));
+        });
     }
 }
 
@@ -5179,6 +5191,7 @@ impl<'a> DocBuild<'a> for SoslWithType {
 #[derive(Debug)]
 pub struct WithDataCatExpression {
     pub filters: Vec<WithDataCatFilter>,
+    pub node_info: NodeInfo,
 }
 
 impl WithDataCatExpression {
@@ -5191,27 +5204,33 @@ impl WithDataCatExpression {
             .map(|n| WithDataCatFilter::new(n))
             .collect();
 
-        Self { filters }
+        Self {
+            filters,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WithDataCatExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("DATA CATEGORY"));
-        result.push(b.indent(b.softline()));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("DATA CATEGORY"));
+            result.push(b.indent(b.softline()));
 
-        let docs = b.to_docs(&self.filters);
-        let sep = Insertable::new::<&str>(Some(b.softline()), Some("AND "), None);
-        let doc = b.indent(b.intersperse(&docs, sep));
-        result.push(doc);
+            let docs = b.to_docs(&self.filters);
+            let sep = Insertable::new::<&str>(Some(b.softline()), Some("AND "), None);
+            let doc = b.indent(b.intersperse(&docs, sep));
+            result.push(doc);
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct WithDataCatFilter {
-    pub identifier: String,
-    pub filter_type: String,
-    pub identifiers: Vec<String>,
+    pub identifier: ValueNode,
+    pub filter_type: ValueNodeUpperCase,
+    pub identifiers: Vec<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl WithDataCatFilter {
@@ -5223,37 +5242,42 @@ impl WithDataCatFilter {
             panic!("At least 2 identifier nodes should exist in WithDataCatFilter");
         }
 
-        let identifier = all_identififers[0].value();
-        let filter_type = node.cvalue_by_k("with_data_cat_filter_type").to_uppercase();
+        let identifier = ValueNode::new(all_identififers[0]);
         let identifiers: Vec<_> = all_identififers
             .into_iter()
             .skip(1)
-            .map(|n| n.value())
+            .map(|n| ValueNode::new(n))
             .collect();
 
         Self {
             identifier,
-            filter_type,
+            filter_type: ValueNodeUpperCase::new(node.c_by_k("with_data_cat_filter_type")),
             identifiers,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithDataCatFilter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.identifier));
-        result.push(b._txt_(&self.filter_type));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.identifier.build(b));
+            result.push(b.txt(" "));
+            result.push(self.filter_type.build(b));
+            result.push(b.txt(" "));
 
-        if self.identifiers.len() == 1 {
-            result.push(b.txt(&self.identifiers[0]));
-        } else {
-            let docs: Vec<DocRef<'a>> = self.identifiers.iter().map(|n| b.txt(n)).collect();
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
-            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-            let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-            let doc = b.group_surround(&docs, sep, open, close);
-            result.push(doc);
-        }
+            if self.identifiers.len() == 1 {
+                result.push(self.identifiers[0].build(b));
+            } else {
+                let docs: Vec<DocRef<'a>> = b.to_docs(&self.identifiers);
+
+                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+                let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+                let doc = b.group_surround(&docs, sep, open, close);
+                result.push(doc);
+            }
+        });
     }
 }
 
@@ -5292,111 +5316,138 @@ impl<'a> DocBuild<'a> for WithDivisionExpression {
 
 #[derive(Debug)]
 pub struct WithSnippetExpression {
-    int: Option<String>,
+    int: Option<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl WithSnippetExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_snippet_expression");
 
-        let int = node.try_c_by_k("int").map(|n| n.value());
-        Self { int }
+        let int = node.try_c_by_k("int").map(|n| ValueNode::new(n));
+
+        Self {
+            int,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WithSnippetExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("SNIPPET"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("SNIPPET"));
 
-        if let Some(ref n) = self.int {
-            result.push(b.txt("(TARGET_LENGTH = "));
-            result.push(b.txt(n));
-            result.push(b.txt(")"));
-        }
+            if let Some(ref n) = self.int {
+                result.push(b.txt("(TARGET_LENGTH = "));
+                result.push(n.build(b));
+                result.push(b.txt(")"));
+            }
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct WithNetworkExpression {
     comparison: Comparison,
+    pub node_info: NodeInfo,
 }
 
 impl WithNetworkExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_network_expression");
 
-        let comparison = get_comparsion(&node);
-        Self { comparison }
+        Self {
+            comparison: get_comparsion(&node),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WithNetworkExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("NETWORK"));
-        result.push(self.comparison.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("NETWORK"));
+            result.push(self.comparison.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct WithMetadataExpression {
-    string_literal: String,
+    string_literal: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl WithMetadataExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_metadata_expression");
 
-        let string_literal = node.cvalue_by_k("string_literal");
-        Self { string_literal }
+        Self {
+            string_literal: ValueNode::new(node.c_by_k("string_literal")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WithMetadataExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("METADATA = "));
-        result.push(b.txt(&self.string_literal));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("METADATA = "));
+            result.push(self.string_literal.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct WithSpellCorrectionExpression {
-    boolean: String,
+    boolean: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl WithSpellCorrectionExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_spell_correction_expression");
 
-        let boolean = node.cvalue_by_k("boolean");
-        Self { boolean }
+        Self {
+            boolean: ValueNode::new(node.c_by_k("boolean")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WithSpellCorrectionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("SPELL_CORRECTION = "));
-        result.push(b.txt(&self.boolean));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("SPELL_CORRECTION = "));
+            result.push(self.boolean.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct WithPriceBookExpression {
-    string_literal: String,
+    string_literal: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl WithPriceBookExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "with_pricebook_expression");
 
-        let string_literal = node.cvalue_by_k("string_literal");
-        Self { string_literal }
+        Self {
+            string_literal: ValueNode::new(node.c_by_k("string_literal")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WithPriceBookExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("PriceBookId ="));
-        result.push(b.txt(&self.string_literal));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("PriceBookId ="));
+            result.push(self.string_literal.build(b));
+        });
     }
 }
 
