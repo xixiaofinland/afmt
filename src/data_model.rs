@@ -1465,54 +1465,60 @@ pub struct ForStatement {
     pub condition: Option<Expression>,
     pub update: Option<Expression>,
     pub body: Statement,
+    pub node_info: NodeInfo,
 }
 
 impl ForStatement {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "for_statement");
+
         let init = node.try_c_by_n("init").map(|n| ForInitOption::new(n));
         let condition = node.try_c_by_n("condition").map(|n| Expression::new(n));
         let update = node.try_c_by_n("update").map(|n| Expression::new(n));
-        let body = Statement::new(node.c_by_n("body"));
+
         Self {
             init,
             condition,
             update,
-            body,
+            body: Statement::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ForStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("for "));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("for "));
 
-        let init = match &self.init {
-            Some(i) => i.build(b),
-            None => b.nil(),
-        };
-        let condition = match &self.condition {
-            Some(c) => b.concat(vec![b.txt(" "), c.build(b)]),
-            None => b.nil(),
-        };
-        let update = match &self.update {
-            Some(u) => b.concat(vec![b.txt(" "), u.build(b)]),
-            None => b.nil(),
-        };
-        let docs = vec![init, condition, update];
+            let init = match &self.init {
+                Some(i) => i.build(b),
+                None => b.nil(),
+            };
+            let condition = match &self.condition {
+                Some(c) => b.concat(vec![b.txt(" "), c.build(b)]),
+                None => b.nil(),
+            };
+            let update = match &self.update {
+                Some(u) => b.concat(vec![b.txt(" "), u.build(b)]),
+                None => b.nil(),
+            };
+            let docs = vec![init, condition, update];
 
-        let sep = Insertable::new(None, Some(";"), Some(b.maybeline()));
-        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+            let sep = Insertable::new(None, Some(";"), Some(b.maybeline()));
+            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+            let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
 
-        match self.body {
-            Statement::SemiColumn => result.push(b.txt(";")),
-            _ => {
-                result.push(b.txt(" "));
-                result.push(self.body.build(b));
+            match self.body {
+                Statement::SemiColumn => result.push(b.txt(";")),
+                _ => {
+                    result.push(b.txt(" "));
+                    result.push(self.body.build(b));
+                }
             }
-        }
+        });
     }
 }
 
@@ -1524,6 +1530,7 @@ pub struct EnhancedForStatement {
     //pub dimension
     pub value: Expression,
     pub body: Statement,
+    pub node_info: NodeInfo,
 }
 
 impl EnhancedForStatement {
@@ -1531,35 +1538,35 @@ impl EnhancedForStatement {
         assert_check(node, "enhanced_for_statement");
 
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let type_ = UnannotatedType::new(node.c_by_n("type"));
-        let name = node.cvalue_by_n("name");
-        let value = Expression::new(node.c_by_n("value"));
-        let body = Statement::new(node.c_by_n("body"));
+
         Self {
             modifiers,
-            type_,
-            name,
-            value,
-            body,
+            type_: UnannotatedType::new(node.c_by_n("type")),
+            name: node.cvalue_by_n("name"),
+            value: Expression::new(node.c_by_n("value")),
+            body: Statement::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for EnhancedForStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("for ("));
-        result.push(self.type_.build(b));
-        result.push(b._txt(&self.name));
-        result.push(b._txt_(":"));
-        result.push(self.value.build(b));
-        result.push(b.txt(")"));
-        match self.body {
-            Statement::SemiColumn => result.push(b.txt(";")),
-            _ => {
-                result.push(b.txt(" "));
-                result.push(self.body.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("for ("));
+            result.push(self.type_.build(b));
+            result.push(b._txt(&self.name));
+            result.push(b._txt_(":"));
+            result.push(self.value.build(b));
+            result.push(b.txt(")"));
+            match self.body {
+                Statement::SemiColumn => result.push(b.txt(";")),
+                _ => {
+                    result.push(b.txt(" "));
+                    result.push(self.body.build(b));
+                }
             }
-        }
+        });
     }
 }
 #[derive(Debug)]
@@ -1992,24 +1999,29 @@ impl<'a> DocBuild<'a> for ObjectCreationExpression {
 pub struct RunAsStatement {
     pub user: ParenthesizedExpression,
     pub block: Block,
+    pub node_info: NodeInfo,
 }
 
 impl RunAsStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "run_as_statement");
 
-        let user = ParenthesizedExpression::new(node.c_by_n("user"));
-        let block = Block::new(node.c_by_k("block"));
-        Self { user, block }
+        Self {
+            user: ParenthesizedExpression::new(node.c_by_n("user")),
+            block: Block::new(node.c_by_k("block")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for RunAsStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("System.runAs"));
-        result.push(self.user.build(b));
-        result.push(b.txt(" "));
-        result.push(self.block.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("System.runAs"));
+            result.push(self.user.build(b));
+            result.push(b.txt(" "));
+            result.push(self.block.build(b));
+        });
     }
 }
 
@@ -2017,23 +2029,31 @@ impl<'a> DocBuild<'a> for RunAsStatement {
 pub struct DoStatement {
     pub body: Block,
     pub condition: ParenthesizedExpression,
+    pub node_info: NodeInfo,
 }
 
 impl DoStatement {
     pub fn new(node: Node) -> Self {
-        let body = Block::new(node.c_by_n("body"));
-        let condition = ParenthesizedExpression::new(node.c_by_n("condition"));
-        Self { body, condition }
+        assert_check(node, "do_statement");
+
+        Self {
+            body: Block::new(node.c_by_n("body")),
+            condition: ParenthesizedExpression::new(node.c_by_n("condition")),
+
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for DoStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("do"));
-        result.push(self.body.build(b));
-        result.push(b._txt_("while"));
-        result.push(self.condition.build(b));
-        result.push(b.txt(";"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("do"));
+            result.push(self.body.build(b));
+            result.push(b._txt_("while"));
+            result.push(self.condition.build(b));
+            result.push(b.txt(";"));
+        });
     }
 }
 
@@ -2041,28 +2061,35 @@ impl<'a> DocBuild<'a> for DoStatement {
 pub struct WhileStatement {
     pub condition: ParenthesizedExpression,
     pub body: Statement,
+    pub node_info: NodeInfo,
 }
 
 impl WhileStatement {
     pub fn new(node: Node) -> Self {
-        let condition = ParenthesizedExpression::new(node.c_by_n("condition"));
-        let body = Statement::new(node.c_by_n("body"));
-        Self { condition, body }
+        assert_check(node, "while_statement");
+
+        Self {
+            condition: ParenthesizedExpression::new(node.c_by_n("condition")),
+            body: Statement::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WhileStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("while"));
-        result.push(self.condition.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("while"));
+            result.push(self.condition.build(b));
 
-        match self.body {
-            Statement::SemiColumn => result.push(b.txt(";")),
-            _ => {
-                result.push(b.txt(" "));
-                result.push(self.body.build(b));
+            match self.body {
+                Statement::SemiColumn => result.push(b.txt(";")),
+                _ => {
+                    result.push(b.txt(" "));
+                    result.push(self.body.build(b));
+                }
             }
-        }
+        });
     }
 }
 
