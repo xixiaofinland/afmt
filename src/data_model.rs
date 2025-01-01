@@ -3136,49 +3136,54 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
 pub struct AccessorList {
     pub accessor_declarations: Vec<AccessorDeclaration>,
     pub child_has_body_section: bool,
+    pub node_info: NodeInfo,
 }
 
 impl AccessorList {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "accessor_list");
+
         let accessor_declarations: Vec<_> = node
             .cs_by_k("accessor_declaration")
             .into_iter()
             .map(|n| AccessorDeclaration::new(n))
             .collect();
-
         let child_has_body_section = accessor_declarations.iter().any(|n| n.body.is_some());
 
         Self {
             accessor_declarations,
             child_has_body_section,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AccessorList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        // to align with prettier apex;
-        if self.child_has_body_section {
-            // NOTE: group does NOT work with b.nl() so can't use group_surround()
-            let docs = b.to_docs(&self.accessor_declarations);
-            let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
-            let joined = vec![
-                b.txt("{"),
-                b.indent(b.nl()),
-                b.indent(b.intersperse(&docs, sep)),
-                b.nl(),
-                b.txt("}"),
-            ];
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            // to align with prettier apex;
+            if self.child_has_body_section {
+                // NOTE: group does NOT work with b.nl() so can't use group_surround()
+                let docs = b.to_docs(&self.accessor_declarations);
+                let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
+                let joined = vec![
+                    b.txt("{"),
+                    b.indent(b.nl()),
+                    b.indent(b.intersperse(&docs, sep)),
+                    b.nl(),
+                    b.txt("}"),
+                ];
 
-            result.push(b.concat(joined));
-        } else {
-            let docs = b.to_docs(&self.accessor_declarations);
-            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-            let open = Insertable::new(None, Some("{"), Some(b.softline()));
-            let close = Insertable::new(Some(b.softline()), Some("}"), None);
-            let doc = b.group_surround(&docs, sep, open, close);
-            result.push(doc);
-        }
+                result.push(b.concat(joined));
+            } else {
+                let docs = b.to_docs(&self.accessor_declarations);
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+                let open = Insertable::new(None, Some("{"), Some(b.softline()));
+                let close = Insertable::new(Some(b.softline()), Some("}"), None);
+                let doc = b.group_surround(&docs, sep, open, close);
+                result.push(doc);
+            }
+        });
     }
 }
 
@@ -3187,34 +3192,38 @@ pub struct AccessorDeclaration {
     pub modifiers: Option<Modifiers>,
     pub accessor: String,
     pub body: Option<Block>,
+    pub node_info: NodeInfo,
 }
 
 impl AccessorDeclaration {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "accessor_declaration");
+
         let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
-        let accessor = node.cvalue_by_n("accessor");
-        let body = node.try_c_by_n("body").map(|n| Block::new(n));
         Self {
             modifiers,
-            accessor,
-            body,
+            accessor: node.cvalue_by_n("accessor"),
+            body: node.try_c_by_n("body").map(|n| Block::new(n)),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AccessorDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        if let Some(ref n) = self.modifiers {
-            result.push(n.build(b));
-        }
-        result.push(b.txt(&self.accessor));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            if let Some(ref n) = self.modifiers {
+                result.push(n.build(b));
+            }
+            result.push(b.txt(&self.accessor));
 
-        if let Some(ref n) = self.body {
-            result.push(b.txt(" "));
-            result.push(n.build(b));
-        } else {
-            result.push(b.txt(";"));
-        }
+            if let Some(ref n) = self.body {
+                result.push(b.txt(" "));
+                result.push(n.build(b));
+            } else {
+                result.push(b.txt(";"));
+            }
+        });
     }
 }
 
