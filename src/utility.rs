@@ -287,11 +287,14 @@ pub fn handle_pre_comments<'a>(
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
         } else {
-            if comment.has_newline_above() {
-                docs.push(b.comment_nl_with_no_indent());
-                docs.push(b.nl());
-            } else if comment.has_prev_node() {
-                docs.push(b.comment_nl());
+            // heading logic for 1st element is handled in the preceding node;
+            if i != 0 {
+                if comment.is_prev_node_comment() {
+                    if comment.has_newline_above() {
+                        docs.push(b.comment_nl_with_no_indent());
+                    }
+                    docs.push(b.comment_nl());
+                }
             }
         }
 

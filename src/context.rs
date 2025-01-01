@@ -100,8 +100,8 @@ impl Comment {
         self.metadata.has_prev_node
     }
 
-    pub fn has_next_node(&self) -> bool {
-        self.metadata.has_next_node
+    pub fn is_prev_node_comment(&self) -> bool {
+        self.metadata.is_prev_node_comment
     }
 
     pub fn mark_as_printed(&self) {
@@ -140,7 +140,7 @@ pub struct CommentMetadata {
     has_newline_above: bool,
     has_newline_below: bool,
     has_prev_node: bool,
-    has_next_node: bool,
+    is_prev_node_comment: bool,
 }
 
 impl CommentMetadata {
@@ -149,7 +149,6 @@ impl CommentMetadata {
         let next = node.next_named_sibling();
 
         let has_prev_node = prev.is_some();
-        let has_next_node = next.is_some();
 
         let has_leading_content = if let Some(prev_node) = prev {
             node.start_position().row == prev_node.end_position().row
@@ -180,13 +179,19 @@ impl CommentMetadata {
             false
         };
 
+        let is_prev_node_comment = if let Some(prev_node) = prev {
+            prev_node.is_extra()
+        } else {
+            false
+        };
+
         CommentMetadata {
             has_leading_content,
             has_trailing_content,
             has_newline_above,
             has_newline_below,
             has_prev_node,
-            has_next_node,
+            is_prev_node_comment,
         }
     }
 }

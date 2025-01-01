@@ -384,9 +384,9 @@ impl<'a> DocBuild<'a> for Annotation {
             }
         });
 
-        if !self.is_followed_by_comment_in_new_line {
-            result.push(b.nl());
-        }
+        //if !self.is_followed_by_comment_in_new_line {
+        result.push(b.nl());
+        //}
     }
 }
 
