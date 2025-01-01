@@ -797,7 +797,6 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool, // already take comment nodes into consideration
-                                    //pub is_followed_by_code_node: bool,
 }
 
 impl<M> BodyMember<M> {
@@ -1448,25 +1447,26 @@ impl<'a> DocBuild<'a> for SoqlLiteral {
 pub struct DateLiteralWithParam {
     date_literal: String,
     param: String,
+    pub node_info: NodeInfo,
 }
 
 impl DateLiteralWithParam {
     pub fn new(node: Node) -> Self {
         assert_check(node, "date_literal_with_param");
 
-        let date_literal = node.cvalue_by_k("date_literal").to_uppercase();
-        let param = node.cvalue_by_k("int");
-
         Self {
-            date_literal,
-            param,
+            date_literal: node.cvalue_by_k("date_literal").to_uppercase(),
+            param: node.cvalue_by_k("int"),
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DateLiteralWithParam {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(format!("{}:{}", &self.date_literal, &self.param)));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt(format!("{}:{}", &self.date_literal, &self.param)));
+        });
     }
 }
 
