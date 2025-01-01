@@ -352,7 +352,6 @@ pub struct Annotation {
     pub name: ValueNode,
     pub arguments: Option<AnnotationArgumentList>,
     pub node_info: NodeInfo,
-    pub is_followed_by_comment_in_new_line: bool,
 }
 
 impl Annotation {
@@ -367,7 +366,6 @@ impl Annotation {
             name: ValueNode::new(node.c_by_n("name")),
             arguments,
             node_info: NodeInfo::from(&node),
-            is_followed_by_comment_in_new_line: is_followed_by_comment_in_new_line(&node),
         }
     }
 }
@@ -791,38 +789,6 @@ impl<'a> DocBuild<'a> for ObjectExpression {
                 result.push(n.build(b));
             }
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct SuperNavigation {
-    pub super_expression: Super,
-    pub property_navigation: PropertyNavigation,
-}
-
-//impl SuperNavigation {
-//    pub fn new(node: Node) -> Self {
-//        assert_check(node, "super");
-//
-//        let super_expression = Super {};
-//        let next_node = node.next_named();
-//        let property_navigation = if next_node.kind() == "safe_navigation_operator" {
-//            PropertyNavigation::SafeNavigationOperator
-//        } else {
-//            PropertyNavigation::Dot
-//        };
-//
-//        Self {
-//            super_expression,
-//            property_navigation,
-//        }
-//    }
-//}
-
-impl<'a> DocBuild<'a> for SuperNavigation {
-    fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.super_expression.build(b));
-        result.push(self.property_navigation.build(b));
     }
 }
 
