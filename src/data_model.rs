@@ -4389,21 +4389,26 @@ impl<'a> DocBuild<'a> for UsingSearch {
 #[derive(Debug)]
 pub struct UsingClause {
     pub option: UsingClauseOption,
+    pub node_info: NodeInfo,
 }
 
 impl UsingClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_clause");
 
-        let option = UsingClauseOption::new(node.first_c());
-        Self { option }
+        Self {
+            option: UsingClauseOption::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("USING"));
-        result.push(self.option.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("USING"));
+            result.push(self.option.build(b));
+        });
     }
 }
 
@@ -4443,22 +4448,27 @@ impl<'a> DocBuild<'a> for UsingClauseOption {
 
 #[derive(Debug)]
 pub struct UsingScopeClause {
-    type_: String,
+    type_: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl UsingScopeClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_scope_clause");
 
-        let type_ = node.cvalue_by_k("using_scope_type");
-        Self { type_ }
+        Self {
+            type_: ValueNode::new(node.c_by_k("using_scope_type")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingScopeClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("SCOPE"));
-        result.push(b.txt(&self.type_));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("SCOPE"));
+            result.push(self.type_.build(b));
+        });
     }
 }
 
@@ -4466,6 +4476,7 @@ impl<'a> DocBuild<'a> for UsingScopeClause {
 pub struct UsingLookupClause {
     lookup_field: DottedIdentifier,
     bind_clause: Option<UsingLookupBindClause>,
+    pub node_info: NodeInfo,
 }
 
 impl UsingLookupClause {
@@ -4476,48 +4487,58 @@ impl UsingLookupClause {
         let bind_clause = node
             .try_c_by_k("using_lookup_bind_clause")
             .map(|n| UsingLookupBindClause::new(n));
+
         Self {
             lookup_field,
             bind_clause,
+            node_info: NodeInfo::from(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingLookupClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("LOOKUP"));
-        result.push(self.lookup_field.build(b));
-        result.push(b.txt(" "));
-        if let Some(ref n) = self.bind_clause {
-            result.push(n.build(b));
-        }
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("LOOKUP"));
+            result.push(self.lookup_field.build(b));
+            result.push(b.txt(" "));
+            if let Some(ref n) = self.bind_clause {
+                result.push(n.build(b));
+            }
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct UsingListviewClause {
-    identifier: String,
+    identifier: ValueNode,
+    pub node_info: NodeInfo,
 }
 
 impl UsingListviewClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_listview_clause");
 
-        let identifier = node.cvalue_by_k("identifier");
-        Self { identifier }
+        Self {
+            identifier: ValueNode::new(node.c_by_k("identifier")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingListviewClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("ListView ="));
-        result.push(b.txt(&self.identifier));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("ListView ="));
+            result.push(self.identifier.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct UsingLookupBindClause {
     bind_exps: Vec<UsingLookupBindExpression>,
+    pub node_info: NodeInfo,
 }
 
 impl UsingLookupBindClause {
@@ -4529,66 +4550,84 @@ impl UsingLookupBindClause {
             .into_iter()
             .map(|n| UsingLookupBindExpression::new(n))
             .collect();
-        Self { bind_exps }
+
+        Self {
+            bind_exps,
+
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingLookupBindClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("BIND"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("BIND"));
 
-        let docs = b.to_docs(&self.bind_exps);
-        let sep = Insertable::new(None, Some(", "), None);
-        let doc = b.intersperse(&docs, sep);
-        result.push(doc);
+            let docs = b.to_docs(&self.bind_exps);
+            let sep = Insertable::new(None, Some(", "), None);
+            let doc = b.intersperse(&docs, sep);
+            result.push(doc);
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct UsingLookupBindExpression {
-    field: String,
+    field: ValueNode,
     bound_value: SoqlLiteral,
+    pub node_info: NodeInfo,
 }
 
 impl UsingLookupBindExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "using_lookup_bind_expression");
 
-        let field = node.cvalue_by_n("field");
-        let bound_value = SoqlLiteral::new(node.c_by_n("bound_value"));
-        Self { field, bound_value }
+        Self {
+            field: ValueNode::new(node.c_by_k("field")),
+            bound_value: SoqlLiteral::new(node.c_by_n("bound_value")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingLookupBindExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt(&self.field));
-        result.push(b._txt_("="));
-        result.push(self.bound_value.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.field.build(b));
+            result.push(b._txt_("="));
+            result.push(self.bound_value.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct WhereClause {
     pub boolean_exp: BooleanExpression,
+    pub node_info: NodeInfo,
 }
 
 impl WhereClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "where_clause");
-        let boolean_exp = BooleanExpression::new(node.first_c());
-        Self { boolean_exp }
+
+        Self {
+            boolean_exp: BooleanExpression::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for WhereClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![
-            b.txt("WHERE"),
-            b.softline(),
-            self.boolean_exp.build_with_parent(b, None),
-        ];
-        result.push(b.group_indent_concat(docs));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = vec![
+                b.txt("WHERE"),
+                b.softline(),
+                self.boolean_exp.build_with_parent(b, None),
+            ];
+            result.push(b.group_indent_concat(docs));
+        });
     }
 }
 
@@ -4596,22 +4635,27 @@ impl<'a> DocBuild<'a> for WhereClause {
 pub struct ComparisonExpression {
     pub value: Box<ValueExpression>,
     pub comparison: Comparison,
+    pub node_info: NodeInfo,
 }
 
 impl ComparisonExpression {
     pub fn new(node: Node) -> Self {
         assert_check(node, "comparison_expression");
 
-        let value = Box::new(ValueExpression::new(node.first_c()));
-        let comparison = get_comparsion(&node);
-        Self { value, comparison }
+        Self {
+            value: Box::new(ValueExpression::new(node.first_c())),
+            comparison: get_comparsion(&node),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ComparisonExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(self.value.build(b));
-        result.push(self.comparison.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(self.value.build(b));
+            result.push(self.comparison.build(b));
+        });
     }
 }
 
