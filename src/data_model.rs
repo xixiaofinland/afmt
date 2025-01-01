@@ -1527,7 +1527,7 @@ impl<'a> DocBuild<'a> for ForStatement {
 pub struct EnhancedForStatement {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
-    pub name: String,
+    pub name: ValueNode,
     //pub dimension
     pub value: Expression,
     pub body: Statement,
@@ -1543,7 +1543,7 @@ impl EnhancedForStatement {
         Self {
             modifiers,
             type_: UnannotatedType::new(node.c_by_n("type")),
-            name: node.cvalue_by_n("name"),
+            name: ValueNode::new(node.c_by_n("name")),
             value: Expression::new(node.c_by_n("value")),
             body: Statement::new(node.c_by_n("body")),
             node_info: NodeInfo::from(&node),
@@ -1556,7 +1556,8 @@ impl<'a> DocBuild<'a> for EnhancedForStatement {
         build_with_comments(b, &self.node_info.id, result, |b, result| {
             result.push(b.txt("for ("));
             result.push(self.type_.build(b));
-            result.push(b._txt(&self.name));
+            result.push(b.txt(" "));
+            result.push(self.name.build(b));
             result.push(b._txt_(":"));
             result.push(self.value.build(b));
             result.push(b.txt(")"));
