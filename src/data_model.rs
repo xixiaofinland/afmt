@@ -8,6 +8,7 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
+use toml::Value;
 use tree_sitter::Node;
 
 pub trait DocBuild<'a> {
@@ -4015,6 +4016,7 @@ impl SObjectReturn {
                 offset_clause: node
                     .try_c_by_k("offset_clause")
                     .map(|n| OffsetClause::new(n)),
+                node_info: NodeInfo::from(&n),
             });
 
         Self {
@@ -4045,38 +4047,41 @@ pub struct SObjectReturnQuery {
     pub order_by_clause: Option<OrderByClause>,
     pub limit_clause: Option<LimitClause>,
     pub offset_clause: Option<OffsetClause>,
+    pub node_info: NodeInfo,
 }
 
 impl<'a> DocBuild<'a> for SObjectReturnQuery {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let mut docs = vec![];
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let mut docs = vec![];
 
-        let selected_fields_docs = b.to_docs(&self.selected_fields);
-        let sep = Insertable::new::<&str>(None, Some(","), Some(b.softline()));
-        let doc = b.intersperse(&selected_fields_docs, sep);
-        docs.push(doc);
+            let selected_fields_docs = b.to_docs(&self.selected_fields);
+            let sep = Insertable::new::<&str>(None, Some(","), Some(b.softline()));
+            let doc = b.intersperse(&selected_fields_docs, sep);
+            docs.push(doc);
 
-        if let Some(ref n) = self.using_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.where_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.order_by_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.limit_clause {
-            docs.push(n.build(b));
-        }
-        if let Some(ref n) = self.offset_clause {
-            docs.push(n.build(b));
-        }
+            if let Some(ref n) = self.using_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.where_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.order_by_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.limit_clause {
+                docs.push(n.build(b));
+            }
+            if let Some(ref n) = self.offset_clause {
+                docs.push(n.build(b));
+            }
 
-        let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
-        let open = Insertable::new(None, Some("("), Some(b.maybeline()));
-        let close = Insertable::new(None, Some(")"), None);
-        let doc = b.group_surround(&docs, sep, open, close);
-        result.push(doc);
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
+            let open = Insertable::new(None, Some("("), Some(b.maybeline()));
+            let close = Insertable::new(None, Some(")"), None);
+            let doc = b.group_surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 
@@ -4268,7 +4273,8 @@ impl<'a> DocBuild<'a> for LimitClause {
 
 #[derive(Debug)]
 pub struct UpdateClause {
-    pub update_types: Vec<String>,
+    pub update_types: Vec<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl UpdateClause {
@@ -4276,20 +4282,26 @@ impl UpdateClause {
         let update_types = node
             .cs_by_k("update_type")
             .into_iter()
-            .map(|n| n.value())
+            .map(|n| ValueNode::new(n))
             .collect();
-        Self { update_types }
+
+        Self {
+            update_types,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for UpdateClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("UPDATE"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("UPDATE"));
 
-        let docs: Vec<DocRef<'a>> = self.update_types.iter().map(|n| b.txt(n)).collect();
-        let sep = Insertable::new(None, Some(", "), None);
-        let doc = b.intersperse(&docs, sep);
-        result.push(doc);
+            let docs: Vec<DocRef<'a>> = self.update_types.iter().map(|n| n.build(b)).collect();
+            let sep = Insertable::new(None, Some(", "), None);
+            let doc = b.intersperse(&docs, sep);
+            result.push(doc);
+        });
     }
 }
 
@@ -4322,21 +4334,26 @@ impl<'a> DocBuild<'a> for BoundApexExpression {
 #[derive(Debug)]
 pub struct SoslUsingClause {
     pub search: UsingSearch,
+    pub node_info: NodeInfo,
 }
 
 impl SoslUsingClause {
     pub fn new(node: Node) -> Self {
         assert_check(node, "sosl_using_clause");
 
-        let search = UsingSearch::new(node.first_c());
-        Self { search }
+        Self {
+            search: UsingSearch::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SoslUsingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("USING"));
-        result.push(self.search.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("USING"));
+            result.push(self.search.build(b));
+        });
     }
 }
 
