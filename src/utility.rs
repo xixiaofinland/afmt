@@ -253,28 +253,24 @@ pub fn handle_dangling_comments<'a>(
 
     let mut docs = Vec::new();
     for comment in &bucket.dangling_comments {
-        handle_post_comment_heading_logic(comment, b, &mut docs);
+        if comment.has_leading_content() {
+            docs.push(b.txt(" "));
+        } else if comment.has_newline_above() {
+            docs.push(b.nl_with_no_indent());
+            docs.push(b.nl());
+        } else {
+            docs.push(b.nl());
+        }
+
         docs.push(comment.build(b));
-        handle_post_comment_trailing_logic(comment, b, &mut docs);
+
+        if comment.has_trailing_content() {
+            docs.push(b.txt(" "));
+        }
+
         comment.mark_as_printed();
     }
     docs
-}
-fn handle_pre_comment_heading_logic<'a>(
-    comment: &Comment,
-    b: &'a DocBuilder<'a>,
-    docs: &mut Vec<DocRef<'a>>,
-) {
-    if comment.has_leading_content() {
-        docs.push(b.txt(" "));
-    } else {
-        if comment.has_newline_above() {
-            docs.push(b.comment_nl_with_no_indent());
-            docs.push(b.nl());
-        } else if comment.has_prev_node() {
-            docs.push(b.comment_nl());
-        }
-    }
 }
 
 pub fn handle_pre_comments<'a>(
@@ -288,7 +284,16 @@ pub fn handle_pre_comments<'a>(
 
     let mut docs = Vec::new();
     for (i, comment) in bucket.pre_comments.iter().enumerate() {
-        handle_pre_comment_heading_logic(comment, b, &mut docs);
+        if comment.has_leading_content() {
+            docs.push(b.txt(" "));
+        } else {
+            if comment.has_newline_above() {
+                docs.push(b.comment_nl_with_no_indent());
+                docs.push(b.nl());
+            } else if comment.has_prev_node() {
+                docs.push(b.comment_nl());
+            }
+        }
 
         docs.push(comment.build(b));
 
@@ -308,21 +313,6 @@ pub fn handle_pre_comments<'a>(
     result.push(b.concat(docs));
 }
 
-fn handle_post_comment_heading_logic<'a>(
-    comment: &Comment,
-    b: &'a DocBuilder<'a>,
-    docs: &mut Vec<DocRef<'a>>,
-) {
-    if comment.has_leading_content() {
-        docs.push(b.txt(" "));
-    } else if comment.has_newline_above() {
-        docs.push(b.nl_with_no_indent());
-        docs.push(b.nl());
-    } else {
-        docs.push(b.nl());
-    }
-}
-
 pub fn handle_post_comments<'a>(
     b: &'a DocBuilder<'a>,
     bucket: &CommentBucket,
@@ -334,22 +324,24 @@ pub fn handle_post_comments<'a>(
 
     let mut docs = Vec::new();
     for comment in &bucket.post_comments {
-        handle_post_comment_heading_logic(comment, b, &mut docs);
+        if comment.has_leading_content() {
+            docs.push(b.txt(" "));
+        } else if comment.has_newline_above() {
+            docs.push(b.nl_with_no_indent());
+            docs.push(b.nl());
+        } else {
+            docs.push(b.nl());
+        }
+
         docs.push(comment.build(b));
-        handle_post_comment_trailing_logic(comment, b, &mut docs);
+
+        if comment.has_trailing_content() {
+            docs.push(b.txt(" "));
+        }
+
         comment.mark_as_printed();
     }
     result.push(b.concat(docs));
-}
-
-fn handle_post_comment_trailing_logic<'a>(
-    comment: &Comment,
-    b: &'a DocBuilder<'a>,
-    docs: &mut Vec<DocRef<'a>>,
-) {
-    if comment.has_trailing_content() {
-        docs.push(b.txt(" "));
-    }
 }
 
 pub fn enrich(ast_tree: &Tree) -> Root {
