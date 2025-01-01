@@ -264,9 +264,9 @@ pub fn handle_dangling_comments<'a>(
 
         docs.push(comment.build(b));
 
-        if comment.has_trailing_content() {
-            docs.push(b.txt(" "));
-        }
+        //if comment.has_trailing_content() {
+        //docs.push(b.txt(" "));
+        //}
 
         comment.mark_as_printed();
     }
@@ -287,15 +287,14 @@ pub fn handle_pre_comments<'a>(
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
         } else {
+            // multi-line mode in group() is immediately selected
             docs.push(b.force_break());
-            // heading logic for 1st element is handled in the preceding node;
+            // 1st element heading logic is handled in the preceding node;
             if i != 0 {
-                if comment.is_prev_node_comment() {
-                    if comment.has_newline_above() {
-                        docs.push(b.nl_with_no_indent());
-                    }
-                    docs.push(b.nl());
+                if comment.has_newline_above() {
+                    docs.push(b.nl_with_no_indent());
                 }
+                docs.push(b.nl());
             }
         }
 

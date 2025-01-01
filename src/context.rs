@@ -100,10 +100,6 @@ impl Comment {
         self.metadata.has_prev_node
     }
 
-    pub fn is_prev_node_comment(&self) -> bool {
-        self.metadata.is_prev_node_comment
-    }
-
     pub fn mark_as_printed(&self) {
         self.is_printed.set(true);
     }
@@ -140,7 +136,6 @@ pub struct CommentMetadata {
     has_newline_above: bool,
     has_newline_below: bool,
     has_prev_node: bool,
-    is_prev_node_comment: bool,
 }
 
 impl CommentMetadata {
@@ -191,7 +186,6 @@ impl CommentMetadata {
             has_newline_above,
             has_newline_below,
             has_prev_node,
-            is_prev_node_comment,
         }
     }
 }
