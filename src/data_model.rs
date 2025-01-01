@@ -2703,23 +2703,30 @@ impl<'a> DocBuild<'a> for DimensionsExpr {
 #[derive(Debug)]
 pub struct ReturnStatement {
     pub exp: Option<Expression>,
+    pub node_info: NodeInfo,
 }
 
 impl ReturnStatement {
     pub fn new(node: Node) -> Self {
-        let exp = node.try_first_c().map(|n| Expression::new(n));
-        Self { exp }
+        assert_check(node, "return_statement");
+
+        Self {
+            exp: node.try_first_c().map(|n| Expression::new(n)),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ReturnStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("return"));
-        if let Some(ref exp) = self.exp {
-            result.push(b.txt(" "));
-            result.push(exp.build(b));
-        }
-        result.push(b.txt(";"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("return"));
+            if let Some(ref exp) = self.exp {
+                result.push(b.txt(" "));
+                result.push(exp.build(b));
+            }
+            result.push(b.txt(";"));
+        });
     }
 }
 
@@ -2765,13 +2772,13 @@ impl<'a> DocBuild<'a> for TernaryExpression {
 pub struct TryStatement {
     pub body: Block,
     pub tail: TryStatementTail,
+    pub node_info: NodeInfo,
 }
 
 impl TryStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "try_statement");
 
-        let body = Block::new(node.c_by_n("body"));
         let tail = if node.try_c_by_k("finally_clause").is_some() {
             TryStatementTail::CatchesFinally(
                 node.try_cs_by_k("catch_clause")
@@ -2788,15 +2795,21 @@ impl TryStatement {
                     .collect(),
             )
         };
-        Self { body, tail }
+        Self {
+            body: Block::new(node.c_by_n("body")),
+            tail,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for TryStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt_("try"));
-        result.push(self.body.build(b));
-        result.push(self.tail.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt_("try"));
+            result.push(self.body.build(b));
+            result.push(self.tail.build(b));
+        });
     }
 }
 
