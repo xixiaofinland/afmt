@@ -322,7 +322,7 @@ fn handle_post_comment_heading_logic<'a>(
     } else if comment.print_newline_above() {
         docs.push(b.nl_with_no_indent());
         docs.push(b.nl());
-    } else if comment.has_prev_node() {
+    } else {
         docs.push(b.nl());
     }
 }
