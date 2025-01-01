@@ -349,6 +349,8 @@ fn handle_post_comment_trailing_logic<'a>(
 ) {
     if comment.has_trailing_content() {
         docs.push(b.txt(" "));
+    } else if comment.has_newline_below(){
+        docs.push(b.nl_with_no_indent());
     }
 }
 
