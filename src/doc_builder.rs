@@ -175,12 +175,8 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::Newline)
     }
 
-    pub fn comment_nl(&'a self) -> DocRef<'a> {
-        self.arena.alloc(Doc::CommentNewLine)
-    }
-
-    pub fn comment_nl_with_no_indent(&'a self) -> DocRef<'a> {
-        self.arena.alloc(Doc::CommentNewlineWithNoIndent)
+    pub fn force_break(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::ForceBreak)
     }
 
     pub fn softline(&'a self) -> DocRef<'a> {
