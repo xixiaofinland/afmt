@@ -8,7 +8,6 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
-use toml::Value;
 use tree_sitter::Node;
 
 pub trait DocBuild<'a> {

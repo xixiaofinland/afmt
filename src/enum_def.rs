@@ -4,12 +4,8 @@ use crate::{
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{
-        assert_check, build_with_comments, get_comment_bucket, is_followed_by_comment_in_new_line,
-        panic_unknown_node,
-    },
+    utility::{assert_check, build_with_comments, get_comment_bucket, panic_unknown_node},
 };
-use toml::Value;
 use tree_sitter::Node;
 
 #[derive(Debug)]
@@ -801,7 +797,7 @@ impl<'a> DocBuild<'a> for AnnotationArgumentList {
 pub struct BodyMember<M> {
     pub member: M,
     pub has_trailing_newline: bool, // already take comment nodes into consideration
-    //pub is_followed_by_code_node: bool,
+                                    //pub is_followed_by_code_node: bool,
 }
 
 impl<M> BodyMember<M> {
