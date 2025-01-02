@@ -14,14 +14,14 @@ pub type CommentMap = HashMap<usize, CommentBucket>;
 #[derive(Debug)]
 pub struct NodeInfo {
     pub id: usize,
-    pub range: Range,
+    //pub range: Range,
 }
 
 impl NodeInfo {
     pub fn from(node: &Node) -> Self {
         Self {
             id: node.id(),
-            range: node.range(),
+            //range: node.range(),
         }
     }
 }
@@ -51,7 +51,7 @@ pub enum CommentType {
 
 #[derive(Debug)]
 pub struct Comment {
-    pub id: usize,
+    //pub id: usize,
     pub value: String,
     pub comment_type: CommentType,
     pub metadata: CommentMetadata,
@@ -75,7 +75,7 @@ impl Comment {
         };
 
         Self {
-            id,
+            //id,
             value,
             comment_type,
             metadata,

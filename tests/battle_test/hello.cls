@@ -1,5 +1,5 @@
-trigger InlineTrailingCommentAfterTrigger on Account(
-  before insert,
-  after insert /* Block Comment */
-) {
+class A{
+  {
+    Integer a = /* Comment 1 */ 1;
+  }
 }

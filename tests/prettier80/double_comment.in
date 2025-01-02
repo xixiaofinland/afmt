@@ -1,6 +1,6 @@
 // double space challenge in b.softline();
 
-class A {
+class A{
   {
     Integer a = /* Comment 1 */ 1;
   }
