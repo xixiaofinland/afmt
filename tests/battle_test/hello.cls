@@ -1,8 +1,5 @@
 class A {
   String s = '1' //t1
-  ;
+  + '2';
 
-  String s = '1'; //t2
-
-  String s = '1' /*t3*/;
 }
