@@ -43,7 +43,7 @@ impl CommentBucket {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum CommentType {
     Line,
     Block,
@@ -60,7 +60,7 @@ pub struct Comment {
 
 impl Comment {
     pub fn from_node(node: Node) -> Self {
-        let id = node.id();
+        //let id = node.id();
         let value = node.value().trim_end().to_string();
         let (comment_type, metadata) = match node.kind() {
             "line_comment" => {
