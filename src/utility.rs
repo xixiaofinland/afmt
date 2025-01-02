@@ -1,6 +1,6 @@
 use crate::{
     accessor::Accessor,
-    context::{Comment, CommentBucket, CommentMap},
+    context::{Comment, CommentBucket, CommentMap, CommentType},
     data_model::*,
     doc::{Doc, DocRef},
     doc_builder::DocBuilder,
@@ -349,6 +349,10 @@ pub fn handle_post_comments<'a>(
 
         if comment.has_trailing_content() && !comment.is_followed_by_bracket_composite_node() {
             docs.push(b.txt(" "));
+        }
+
+        if comment.comment_type == CommentType::Line {
+            // what to do?
         }
 
         comment.mark_as_printed();
