@@ -134,13 +134,6 @@ impl<'a> DocBuilder<'a> {
                 }
                 member_docs.push(self.nl());
             }
-
-            //if i < members.len() - 1 && !m.is_followed_by_comment_in_new_line {
-            //    if m.has_trailing_newline {
-            //        member_docs.push(self.nl_with_no_indent());
-            //    }
-            //    member_docs.push(self.nl());
-            //}
         }
         self.concat(member_docs)
     }
