@@ -296,7 +296,8 @@ pub fn handle_pre_comments<'a>(
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
         } else {
-            // multi-line mode in group() is immediately selected
+            // if it's in group(), then multi-line mode is selected in fits()
+            // otherwise, do nothing
             docs.push(b.force_break());
             // 1st element heading logic is handled in the preceding node;
             if i != 0 {
