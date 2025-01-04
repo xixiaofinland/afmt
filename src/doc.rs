@@ -9,6 +9,7 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
 pub enum Doc<'a> {
     Newline,
     NewlineWithNoIndent,
+    NewlineWhenInFlat, // Add a nl when it's in flat mode (meant for line comment only)
     ForceBreak,        // immediately use multi-line mode in choice(x, y) or group()
     Text(String, u32), // The given text should not contain line breaks
     Softline,          // a space or a newline
@@ -144,6 +145,11 @@ impl<'a> PrettyPrinter<'a> {
                     result.push('\n');
                     self.col = 0;
                 }
+                Doc::NewlineWhenInFlat => {
+                    if chunk.flat {
+                        result.push('\n');
+                    }
+                }
                 Doc::Text(text, width) => {
                     if text == " " && result.ends_with(' ') {
                         // TODO: better way to handle this challenge?
@@ -166,10 +172,16 @@ impl<'a> PrettyPrinter<'a> {
                     }
                 }
                 Doc::Choice(x, y) => {
-                    if chunk.flat || self.fits(chunk.with_doc(x)) {
+                    if chunk.flat {
+                        // Already forced single-line by a parent
                         self.chunks.push(chunk.with_doc(x));
                     } else {
-                        self.chunks.push(chunk.with_doc(y));
+                        // Let's see if x fits
+                        if self.fits(chunk.with_doc(x)) {
+                            self.chunks.push(chunk.with_doc(x));
+                        } else {
+                            self.chunks.push(chunk.with_doc(y));
+                        }
                     }
                 }
             }
@@ -194,8 +206,12 @@ impl<'a> PrettyPrinter<'a> {
 
             match chunk.doc_ref {
                 Doc::Newline | Doc::NewlineWithNoIndent => return true,
+                Doc::NewlineWhenInFlat => {
+                    if chunk.flat {
+                        return false; // just like Doc::ForceBreak
+                    }
+                }
                 Doc::ForceBreak => return false,
-                //Doc::CommentNewLine | Doc::CommentNewlineWithNoIndent => return false, // Indicate the group() should break immediately
                 Doc::Softline => {
                     if chunk.flat {
                         if remaining_width >= 1 {

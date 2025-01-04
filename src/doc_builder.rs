@@ -172,6 +172,10 @@ impl<'a> DocBuilder<'a> {
         self.arena.alloc(Doc::ForceBreak)
     }
 
+    pub fn nl_when_in_flat(&'a self) -> DocRef<'a> {
+        self.arena.alloc(Doc::NewlineWhenInFlat)
+    }
+
     pub fn softline(&'a self) -> DocRef<'a> {
         self.arena.alloc(Doc::Softline)
     }

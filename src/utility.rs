@@ -352,8 +352,7 @@ pub fn handle_post_comments<'a>(
         }
 
         if comment.metadata.is_line_comment_and_need_newline {
-            docs.push(b.force_break());
-            docs.push(b.nl());
+            docs.push(b.nl_when_in_flat());
         }
 
         comment.mark_as_printed();
