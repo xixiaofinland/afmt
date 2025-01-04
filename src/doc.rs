@@ -173,13 +173,14 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Choice(x, y) => {
                     if chunk.flat {
-                        // Already forced single-line by a parent
+                        // 1. Already forced single-line by a parent
                         self.chunks.push(chunk.with_doc(x));
                     } else {
-                        // Let's see if x fits
+                        // 2. Let's see if x fits
                         if self.fits(chunk.with_doc(x)) {
                             self.chunks.push(chunk.with_doc(x));
                         } else {
+                            // 3. x not fits, use the fall-back y (usually the multi-line version)
                             self.chunks.push(chunk.with_doc(y));
                         }
                     }
