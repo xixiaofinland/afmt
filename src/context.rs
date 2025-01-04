@@ -140,10 +140,10 @@ impl<'a> DocBuild<'a> for Comment {
 pub struct CommentMetadata {
     has_leading_content: bool,
     has_trailing_content: bool,
-    is_followed_by_bracket_composite_node: bool,
     has_newline_above: bool,
     has_newline_below: bool,
     has_prev_node: bool,
+    is_followed_by_bracket_composite_node: bool,
 }
 
 impl CommentMetadata {
@@ -191,10 +191,10 @@ impl CommentMetadata {
         CommentMetadata {
             has_leading_content,
             has_trailing_content,
-            is_followed_by_bracket_composite_node,
             has_newline_above,
             has_newline_below,
             has_prev_node,
+            is_followed_by_bracket_composite_node,
         }
     }
 }
