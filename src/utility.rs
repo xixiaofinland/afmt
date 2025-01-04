@@ -351,8 +351,9 @@ pub fn handle_post_comments<'a>(
             docs.push(b.txt(" "));
         }
 
-        if comment.comment_type == CommentType::Line {
-            // what to do?
+        if comment.metadata.is_line_comment_and_need_newline {
+            docs.push(b.force_break());
+            docs.push(b.nl());
         }
 
         comment.mark_as_printed();

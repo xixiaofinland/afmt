@@ -144,6 +144,7 @@ pub struct CommentMetadata {
     has_newline_below: bool,
     has_prev_node: bool,
     is_followed_by_bracket_composite_node: bool,
+    pub is_line_comment_and_need_newline: bool,
 }
 
 impl CommentMetadata {
@@ -188,6 +189,9 @@ impl CommentMetadata {
             false
         };
 
+        let is_line_comment_and_need_newline =
+            Self::is_line_comment_and_need_newline(node, comment_type);
+
         CommentMetadata {
             has_leading_content,
             has_trailing_content,
@@ -195,6 +199,34 @@ impl CommentMetadata {
             has_newline_below,
             has_prev_node,
             is_followed_by_bracket_composite_node,
+            is_line_comment_and_need_newline,
         }
+    }
+
+    fn is_line_comment_and_need_newline(node: &Node, comment_type: CommentType) -> bool {
+        if comment_type != CommentType::Line {
+            return false;
+        }
+
+        let parent_node = match node.parent() {
+            Some(parent) => parent,
+            None => return false,
+        };
+
+        if is_bracket_composite_node(&parent_node) || parent_node.kind() == "parser_output" {
+            return false;
+        }
+
+        if let Some(prev) = node.prev_named_sibling() {
+            if prev.kind() == "annotation" {
+                return false;
+            }
+        }
+
+        if let Some(next_node) = node.next_sibling() {
+            return true;
+        }
+
+        false
     }
 }
