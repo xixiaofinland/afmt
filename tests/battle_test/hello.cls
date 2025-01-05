@@ -1,3 +1,4 @@
 class A {
-  /*t*/ String s ,j,k;
+  String s //t
+  ,j,k;
 }

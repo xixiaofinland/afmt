@@ -19,7 +19,7 @@ pub enum Doc<'a> {
     Dedent(u32, DocRef<'a>),
     Concat(Vec<DocRef<'a>>),
     Choice(DocRef<'a>, DocRef<'a>),
-    Align(u32, DocRef<'a>),
+    //Align(u32, DocRef<'a>),
 }
 
 struct PrettyPrinter<'a> {
@@ -79,13 +79,13 @@ impl<'a> Chunk<'a> {
         }
     }
 
-    fn align(self, align_col: u32, doc_ref: DocRef<'a>) -> Self {
-        Chunk {
-            doc_ref,
-            align: align_col,
-            ..self
-        }
-    }
+    //fn align(self, align_col: u32, doc_ref: DocRef<'a>) -> Self {
+    //    Chunk {
+    //        doc_ref,
+    //        align: align_col,
+    //        ..self
+    //    }
+    //}
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -162,10 +162,10 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
-                Doc::Align(relative_align_col, x) => {
-                    let new_align = chunk.align + relative_align_col;
-                    self.chunks.push(chunk.align(new_align, x));
-                }
+                //Doc::Align(relative_align_col, x) => {
+                //    let new_align = chunk.align + relative_align_col;
+                //    self.chunks.push(chunk.align(new_align, x));
+                //}
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         self.chunks.push(chunk.with_doc(n));
@@ -239,10 +239,10 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => stack.push(chunk.flat(x)),
                 Doc::Indent(i, x) => stack.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => stack.push(chunk.dedented(*i, x)),
-                Doc::Align(relative_align_col, x) => {
-                    let new_align = chunk.align + relative_align_col;
-                    stack.push(chunk.align(new_align, x));
-                }
+                //Doc::Align(relative_align_col, x) => {
+                //    let new_align = chunk.align + relative_align_col;
+                //    stack.push(chunk.align(new_align, x));
+                //}
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         stack.push(chunk.with_doc(n));
