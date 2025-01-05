@@ -47,7 +47,7 @@ struct Chunk<'a> {
     doc_ref: DocRef<'a>,
     indent: u32,
     flat: bool,
-    align: u32,
+    //align: u32,
 }
 
 impl<'a> Chunk<'a> {
@@ -94,7 +94,7 @@ impl<'a> PrettyPrinter<'a> {
             doc_ref,
             indent: 0,
             flat: false,
-            align: 0,
+            //align: 0,
         };
 
         Self {
@@ -111,7 +111,8 @@ impl<'a> PrettyPrinter<'a> {
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
-                    let total_indent = chunk.indent + chunk.align;
+                    //let total_indent = chunk.indent + chunk.align;
+                    let total_indent = chunk.indent;
                     for _ in 0..total_indent {
                         result.push(' ');
                     }
@@ -123,7 +124,8 @@ impl<'a> PrettyPrinter<'a> {
                         self.col += 1;
                     } else {
                         result.push('\n');
-                        let total_indent = chunk.indent + chunk.align;
+                        //let total_indent = chunk.indent + chunk.align;
+                        let total_indent = chunk.indent;
                         for _ in 0..total_indent {
                             result.push(' ');
                         }
@@ -133,7 +135,8 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Maybeline => {
                     if !chunk.flat {
                         result.push('\n');
-                        let total_indent = chunk.indent + chunk.align;
+                        //let total_indent = chunk.indent + chunk.align;
+                        let total_indent = chunk.indent;
                         for _ in 0..total_indent {
                             result.push(' ');
                         }

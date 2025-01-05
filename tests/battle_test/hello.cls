@@ -1,15 +1,5 @@
 class A {
-  String s /*t*/;
-
-  String s /*t*/;
-
-  String s //t
-  ;
-
-  String s /*t*/  ; //t
-
-  String s ; //t /*t*/
-
-  String s  //t
-  /*t*/ ;
+  private method m1(String s, //line comment
+  String k) {
+  }
 }
