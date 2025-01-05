@@ -78,14 +78,6 @@ impl<'a> Chunk<'a> {
             ..self
         }
     }
-
-    //fn align(self, align_col: u32, doc_ref: DocRef<'a>) -> Self {
-    //    Chunk {
-    //        doc_ref,
-    //        align: align_col,
-    //        ..self
-    //    }
-    //}
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -94,7 +86,6 @@ impl<'a> PrettyPrinter<'a> {
             doc_ref,
             indent: 0,
             flat: false,
-            //align: 0,
         };
 
         Self {
@@ -111,7 +102,6 @@ impl<'a> PrettyPrinter<'a> {
             match chunk.doc_ref {
                 Doc::Newline => {
                     result.push('\n');
-                    //let total_indent = chunk.indent + chunk.align;
                     let total_indent = chunk.indent;
                     for _ in 0..total_indent {
                         result.push(' ');
@@ -124,7 +114,6 @@ impl<'a> PrettyPrinter<'a> {
                         self.col += 1;
                     } else {
                         result.push('\n');
-                        //let total_indent = chunk.indent + chunk.align;
                         let total_indent = chunk.indent;
                         for _ in 0..total_indent {
                             result.push(' ');
@@ -135,7 +124,6 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Maybeline => {
                     if !chunk.flat {
                         result.push('\n');
-                        //let total_indent = chunk.indent + chunk.align;
                         let total_indent = chunk.indent;
                         for _ in 0..total_indent {
                             result.push(' ');
@@ -151,6 +139,11 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::NewlineWhenInFlat => {
                     if chunk.flat {
                         result.push('\n');
+                        let total_indent = chunk.indent;
+                        for _ in 0..total_indent {
+                            result.push(' ');
+                        }
+                        self.col = total_indent;
                     }
                 }
                 Doc::Text(text, width) => {
@@ -165,10 +158,6 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Flat(x) => self.chunks.push(chunk.flat(x)),
                 Doc::Indent(i, x) => self.chunks.push(chunk.indented(*i, x)),
                 Doc::Dedent(i, x) => self.chunks.push(chunk.dedented(*i, x)),
-                //Doc::Align(relative_align_col, x) => {
-                //    let new_align = chunk.align + relative_align_col;
-                //    self.chunks.push(chunk.align(new_align, x));
-                //}
                 Doc::Concat(seq) => {
                     for n in seq.iter().rev() {
                         self.chunks.push(chunk.with_doc(n));
