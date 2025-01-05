@@ -101,34 +101,19 @@ impl<'a> PrettyPrinter<'a> {
         while let Some(chunk) = self.chunks.pop() {
             match chunk.doc_ref {
                 Doc::Newline => {
-                    result.push('\n');
-                    let total_indent = chunk.indent;
-                    for _ in 0..total_indent {
-                        result.push(' ');
-                    }
-                    self.col = total_indent;
+                    self.insert_newline_with_indent(&mut result, &chunk);
                 }
                 Doc::Softline => {
                     if chunk.flat {
                         result.push(' ');
                         self.col += 1;
                     } else {
-                        result.push('\n');
-                        let total_indent = chunk.indent;
-                        for _ in 0..total_indent {
-                            result.push(' ');
-                        }
-                        self.col = total_indent;
+                        self.insert_newline_with_indent(&mut result, &chunk);
                     }
                 }
                 Doc::Maybeline => {
                     if !chunk.flat {
-                        result.push('\n');
-                        let total_indent = chunk.indent;
-                        for _ in 0..total_indent {
-                            result.push(' ');
-                        }
-                        self.col = total_indent;
+                        self.insert_newline_with_indent(&mut result, &chunk);
                     }
                 }
                 Doc::ForceBreak => {}
@@ -138,12 +123,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::NewlineWhenInFlat => {
                     if chunk.flat {
-                        result.push('\n');
-                        let total_indent = chunk.indent;
-                        for _ in 0..total_indent {
-                            result.push(' ');
-                        }
-                        self.col = total_indent;
+                        self.insert_newline_with_indent(&mut result, &chunk);
                     }
                 }
                 Doc::Text(text, width) => {
@@ -180,6 +160,15 @@ impl<'a> PrettyPrinter<'a> {
             }
         }
         result
+    }
+
+    fn insert_newline_with_indent(&mut self, result: &mut String, chunk: &Chunk) {
+        result.push('\n');
+        let total_indent = chunk.indent;
+        for _ in 0..total_indent {
+            result.push(' ');
+        }
+        self.col = total_indent;
     }
 
     fn fits(&self, chunk: Chunk<'a>) -> bool {
