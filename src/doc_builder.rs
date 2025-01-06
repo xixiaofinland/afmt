@@ -70,6 +70,40 @@ impl<'a> DocBuilder<'a> {
         self.concat(docs)
     }
 
+    pub fn intersperse2<'b, T>(
+        &'a self,
+        items: impl IntoIterator<Item = &'b T>,
+        sep: Insertable<'a>,
+    ) -> DocRef<'a>
+    where
+        T: DocBuild<'a> + 'b,
+    {
+        let elems: Vec<DocRef<'a>> = items.into_iter().map(|item| item.build(self)).collect();
+
+        //let sep = Insertable::new(None, Some(","), Some(b.softline()));
+
+        if elems.is_empty() {
+            return self.nil();
+        }
+
+        let mut parts = Vec::with_capacity(elems.len() * 2 - 1);
+        for (i, &elem) in elems.iter().enumerate() {
+            if i > 0 {
+                if let Some(n) = sep.pre {
+                    parts.push(n);
+                }
+                if let Some(ref n) = sep.str {
+                    parts.push(self.txt(n));
+                }
+                if let Some(n) = sep.suf {
+                    parts.push(n);
+                }
+            }
+            parts.push(elem);
+        }
+        self.concat(parts)
+    }
+
     pub fn intersperse(&'a self, elems: &[DocRef<'a>], sep: Insertable<'a>) -> DocRef<'a> {
         if elems.is_empty() {
             return self.nil();
