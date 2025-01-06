@@ -6,8 +6,10 @@
 
 `afmt` (Apex format tool) is written in Rust 🦀 and utilizes the [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
-**Note:** it's in its early stages([progress
-track](https://github.com/xixiaofinland/afmt#-progress)). Please [report
+**Note:** it's in its early stages ([progress
+track](https://github.com/xixiaofinland/afmt#-progress)).
+
+Please [report
 issues](https://github.com/xixiaofinland/afmt/issues)
 and we will fix them asap!
 
@@ -57,6 +59,7 @@ intentionally avoids.
 ## Video version
 
 [afmt intro - made on 15/12/2024](https://youtu.be/2tBctZqdjMU?si=j5Lmip8sAg_AKTK1&t=148)
+
 Note. comment nodes are supported now
 
 ## Text version
