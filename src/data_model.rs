@@ -796,14 +796,14 @@ impl<'a> DocBuild<'a> for ObjectExpression {
 #[derive(Debug)]
 pub enum MethodInvocationKind {
     Simple {
-        name: String,
+        name: ValueNode,
         arguments: ArgumentList,
     },
     Complex {
         object: ObjectExpression,
         property_navigation: PropertyNavigation,
         type_arguments: Option<TypeArguments>,
-        name: String,
+        name: ValueNode,
         arguments: ArgumentList,
         context: Option<ChainingContext>,
     },
@@ -813,7 +813,7 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Simple { name, arguments } => {
-                result.push(b.txt(name));
+                result.push(name.build(b));
                 result.push(arguments.build(b));
             }
             Self::Complex {
@@ -839,7 +839,7 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
                         docs.push(n.build(b));
                     }
 
-                    docs.push(b.txt(name));
+                    docs.push(name.build(b));
                     docs.push(arguments.build(b));
 
                     if context.is_top_most_in_a_chain {
@@ -853,7 +853,7 @@ impl<'a> DocBuild<'a> for MethodInvocationKind {
                     if let Some(ref n) = type_arguments {
                         docs.push(n.build(b));
                     }
-                    docs.push(b.txt(name));
+                    docs.push(name.build(b));
                     docs.push(arguments.build(b));
                     result.push(b.concat(docs))
                 }
@@ -872,7 +872,7 @@ impl MethodInvocation {
     pub fn new(node: Node) -> Self {
         assert_check(node, "method_invocation");
 
-        let name = node.cvalue_by_n("name");
+        let name = ValueNode::new(node.c_by_n("name"));
         let arguments = ArgumentList::new(node.c_by_n("arguments"));
 
         let kind = if let Some(obj) = node.try_c_by_n("object") {
