@@ -1,5 +1,4 @@
 class A {
-  String s = 
-  //line comment
+  String s = //line comment
    '123';
 }
