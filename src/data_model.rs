@@ -18,8 +18,6 @@ pub trait DocBuild<'a> {
     }
 
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>);
-
-    fn node_info(&self) -> &NodeInfo;
 }
 
 #[derive(Debug)]
@@ -45,9 +43,6 @@ impl Root {
 }
 
 impl<'a> DocBuild<'a> for Root {
-    fn node_info(&self) -> &NodeInfo {
-        &self.node_info
-    }
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         let bucket = get_comment_bucket(&self.node_info.id);
         if !bucket.dangling_comments.is_empty() {

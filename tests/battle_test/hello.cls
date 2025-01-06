@@ -1,6 +1,5 @@
 class A {
-  private method m1(String s //line comment
-  ,
-  String k) {
-  }
+  String s = 
+  //line comment
+   '123';
 }
