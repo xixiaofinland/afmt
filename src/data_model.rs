@@ -8,6 +8,7 @@ use crate::{
 };
 use colored::Colorize;
 use std::fmt::Debug;
+use toml::Value;
 use tree_sitter::Node;
 
 pub trait DocBuild<'a> {
@@ -3263,68 +3264,89 @@ impl<'a> DocBuild<'a> for CastExpression {
 #[derive(Debug)]
 pub struct ThrowStatement {
     pub exp: Expression,
+    pub node_info: NodeInfo,
 }
 
 impl ThrowStatement {
     pub fn new(node: Node) -> Self {
-        let exp = Expression::new(node.first_c());
-        Self { exp }
+        assert_check(node, "throw_statement");
+
+        Self {
+            exp: Expression::new(node.first_c()),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ThrowStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("throw "));
-        result.push(self.exp.build(b));
-        result.push(b.txt(";"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("throw "));
+            result.push(self.exp.build(b));
+            result.push(b.txt(";"));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct BreakStatement {
-    pub identifier: Option<String>,
+    pub identifier: Option<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl BreakStatement {
     pub fn new(node: Node) -> Self {
-        let identifier = node.try_c_by_k("identifier").map(|n| n.value());
-        Self { identifier }
+        assert_check(node, "break_statement");
+
+        Self {
+            identifier: node.try_c_by_k("identifier").map(|n| ValueNode::new(n)),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for BreakStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("break"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("break"));
 
-        if let Some(ref n) = self.identifier {
-            result.push(b.txt(" "));
-            result.push(b.txt(n));
-        }
-        result.push(b.txt(";"));
+            if let Some(ref n) = self.identifier {
+                result.push(b.txt(" "));
+                result.push(n.build(b));
+            }
+            result.push(b.txt(";"));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct ContinueStatement {
-    pub identifier: Option<String>,
+    pub identifier: Option<ValueNode>,
+    pub node_info: NodeInfo,
 }
 
 impl ContinueStatement {
     pub fn new(node: Node) -> Self {
-        let identifier = node.try_c_by_k("identifier").map(|n| n.value());
-        Self { identifier }
+        assert_check(node, "continue_statement");
+
+        Self {
+            identifier: node.try_c_by_k("identifier").map(|n| ValueNode::new(n)),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for ContinueStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        result.push(b.txt("continue"));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            result.push(b.txt("continue"));
 
-        if let Some(ref n) = self.identifier {
-            result.push(b.txt(" "));
-            result.push(b.txt(n));
-        }
-        result.push(b.txt(";"));
+            if let Some(ref n) = self.identifier {
+                result.push(b.txt(" "));
+                result.push(n.build(b));
+            }
+            result.push(b.txt(";"));
+        });
     }
 }
 
@@ -3332,51 +3354,67 @@ impl<'a> DocBuild<'a> for ContinueStatement {
 pub struct SwitchExpression {
     pub condition: Expression,
     pub body: SwitchBlock,
+    pub node_info: NodeInfo,
 }
 
 impl SwitchExpression {
     pub fn new(node: Node) -> Self {
-        let condition = Expression::new(node.c_by_n("condition"));
-        let body = SwitchBlock::new(node.c_by_n("body"));
-        Self { condition, body }
+        assert_check(node, "switch_expression");
+
+        Self {
+            condition: Expression::new(node.c_by_n("condition")),
+            body: SwitchBlock::new(node.c_by_n("body")),
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SwitchExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = vec![b.txt("switch on"), b.softline(), self.condition.build(b)];
-        let doc = b.group_indent_concat(docs);
-        result.push(doc);
-        result.push(b.txt(" "));
-        result.push(self.body.build(b));
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = vec![b.txt("switch on"), b.softline(), self.condition.build(b)];
+            let doc = b.group_indent_concat(docs);
+            result.push(doc);
+            result.push(b.txt(" "));
+            result.push(self.body.build(b));
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct SwitchBlock {
     pub rules: Vec<SwitchRule>,
+    pub node_info: NodeInfo,
 }
 
 impl SwitchBlock {
     pub fn new(node: Node) -> Self {
+        assert_check(node, "switch_block");
+
         let rules = node
             .cs_by_k("switch_rule")
             .into_iter()
             .map(|n| SwitchRule::new(n))
             .collect();
-        Self { rules }
+
+        Self {
+            rules,
+            node_info: NodeInfo::from(&node),
+        }
     }
 }
 
 impl<'a> DocBuild<'a> for SwitchBlock {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        let docs = b.to_docs(&self.rules);
+        build_with_comments(b, &self.node_info.id, result, |b, result| {
+            let docs = b.to_docs(&self.rules);
 
-        let sep = Insertable::new(None, Some(""), Some(b.nl()));
-        let open = Insertable::new(None, Some("{"), Some(b.nl()));
-        let close = Insertable::new(Some(b.nl()), Some("}"), None);
-        let doc = b.surround(&docs, sep, open, close);
-        result.push(doc);
+            let sep = Insertable::new(None, Some(""), Some(b.nl()));
+            let open = Insertable::new(None, Some("{"), Some(b.nl()));
+            let close = Insertable::new(Some(b.nl()), Some("}"), None);
+            let doc = b.surround(&docs, sep, open, close);
+            result.push(doc);
+        });
     }
 }
 

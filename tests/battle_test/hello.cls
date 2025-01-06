@@ -3,18 +3,5 @@ class A {
     LogEntryEventBuilder logEntryEventBuilder = new LogEntryEventBuilder(getUserSettings(), loggingLevel, shouldSave)
       // Don't include the logging system's classes in the stack trace
       .parseStackTrace(new System.DmlException().getStackTraceString().replaceAll('(' + String.join(CLASSES_TO_IGNORE, '|') + ')\\..+?column 1', '').trim());
-
-          // it would have been nice if this was an enum!
-    switch on header.changeType {
-      when 'CREATE', 'UNDELETE' {
-        apexContext = TriggerOperation.AFTER_INSERT;
-      }
-      when 'UPDATE' {
-        apexContext = TriggerOperation.AFTER_UPDATE;
-      }
-      when 'DELETE' {
-        apexContext = TriggerOperation.BEFORE_DELETE;
-      }
-    }
 }
 }
