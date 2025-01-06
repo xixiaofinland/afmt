@@ -6,10 +6,10 @@
 
 `afmt` (Apex format tool) is written in Rust 🦀 and utilizes the [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
-**Note:** it's in its early stages. Currently the code comments are not
-implemented yet ([progress
-track](https://github.com/xixiaofinland/afmt#-progress)), they are
-ignored/erased, so don't expect to use it in production code yet.
+**Note:** it's in its early stages([progress
+track](https://github.com/xixiaofinland/afmt#-progress)). Please [report
+issues](https://github.com/xixiaofinland/afmt/issues)
+and we will fix them asap!
 
 # ✨ vs. Prettier Apex
 
@@ -47,8 +47,8 @@ intentionally avoids.
 | Proper indentation                              | ████████████ 100%  |
 | Support SOQL                                    | ████████████ 100%  |
 | Support SOSL                                    | ████████████ 100%  |
-| Line wrapping               | ████████████ 100%  |
-| Support comment (line and block comment)| █░░░░░░░░░ 10%  |
+| Line wrapping                                   | ████████████ 100%  |
+| Support comment (line and block comment)        | █████████░░ 90%    |
 
 <br>
 
@@ -57,6 +57,7 @@ intentionally avoids.
 ## Video version
 
 [afmt intro - made on 15/12/2024](https://youtu.be/2tBctZqdjMU?si=j5Lmip8sAg_AKTK1&t=148)
+Note. comment nodes are supported now
 
 ## Text version
 
