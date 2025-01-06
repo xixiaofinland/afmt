@@ -60,7 +60,7 @@ intentionally avoids.
 
 [afmt intro - made on 15/12/2024](https://youtu.be/2tBctZqdjMU?si=j5Lmip8sAg_AKTK1&t=148)
 
-Note. comment nodes are supported now
+Note. the info in the video is not up-to-date as comment nodes are supported now
 
 ## Text version
 
@@ -132,6 +132,19 @@ Afmt completed successfully.
 Execution time: 555.29┬╡s
 ```
 <br>
+
+## Configuration
+
+in `.afmt.toml` config file, two options are supported
+
+```toml
+# Maximum line width
+max_width = 80
+
+# Indentation size in spaces
+indent_size = 4
+```
+
 
 ## Use it in editors:
 
