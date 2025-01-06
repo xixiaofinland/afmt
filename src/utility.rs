@@ -352,6 +352,8 @@ pub fn handle_post_comments<'a>(
             docs.push(b.txt(" "));
         }
 
+        //docs.push(b.nl_when_in_flat());
+
         // use "nl_when_in_flat()" means:
         //line comments must end the line if we’re still single-line,
         // but do not insert an extra blank line if we’ve already gone multiline
