@@ -9,6 +9,8 @@
 **Note:** it's in its early stages ([progress
 track](https://github.com/xixiaofinland/afmt#-progress)).
 
+Use it in VSCode? [Instruction](https://github.com/xixiaofinland/afmt/blob/main/md/VSCode_Setup.md)
+
 Please [report
 issues](https://github.com/xixiaofinland/afmt/issues)
 and we will fix them asap!
