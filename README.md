@@ -17,18 +17,14 @@ and we will fix them asap!
 
 # ✨ vs. Prettier Apex
 
-Both `afmt` and [Prettier Apex](https://github.com/dangmai/prettier-plugin-apex)
-provide well-formatted Apex code by leveraging the same line-wrapping algorithm:
-[Wadler's
-Pretty-Print](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf).
-
 While currently showing minor formatting differences, the tools fundamentally
 diverge in their design philosophy. Prettier Apex maintains an opinionated
 approach to code formatting, whereas afmt is designed with extensibility
-in mind. This means afmt will progressively introduce more configuration
+in mind.
+
+This means afmt will progressively introduce more configuration
 options, addressing user customization needs that Prettier's design
 intentionally avoids.
-<br>
 
 ## Other Highlights:
 
@@ -73,33 +69,6 @@ to download the appropriate binary for your OS (Linux, MacOS, or Windows).
 2. Extract and run:
 - Extract the downloaded `afmt` binary, such as to `~/`.
 - Run `afmt -h` to view the supported parameters.
-
-```
-> ./afmt -h
-Apex format tool (afmt): v0.0.19
-
-Usage: afmt [OPTIONS] <FILE>
-
-Arguments:
-  <FILE>  The relative path to the file to parse
-
-Options:
-  -c, --config <CONFIG>  Path to the .afmt.toml configuration file
-  -w, --write            Write the formatted result back to the file
-  -h, --help             Print help
-  -V, --version          Print version
-
-EXAMPLES:
-
-# Dry run: print the result without overwriting the file
-afmt ./file.cls
-
-# Format and write changes back to the file
-afmt --write src/file.cls
-
-# Use a specific config file
-afmt --config .afmt.toml ./file.cls
-```
 
 ## Simple use scenarios:
 
