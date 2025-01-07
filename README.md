@@ -34,21 +34,6 @@ intentionally avoids.
 | **Performance**            |Fast (Rust) |Relatively slower (Node.js)|
 | **Parser**            |sfapex (C / open source) |Jorje (Java / close source)|
 | **Open Source**           | Yes| Yes|
-
-<br>
-
-# 📟 Progress
-
-| Feature                                         | Progress       |
-| ----------------------------------------------- | -------------- |
-| Recognize Apex nodes                            | ████████████ 100%  |
-| Support `.afmt.toml` for configuration          | ████████████ 100%         |
-| Proper indentation                              | ████████████ 100%  |
-| Support SOQL                                    | ████████████ 100%  |
-| Support SOSL                                    | ████████████ 100%  |
-| Line wrapping                                   | ████████████ 100%  |
-| Support comment (line and block comment)        | █████████░░ 90%    |
-
 <br>
 
 # 🔧 How to use
