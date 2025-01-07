@@ -6,14 +6,13 @@
 
 `afmt` (Apex format tool) is written in Rust 🦀 and utilizes the [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
-**Note:** it's in its early stages ([progress
-track](https://github.com/xixiaofinland/afmt#-progress)).
-
-Use it in VSCode? [Instruction](https://github.com/xixiaofinland/afmt/blob/main/md/VSCode_Setup.md)
-
-Please [report
+It's in its early stages, please [report
 issues](https://github.com/xixiaofinland/afmt/issues)
 and we will fix them asap!
+
+Download the binary in [release page](https://github.com/xixiaofinland/afmt/releases/latest)
+
+Use it in VSCode? [Instruction](https://github.com/xixiaofinland/afmt/blob/main/md/VSCode_Setup.md)
 
 # ✨ vs. Prettier Apex
 
@@ -74,7 +73,7 @@ to download the appropriate binary for your OS (Linux, MacOS, or Windows).
 
 ### Dry Run:
 
-1. Create a `file.cls` file next to binary with valid Apex code.
+1. Create a `file.cls` file with valid Apex code.
 2. Run `afmt ./file.cls` to preview the formatting result.
 
 ```
