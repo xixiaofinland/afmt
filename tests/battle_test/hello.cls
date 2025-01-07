@@ -1,17 +1,14 @@
-class A {
-    {
-
-          // it would have been nice if this was an enum!
-    switch on header.changeType {
-      when 'CREATE', 'UNDELETE' {
-        apexContext = TriggerOperation.AFTER_INSERT;
-      }
-      when 'UPDATE' {
-        apexContext = TriggerOperation.AFTER_UPDATE;
-      }
-      when 'DELETE' {
-        apexContext = TriggerOperation.BEFORE_DELETE;
-      }
-    }
-}
+class TestClass {
+  {
+    List<SObject> records = [ // test comment 1
+      SELECT // test comment 2
+      // test comment 3
+    Id, Name, // test comment 4
+    // test comment 5
+    Phone // test comment 6
+    // test comment 7
+    FROM // test comment 8
+    Account // test comment 9
+    ];
+  }
 }
