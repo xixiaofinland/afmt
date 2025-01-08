@@ -1,5 +1,8 @@
 # Config afmt in VSCode
 
+At the moment there is no dedicated plugin in VSCode for `afmt`, but we can
+usage the built-in `tasks` feature to invoke `afmt` from VSCode.
+
 VSCode supports running tasks via `tasks.json`, which allows running shell commands on files.
 
 To configure VSCode to run `afmt` against the currently opened file, follow these steps:
