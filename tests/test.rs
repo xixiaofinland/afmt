@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use afmt::formatter::*;
-    use colored::Colorize;
+    use afmt::message_helper::{self, red};
+    use afmt::{formatter::*, message_helper::yellow};
     use similar::{ChangeTag, TextDiff};
     use std::fs::File;
     use std::io::Write;
@@ -53,10 +53,13 @@ mod tests {
         if failed_tests > 0 {
             println!(
                 "{}",
-                format!("{} out of {} tests failed", failed_tests, total_tests).red()
+                red(&format!(
+                    "{} out of {} tests failed",
+                    failed_tests, total_tests
+                ))
             );
         } else {
-            println!("{}", "All tests passed!".green());
+            println!("{}", yellow("All tests passed!"));
         }
     }
 
@@ -96,11 +99,12 @@ mod tests {
     fn run_static_test_files(source: &Path) -> bool {
         let expected_file = source.with_extension("cls");
         let output = format_with_afmt(source, Some("tests/configs/.afmt_static.toml"));
-        let expected =
-            std::fs::read_to_string(&expected_file).unwrap_or_else(|_| panic!(
-            "Failed to read expected .cls file at {}",
-            expected_file.to_string_lossy().red()
-        ));
+        let expected = std::fs::read_to_string(&expected_file).unwrap_or_else(|_| {
+            panic!(
+                "Failed to read expected .cls file at {}",
+                red(&expected_file.to_string_lossy())
+            )
+        });
 
         compare("Static:", output, expected, source)
     }
@@ -110,10 +114,7 @@ mod tests {
         let prettier_file = source.with_extension("cls");
 
         if !prettier_file.exists() {
-            println!(
-                "### {}  file not found, generating...",
-                config_name.yellow(),
-            );
+            println!("### {}  file not found, generating...", yellow(config_name),);
 
             let prettier_output = run_prettier(
                 source,
@@ -157,19 +158,18 @@ mod tests {
             let source_content =
                 std::fs::read_to_string(source).expect("Failed to read the file content.");
 
-            println!("{}", format!("\nFailed: {:?}:", source).yellow());
+            println!("{}", yellow(&format!("\nFailed: {:?}:", source)));
             println!("-------------------------------------\n");
             println!("{}", source_content);
             println!("-------------------------------------\n");
             //print_side_by_side_diff(against, &normalized_output, &normalized_expected);
             print_side_by_side_diff(against, &output, &expected);
             println!("\n-------------------------------------\n");
-            println!("{}", format!("Failed: {:?}:", source).yellow());
+            println!("{}", yellow(&format!("\nFailed: {:?}:", source)));
             println!("-------------------------------------\n");
 
             false
         } else {
-            //println!("{}", format!("{:?} success", source).green());
             true
         }
     }

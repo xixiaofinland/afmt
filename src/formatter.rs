@@ -2,16 +2,16 @@ use crate::context::CommentMap;
 use crate::data_model::*;
 use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
+use crate::message_helper::{red, yellow};
 use crate::utility::{
-    assert_no_missing_comments, collect_comments, enrich, get_comment_map, print_comment_map, set_thread_comment_map, set_thread_source_code
+    assert_no_missing_comments, collect_comments, enrich, set_thread_comment_map,
+    set_thread_source_code,
 };
-use anyhow::{anyhow, Result};
-use colored::Colorize;
 use serde::Deserialize;
 use std::sync::mpsc;
 use std::thread;
 use std::{fs, path::Path};
-use tree_sitter::{Language, Node, Parser, Tree};
+use tree_sitter::{Node, Parser, Tree};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
@@ -47,11 +47,11 @@ impl Config {
         }
     }
 
-    pub fn from_file(path: &str) -> Result<Self> {
+    pub fn from_file(path: &str) -> Result<Self, String> {
         let content =
-            fs::read_to_string(path).map_err(|e| anyhow!("Failed to read config file: {}", e))?;
+            fs::read_to_string(path).map_err(|e| format!("Failed to read config file: {}", e))?;
         let config: Config =
-            toml::from_str(&content).map_err(|e| anyhow!("Failed to parse config file: {}", e))?;
+            toml::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))?;
         Ok(config)
     }
 
@@ -87,16 +87,16 @@ impl Formatter {
     pub fn create_from_config(
         config_path: Option<&str>,
         source_files: Vec<String>,
-    ) -> Result<Formatter> {
+    ) -> Result<Formatter, String> {
         let config = match config_path {
             Some(path) => Config::from_file(path)
-                .map_err(|e| anyhow!(format!("{}: {}", e.to_string().yellow(), path)))?,
+                .map_err(|e| format!("{}: {}", yellow(&e.to_string()), path))?,
             None => Config::default(),
         };
         Ok(Formatter::new(config, source_files))
     }
 
-    pub fn format(&self) -> Vec<Result<String>> {
+    pub fn format(&self) -> Vec<Result<String, String>> {
         let (tx, rx) = mpsc::channel();
         let config = self.config.clone();
 
@@ -109,22 +109,22 @@ impl Formatter {
                 let result = std::panic::catch_unwind(|| {
                     let source_code = fs::read_to_string(Path::new(&file))
                         .map_err(|e| {
-                            anyhow!(format!(
+                            format!(
                                 "Failed to read file: {} {}",
-                                &file.red(),
-                                e.to_string().yellow()
-                            ))
+                                red(&file),
+                                yellow(e.to_string().as_str())
+                            )
                         })
                         .unwrap();
 
-                    Formatter::format_one(source_code, config)
+                    Formatter::format_one(&source_code, config)
                 });
                 match result {
                     Ok(result) => {
                         tx.send(Ok(result)).expect("failed to send result in tx");
                     }
                     Err(_) => tx
-                        .send(Err(anyhow!("Thread panicked")))
+                        .send(Err("Thread panicked".to_string()))
                         .expect("failed to send error in tx"),
                 }
             });
@@ -135,9 +135,9 @@ impl Formatter {
         rx.into_iter().collect()
     }
 
-    pub fn format_one(source_code: String, config: Config) -> String {
-        let ast_tree = Formatter::parse(&source_code);
-        set_thread_source_code(source_code); // important to set thread level source code now;
+    pub fn format_one(source_code: &str, config: Config) -> String {
+        let ast_tree = Formatter::parse(source_code);
+        set_thread_source_code(source_code.to_string()); // important to set thread level source code now;
 
         let mut cursor = ast_tree.walk();
         let mut comment_map = CommentMap::new();
@@ -163,9 +163,10 @@ impl Formatter {
 
     pub fn parse(source_code: &str) -> Tree {
         let mut parser = Parser::new();
+        let language_fn = tree_sitter_sfapex::apex::LANGUAGE;
         parser
-            .set_language(&language())
-            .expect("Error loading Apex grammar");
+            .set_language(&language_fn.into())
+            .expect("Error loading Apex parser");
 
         let ast_tree = parser.parse(source_code, None).unwrap();
         let root_node = &ast_tree.root_node();
@@ -175,7 +176,7 @@ impl Formatter {
                 let error_snippet = &source_code[error_node.start_byte()..error_node.end_byte()];
                 println!(
                     "Error in node kind: {}, at byte range: {}-{}, snippet: {}",
-                    error_node.kind().yellow(),
+                    yellow(error_node.kind()),
                     error_node.start_byte(),
                     error_node.end_byte(),
                     error_snippet,
@@ -184,14 +185,14 @@ impl Formatter {
                     let parent_snippet = &source_code[p.start_byte()..p.end_byte()];
                     println!(
                         "Parent node kind: {}, at byte range: {}-{}, snippet: {}",
-                        p.kind().yellow(),
+                        yellow(p.kind()),
                         p.start_byte(),
                         p.end_byte(),
                         parent_snippet,
                     );
                 }
             }
-            panic!("{}", "Parser encounters an error node in the tree.".red());
+            panic!("{}", red("Parser encounters an error node in the tree."));
         }
 
         ast_tree
@@ -214,12 +215,4 @@ impl Formatter {
 
         last_error_node // Return the last (deepest) error node
     }
-}
-
-extern "C" {
-    fn tree_sitter_apex() -> Language;
-}
-
-pub fn language() -> Language {
-    unsafe { tree_sitter_apex() }
 }

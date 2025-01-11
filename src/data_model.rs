@@ -1,12 +1,6 @@
 use crate::{
-    accessor::Accessor,
-    context::NodeInfo,
-    doc::DocRef,
-    doc_builder::{DocBuilder, Insertable},
-    enum_def::*,
-    utility::*,
+    accessor::Accessor, context::NodeInfo, doc::DocRef, doc_builder::{DocBuilder, Insertable}, enum_def::*, message_helper::red, utility::*
 };
-use colored::Colorize;
 use std::fmt::Debug;
 use toml::Value;
 use tree_sitter::Node;
@@ -2507,7 +2501,7 @@ impl DmlTypeVariant {
             "undelete" => Self::Undelete,
             "merge" => Self::Merge,
             "upsert" => Self::Upsert,
-            _ => panic!("## unknown node: {} in DmlTypeVariant ", k.red()),
+            _ => panic!("## unknown node: {} in DmlTypeVariant ", red(k)),
         }
     }
 }
@@ -4996,7 +4990,7 @@ impl GroupByClause {
                     have_clause = Some(HavingClause::new(child));
                 }
                 other => {
-                    panic!("## unknown node: {} in GroupByClause", other.red());
+                    panic!("## unknown node: {} in GroupByClause", red(other));
                 }
             }
         }

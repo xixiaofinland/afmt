@@ -1,7 +1,6 @@
-use colored::Colorize;
 use tree_sitter::Node;
 
-use crate::utility::get_source_code;
+use crate::{message_helper::red, utility::get_source_code};
 
 // `c` => child
 // `cv` => child value
@@ -47,12 +46,12 @@ impl<'t> Accessor<'t> for Node<'t> {
             }
             sibling = node.next_named_sibling();
         }
-        panic!("{}: next_named node missing.", self.kind().red());
+        panic!("{}: next_named node missing.", red(self.kind()));
     }
 
     fn v<'a>(&self) -> &'a str {
         self.utf8_text(get_source_code().as_bytes())
-            .unwrap_or_else(|_| panic!("{}: get AST source_code value failed.", self.kind().red()))
+            .unwrap_or_else(|_| panic!("{}: get AST source_code value failed.", red(self.kind())))
     }
 
     fn value(&self) -> String {
@@ -92,8 +91,8 @@ impl<'t> Accessor<'t> for Node<'t> {
         self.try_c_by_k(kind).unwrap_or_else(|| {
             panic!(
                 "## {}: missing mandatory kind child: {}\n ##Source_code: {}",
-                self.kind().red(),
-                kind.red(),
+                red(self.kind()),
+                red(kind),
                 self.value(),
             )
         })
@@ -120,7 +119,7 @@ impl<'t> Accessor<'t> for Node<'t> {
         }
         panic!(
             "{}: missing a mandatory child in first_c().",
-            self.kind().red()
+            red(self.kind())
         );
     }
 
@@ -133,8 +132,8 @@ impl<'t> Accessor<'t> for Node<'t> {
         let node = self.child_by_field_name(name).unwrap_or_else(|| {
             panic!(
                 "## {}: missing mandatory name child: {}\n ##Source_code: {}",
-                self.kind().red(),
-                name.red(),
+                red(self.kind()),
+                red(name),
                 self.value(),
             )
         });
@@ -153,8 +152,8 @@ impl<'t> Accessor<'t> for Node<'t> {
         self.child_by_field_name(name).unwrap_or_else(|| {
             panic!(
                 "## {}: missing mandatory name child: {}\n ##Source_code: {}",
-                self.kind().red(),
-                name.red(),
+                red(self.kind()),
+                red(name),
                 self.value(),
             )
         })
@@ -166,8 +165,8 @@ impl<'t> Accessor<'t> for Node<'t> {
         if children.is_empty() {
             panic!(
                 "## {}: missing mandatory name children: {}\n ##Source_code: {}",
-                self.kind().red(),
-                name.red(),
+                red(self.kind()),
+                red(name),
                 self.value(),
             );
         }
@@ -179,8 +178,8 @@ impl<'t> Accessor<'t> for Node<'t> {
         if children.is_empty() {
             panic!(
                 "## {}: missing mandatory kind children: {}\n ##Source_code: {}",
-                self.kind().red(),
-                kind.red(),
+                red(self.kind()),
+                red(kind),
                 self.value(),
             );
         }
