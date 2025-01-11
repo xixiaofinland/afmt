@@ -1,22 +1,34 @@
 mod accessor;
-mod context;
 pub mod args;
+mod context;
 mod data_model;
 mod doc;
 mod doc_builder;
 mod enum_def;
 pub mod formatter;
+pub mod message_helper;
 mod utility;
-use anyhow::Result;
-
+use formatter::Config;
 use formatter::Formatter;
 
-pub fn format(f: Formatter) -> Vec<Result<String>> {
-    f.format()
+use wasm_bindgen::prelude::*;
 
-    //let result = f.format();
-    //match &result[0] {
-    //    Ok(data) => println!("\n###\n{}\n###\n", data),
-    //    Err(_) => eprintln!("error in result"),
-    //}
+pub fn format(f: Formatter) -> Vec<Result<String, String>> {
+    f.format()
 }
+
+#[wasm_bindgen]
+pub fn greet(source_code: &str) -> String {
+    let config = Config::default();
+    Formatter::format_one(source_code, config)
+}
+
+//#[wasm_bindgen]
+//pub fn greet(source_code: &str) -> String {
+//    "hello".to_string()
+//}
+
+//#[wasm_bindgen]
+//pub fn greet() -> Result<String, JsValue> {
+//    Ok("hello world!".to_string())
+//}

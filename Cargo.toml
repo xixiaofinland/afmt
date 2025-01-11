@@ -5,27 +5,26 @@ edition = "2021"
 description = "An Salesforce Apex lang formatter"
 license = "MIT OR Apache-2.0"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dev-dependencies]
 similar = "2.6.0"
-criterion = { version = "0.5", features = ["html_reports"] }
+# criterion = { version = "0.5", features = ["html_reports"] }
 
 [[bench]]
 name = "afmt_benchmark"
 harness = false
 
 [dependencies]
-anyhow = "1.0.86"
-clap = "4.5.16"
-colored = "2.1.0"
-env_logger = "0.11.5"
 log = "0.4.22"
 serde = { version = "1.0.210", features = ["derive"] }
+clap = "4.5.16"
 toml = "0.8.19"
 tree-sitter = "0.24.3"
+tree-sitter-sfapex = { path = "dep/tree-sitter-sfapex" }
 typed-arena = "2.0.2"
-
-[build-dependencies]
-cc = "1.1.10"
+wasm-bindgen = "0.2.99"
 
 [profile.dev]
 opt-level = 1

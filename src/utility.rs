@@ -4,9 +4,8 @@ use crate::{
     data_model::*,
     doc::{Doc, DocRef},
     doc_builder::DocBuilder,
-    enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith},
+    enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith}, message_helper::{red, yellow},
 };
-use colored::Colorize;
 #[allow(unused_imports)]
 use log::debug;
 use std::{cell::Cell, collections::HashMap};
@@ -78,8 +77,8 @@ pub fn print_comment_map(tree: &Tree) {
             eprintln!(
                 "{}, {} ({}) : CommentBucket {{",
                 node_id,
-                node.kind().yellow(),
-                node.value().chars().take(8).collect::<String>().yellow()
+                yellow(node.kind()),
+                yellow(&node.value().chars().take(8).collect::<String>())
             );
         } else {
             eprintln!("{} (Unknown Node) : CommentBucket {{", node_id);
@@ -126,7 +125,7 @@ pub fn assert_no_missing_comments() {
 
     if !missing_comments.is_empty() {
         for comment in missing_comments {
-            eprintln!("Erased comment: {}", comment.value.red());
+            eprintln!("Erased comment: {}", red(&comment.value));
         }
         panic!("## There are erased comment node(s)");
     }
@@ -378,8 +377,8 @@ pub fn assert_check(node: Node, expected_kind: &str) {
     assert!(
         node.kind() == expected_kind,
         "## Expected node kind '{}', found '{}'.\n## Source_code: {}",
-        expected_kind.yellow(),
-        node.kind().red(),
+        yellow(expected_kind),
+        red(node.kind()),
         node.value()
     );
 }
@@ -476,7 +475,7 @@ fn is_a_chaining_node(node: &Node) -> bool {
 pub fn panic_unknown_node(node: Node, name: &str) -> ! {
     panic!(
         "## unknown node: {} in {}\n## Source_code: {}",
-        node.kind().red(),
+        red(node.kind()),
         name,
         node.value()
     );
