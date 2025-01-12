@@ -15,8 +15,8 @@
 - [✨ vs. Prettier Apex](#-vs-prettier-apex)
 - [📥 Installation](#-installation)
 - [💻 Usage](#-usage)
-- [🔧 Configuration](#configuration-)
-- [❓ FAQ](#faq-)
+- [🔧 Configuration](#-configuration)
+- [❓ FAQ](#-faq)
 
 <br>
 
@@ -91,7 +91,7 @@ Afmt completed successfully.
 ```
 <br>
 
-## Configuration: 🔧
+## 🔧 Configuration:
 
 in `.afmt.toml` config file, two options are supported
 
@@ -105,10 +105,13 @@ indent_size = 4
 
 <br>
 
-## FAQ ❓
+## ❓ FAQ
 
 - "How do I set up afmt in VSCode?"
 [Setup in VSCode](./md/VSCode_Setup.md)
 
 - "Can afmt formats exactly the same as Prettier Apex?"
 No.
+
+- "How to load a .afmt.toml file?"
+`afmt -c path_to_file` which is mentioned in `afmt -h`
