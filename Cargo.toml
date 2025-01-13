@@ -21,10 +21,10 @@ log = "0.4.22"
 serde = { version = "1.0.210", features = ["derive"] }
 clap = "4.5.16"
 toml = "0.8.19"
-tree-sitter = "0.24.3"
-tree-sitter-sfapex = { path = "dep/tree-sitter-sfapex" }
 typed-arena = "2.0.2"
 wasm-bindgen = "0.2.99"
+tree-sitter = "0.24.3"
+tree-sitter-sfapex = "2.4.0"
 
 [profile.dev]
 opt-level = 1
