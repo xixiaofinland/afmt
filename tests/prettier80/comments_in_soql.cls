@@ -6,7 +6,7 @@ class TestClass {
         // test comment 2
         // test comment 3
         Id,
-        Name // test comment 4,
+        Name, // test comment 4
         // test comment 5
         Phone // test comment 6
       // test comment 7

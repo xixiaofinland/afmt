@@ -88,11 +88,25 @@ mod tests {
     }
 
     fn run_test_file(source: &Path, scenario_name: &str) -> bool {
-        match scenario_name {
+        // Wrap the "actual" test in a catch_unwind:
+        let result = std::panic::catch_unwind(|| match scenario_name {
             "static" => run_static_test_files(source),
             "prettier80" => run_prettier_test_files(source, "p80"),
             "comments" => run_static_test_files(source),
             _ => panic!("Unknown scenario: {}", scenario_name),
+        });
+
+        match result {
+            Ok(passed) => passed,
+            Err(payload) => {
+                eprintln!(
+                    "Panic for scenario '{}' with file '{}'\nPanic info: {:?}",
+                    scenario_name,
+                    source.display(),
+                    payload
+                );
+                false
+            }
         }
     }
 

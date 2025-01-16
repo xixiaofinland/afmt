@@ -1,5 +1,20 @@
+// format twice will change the format
 class A {
-    {
-System.debug('hello');
-}
+  {
+    LogEntryEventBuilder logEntryEventBuilder =
+      new LogEntryEventBuilder(
+        getUserSettings(),
+        loggingLevel,
+        shouldSave
+      ).// Don't include the logging system's classes in the stack trace
+      parseStackTrace(
+        new System.DmlException()
+          .getStackTraceString()
+          .replaceAll(
+            '(' + String.join(CLASSES_TO_IGNORE, '|') + ')\\..+?column 1',
+            ''
+          )
+          .trim()
+      );
+  }
 }

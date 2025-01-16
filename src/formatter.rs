@@ -4,8 +4,7 @@ use crate::doc::{pretty_print, PrettyConfig};
 use crate::doc_builder::DocBuilder;
 use crate::message_helper::{red, yellow};
 use crate::utility::{
-    assert_no_missing_comments, collect_comments, enrich, set_thread_comment_map,
-    set_thread_source_code,
+    assert_no_missing_comments, collect_comments, enrich, print_comment_map, set_thread_comment_map, set_thread_source_code
 };
 use serde::Deserialize;
 use std::sync::mpsc;

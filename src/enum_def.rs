@@ -4,7 +4,7 @@ use crate::{
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
-    utility::{assert_check, build_with_comments, get_comment_bucket, panic_unknown_node},
+    utility::{assert_check, build_with_comments_and_punc, get_comment_bucket, panic_unknown_node},
 };
 use tree_sitter::Node;
 
@@ -418,14 +418,14 @@ impl ClassLiteral {
 
         Self {
             type_: UnannotatedType::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ClassLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.type_.build(b));
             result.push(b.txt("class"));
         });
@@ -818,9 +818,8 @@ impl<M> BodyMember<M> {
             return last_post_comment.has_newline_below();
         }
 
-        node.next_named_sibling().map_or(false, |n| {
-            node.end_position().row < n.start_position().row - 1
-        })
+        node.next_named_sibling()
+            .is_some_and(|n| node.end_position().row < n.start_position().row - 1)
     }
 }
 
@@ -913,7 +912,7 @@ impl<'a> DocBuild<'a> for SelectClauseVariant {
             }
             Self::Selectable(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 let doc = b.intersperse(&docs, sep);
 
                 let indented_join = b.indent(doc);
@@ -979,14 +978,14 @@ impl FieldsExpression {
 
         Self {
             fields_type: ValueNodeUpperCase::new(node.c_by_k("fields_type")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldsExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("FIELDS("));
             result.push(self.fields_type.build(b));
             result.push(b.txt(")"));
@@ -1008,14 +1007,14 @@ impl AliasExpression {
         Self {
             value_exp: ValueExpression::new(node.first_c()),
             identifier: ValueNode::new(node.c_by_k("identifier")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AliasExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.value_exp.build(b));
             result.push(b.txt(" "));
             result.push(self.identifier.build(b));
@@ -1333,7 +1332,7 @@ impl<'a> DocBuild<'a> for GeoLocationTypeVariant {
                 result.push(function_name.build(b));
                 result.push(b.txt("("));
                 result.push(decimal1.build(b));
-                result.push(b.txt_(","));
+                result.push(b.txt(" "));
                 result.push(decimal2.build(b));
                 result.push(b.txt(")"));
             }
@@ -1381,29 +1380,29 @@ impl<'a> DocBuild<'a> for ValueComparedWith {
 
 #[derive(Debug)]
 pub enum SoqlLiteral {
-    Int(String),
-    Decimal(String),
-    StringLiteral(String),
-    Date(String),
-    DateTime(String),
-    Boolean(String),
-    DateLiteral(String),
+    Int(ValueNode),
+    Decimal(ValueNode),
+    StringLiteral(ValueNode),
+    Date(ValueNode),
+    DateTime(ValueNode),
+    Boolean(ValueNode),
+    DateLiteral(ValueNode),
     DWithParam(DateLiteralWithParam),
-    CurrentLiteral(String),
-    NullLiteral(String),
+    CurrentLiteral(ValueNode),
+    NullLiteral(ValueNode),
 }
 
 impl SoqlLiteral {
     pub fn new(node: Node) -> Self {
         match node.kind() {
-            "decimal" => Self::Decimal(node.value()),
-            "int" => Self::Int(node.value()),
-            "string_literal" => Self::StringLiteral(node.value()),
-            "boolean" => Self::Boolean(node.value()),
-            "date" => Self::Boolean(node.value()),
-            "date_literal" => Self::DateLiteral(node.value()),
+            "decimal" => Self::Decimal(ValueNode::new(node)),
+            "int" => Self::Int(ValueNode::new(node)),
+            "string_literal" => Self::StringLiteral(ValueNode::new(node)),
+            "boolean" => Self::Boolean(ValueNode::new(node)),
+            "date" => Self::Boolean(ValueNode::new(node)),
+            "date_literal" => Self::DateLiteral(ValueNode::new(node)),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
-            "null_literal" => Self::NullLiteral(node.value()),
+            "null_literal" => Self::NullLiteral(ValueNode::new(node)),
             _ => panic_unknown_node(node, "SoqlLiteral"),
         }
     }
@@ -1413,31 +1412,31 @@ impl<'a> DocBuild<'a> for SoqlLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         match self {
             Self::Decimal(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Int(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::StringLiteral(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Date(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::Boolean(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::DateLiteral(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             Self::DWithParam(n) => {
                 result.push(n.build(b));
             }
             Self::NullLiteral(n) => {
-                result.push(b.txt(n));
+                result.push(n.build(b));
             }
             _ => {
-                unimplemented!();
+                unreachable!();
             }
         }
     }
@@ -1457,14 +1456,14 @@ impl DateLiteralWithParam {
         Self {
             date_literal: node.cvalue_by_k("date_literal").to_uppercase(),
             param: node.cvalue_by_k("int"),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DateLiteralWithParam {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt(format!("{}:{}", &self.date_literal, &self.param)));
         });
     }
@@ -1631,9 +1630,9 @@ impl<'a> DocBuild<'a> for FunctionExpressionVariant {
                 if let Some(ref n) = bound {
                     result.push(n.build(b));
                 }
-                result.push(b.txt_(","));
+                result.push(b.txt(" "));
                 result.push(geo.build(b));
-                result.push(b.txt_(","));
+                result.push(b.txt(" "));
                 result.push(string_literal.build(b));
                 result.push(b.txt(")"));
             }
@@ -1644,7 +1643,7 @@ impl<'a> DocBuild<'a> for FunctionExpressionVariant {
                 result.push(function_name.build(b));
 
                 let doc = b.to_docs(value_exps);
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 let open = Insertable::new(None, Some("("), Some(b.maybeline()));
                 let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
                 let doc = b.group_surround(&doc, sep, open, close);

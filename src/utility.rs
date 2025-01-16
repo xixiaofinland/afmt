@@ -1,10 +1,11 @@
 use crate::{
     accessor::Accessor,
-    context::{Comment, CommentBucket, CommentMap, CommentType},
+    context::{Comment, CommentBucket, CommentMap, CommentType, NodeInfo},
     data_model::*,
     doc::{Doc, DocRef},
     doc_builder::DocBuilder,
-    enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith}, message_helper::{red, yellow},
+    enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith},
+    message_helper::{red, yellow},
 };
 #[allow(unused_imports)]
 use log::debug;
@@ -131,10 +132,14 @@ pub fn assert_no_missing_comments() {
     }
 }
 
+pub fn is_punctuation_node(node: &Node) -> bool {
+    node.kind() == "," || node.kind() == ";"
+}
+
 pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let node = cursor.node();
 
-    if !node.is_named() || node.is_extra() {
+    if (!node.is_named() || node.is_extra()) && !is_punctuation_node(&node) {
         return;
     }
 
@@ -148,51 +153,90 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
         return;
     }
 
-    // We'll track comments that appear before the next code node in this vector
+    // We'll track comments that appear before the next assciable node in this vector
     let mut pending_pre_comments = Vec::new();
     // Track the last visited code node
-    let mut last_code_node_info: Option<(usize, usize)> = None;
+    let mut last_associable_node_info: Option<(usize, usize)> = None;
 
     loop {
         let child = cursor.node();
 
-        if child.is_named() {
-            if child.is_extra() {
-                // It's a comment node
-                let comment = Comment::from_node(child);
+        if child.is_extra() {
+            // It's a comment node
+            let comment = Comment::from_node(child);
 
-                if let Some((last_id, last_row)) = last_code_node_info {
-                    if child.end_position().row == last_row {
+            if let Some((last_id, last_row)) = last_associable_node_info {
+                // We'll wrap the comment in an Option so we can move it exactly once
+                let mut comment_opt = Some(comment);
+
+                // Clone the cursor so we can safely peek siblings
+                let mut peek_cursor = cursor.clone();
+
+                // Continue until we either assign the comment or run out of siblings
+                while let Some(c) = comment_opt.take() {
+                    // If no next sibling, assign this comment to the last node's post_comments and stop
+                    if !peek_cursor.goto_next_sibling() {
                         comment_map
                             .entry(last_id)
                             .or_insert_with(CommentBucket::new)
                             .post_comments
-                            .push(comment);
-                    } else {
-                        pending_pre_comments.push(comment);
+                            .push(c);
+                        break;
                     }
-                } else {
-                    pending_pre_comments.push(comment);
+
+                    let sibling = peek_cursor.node();
+
+                    // If the sibling is another comment, skip it and put our comment back
+                    if sibling.is_extra() {
+                        comment_opt = Some(c);
+                        continue;
+                    }
+
+                    // If the sibling is punctuation, assign as pre_comment of punctuation and stop
+                    if is_punctuation_node(&sibling) {
+                        let punc_id = sibling.id();
+                        comment_map
+                            .entry(punc_id)
+                            .or_insert_with(CommentBucket::new)
+                            .pre_comments
+                            .push(c);
+                        break;
+                    } else {
+                        // Otherwise, the sibling is a named node, no special treatment needed
+                        if child.end_position().row == last_row {
+                            comment_map
+                                .entry(last_id)
+                                .or_insert_with(CommentBucket::new)
+                                .post_comments
+                                .push(c);
+                        } else {
+                            pending_pre_comments.push(c);
+                        }
+                        break;
+                    }
                 }
             } else {
-                // It's a child code node
-                let child_id = child.id();
-
-                // Assign any pending comments to the child's pre-comments
-                if !pending_pre_comments.is_empty() {
-                    comment_map
-                        .entry(child_id)
-                        .or_insert_with(CommentBucket::new)
-                        .pre_comments
-                        .append(&mut pending_pre_comments);
-                }
-
-                // Recurse down into the child code node
-                collect_comments(cursor, comment_map);
-
-                // After returning, we know child is fully processed
-                last_code_node_info = Some((child_id, child.end_position().row));
+                // There's no "last associable node" yet, so keep it pending
+                pending_pre_comments.push(comment);
             }
+        } else if child.is_named() || is_punctuation_node(&child) {
+            // It's an associable node
+            let child_id = child.id();
+
+            // Assign any pending comments to the child's pre-comments
+            if !pending_pre_comments.is_empty() {
+                comment_map
+                    .entry(child_id)
+                    .or_insert_with(CommentBucket::new)
+                    .pre_comments
+                    .append(&mut pending_pre_comments);
+            }
+
+            // Recurse down into the child node
+            collect_comments(cursor, comment_map);
+
+            // After returning, we know child is fully processed
+            last_associable_node_info = Some((child_id, child.end_position().row));
         }
 
         if !cursor.goto_next_sibling() {
@@ -201,7 +245,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     }
 
     // After processing all children:
-    if let Some((last_id, _)) = last_code_node_info {
+    if let Some((last_id, _)) = last_associable_node_info {
         // Assign remaining pending comments as "post" for the last code node
         comment_map
             .entry(last_id)
@@ -223,13 +267,13 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
 
 pub fn build_with_comments<'a, F>(
     b: &'a DocBuilder<'a>,
-    id: &usize,
+    node_info: &NodeInfo,
     result: &mut Vec<DocRef<'a>>,
     handle_members: F,
 ) where
     F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
 {
-    let bucket = get_comment_bucket(id);
+    let bucket = get_comment_bucket(&node_info.id);
     handle_pre_comments(b, bucket, result);
 
     if bucket.dangling_comments.is_empty() {
@@ -240,6 +284,21 @@ pub fn build_with_comments<'a, F>(
     }
 
     handle_post_comments(b, bucket, result);
+}
+
+pub fn build_with_comments_and_punc<'a, F>(
+    b: &'a DocBuilder<'a>,
+    node_info: &NodeInfo,
+    result: &mut Vec<DocRef<'a>>,
+    handle_members: F,
+) where
+    F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
+{
+    build_with_comments(b, node_info, result, handle_members);
+
+    if let Some(ref n) = node_info.punc {
+        result.push(n.build(b));
+    }
 }
 
 pub fn handle_dangling_comments_in_bracket_surround<'a>(
@@ -254,7 +313,10 @@ pub fn handle_dangling_comments_in_bracket_surround<'a>(
     result.push(b.txt("}"));
 }
 
-fn handle_dangling_comments<'a>(b: &'a DocBuilder<'a>, bucket: &CommentBucket) -> Vec<&'a Doc<'a>> {
+pub fn handle_dangling_comments<'a>(
+    b: &'a DocBuilder<'a>,
+    bucket: &CommentBucket,
+) -> Vec<&'a Doc<'a>> {
     if bucket.dangling_comments.is_empty() {
         panic!("handle_dangling_comments() should not have empty dangling_comments input")
     }
@@ -264,8 +326,7 @@ fn handle_dangling_comments<'a>(b: &'a DocBuilder<'a>, bucket: &CommentBucket) -
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
         } else if comment.has_newline_above() {
-            docs.push(b.nl_with_no_indent());
-            docs.push(b.nl());
+            docs.push(b.empty_new_line());
         } else if comment.has_prev_node() {
             docs.push(b.nl());
         }
@@ -301,9 +362,10 @@ pub fn handle_pre_comments<'a>(
             // 1st element heading logic is handled in the preceding node;
             if i != 0 {
                 if comment.has_newline_above() {
-                    docs.push(b.nl_with_no_indent());
+                    docs.push(b.empty_new_line());
+                } else {
+                    docs.push(b.nl());
                 }
-                docs.push(b.nl());
             }
         }
 
@@ -313,8 +375,7 @@ pub fn handle_pre_comments<'a>(
             docs.push(b.txt(" "));
         } else if i == bucket.pre_comments.len() - 1 {
             if comment.has_newline_below() {
-                docs.push(b.nl_with_no_indent());
-                docs.push(b.nl());
+                docs.push(b.empty_new_line());
             } else {
                 docs.push(b.nl());
             }
@@ -339,8 +400,7 @@ pub fn handle_post_comments<'a>(
         if comment.has_leading_content() {
             docs.push(b.txt(" "));
         } else if comment.has_newline_above() {
-            docs.push(b.nl_with_no_indent());
-            docs.push(b.nl());
+            docs.push(b.empty_new_line());
         } else {
             docs.push(b.nl());
         }
@@ -349,15 +409,6 @@ pub fn handle_post_comments<'a>(
 
         if comment.has_trailing_content() && !comment.is_followed_by_bracket_composite_node() {
             docs.push(b.txt(" "));
-        }
-
-        //docs.push(b.nl_when_in_flat());
-
-        // use "nl_when_in_flat()" means:
-        //line comments must end the line if we’re still single-line,
-        // but do not insert an extra blank line if we’ve already gone multiline
-        if comment.metadata.is_line_comment_and_need_newline {
-            docs.push(b.nl_when_in_flat());
         }
 
         comment.mark_as_printed();

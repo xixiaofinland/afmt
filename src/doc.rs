@@ -9,7 +9,6 @@ pub fn pretty_print(doc_ref: DocRef, max_width: u32) -> String {
 pub enum Doc<'a> {
     Newline,
     NewlineWithNoIndent,
-    NewlineWhenInFlat, // Add a nl when it's in flat mode (meant for line comment only)
     ForceBreak,        // immediately use multi-line mode in choice(x, y) or group()
     Text(String, u32), // The given text should not contain line breaks
     Softline,          // a space or a newline
@@ -98,35 +97,49 @@ impl<'a> PrettyPrinter<'a> {
     fn print(&mut self) -> String {
         let mut result = String::new();
 
+        // Initialize the Doc::Newline buffer with clear state
+        let mut newline_buffer = NewlineBuffer::new();
+
         while let Some(chunk) = self.chunks.pop() {
             match chunk.doc_ref {
                 Doc::Newline => {
-                    self.insert_newline_with_indent(&mut result, &chunk);
+                    // Set a pending newline with the current indent
+                    newline_buffer.set_pending(chunk.indent);
+                }
+                Doc::NewlineWithNoIndent => {
+                    // Clear any pending newline and insert a newline without indent
+                    newline_buffer.clear();
+
+                    result.push('\n');
+                    self.col = 0;
                 }
                 Doc::Softline => {
                     if chunk.flat {
                         result.push(' ');
                         self.col += 1;
                     } else {
-                        self.insert_newline_with_indent(&mut result, &chunk);
+                        newline_buffer.set_pending(chunk.indent);
                     }
                 }
                 Doc::Maybeline => {
                     if !chunk.flat {
-                        self.insert_newline_with_indent(&mut result, &chunk);
+                        newline_buffer.set_pending(chunk.indent);
                     }
                 }
-                Doc::ForceBreak => {}
-                Doc::NewlineWithNoIndent => {
-                    result.push('\n');
-                    self.col = 0;
-                }
-                Doc::NewlineWhenInFlat => {
-                    if chunk.flat {
-                        self.insert_newline_with_indent(&mut result, &chunk);
-                    }
+                Doc::ForceBreak => {
+                    // TODO: still needed after line_comment refinement?
+                    // Handle ForceBreak if necessary
                 }
                 Doc::Text(text, width) => {
+                    // Before printing text, flush any pending newline
+                    if newline_buffer.is_pending() {
+                        self.insert_newline_with_indent(
+                            &mut result,
+                            newline_buffer.get_indent(),
+                        );
+                        newline_buffer.clear();
+                    }
+
                     if text == " " && result.ends_with(' ') {
                         // TODO: better way to handle this challenge?
                         // do nothing to avoid "double spacing" in comment node handling
@@ -144,6 +157,14 @@ impl<'a> PrettyPrinter<'a> {
                     }
                 }
                 Doc::Choice(x, y) => {
+                    if newline_buffer.is_pending() {
+                        self.insert_newline_with_indent(
+                            &mut result,
+                            newline_buffer.get_indent(),
+                        );
+                        newline_buffer.clear();
+                    }
+
                     if chunk.flat {
                         // 1. Already forced single-line by a parent
                         self.chunks.push(chunk.with_doc(x));
@@ -159,17 +180,32 @@ impl<'a> PrettyPrinter<'a> {
                 }
             }
         }
+
+        // Flush the last element in case buffer has a newline
+        if newline_buffer.is_pending() {
+            self.insert_newline_with_indent(&mut result, newline_buffer.get_indent());
+            newline_buffer.clear();
+        }
+
         result
     }
 
-    fn insert_newline_with_indent(&mut self, result: &mut String, chunk: &Chunk) {
+    fn insert_newline_with_indent(&mut self, result: &mut String, indent: u32) {
         result.push('\n');
-        let total_indent = chunk.indent;
-        for _ in 0..total_indent {
+        for _ in 0..indent {
             result.push(' ');
         }
-        self.col = total_indent;
+        self.col = indent;
     }
+
+    //fn insert_newline_with_indent(&mut self, result: &mut String, chunk: &Chunk) {
+    //    result.push('\n');
+    //    let total_indent = chunk.indent;
+    //    for _ in 0..total_indent {
+    //        result.push(' ');
+    //    }
+    //    self.col = total_indent;
+    //}
 
     fn fits(&self, chunk: Chunk<'a>) -> bool {
         let mut remaining_width = self.max_width.saturating_sub(self.col);
@@ -188,11 +224,6 @@ impl<'a> PrettyPrinter<'a> {
 
             match chunk.doc_ref {
                 Doc::Newline | Doc::NewlineWithNoIndent => return true,
-                Doc::NewlineWhenInFlat => {
-                    if chunk.flat {
-                        return false; // just like Doc::ForceBreak
-                    }
-                }
                 Doc::ForceBreak => return false,
                 Doc::Softline => {
                     if chunk.flat {
@@ -240,5 +271,37 @@ impl<'a> PrettyPrinter<'a> {
                 }
             }
         }
+    }
+}
+
+struct NewlineBuffer {
+    has_pending_newline: bool,
+    indent_level: u32,
+}
+
+impl NewlineBuffer {
+    fn new() -> Self {
+        Self {
+            has_pending_newline: false,
+            indent_level: 0,
+        }
+    }
+
+    fn set_pending(&mut self, indent: u32) {
+        self.has_pending_newline = true;
+        self.indent_level = indent;
+    }
+
+    fn clear(&mut self) {
+        self.has_pending_newline = false;
+        self.indent_level = 0;
+    }
+
+    fn is_pending(&self) -> bool {
+        self.has_pending_newline
+    }
+
+    fn get_indent(&self) -> u32 {
+        self.indent_level
     }
 }

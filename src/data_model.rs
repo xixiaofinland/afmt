@@ -1,8 +1,13 @@
 use crate::{
-    accessor::Accessor, context::NodeInfo, doc::DocRef, doc_builder::{DocBuilder, Insertable}, enum_def::*, message_helper::red, utility::*
+    accessor::Accessor,
+    context::{Comment, CommentType, NodeInfo, Punctuation},
+    doc::DocRef,
+    doc_builder::{DocBuilder, Insertable},
+    enum_def::*,
+    message_helper::red,
+    utility::*,
 };
 use std::fmt::Debug;
-use toml::Value;
 use tree_sitter::Node;
 
 pub trait DocBuild<'a> {
@@ -31,7 +36,7 @@ impl Root {
             .map(|n| BodyMember::new(&n, RootMember::new(n)))
             .collect();
 
-        let node_info = NodeInfo::from(&node);
+        let node_info = NodeInfo::with_punctuation(&node);
 
         Self { members, node_info }
     }
@@ -79,14 +84,14 @@ impl ClassDeclaration {
             superclass: node.try_c_by_k("superclass").map(|n| SuperClass::new(n)),
             interface: node.try_c_by_k("interfaces").map(|n| Interface::new(n)),
             body: ClassBody::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ClassDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -144,14 +149,14 @@ impl MethodDeclaration {
             name: ValueNode::new(node.c_by_n("name")),
             formal_parameters: FormalParameters::new(node.c_by_n("parameters")),
             body: node.try_c_by_n("body").map(|n| Block::new(n)),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for MethodDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -165,8 +170,6 @@ impl<'a> DocBuild<'a> for MethodDeclaration {
                 result.push(b.txt(" "));
                 let body_doc = n.build(b);
                 result.push(body_doc);
-            } else {
-                result.push(b.txt(";"));
             }
         });
     }
@@ -190,17 +193,17 @@ impl FormalParameters {
 
         Self {
             formal_parameters,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FormalParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let parameters_doc = b.to_docs(&self.formal_parameters);
 
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("("), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
             let doc = b.group_surround(&parameters_doc, sep, open, close);
@@ -227,14 +230,14 @@ impl FormalParameter {
             type_: UnannotatedType::new(node.c_by_n("type")),
             name: ValueNode::new(node.c_by_n("name")),
             dimensions: node.try_c_by_k("dimensions").map(Dimensions::new),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FormalParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -261,14 +264,14 @@ impl SuperClass {
 
         Self {
             type_: Type::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SuperClass {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("extends"));
             result.push(self.type_.build(b));
         });
@@ -277,7 +280,7 @@ impl<'a> DocBuild<'a> for SuperClass {
 
 #[derive(Debug)]
 pub struct Modifiers {
-    annotation: Option<Annotation>,
+    annotations: Vec<Annotation>,
     modifiers: Vec<Modifier>,
     pub node_info: NodeInfo,
 }
@@ -286,6 +289,12 @@ impl Modifiers {
     pub fn new(node: Node) -> Self {
         assert_check(node, "modifiers");
 
+        let annotations = node
+            .try_cs_by_k("annotation")
+            .into_iter()
+            .map(Annotation::new)
+            .collect();
+
         let modifiers = node
             .try_cs_by_k("modifier")
             .into_iter()
@@ -293,19 +302,17 @@ impl Modifiers {
             .collect();
 
         Self {
-            annotation: node.try_c_by_k("annotation").map(Annotation::new),
+            annotations,
             modifiers,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for Modifiers {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
-            if let Some(ref n) = self.annotation {
-                result.push(n.build(b));
-            }
+        build_with_comments(b, &self.node_info, result, |b, result| {
+            result.extend(self.annotations.iter().map(|n| n.build(b)));
 
             if !self.modifiers.is_empty() {
                 let docs = b.to_docs(&self.modifiers);
@@ -329,14 +336,14 @@ impl Modifier {
 
         Self {
             kind: ModifierKind::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for Modifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.kind.build(b));
         });
     }
@@ -360,14 +367,14 @@ impl Annotation {
         Self {
             name: ValueNode::new(node.c_by_n("name")),
             arguments,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for Annotation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("@"));
             result.push(self.name.build(b));
 
@@ -375,10 +382,7 @@ impl<'a> DocBuild<'a> for Annotation {
                 result.push(a.build(b));
             }
         });
-
-        //if !self.is_followed_by_comment_in_new_line {
         result.push(b.nl());
-        //}
     }
 }
 
@@ -396,14 +400,14 @@ impl AnnotationKeyValue {
         Self {
             key: ValueNode::new(node.c_by_n("key")),
             value: ValueNode::new(node.c_by_n("value")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AnnotationKeyValue {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.key.build(b));
             result.push(b.txt("="));
             result.push(self.value.build(b));
@@ -426,7 +430,7 @@ impl ClassBody {
             .into_iter()
             .map(|n| BodyMember::new(&n, ClassMember::new(n)))
             .collect();
-        let node_info = NodeInfo::from(&node);
+        let node_info = NodeInfo::with_punctuation(&node);
 
         Self {
             class_members,
@@ -479,14 +483,14 @@ impl FieldDeclaration {
             type_: UnannotatedType::new(node.c_by_n("type")),
             declarators,
             accessor_list,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -500,7 +504,7 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
             let doc = if docs.len() == 1 {
                 docs[0]
             } else {
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 b.group(b.indent(b.intersperse(&docs, sep)))
             };
             result.push(doc);
@@ -508,8 +512,6 @@ impl<'a> DocBuild<'a> for FieldDeclaration {
             if let Some(ref n) = self.accessor_list {
                 result.push(b.txt(" "));
                 result.push(n.build(b));
-            } else {
-                result.push(b.txt(";"));
             }
         });
     }
@@ -533,17 +535,17 @@ impl ArrayInitializer {
 
         Self {
             initializers,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.initializers);
 
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("{"), Some(b.softline()));
             let close = Insertable::new(Some(b.softline()), Some("}"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -572,14 +574,14 @@ impl AssignmentExpression {
             op: ValueNode::new(node.c_by_n("operator")),
             right: Expression::new(right_child),
             is_right_child_a_query_node: is_query_expression(&right_child),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AssignmentExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let mut docs = vec![self.left.build(b), b.txt(" "), self.op.build(b)];
             if self.is_right_child_a_query_node {
                 docs.push(b.txt(" "));
@@ -638,14 +640,14 @@ impl BoolType {
         assert_check(node, "boolean_type");
 
         Self {
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for BoolType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("boolean"));
         });
     }
@@ -666,7 +668,7 @@ impl Block {
             .into_iter()
             .map(|n| BodyMember::new(&n, Statement::new(n)))
             .collect();
-        let node_info = NodeInfo::from(&node);
+        let node_info = NodeInfo::with_punctuation(&node);
 
         Self {
             statements,
@@ -703,14 +705,14 @@ impl Interface {
 
         Self {
             type_list: TypeList::new(node.c_by_k("type_list")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for Interface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let doc = self.type_list.build(b);
             let impl_group = b.concat(vec![b.txt_("implements"), doc]);
             result.push(impl_group);
@@ -736,16 +738,16 @@ impl TypeList {
 
         Self {
             types,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TypeList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.types);
-            let sep = Insertable::new(None, Some(", "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             let doc = b.intersperse(&docs, sep);
             result.push(doc);
         });
@@ -897,14 +899,14 @@ impl MethodInvocation {
 
         Self {
             kind,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for MethodInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.kind.build(b));
         });
     }
@@ -945,16 +947,16 @@ impl TypeArguments {
 
         Self {
             types,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TypeArguments {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.types);
-            let sep = Insertable::new(None, Some(", "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             let open = Insertable::new(None, Some("<"), None);
             let close = Insertable::new(None, Some(">"), None);
             let doc = b.surround(&docs, sep, open, close);
@@ -979,17 +981,17 @@ impl ArgumentList {
 
         Self {
             expressions,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ArgumentList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.expressions);
 
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("("), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -1008,14 +1010,14 @@ impl Super {
         assert_check(node, "super");
 
         Self {
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for Super {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("super"))
         });
     }
@@ -1031,14 +1033,14 @@ impl This {
         assert_check(node, "this");
 
         Self {
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for This {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("this"))
         });
     }
@@ -1087,14 +1089,14 @@ impl BinaryExpression {
             op: node.c_by_n("operator").kind().to_string(),
             right: Expression::new(node.c_by_n("right")),
             context: Self::build_context(&node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for BinaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let left_doc = self.left.build(b);
             //let op_doc = self.op.build(b);
             let op_doc = b.txt(&self.op);
@@ -1141,7 +1143,7 @@ pub struct LocalVariableDeclaration {
     pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub declarators: Vec<VariableDeclarator>,
-    pub is_parent_for_statement: bool,
+    //pub is_parent_for_statement: bool,
     pub node_info: NodeInfo,
 }
 
@@ -1160,15 +1162,15 @@ impl LocalVariableDeclaration {
             modifiers,
             type_: UnannotatedType::new(node.c_by_n("type")),
             declarators,
-            is_parent_for_statement: node.parent().map_or(false, |n| n.kind() == "for_statement"),
-            node_info: NodeInfo::from(&node),
+            //is_parent_for_statement: node.parent().is_some_and(|n| n.kind() == "for_statement"),
+            node_info: NodeInfo::without_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for LocalVariableDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -1182,15 +1184,11 @@ impl<'a> DocBuild<'a> for LocalVariableDeclaration {
             let doc = if docs.len() == 1 {
                 docs[0]
             } else {
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 b.group(b.indent(b.intersperse(&docs, sep)))
             };
 
-            if self.is_parent_for_statement {
-                result.push(doc);
-            } else {
-                result.push(b.concat(vec![doc, b.txt(";")]));
-            }
+            result.push(doc);
         });
     }
 }
@@ -1221,7 +1219,7 @@ impl VariableDeclarator {
             op,
             value,
             is_value_child_a_query_node,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
@@ -1229,7 +1227,7 @@ impl VariableDeclarator {
 impl<'a> DocBuild<'a> for VariableDeclarator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         // TODO: handle dotted expression use-case
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let mut docs = vec![self.name.build(b)];
 
             if self.value.is_none() {
@@ -1278,14 +1276,14 @@ impl GenericType {
         Self {
             generic_identifier,
             type_arguments: TypeArguments::new(node.c_by_k("type_arguments")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for GenericType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.generic_identifier.build(b));
             result.push(self.type_arguments.build(b));
         });
@@ -1328,14 +1326,14 @@ impl IfStatement {
             condition: ParenthesizedExpression::new(node.c_by_n("condition")),
             consequence: Statement::new(node.c_by_n("consequence")),
             alternative,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for IfStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("if "));
             result.push(self.condition.build(b));
 
@@ -1395,14 +1393,14 @@ impl ParenthesizedExpression {
     pub fn new(node: Node) -> Self {
         Self {
             exp: Expression::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ParenthesizedExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             // to align with prettier apex
             result.push(b.txt("("));
             let doc = b.concat(vec![
@@ -1446,7 +1444,7 @@ impl<'a> DocBuild<'a> for ForInitOption {
             }
             Self::Exps(exps) => {
                 let docs = b.to_docs(exps);
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 let doc = b.group(b.intersperse(&docs, sep));
                 result.push(doc);
             }
@@ -1460,6 +1458,7 @@ pub struct ForStatement {
     pub condition: Option<Expression>,
     pub update: Option<Expression>,
     pub body: Statement,
+    pub semicolons: Vec<Punctuation>,
     pub node_info: NodeInfo,
 }
 
@@ -1467,40 +1466,71 @@ impl ForStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "for_statement");
 
+        // when init or condition is None, the semicolon is immediate child of
+        // ForStatement, for which case we need to collect and print.
+        let mut punc_count = 0;
+
         let init = node.try_c_by_n("init").map(|n| ForInitOption::new(n));
         let condition = node.try_c_by_n("condition").map(|n| Expression::new(n));
         let update = node.try_c_by_n("update").map(|n| Expression::new(n));
+
+        let semicolons = Self::build_semi_colons(&node);
+
+        if init.is_none() {
+            punc_count += 1;
+        }
+        if condition.is_none() {
+            punc_count += 1;
+        }
+
+        if punc_count > semicolons.len() {
+            panic!("## ForStatement missing semicolons.");
+        }
 
         Self {
             init,
             condition,
             update,
             body: Statement::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            semicolons,
+            node_info: NodeInfo::with_punctuation(&node),
         }
+    }
+
+    fn build_semi_colons(node: &Node) -> Vec<Punctuation> {
+        let mut cursor = node.walk();
+        node.children(&mut cursor)
+            .filter(|c| c.kind() == ";")
+            .map(|c| Punctuation::new(c))
+            .collect()
     }
 }
 
 impl<'a> DocBuild<'a> for ForStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("for "));
+
+            let mut semicolons_iter = self.semicolons.iter();
 
             let init = match &self.init {
                 Some(i) => i.build(b),
-                None => b.nil(),
+                None => semicolons_iter.next().unwrap().build(b),
             };
+
             let condition = match &self.condition {
                 Some(c) => b.concat(vec![b.txt(" "), c.build(b)]),
-                None => b.nil(),
+                None => semicolons_iter.next().unwrap().build(b),
             };
+
             let update = match &self.update {
                 Some(u) => b.concat(vec![b.txt(" "), u.build(b)]),
                 None => b.nil(),
             };
+
             let docs = vec![init, condition, update];
 
-            let sep = Insertable::new(None, Some(";"), Some(b.maybeline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.maybeline()));
             let open = Insertable::new(None, Some("("), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -1540,14 +1570,14 @@ impl EnhancedForStatement {
             name: ValueNode::new(node.c_by_n("name")),
             value: Expression::new(node.c_by_n("value")),
             body: Statement::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for EnhancedForStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("for ("));
             result.push(self.type_.build(b));
             result.push(b.txt(" "));
@@ -1648,14 +1678,14 @@ impl ScopedTypeIdentifier {
             scoped_choice,
             annotations,
             type_identifier: type_identifier_node.value(),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ScopedTypeIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.scoped_choice.build(b));
             result.push(b.txt("."));
             if !self.annotations.is_empty() {
@@ -1715,14 +1745,14 @@ impl ConstructorDeclaration {
             name: ValueNode::new(node.c_by_n("name")),
             parameters: FormalParameters::new(node.c_by_n("parameters")),
             body: ConstructorBody::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ConstructorDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -1761,7 +1791,7 @@ impl ConstructorBody {
         Self {
             constructor_invocation,
             statements,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
@@ -1779,13 +1809,14 @@ impl<'a> DocBuild<'a> for ConstructorBody {
             result.push(b.txt("{"));
 
             if let Some(c) = &self.constructor_invocation {
-                result.push(b.indent(b.concat(vec![b.nl(), c.member.build(b), b.txt(";")])));
+                result.push(b.indent(b.concat(vec![b.nl(), c.member.build(b)])));
 
                 if !self.statements.is_empty() {
                     if c.has_trailing_newline {
-                        result.push(b.nl_with_no_indent());
+                        result.push(b.empty_new_line());
+                    } else {
+                        result.push(b.nl());
                     }
-                    result.push(b.nl());
                 }
             } else {
                 result.push(b.indent(b.nl()));
@@ -1830,14 +1861,14 @@ impl ConstructInvocation {
             type_arguments,
             constructor,
             arguments: ArgumentList::new(node.c_by_n("arguments")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ConstructInvocation {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref o) = self.object {
                 result.push(o.build(b));
             }
@@ -1888,17 +1919,17 @@ impl TypeParameters {
 
         Self {
             type_parameters,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TypeParameters {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.type_parameters);
 
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("<"), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some(">"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -1925,14 +1956,14 @@ impl TypeParameter {
         Self {
             annotations,
             type_identifier: node.cvalue_by_k("type_identifier"),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TypeParameter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if !self.annotations.is_empty() {
                 let docs = b.to_docs(&self.annotations);
                 let sep = Insertable::new(None, Some(" "), None);
@@ -1967,14 +1998,14 @@ impl ObjectCreationExpression {
             type_: UnannotatedType::new(node.c_by_n("type")),
             arguments: ArgumentList::new(node.c_by_n("arguments")),
             class_body,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ObjectCreationExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("new"));
             if let Some(t) = &self.type_arguments {
                 result.push(t.build(b));
@@ -2005,14 +2036,14 @@ impl RunAsStatement {
         Self {
             user: ParenthesizedExpression::new(node.c_by_n("user")),
             block: Block::new(node.c_by_k("block")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for RunAsStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("System.runAs"));
             result.push(self.user.build(b));
             result.push(b.txt(" "));
@@ -2036,19 +2067,18 @@ impl DoStatement {
             body: Block::new(node.c_by_n("body")),
             condition: ParenthesizedExpression::new(node.c_by_n("condition")),
 
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DoStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("do"));
             result.push(self.body.build(b));
             result.push(b._txt_("while"));
             result.push(self.condition.build(b));
-            result.push(b.txt(";"));
         });
     }
 }
@@ -2067,19 +2097,19 @@ impl WhileStatement {
         Self {
             condition: ParenthesizedExpression::new(node.c_by_n("condition")),
             body: Statement::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WhileStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("while"));
             result.push(self.condition.build(b));
 
             match self.body {
-                Statement::SemiColumn => result.push(b.txt(";")),
+                Statement::SemiColumn => {}
                 _ => {
                     result.push(b.txt(" "));
                     result.push(self.body.build(b));
@@ -2104,14 +2134,14 @@ impl UnaryExpression {
         Self {
             operator,
             operand: Box::new(Expression::new(node.c_by_n("operand"))),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UnaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt(&self.operator));
             result.push(self.operand.build(b));
         });
@@ -2143,7 +2173,7 @@ impl FieldAccess {
             property_navigation: Self::get_property_navigation(&node),
             field: FieldOption::new(node.c_by_n("field")),
             context: build_chaining_context(&node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 
@@ -2160,7 +2190,7 @@ impl FieldAccess {
 
 impl<'a> DocBuild<'a> for FieldAccess {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let mut docs = vec![];
 
             docs.push(self.object.build(b));
@@ -2234,14 +2264,14 @@ impl EnumDeclaration {
             name: ValueNode::new(node.c_by_n("name")),
             interface,
             body: EnumBody::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for EnumDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -2275,7 +2305,7 @@ impl EnumBody {
 
         Self {
             enum_constants,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
@@ -2292,7 +2322,7 @@ impl<'a> DocBuild<'a> for EnumBody {
                 return result.push(b.concat(vec![b.txt("{"), b.nl(), b.txt("}")]));
             }
 
-            let sep = Insertable::new(None, Some(","), Some(b.nl()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.nl()));
             let open = Insertable::new(None, Some("{"), Some(b.nl()));
             let close = Insertable::new(Some(b.nl()), Some("}"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -2319,14 +2349,14 @@ impl EnumConstant {
             modifiers,
             name: ValueNode::new(node.c_by_n("name")),
 
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for EnumConstant {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -2534,14 +2564,14 @@ impl ArrayAccess {
         Self {
             array: PrimaryExpression::new(node.c_by_n("array")),
             index: Expression::new(node.c_by_n("index")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayAccess {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.array.build(b));
             result.push(b.txt("["));
             result.push(self.index.build(b));
@@ -2591,14 +2621,14 @@ impl ArrayCreationExpression {
         Self {
             type_: SimpleType::new(node.c_by_n("type")),
             variant,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayCreationExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("new"));
             result.push(self.type_.build(b));
             result.push(self.variant.build(b));
@@ -2658,14 +2688,14 @@ impl Dimensions {
         assert_check(node, "dimensions");
 
         Self {
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for Dimensions {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("[]"));
         });
     }
@@ -2683,14 +2713,14 @@ impl DimensionsExpr {
 
         Self {
             exp: Expression::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DimensionsExpr {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("["));
             result.push(self.exp.build(b));
             result.push(b.txt("]"));
@@ -2707,23 +2737,25 @@ pub struct ReturnStatement {
 impl ReturnStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "return_statement");
+        let exp = node.try_first_c().map(|n| Expression::new(n));
+        let node_info = if exp.is_none() {
+            NodeInfo::with_inner_punctuation(&node)
+        } else {
+            NodeInfo::with_punctuation(&node)
+        };
 
-        Self {
-            exp: node.try_first_c().map(|n| Expression::new(n)),
-            node_info: NodeInfo::from(&node),
-        }
+        Self { exp, node_info }
     }
 }
 
 impl<'a> DocBuild<'a> for ReturnStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("return"));
             if let Some(ref exp) = self.exp {
                 result.push(b.txt(" "));
                 result.push(exp.build(b));
             }
-            result.push(b.txt(";"));
         });
     }
 }
@@ -2744,14 +2776,14 @@ impl TernaryExpression {
             condition: Expression::new(node.c_by_n("condition")),
             consequence: Expression::new(node.c_by_n("consequence")),
             alternative: Expression::new(node.c_by_n("alternative")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TernaryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = vec![
                 self.condition.build(b),
                 b.softline(),
@@ -2796,14 +2828,14 @@ impl TryStatement {
         Self {
             body: Block::new(node.c_by_n("body")),
             tail,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TryStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("try"));
             result.push(self.body.build(b));
             result.push(self.tail.build(b));
@@ -2849,14 +2881,14 @@ impl CatchClause {
         Self {
             formal_parameter: FormalParameter::new(node.c_by_k("formal_parameter")),
             body: Block::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for CatchClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b._txt_("catch"));
 
             result.push(b.txt("("));
@@ -2879,14 +2911,14 @@ impl FinallyClause {
 
         Self {
             body: Block::new(node.c_by_k("block")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FinallyClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b._txt_("finally"));
             result.push(self.body.build(b));
         });
@@ -2903,14 +2935,14 @@ impl StaticInitializer {
     pub fn new(node: Node) -> Self {
         Self {
             block: Block::new(node.c_by_k("block")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for StaticInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("static"));
             result.push(self.block.build(b));
         });
@@ -2945,14 +2977,14 @@ impl InterfaceDeclaration {
             type_parameters,
             extends,
             body: InterfaceBody::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for InterfaceDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -2983,14 +3015,14 @@ impl ExtendsInterface {
     pub fn new(node: Node) -> Self {
         Self {
             type_list: TypeList::new(node.c_by_k("type_list")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ExtendsInterface {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let doc = self.type_list.build(b);
             let extends_group = b.concat(vec![b._txt_("extends"), doc]);
             result.push(extends_group);
@@ -3031,7 +3063,7 @@ impl InterfaceBody {
 
         Self {
             members,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
@@ -3106,14 +3138,14 @@ impl ConstantDeclaration {
             modifiers,
             type_: UnannotatedType::new(node.c_by_n("type")),
             declarators,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ConstantDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -3122,10 +3154,9 @@ impl<'a> DocBuild<'a> for ConstantDeclaration {
             result.push(b.txt(" "));
 
             let docs = b.to_docs(&self.declarators);
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let doc = b.group(b.intersperse(&docs, sep));
             result.push(doc);
-            result.push(b.txt(";"));
         });
     }
 }
@@ -3151,14 +3182,14 @@ impl AccessorList {
         Self {
             accessor_declarations,
             child_has_body_section,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AccessorList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             // to align with prettier apex;
             if self.child_has_body_section {
                 // NOTE: group does NOT work with b.nl() so can't use group_surround()
@@ -3197,19 +3228,18 @@ impl AccessorDeclaration {
     pub fn new(node: Node) -> Self {
         assert_check(node, "accessor_declaration");
 
-        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
         Self {
-            modifiers,
+            modifiers: node.try_c_by_k("modifiers").map(|n| Modifiers::new(n)),
             accessor: node.cvalue_by_n("accessor"),
             body: node.try_c_by_n("body").map(|n| Block::new(n)),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_inner_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AccessorDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if let Some(ref n) = self.modifiers {
                 result.push(n.build(b));
             }
@@ -3218,8 +3248,6 @@ impl<'a> DocBuild<'a> for AccessorDeclaration {
             if let Some(ref n) = self.body {
                 result.push(b.txt(" "));
                 result.push(n.build(b));
-            } else {
-                result.push(b.txt(";"));
             }
         });
     }
@@ -3239,14 +3267,14 @@ impl CastExpression {
         Self {
             type_: Type::new(node.c_by_n("type")),
             value: Expression::new(node.c_by_n("value")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for CastExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("("));
             result.push(self.type_.build(b));
             result.push(b.txt_(")"));
@@ -3267,17 +3295,16 @@ impl ThrowStatement {
 
         Self {
             exp: Expression::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ThrowStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("throw "));
             result.push(self.exp.build(b));
-            result.push(b.txt(";"));
         });
     }
 }
@@ -3294,21 +3321,20 @@ impl BreakStatement {
 
         Self {
             identifier: node.try_c_by_k("identifier").map(|n| ValueNode::new(n)),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_inner_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for BreakStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("break"));
 
             if let Some(ref n) = self.identifier {
                 result.push(b.txt(" "));
                 result.push(n.build(b));
             }
-            result.push(b.txt(";"));
         });
     }
 }
@@ -3323,23 +3349,29 @@ impl ContinueStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "continue_statement");
 
+        let identifier = node.try_c_by_k("identifier").map(|n| ValueNode::new(n));
+        let node_info = if identifier.is_none() {
+            NodeInfo::with_inner_punctuation(&node)
+        } else {
+            NodeInfo::with_punctuation(&node)
+        };
+
         Self {
-            identifier: node.try_c_by_k("identifier").map(|n| ValueNode::new(n)),
-            node_info: NodeInfo::from(&node),
+            identifier,
+            node_info,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ContinueStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("continue"));
 
             if let Some(ref n) = self.identifier {
                 result.push(b.txt(" "));
                 result.push(n.build(b));
             }
-            result.push(b.txt(";"));
         });
     }
 }
@@ -3358,14 +3390,14 @@ impl SwitchExpression {
         Self {
             condition: Expression::new(node.c_by_n("condition")),
             body: SwitchBlock::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SwitchExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = vec![b.txt("switch on"), b.softline(), self.condition.build(b)];
             let doc = b.group_indent_concat(docs);
             result.push(doc);
@@ -3393,14 +3425,14 @@ impl SwitchBlock {
 
         Self {
             rules,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SwitchBlock {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.rules);
 
             let sep = Insertable::new(None, Some(""), Some(b.nl()));
@@ -3426,14 +3458,14 @@ impl SwitchRule {
         Self {
             label: SwitchLabel::new(node.c_by_k("switch_label")),
             block: Block::new(node.c_by_k("block")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SwitchRule {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.label.build(b));
             result.push(b.txt(" "));
             result.push(self.block.build(b));
@@ -3476,7 +3508,7 @@ impl<'a> DocBuild<'a> for SwitchLabel {
             }
             Self::Expressions(vec) => {
                 let docs = b.to_docs(vec);
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 let doc = b.group(b.indent(b.intersperse(&docs, sep)));
                 result.push(doc);
             }
@@ -3514,14 +3546,14 @@ impl WhenSObjectType {
             unannotated_type: unannotated_type
                 .expect("Missing unannotated_type in WhenSObjectType"),
             identifier: identifier.expect("Missing identifier in WhenSObjectType"),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WhenSObjectType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.unannotated_type.build(b));
             result.push(b.txt(" "));
             result.push(b.txt(&self.identifier));
@@ -3543,14 +3575,14 @@ impl InstanceOfExpression {
         Self {
             left: Expression::new(node.c_by_n("left")),
             right: Type::new(node.c_by_n("right")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for InstanceOfExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.left.build(b));
             result.push(b._txt_("instanceof"));
             result.push(self.right.build(b));
@@ -3571,14 +3603,14 @@ impl VersionExpression {
         let version_number = node.try_c_by_n("version_num").map(|n| ValueNode::new(n));
         Self {
             version_number,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for VersionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("Package.Version."));
             if let Some(ref n) = self.version_number {
                 result.push(n.build(b));
@@ -3601,14 +3633,14 @@ impl JavaFieldAccess {
 
         Self {
             field_access: FieldAccess::new(node.c_by_k("field_access")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for JavaFieldAccess {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("java:"));
             result.push(self.field_access.build(b));
         });
@@ -3628,14 +3660,14 @@ impl JavaType {
 
         Self {
             scoped_type_identifier,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for JavaType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("java:"));
             result.push(self.scoped_type_identifier.build(b));
         });
@@ -3656,14 +3688,14 @@ impl ArrayType {
         Self {
             element: UnannotatedType::new(node.c_by_n("element")),
             dimensions: Dimensions::new(node.c_by_n("dimensions")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ArrayType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.element.build(b));
             result.push(self.dimensions.build(b));
         });
@@ -3694,21 +3726,21 @@ impl TriggerDeclaration {
             object: ValueNode::new(node.c_by_n("object")),
             events,
             body: TriggerBody::new(node.c_by_n("body")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TriggerDeclaration {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("trigger"));
             result.push(self.name.build(b));
             result.push(b._txt_("on"));
             result.push(self.object.build(b));
 
             let docs = b.to_docs(&self.events);
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("("), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -3732,14 +3764,14 @@ impl TriggerEvent {
 
         Self {
             event: TriggerEventVariant::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TriggerEvent {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.event.build(b));
         });
     }
@@ -3757,14 +3789,14 @@ impl TriggerBody {
 
         Self {
             block: Block::new(node.c_by_k("block")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for TriggerBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.block.build(b));
         });
     }
@@ -3790,14 +3822,14 @@ impl QueryExpression {
         Self {
             query_body,
             context: build_chaining_context(&node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for QueryExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             if self.context.is_some() {
                 let mut docs = vec![];
                 docs.push(b.txt("["));
@@ -3886,14 +3918,14 @@ impl SoslQueryBody {
             using_clause,
             limit_clause,
             update_clause,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoslQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let mut docs = vec![];
             docs.push(self.find_clause.build(b));
 
@@ -3970,14 +4002,14 @@ impl InClause {
 
         Self {
             in_type: ValueNode::new(node.c_by_k("in_type")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for InClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("IN"));
             result.push(self.in_type.build(b));
             result.push(b.txt(" "));
@@ -4002,18 +4034,18 @@ impl ReturningClause {
 
         Self {
             sobject_returns,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ReturningClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("RETURNING"));
 
             let docs = b.to_docs(&self.sobject_returns);
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let doc = b.group_indent(b.concat(vec![b.softline(), b.intersperse(&docs, sep)]));
             result.push(doc);
         });
@@ -4050,20 +4082,20 @@ impl SObjectReturn {
                 offset_clause: node
                     .try_c_by_k("offset_clause")
                     .map(|n| OffsetClause::new(n)),
-                node_info: NodeInfo::from(&n),
+                node_info: NodeInfo::with_punctuation(&n),
             });
 
         Self {
             identifier: ValueNode::new(node.c_by_k("identifier")),
             sobject_return_query,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SObjectReturn {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.identifier.build(b));
 
             if let Some(ref n) = self.sobject_return_query {
@@ -4086,11 +4118,11 @@ pub struct SObjectReturnQuery {
 
 impl<'a> DocBuild<'a> for SObjectReturnQuery {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let mut docs = vec![];
 
             let selected_fields_docs = b.to_docs(&self.selected_fields);
-            let sep = Insertable::new::<&str>(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let doc = b.intersperse(&selected_fields_docs, sep);
             docs.push(doc);
 
@@ -4174,14 +4206,14 @@ impl SoqlQueryBody {
             offset_clause,
             for_clause,
             all_rows_clause,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoqlQueryBody {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let mut docs = vec![];
             docs.push(self.select_clause.build(b));
             docs.push(self.from_clause.build(b));
@@ -4210,7 +4242,7 @@ impl<'a> DocBuild<'a> for SoqlQueryBody {
             if !self.for_clause.is_empty() {
                 let for_types: Vec<DocRef<'_>> =
                     self.for_clause.iter().map(|n| n.build(b)).collect();
-                let sep = Insertable::new(None, Some(", "), None);
+                let sep = Insertable::new(None, Some(" "), None);
                 let for_types_doc = b.intersperse(&for_types, sep);
 
                 let for_clause_doc = b.concat(vec![b.txt_("FOR"), for_types_doc]);
@@ -4236,14 +4268,14 @@ impl FromClause {
 
         Self {
             content: StorageVariant::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FromClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("FROM"));
             result.push(self.content.build(b));
         });
@@ -4264,14 +4296,14 @@ impl StorageAlias {
         Self {
             storage_identifier: StorageIdentifier::new(node.c_by_k("storage_identifier")),
             identifier: ValueNode::new(node.c_by_k("identifier")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for StorageAlias {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.storage_identifier.build(b));
             result.push(b.txt(" "));
             result.push(self.identifier.build(b));
@@ -4291,14 +4323,14 @@ impl LimitClause {
 
         Self {
             limit_value: LimitValue::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for LimitClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("LIMIT"));
             result.push(self.limit_value.build(b));
         });
@@ -4321,18 +4353,18 @@ impl UpdateClause {
 
         Self {
             update_types,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UpdateClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("UPDATE"));
 
             let docs: Vec<DocRef<'a>> = self.update_types.iter().map(|n| n.build(b)).collect();
-            let sep = Insertable::new(None, Some(", "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             let doc = b.intersperse(&docs, sep);
             result.push(doc);
         });
@@ -4351,14 +4383,14 @@ impl BoundApexExpression {
 
         Self {
             exp: Box::new(Expression::new(node.first_c())),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for BoundApexExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt(":"));
             result.push(self.exp.build(b));
         });
@@ -4377,14 +4409,14 @@ impl SoslUsingClause {
 
         Self {
             search: UsingSearch::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoslUsingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("USING"));
             result.push(self.search.build(b));
         });
@@ -4432,14 +4464,14 @@ impl UsingClause {
 
         Self {
             option: UsingClauseOption::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("USING"));
             result.push(self.option.build(b));
         });
@@ -4492,14 +4524,14 @@ impl UsingScopeClause {
 
         Self {
             type_: ValueNode::new(node.c_by_k("using_scope_type")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingScopeClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("SCOPE"));
             result.push(self.type_.build(b));
         });
@@ -4525,14 +4557,14 @@ impl UsingLookupClause {
         Self {
             lookup_field,
             bind_clause,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingLookupClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("LOOKUP"));
             result.push(self.lookup_field.build(b));
             result.push(b.txt(" "));
@@ -4555,14 +4587,14 @@ impl UsingListviewClause {
 
         Self {
             identifier: ValueNode::new(node.c_by_k("identifier")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingListviewClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("ListView ="));
             result.push(self.identifier.build(b));
         });
@@ -4588,18 +4620,18 @@ impl UsingLookupBindClause {
         Self {
             bind_exps,
 
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingLookupBindClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("BIND"));
 
             let docs = b.to_docs(&self.bind_exps);
-            let sep = Insertable::new(None, Some(", "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             let doc = b.intersperse(&docs, sep);
             result.push(doc);
         });
@@ -4620,14 +4652,14 @@ impl UsingLookupBindExpression {
         Self {
             field: ValueNode::new(node.c_by_k("field")),
             bound_value: SoqlLiteral::new(node.c_by_n("bound_value")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UsingLookupBindExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.field.build(b));
             result.push(b._txt_("="));
             result.push(self.bound_value.build(b));
@@ -4647,14 +4679,14 @@ impl WhereClause {
 
         Self {
             boolean_exp: BooleanExpression::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WhereClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = vec![
                 b.txt("WHERE"),
                 b.softline(),
@@ -4679,14 +4711,14 @@ impl ComparisonExpression {
         Self {
             value: Box::new(ValueExpression::new(node.first_c())),
             comparison: get_comparsion(&node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ComparisonExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.value.build(b));
             result.push(self.comparison.build(b));
         });
@@ -4735,17 +4767,17 @@ impl ComparableList {
 
         Self {
             values,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ComparableList {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.values);
 
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("("), Some(b.maybeline()));
             let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -4772,18 +4804,18 @@ impl OrderByClause {
 
         Self {
             exps,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for OrderByClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("ORDER BY"));
 
             let docs = b.to_docs(&self.exps);
-            let sep = Insertable::new(None, Some(", "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             let doc = b.intersperse(&docs, sep);
             result.push(doc);
         });
@@ -4813,14 +4845,14 @@ impl OrderExpression {
             value_expression: ValueExpression::new(node.first_c()),
             direction,
             null_direction,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for OrderExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.value_expression.build(b));
 
             if let Some(ref n) = self.direction {
@@ -4846,14 +4878,14 @@ impl SubQuery {
         let soql_query_body = Box::new(SoqlQueryBody::new(node.c_by_k("soql_query_body")));
         Self {
             soql_query_body,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SubQuery {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = vec![self.soql_query_body.build(b)];
             let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("("), Some(b.maybeline()));
@@ -4878,14 +4910,14 @@ impl MapCreationExpression {
         Self {
             type_: SimpleType::new(node.c_by_n("type")),
             value: MapInitializer::new(node.c_by_n("value")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for MapCreationExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("new"));
             result.push(self.type_.build(b));
             result.push(self.value.build(b));
@@ -4911,17 +4943,17 @@ impl MapInitializer {
 
         Self {
             initializers,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for MapInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = b.to_docs(&self.initializers);
 
-            let sep = Insertable::new(None, Some(","), Some(b.softline()));
+            let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
             let open = Insertable::new(None, Some("{"), Some(b.softline()));
             let close = Insertable::new(Some(b.softline()), Some("}"), None);
             let doc = b.group_surround(&docs, sep, open, close);
@@ -4949,14 +4981,14 @@ impl MapKeyInitializer {
         Self {
             exp1: Box::new(Expression::new(children[0])),
             exp2: Box::new(Expression::new(children[1])),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for MapKeyInitializer {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.exp1.build(b));
             result.push(b._txt_("=>"));
             result.push(self.exp2.build(b));
@@ -4997,18 +5029,18 @@ impl GroupByClause {
         Self {
             exps,
             have_clause,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for GroupByClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("GROUP BY"));
 
             let docs = b.to_docs(&self.exps);
-            let sep = Insertable::new(None, Some(", "), None);
+            let sep = Insertable::new(None, Some(" "), None);
             let doc = b.intersperse(&docs, sep);
             result.push(doc);
 
@@ -5051,14 +5083,14 @@ impl HavingClause {
 
         Self {
             boolean_exp: BooleanExpression::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for HavingClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = vec![
                 b.txt("HAVING"),
                 b.softline(),
@@ -5081,14 +5113,14 @@ impl SoslWithClause {
 
         Self {
             with_type: SoslWithType::new(node.c_by_k("with_type")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoslWithClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs = vec![b.txt_("WITH"), self.with_type.build(b)];
             result.push(b.group_concat(docs));
         });
@@ -5107,14 +5139,14 @@ impl SoqlWithClause {
 
         Self {
             with_type: SoqlWithType::new(node.c_by_k("with_type")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoqlWithClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("WITH"));
             result.push(self.with_type.build(b));
         });
@@ -5240,14 +5272,14 @@ impl WithDataCatExpression {
 
         Self {
             filters,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithDataCatExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("DATA CATEGORY"));
             result.push(b.indent(b.softline()));
 
@@ -5287,14 +5319,14 @@ impl WithDataCatFilter {
             identifier,
             filter_type: ValueNodeUpperCase::new(node.c_by_k("with_data_cat_filter_type")),
             identifiers,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithDataCatFilter {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.identifier.build(b));
             result.push(b.txt(" "));
             result.push(self.filter_type.build(b));
@@ -5305,7 +5337,7 @@ impl<'a> DocBuild<'a> for WithDataCatFilter {
             } else {
                 let docs: Vec<DocRef<'a>> = b.to_docs(&self.identifiers);
 
-                let sep = Insertable::new(None, Some(","), Some(b.softline()));
+                let sep = Insertable::new::<&str>(None, None, Some(b.softline()));
                 let open = Insertable::new(None, Some("("), Some(b.maybeline()));
                 let close = Insertable::new(Some(b.maybeline()), Some(")"), None);
                 let doc = b.group_surround(&docs, sep, open, close);
@@ -5362,14 +5394,14 @@ impl WithSnippetExpression {
 
         Self {
             int,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithSnippetExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("SNIPPET"));
 
             if let Some(ref n) = self.int {
@@ -5393,14 +5425,14 @@ impl WithNetworkExpression {
 
         Self {
             comparison: get_comparsion(&node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithNetworkExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("NETWORK"));
             result.push(self.comparison.build(b));
         });
@@ -5419,14 +5451,14 @@ impl WithMetadataExpression {
 
         Self {
             string_literal: ValueNode::new(node.c_by_k("string_literal")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithMetadataExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("METADATA = "));
             result.push(self.string_literal.build(b));
         });
@@ -5445,14 +5477,14 @@ impl WithSpellCorrectionExpression {
 
         Self {
             boolean: ValueNode::new(node.c_by_k("boolean")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithSpellCorrectionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("SPELL_CORRECTION = "));
             result.push(self.boolean.build(b));
         });
@@ -5471,14 +5503,14 @@ impl WithPriceBookExpression {
 
         Self {
             string_literal: ValueNode::new(node.c_by_k("string_literal")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for WithPriceBookExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt_("PriceBookId ="));
             result.push(self.string_literal.build(b));
         });
@@ -5503,14 +5535,14 @@ impl DottedIdentifier {
 
         Self {
             identifiers,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DottedIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs: Vec<_> = self.identifiers.iter().map(|n| n.build(b)).collect();
             let sep = Insertable::new(None, Some("."), None);
             let doc = b.intersperse(&docs, sep);
@@ -5531,14 +5563,14 @@ impl ValueNode {
     pub fn new(node: Node) -> Self {
         Self {
             value: node.value(),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ValueNode {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt(&self.value));
         });
     }
@@ -5554,14 +5586,14 @@ impl ValueNodeLowerCase {
     pub fn new(node: Node) -> Self {
         Self {
             value: node.value(),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ValueNodeLowerCase {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt(self.value.to_lowercase()));
         });
     }
@@ -5577,14 +5609,14 @@ impl ValueNodeUpperCase {
     pub fn new(node: Node) -> Self {
         Self {
             value: node.value(),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ValueNodeUpperCase {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt(self.value.to_uppercase()));
         });
     }
@@ -5602,16 +5634,15 @@ impl ExpressionStatement {
 
         Self {
             exp: Expression::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ExpressionStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.exp.build(b));
-            result.push(b.txt(";"));
         });
     }
 }
@@ -5626,14 +5657,14 @@ impl SafeNavigationOperator {
         assert_check(node, "safe_navigation_operator");
 
         Self {
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SafeNavigationOperator {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("?."));
         });
     }
@@ -5651,14 +5682,14 @@ impl CountExpression {
 
         Self {
             function_name: ValueNode::new(node.c_by_n("function_name")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for CountExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.function_name.build(b));
             result.push(b.txt("()"));
         });
@@ -5677,14 +5708,14 @@ impl FunctionExpression {
 
         Self {
             variant: FunctionExpressionVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FunctionExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -5702,14 +5733,14 @@ impl FieldIdentifier {
 
         Self {
             variant: FieldIdentifierVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -5727,14 +5758,14 @@ impl GeoLocationType {
 
         Self {
             variant: GeoLocationTypeVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for GeoLocationType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -5752,14 +5783,14 @@ impl SelectClause {
 
         Self {
             variant: SelectClauseVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SelectClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -5777,14 +5808,14 @@ impl StorageIdentifier {
 
         Self {
             variant: StorageIdentifierVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for StorageIdentifier {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -5808,14 +5839,14 @@ impl AndExpression {
 
         Self {
             condition_exps,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AndExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs: Vec<DocRef> = self
                 .condition_exps
                 .iter()
@@ -5845,14 +5876,14 @@ impl OrExpression {
 
         Self {
             condition_exps,
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for OrExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let docs: Vec<DocRef> = self
                 .condition_exps
                 .iter()
@@ -5876,14 +5907,14 @@ impl NotExpression {
 
         Self {
             condition_exp: ConditionExpression::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for NotExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             let expr_doc = self.condition_exp.build_with_parent(b, Some("NOT"));
             let doc = b.concat(vec![b.txt_("NOT"), expr_doc]);
             result.push(doc);
@@ -5903,14 +5934,14 @@ impl SoqlWithType {
 
         Self {
             variant: SoqlWithTypeVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for SoqlWithType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -5928,14 +5959,14 @@ impl ForClause {
 
         Self {
             for_type: ValueNode::new(node.c_by_k("for_type")),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ForClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.for_type.build(b));
         });
     }
@@ -5951,14 +5982,14 @@ impl AllRowsClause {
         assert_check(node, "all_rows_clause");
 
         Self {
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AllRowsClause {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(b.txt("ALL ROWS"));
         });
     }
@@ -5976,14 +6007,14 @@ impl UpdateExpression {
 
         Self {
             variant: UpdateExpressionVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for UpdateExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -6001,14 +6032,14 @@ impl DmlExpression {
 
         Self {
             variant: DmlExpressionVariant::new(node),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DmlExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
@@ -6026,14 +6057,14 @@ impl DmlType {
 
         Self {
             variant: DmlTypeVariant::new(node.first_c()),
-            node_info: NodeInfo::from(&node),
+            node_info: NodeInfo::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DmlType {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments(b, &self.node_info.id, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
             result.push(self.variant.build(b));
         });
     }
