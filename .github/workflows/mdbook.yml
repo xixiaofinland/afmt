@@ -1,0 +1,68 @@
+name: Benchmarking and site
+on:
+  # push:
+  #   tags:
+  #     - 'v*'
+  workflow_dispatch:  # This allows manual triggering
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for all branches and tags
+
+    - name: Clean previous docs folder
+      run: |
+        rm -rf docs/src/hyperfine.md
+        rm -rf docs/src/criterion.md
+        rm -rf docs/src/criterion_reports
+
+    # Set up Rust environment
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    # Build the Rust project (for Hyperfine and Criterion)
+    - name: Build Release
+      run: cargo build --release
+
+    # Install and run mdBook
+    - name: Install mdBook
+      run: cargo install mdbook
+
+    - name: Build mdBook
+      run: |
+        cd docs
+        mdbook build
+
+    # Upload artifacts for GitHub Pages
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./docs/book
+
+    # Commit and push changes
+    - name: Commit and Push Changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Action"
+        git add docs
+        git commit -m "Build mdBook" || echo "No changes to commit"
+        git push origin HEAD:main
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

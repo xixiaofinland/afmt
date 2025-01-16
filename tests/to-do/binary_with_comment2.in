@@ -1,0 +1,14 @@
+class H {
+  {
+    if (true || false //hello1
+    ){}
+
+    if (true  //hello2
+    || false
+    ){}
+
+  if (true || //hello3
+      false
+      ){}
+  }
+}

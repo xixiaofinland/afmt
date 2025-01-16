@@ -1,0 +1,15 @@
+class SuperThis {
+  {
+    [SELECT Id, Name FROM acc].super.a;
+
+    a?.Super.Set();
+
+    Super.a.set();
+
+    a.tHis.set();
+    a.THis.set();
+
+    this.a.set();
+    This.a.set();
+  }
+}

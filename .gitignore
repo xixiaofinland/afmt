@@ -1,0 +1,7 @@
+target
+.direnv/
+node_modules/
+docs/book/
+docs/src/criterion/
+tests/battle_test/repos/
+tests/battle_test/*.log

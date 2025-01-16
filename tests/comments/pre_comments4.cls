@@ -1,0 +1,8 @@
+/**
+block comment
+*/ // line comment
+
+class A {
+  {
+  }
+}

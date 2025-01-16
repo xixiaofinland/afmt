@@ -1,0 +1,3 @@
+@Annotation(param1=false param2='hello')
+public class Me {
+}

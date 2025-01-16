@@ -1,0 +1,6 @@
+public class Me {
+  void dottedExprMethod() {
+    a.Field__c = null;
+    a.Field__c = null;
+  }
+}

@@ -1,0 +1,5 @@
+class topLevelClass {
+  @InvocableMethod
+  public static List<Results> execute(List<Requests> requestList) {
+  }
+}

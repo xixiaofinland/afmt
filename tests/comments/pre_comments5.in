@@ -1,0 +1,10 @@
+
+Class A{
+// line comment
+
+/**
+block comment
+*/
+{
+}
+}
