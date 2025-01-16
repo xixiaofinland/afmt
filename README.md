@@ -114,4 +114,4 @@ indent_size = 4
 No.
 
 - "How to load a .afmt.toml file?"
-`afmt -c path_to_file` which is mentioned in `afmt -h`
+`afmt -c path_to_file`. You can refer to `afmt -h` for more help info.
