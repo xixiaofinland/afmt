@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust-version: [stable, beta, nightly] # Optional: Test against multiple Rust versions
+        rust-version: stable
 
     steps:
       # Step 1: Checkout Code
@@ -51,7 +51,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust-version }}
-          components: [rustfmt, clippy]
+          components: rustfmt, clippy
           override: true
 
       # Step 6: Run Clippy
