@@ -1,4 +1,5 @@
-name: Release
+name: Build Binaries when Tagging
+# This is usually auto triggered by tagging from release-please Github action
 
 on:
   push:

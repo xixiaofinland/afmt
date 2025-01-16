@@ -1,0 +1,88 @@
+name: PR CI and Merge Restrictions
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pr_ci_checks:
+    name: PR Checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust-version: [stable, beta, nightly] # Optional: Test against multiple Rust versions
+
+    steps:
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Restrict Source Branch
+      - name: Check Source Branch
+        if: "!startsWith(github.head_ref, 'feature/') && !startsWith(github.head_ref, 'release-please--')"
+        run: |
+          echo "❌ Pull requests to main must come from feature/* or release-please-- branches."
+          exit 1
+
+      # Step 3: Lint Commit Messages
+      - name: Lint Commit Messages
+        uses: wagoid/commitlint-github-action@v6
+
+      # Step 4: Cache Cargo Dependencies
+      - name: Cache Cargo Registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - name: Cache Cargo Build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-
+
+      # Step 5: Set up Rust Toolchain
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+          components: [rustfmt, clippy]
+          override: true
+
+      # Step 6: Run Clippy
+      - name: Run Clippy
+        run: |
+          cargo clippy --all-targets --all-features -- -D warnings
+
+      # Step 7: Run Tests
+      - name: Run Tests
+        run: cargo test --all-features
+
+      # Step 8: Check Formatting
+      - name: Check Formatting
+        run: cargo fmt -- --check
+
+      # Step 9: Run Cargo Audit (Security Checks)
+      - name: Run Cargo Audit
+        run: |
+          cargo install cargo-audit
+          cargo audit
+
+      # Step 10: Run Cargo Deny (Dependency Checks)
+      - name: Run Cargo Deny
+        run: |
+          cargo install cargo-deny
+          cargo deny check
+
+      # # Step X: Deploy Documentation to GitHub Pages (Optional)
+      # - name: Deploy to GitHub Pages
+      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./target/doc
