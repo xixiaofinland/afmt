@@ -9,9 +9,6 @@ jobs:
   pr_ci_checks:
     name: PR Checks
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust-version: [stable]
 
     steps:
       # Step 1: Checkout Code
@@ -46,13 +43,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-build-
 
-      # Step 5: Set up Rust Toolchain using rust-lang/setup-rust@v1
+      # Step 5: Set up Rust Toolchain
       - name: Set up Rust
-        uses: rust-lang/setup-rust@v1
-        with:
-          rust-version: ${{ matrix.rust-version }}  # Specifies Rust version from the matrix
-          components: rustfmt, clippy              # Components are now comma-separated
-          default: true                            # Sets this toolchain as default
+        uses: dtolnay/rust-toolchain@stable
 
       # Step 6: Run Clippy
       - name: Run Clippy
