@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/xixiaofinland/afmt/compare/v0.3.0...v0.4.0) (2025-01-17)
+
+
+### Features
+
+* update CI script ([eea8ccd](https://github.com/xixiaofinland/afmt/commit/eea8ccd8237f7e5e675e50daab6d0810b82644c2))
+
 ## [0.3.0](https://github.com/xixiaofinland/afmt/compare/v0.2.0...v0.3.0) (2025-01-17)
 
 
