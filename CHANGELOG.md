@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0](https://github.com/xixiaofinland/afmt/compare/v0.3.0...v0.4.0) (2025-01-17)
+
+
+### Features
+
+* add battle tests ([c57e16e](https://github.com/xixiaofinland/afmt/commit/c57e16ef9d260c0a01054190aadafa3b1f4b27b2))
+* set github actions into parallel jobs ([ffdbc3f](https://github.com/xixiaofinland/afmt/commit/ffdbc3fc9b4c67b7006a22a9ee7b00d6193951d3))
+* update CI script ([eea8ccd](https://github.com/xixiaofinland/afmt/commit/eea8ccd8237f7e5e675e50daab6d0810b82644c2))
+
 ## [0.3.0](https://github.com/xixiaofinland/afmt/compare/v0.2.0...v0.3.0) (2025-01-17)
 
 
