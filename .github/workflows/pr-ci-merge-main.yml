@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust-version: stable
+        rust-version: [stable]
 
     steps:
       # Step 1: Checkout Code
@@ -46,13 +46,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-build-
 
-      # Step 5: Set up Rust Toolchain
+      # Step 5: Set up Rust Toolchain using rust-lang/setup-rust@v1
       - name: Set up Rust
-        uses: actions-rs/toolchain@v1
+        uses: rust-lang/setup-rust@v1
         with:
-          toolchain: ${{ matrix.rust-version }}
-          components: rustfmt clippy
-          override: true
+          rust-version: ${{ matrix.rust-version }}  # Specifies Rust version from the matrix
+          components: rustfmt, clippy              # Components are now comma-separated
+          default: true                            # Sets this toolchain as default
 
       # Step 6: Run Clippy
       - name: Run Clippy
@@ -78,11 +78,3 @@ jobs:
         run: |
           cargo install cargo-deny
           cargo deny check
-
-      # # Step X: Deploy Documentation to GitHub Pages (Optional)
-      # - name: Deploy to GitHub Pages
-      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./target/doc
