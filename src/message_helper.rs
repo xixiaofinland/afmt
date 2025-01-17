@@ -19,4 +19,3 @@ pub fn yellow(text: &str) -> &str {
     text
     //format!("<strong style=\"color: yellow;\">{}</strong>", text) // HTML bold yellow
 }
-

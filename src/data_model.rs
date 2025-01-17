@@ -1,6 +1,6 @@
 use crate::{
     accessor::Accessor,
-    context::{Comment, CommentType, NodeContext, Punctuation},
+    context::{NodeContext, Punctuation},
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
     enum_def::*,
@@ -38,7 +38,10 @@ impl Root {
 
         let node_context = NodeContext::with_punctuation(&node);
 
-        Self { members, node_context }
+        Self {
+            members,
+            node_context,
+        }
     }
 }
 
@@ -1549,7 +1552,7 @@ impl<'a> DocBuild<'a> for ForStatement {
 
 #[derive(Debug)]
 pub struct EnhancedForStatement {
-    pub modifiers: Option<Modifiers>,
+    //pub modifiers: Option<Modifiers>,
     pub type_: UnannotatedType,
     pub name: ValueNode,
     //pub dimension
@@ -1562,10 +1565,10 @@ impl EnhancedForStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "enhanced_for_statement");
 
-        let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
+        //let modifiers = node.try_c_by_k("modifiers").map(|n| Modifiers::new(n));
 
         Self {
-            modifiers,
+            //modifiers,
             type_: UnannotatedType::new(node.c_by_n("type")),
             name: ValueNode::new(node.c_by_n("name")),
             value: Expression::new(node.c_by_n("value")),
@@ -2207,7 +2210,7 @@ impl<'a> DocBuild<'a> for FieldAccess {
             if self
                 .context
                 .as_ref()
-                .map_or(false, |context| context.is_top_most_in_a_chain)
+                .is_some_and(|context| context.is_top_most_in_a_chain)
             {
                 result.push(b.group_indent_concat(docs));
             } else {
@@ -3089,7 +3092,7 @@ pub enum InterfaceMember {
     Method(MethodDeclaration),
     Class(ClassDeclaration),
     Interface(InterfaceDeclaration),
-    Semicolon,
+    //Semicolon,
 }
 
 impl<'a> DocBuild<'a> for InterfaceMember {
@@ -3109,9 +3112,6 @@ impl<'a> DocBuild<'a> for InterfaceMember {
             }
             Self::Interface(n) => {
                 result.push(n.build(b));
-            }
-            _ => {
-                unimplemented!()
             }
         }
     }

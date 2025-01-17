@@ -1,14 +1,12 @@
 use crate::{
     accessor::Accessor,
-    context::{Comment, CommentBucket, CommentMap, CommentType, NodeContext},
+    context::{Comment, CommentBucket, CommentMap, NodeContext},
     data_model::*,
     doc::{Doc, DocRef},
     doc_builder::DocBuilder,
     enum_def::{Comparison, SetValue, SoqlLiteral, ValueComparedWith},
     message_helper::{red, yellow},
 };
-#[allow(unused_imports)]
-use log::debug;
 use std::{cell::Cell, collections::HashMap};
 use tree_sitter::{Node, Tree, TreeCursor};
 
@@ -58,7 +56,7 @@ pub fn get_comment_map() -> &'static CommentMap {
     THREAD_COMMENT_MAP.with(|cm| cm.get().expect("## CommentMap not set for this thread"))
 }
 
-// Used for debugging purpose only
+#[allow(dead_code)]
 pub fn print_comment_map(tree: &Tree) {
     let comment_map = get_comment_map();
     let node_map = build_id_node_map(tree);
