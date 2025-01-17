@@ -1,6 +1,6 @@
 use crate::{
     accessor::Accessor,
-    context::{Comment, CommentBucket, CommentMap, CommentType, NodeInfo},
+    context::{Comment, CommentBucket, CommentMap, CommentType, NodeContext},
     data_model::*,
     doc::{Doc, DocRef},
     doc_builder::DocBuilder,
@@ -267,13 +267,13 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
 
 pub fn build_with_comments<'a, F>(
     b: &'a DocBuilder<'a>,
-    node_info: &NodeInfo,
+    node_context: &NodeContext,
     result: &mut Vec<DocRef<'a>>,
     handle_members: F,
 ) where
     F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
 {
-    let bucket = get_comment_bucket(&node_info.id);
+    let bucket = get_comment_bucket(&node_context.id);
     handle_pre_comments(b, bucket, result);
 
     if bucket.dangling_comments.is_empty() {
@@ -288,15 +288,15 @@ pub fn build_with_comments<'a, F>(
 
 pub fn build_with_comments_and_punc<'a, F>(
     b: &'a DocBuilder<'a>,
-    node_info: &NodeInfo,
+    node_context: &NodeContext,
     result: &mut Vec<DocRef<'a>>,
     handle_members: F,
 ) where
     F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
 {
-    build_with_comments(b, node_info, result, handle_members);
+    build_with_comments(b, node_context, result, handle_members);
 
-    if let Some(ref n) = node_info.punc {
+    if let Some(ref n) = node_context.punc {
         result.push(n.build(b));
     }
 }

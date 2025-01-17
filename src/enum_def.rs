@@ -1,6 +1,6 @@
 use crate::{
     accessor::Accessor,
-    context::NodeInfo,
+    context::NodeContext,
     data_model::*,
     doc::DocRef,
     doc_builder::{DocBuilder, Insertable},
@@ -409,7 +409,7 @@ impl<'a> DocBuild<'a> for PrimaryExpression {
 #[derive(Debug)]
 pub struct ClassLiteral {
     pub type_: UnannotatedType,
-    pub node_info: NodeInfo,
+    pub node_context: NodeContext,
 }
 
 impl ClassLiteral {
@@ -418,14 +418,14 @@ impl ClassLiteral {
 
         Self {
             type_: UnannotatedType::new(node.first_c()),
-            node_info: NodeInfo::with_punctuation(&node),
+            node_context: NodeContext::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for ClassLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(self.type_.build(b));
             result.push(b.txt("class"));
         });
@@ -969,7 +969,7 @@ impl<'a> DocBuild<'a> for SelectableExpression {
 #[derive(Debug)]
 pub struct FieldsExpression {
     fields_type: ValueNodeUpperCase,
-    pub node_info: NodeInfo,
+    pub node_context: NodeContext,
 }
 
 impl FieldsExpression {
@@ -978,14 +978,14 @@ impl FieldsExpression {
 
         Self {
             fields_type: ValueNodeUpperCase::new(node.c_by_k("fields_type")),
-            node_info: NodeInfo::with_punctuation(&node),
+            node_context: NodeContext::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for FieldsExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(b.txt("FIELDS("));
             result.push(self.fields_type.build(b));
             result.push(b.txt(")"));
@@ -997,7 +997,7 @@ impl<'a> DocBuild<'a> for FieldsExpression {
 pub struct AliasExpression {
     value_exp: ValueExpression,
     identifier: ValueNode,
-    pub node_info: NodeInfo,
+    pub node_context: NodeContext,
 }
 
 impl AliasExpression {
@@ -1007,14 +1007,14 @@ impl AliasExpression {
         Self {
             value_exp: ValueExpression::new(node.first_c()),
             identifier: ValueNode::new(node.c_by_k("identifier")),
-            node_info: NodeInfo::with_punctuation(&node),
+            node_context: NodeContext::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for AliasExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(self.value_exp.build(b));
             result.push(b.txt(" "));
             result.push(self.identifier.build(b));
@@ -1446,7 +1446,7 @@ impl<'a> DocBuild<'a> for SoqlLiteral {
 pub struct DateLiteralWithParam {
     date_literal: String,
     param: String,
-    pub node_info: NodeInfo,
+    pub node_context: NodeContext,
 }
 
 impl DateLiteralWithParam {
@@ -1456,14 +1456,14 @@ impl DateLiteralWithParam {
         Self {
             date_literal: node.cvalue_by_k("date_literal").to_uppercase(),
             param: node.cvalue_by_k("int"),
-            node_info: NodeInfo::with_punctuation(&node),
+            node_context: NodeContext::with_punctuation(&node),
         }
     }
 }
 
 impl<'a> DocBuild<'a> for DateLiteralWithParam {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
-        build_with_comments_and_punc(b, &self.node_info, result, |b, result| {
+        build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(b.txt(format!("{}:{}", &self.date_literal, &self.param)));
         });
     }
