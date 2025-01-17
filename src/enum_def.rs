@@ -1383,13 +1383,13 @@ pub enum SoqlLiteral {
     Int(ValueNode),
     Decimal(ValueNode),
     StringLiteral(ValueNode),
-    Date(ValueNode),
-    DateTime(ValueNode),
     Boolean(ValueNode),
     DateLiteral(ValueNode),
     DWithParam(DateLiteralWithParam),
-    CurrentLiteral(ValueNode),
     NullLiteral(ValueNode),
+    Date(ValueNode),
+    //CurrentLiteral(ValueNode),
+    //DateTime(ValueNode),
 }
 
 impl SoqlLiteral {
@@ -1399,7 +1399,7 @@ impl SoqlLiteral {
             "int" => Self::Int(ValueNode::new(node)),
             "string_literal" => Self::StringLiteral(ValueNode::new(node)),
             "boolean" => Self::Boolean(ValueNode::new(node)),
-            "date" => Self::Boolean(ValueNode::new(node)),
+            "date" => Self::Date(ValueNode::new(node)),
             "date_literal" => Self::DateLiteral(ValueNode::new(node)),
             "date_literal_with_param" => Self::DWithParam(DateLiteralWithParam::new(node)),
             "null_literal" => Self::NullLiteral(ValueNode::new(node)),
@@ -1434,9 +1434,6 @@ impl<'a> DocBuild<'a> for SoqlLiteral {
             }
             Self::NullLiteral(n) => {
                 result.push(n.build(b));
-            }
-            _ => {
-                unreachable!();
             }
         }
     }
