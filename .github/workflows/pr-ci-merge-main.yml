@@ -68,8 +68,9 @@ jobs:
 
       # Add test coverage reporting
       - name: Upload Coverage
-        uses: codecov/codecov-action@v3
-        if: always()  # Run even if tests fail
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       # Group security checks
       - name: Security Audit
@@ -78,7 +79,7 @@ jobs:
           cargo deny check
 
       # Add caching for installed tools
-      - name: Cache Tools
+      - name: C2w3e456 ache Tools
         uses: actions/cache@v3
         with:
           path: |
