@@ -4,6 +4,9 @@
 # Script to format files in repos with Long Line Logging
 # -----------------------------------------------------------------------------
 
+# Exit immediately if a command exits with a non-zero status
+set -e
+
 # Get the absolute path of the current script's directory
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_LIST="$SCRIPT_DIR/repos.txt"
@@ -11,9 +14,9 @@ TARGET_DIR="$SCRIPT_DIR/repos"
 # FORMATTER_BINARY="$SCRIPT_DIR/../../target/release/afmt"
 FORMATTER_BINARY="$SCRIPT_DIR/../../target/debug/afmt"
 LOG_FILE="$SCRIPT_DIR/format_errors.log"  # Log file for errors
-LONG_LINES_LOG_FILE="$SCRIPT_DIR/long_lines.log"
+# LONG_LINES_LOG_FILE="$SCRIPT_DIR/long_lines.log"
 
-LINE_LENGTH=80
+# LINE_LENGTH=80
 
 # Create target directory if it doesn't exist
 mkdir -p $TARGET_DIR
@@ -36,13 +39,13 @@ done < "$REPO_LIST"
 
 # Clear the log files at the start
 > "$LOG_FILE"
-> "$LONG_LINES_LOG_FILE"
+# > "$LONG_LINES_LOG_FILE"
 
 # Function to format files and log errors with clear info
 format_files() {
     local FILE_PATH="$1"
 
-    echo "Processing file: $FILE_PATH"
+    # echo "Processing file: $FILE_PATH"
 
     OUTPUT=$($FORMATTER_BINARY "$FILE_PATH" 2>&1)
     EXIT_CODE=$?
@@ -70,15 +73,15 @@ format_files() {
     fi
 
     # Log long lines
-    PATTERN="^.{$((LINE_LENGTH + 1)),}$"
-    echo "$OUTPUT" | grep -E "$PATTERN" >> "$LONG_LINES_LOG_FILE"
+    # PATTERN="^.{$((LINE_LENGTH + 1)),}$"
+    # echo "$OUTPUT" | grep -E "$PATTERN" >> "$LONG_LINES_LOG_FILE"
 }
 
 export -f format_files
 export FORMATTER_BINARY
 export LOG_FILE
-export LONG_LINES_LOG_FILE
-export LINE_LENGTH
+# export LONG_LINES_LOG_FILE
+# export LINE_LENGTH
 
 # Record the start time
 START_TIME=$(date +%s)
@@ -90,16 +93,18 @@ find "$TARGET_DIR" \( -type d \( -name ".sfdx" -o -name "scripts" \) \) -prune -
 # find "$TARGET_DIR" -path "$TARGET_DIR/.sfdx" -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
 #     parallel -0 -j+0 format_files
 
-# Check if any errors were logged
-if [ -s "$LOG_FILE" ]; then
-    echo "Errors occurred during formatting. Check $LOG_FILE for details."
-else
-    echo "All files processed successfully."
-fi
-
 # Record the end time and calculate the elapsed time
 END_TIME=$(date +%s)
 ELAPSED_TIME=$((END_TIME - START_TIME))
 
-# Print the time taken
-echo "Script execution time: $ELAPSED_TIME seconds"
+# Check if any errors were logged
+if [ -s "$LOG_FILE" ]; then
+    echo "Errors occurred during formatting. Check $LOG_FILE for details."
+    echo "Script execution time: $ELAPSED_TIME seconds"
+    exit 1
+else
+    echo "All files processed successfully."
+    echo "Script execution time: $ELAPSED_TIME seconds"
+    exit 0
+fi
+

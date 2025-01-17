@@ -1,27 +1,26 @@
 name: PR CI and Merge Restrictions
+
 on:
   pull_request:
     branches: [main]
-    # Add paths-ignore to skip CI for docs-only changes
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - 'LICENSE'
 
-# Add concurrency to cancel outdated runs
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  pr_ci_checks:
-    name: PR Checks
+  code_quality_and_tests:
+    name: Code Quality & Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Needed for proper commit linting
+          fetch-depth: 0
 
       - name: Check Source Branch
         if: "!startsWith(github.head_ref, 'feature/') && !startsWith(github.head_ref, 'release-please--')"
@@ -32,7 +31,6 @@ jobs:
       - name: Lint Commit Messages
         uses: wagoid/commitlint-github-action@v6
 
-      # Combine both cache steps into one for better efficiency
       - name: Cache Rust Dependencies
         uses: actions/cache@v3
         with:
@@ -49,7 +47,6 @@ jobs:
         with:
           components: clippy, rustfmt
 
-      # Group formatting and linting checks
       - name: Code Quality Checks
         run: |
           cargo fmt -- --check
@@ -60,22 +57,53 @@ jobs:
         with:
           crate: cargo-tarpaulin
 
-      # Run tests with coverage
       - name: Run Tests
         run: |
           cargo tarpaulin --out Xml --output-dir coverage.xml
 
-      # Upload test result as artifact
+      - name: Run Battle Tests
+        run: |
+          chmod +x tests/battle_test/battle_testing.sh
+          ./tests/battle_test/battle_testing.sh
+
+      - name: Upload Format Error Logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: format-error-logs
+          path: tests/battle_test/format_errors.log
+
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage.xml
 
-      - name: Upload Coverage to Codev
+      - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Cache Rust Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install cargo-audit
         uses: baptiste0928/cargo-install@v3
@@ -87,8 +115,8 @@ jobs:
         with:
           crate: cargo-deny
 
-      # Group security checks
-      - name: Security Audit
+      - name: Audit & Deny Checks
         run: |
           cargo audit --stale
           cargo deny check
+
