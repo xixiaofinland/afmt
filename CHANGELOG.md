@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/xixiaofinland/afmt/compare/v0.2.0...v0.3.0) (2025-01-17)
+
+
+### Features
+
+* stream line version management ([#53](https://github.com/xixiaofinland/afmt/issues/53)) ([4a6f8b9](https://github.com/xixiaofinland/afmt/commit/4a6f8b9c07362b77b24304c8c8f8ca9cea9608e6))
+
 ## [0.2.0](https://github.com/xixiaofinland/afmt/compare/v0.1.0...v0.2.0) (2025-01-17)
 
 
