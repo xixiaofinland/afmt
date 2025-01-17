@@ -49,41 +49,46 @@ jobs:
         with:
           components: clippy, rustfmt
 
-      # Combine security tools installation
-      - name: Install Security Tools
-        run: |
-          cargo install cargo-audit cargo-deny --locked
-
       # Group formatting and linting checks
       - name: Code Quality Checks
         run: |
           cargo fmt -- --check
           cargo clippy --all-targets --all-features -- -D warnings
 
+      - name: Install cargo-tarpaulin
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-tarpaulin
+
       # Run tests with coverage
       - name: Run Tests
         run: |
-          cargo install cargo-tarpaulin
-          cargo tarpaulin --out Xml
+          cargo tarpaulin --out Xml --output-dir coverage.xml
 
-      # Add test coverage reporting
-      - name: Upload Coverage
+      # Upload test result as artifact
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Upload Coverage to Codev
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Install cargo-audit
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-audit
+
+      - name: Install cargo-deny
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-deny
 
       # Group security checks
       - name: Security Audit
         run: |
           cargo audit --stale
           cargo deny check
-
-      # Add caching for installed tools
-      - name: C2w3e456 ache Tools
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/cargo-audit
-            ~/.cargo/bin/cargo-deny
-            ~/.cargo/bin/cargo-tarpaulin
-          key: ${{ runner.os }}-cargo-tools-${{ hashFiles('**/Cargo.lock') }}
