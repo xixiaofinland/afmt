@@ -133,10 +133,7 @@ impl<'a> PrettyPrinter<'a> {
                 Doc::Text(text, width) => {
                     // Before printing text, flush any pending newline
                     if newline_buffer.is_pending() {
-                        self.insert_newline_with_indent(
-                            &mut result,
-                            newline_buffer.get_indent(),
-                        );
+                        self.insert_newline_with_indent(&mut result, newline_buffer.get_indent());
                         newline_buffer.clear();
                     }
 
@@ -158,10 +155,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 Doc::Choice(x, y) => {
                     if newline_buffer.is_pending() {
-                        self.insert_newline_with_indent(
-                            &mut result,
-                            newline_buffer.get_indent(),
-                        );
+                        self.insert_newline_with_indent(&mut result, newline_buffer.get_indent());
                         newline_buffer.clear();
                     }
 

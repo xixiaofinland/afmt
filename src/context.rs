@@ -14,13 +14,13 @@ use crate::{
 pub type CommentMap = HashMap<usize, CommentBucket>;
 
 #[derive(Debug)]
-pub struct NodeInfo {
+pub struct NodeContext {
     pub id: usize,
     pub punc: Option<Punctuation>,
 }
 
-impl NodeInfo {
-    // Create a `NodeInfo` instance with punctuation extracted from the following node.
+impl NodeContext {
+    // Create an instance with punctuation extracted from the following node.
     pub fn with_punctuation(node: &Node) -> Self {
         Self {
             id: node.id(),
@@ -28,7 +28,7 @@ impl NodeInfo {
         }
     }
 
-    // Create a `NodeInfo` instance with punctuation extracted from an inner node.
+    // Create an instance with punctuation extracted from an inner node.
     pub fn with_inner_punctuation(node: &Node) -> Self {
         Self {
             id: node.id(),
@@ -36,7 +36,7 @@ impl NodeInfo {
         }
     }
 
-    // Create a `NodeInfo` instance without punctuation consideration.
+    // Create an instance without punctuation consideration.
     pub fn without_punctuation(node: &Node) -> Self {
         Self {
             id: node.id(),

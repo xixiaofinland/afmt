@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use afmt::message_helper::{self, red};
+    use afmt::message_helper::red;
     use afmt::{formatter::*, message_helper::yellow};
     use similar::{ChangeTag, TextDiff};
     use std::fs::File;
@@ -149,7 +149,7 @@ mod tests {
         compare("Prettier:", output, prettier_output, source)
     }
 
-    fn normalize(label: &str, content: &str) -> String {
+    fn normalize(content: &str) -> String {
         //println!("{} (Hex):", label);
         let mut normalized = String::new();
 
@@ -165,8 +165,8 @@ mod tests {
     }
 
     fn compare(against: &str, output: String, expected: String, source: &Path) -> bool {
-        let normalized_expected = normalize("prettier", &expected);
-        let normalized_output = normalize("afmt", &output);
+        let normalized_expected = normalize(&expected);
+        let normalized_output = normalize(&output);
         if normalized_output != normalized_expected {
             //if output != expected {
             let source_content =
@@ -234,8 +234,8 @@ mod tests {
                     println!("...");
                 }
 
-                for k in start..end {
-                    print_change_line(&changes[k]);
+                for change in &changes[start..end] {
+                    print_change_line(change);
                 }
 
                 if end < changes.len() {
@@ -244,8 +244,8 @@ mod tests {
 
                 // Also print raw diff lines for easy visual comparison
                 println!("\n--- Raw diff ---");
-                for k in start..end {
-                    print_raw_diff(&changes[k]);
+                for change in &changes[start..end] {
+                    print_raw_diff(change);
                 }
 
                 i = j;

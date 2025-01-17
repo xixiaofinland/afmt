@@ -1,14 +1,11 @@
 use afmt::args::{get_args, Args};
 use afmt::format;
 use afmt::formatter::Formatter;
-use log::error;
-use log::info;
 use std::time::Instant;
 use std::{fs, process};
 
 fn main() {
     let start = Instant::now();
-    info!("starting up");
 
     let result = run(get_args());
 
@@ -20,7 +17,7 @@ fn main() {
             process::exit(0);
         }
         Err(e) => {
-            error!("Error: {}", e);
+            eprint!("Error: {}", e);
             process::exit(1);
         }
     }
