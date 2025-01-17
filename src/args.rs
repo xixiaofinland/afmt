@@ -8,11 +8,11 @@ pub struct Args {
 }
 
 pub fn get_args() -> Args {
-    const VERSION: &str = "v0.2.0";
+    let version = env!("CARGO_PKG_VERSION"); // read from Cargo.toml in compiling time
 
     let matches = Command::new("afmt")
-        .version(VERSION)
-        .about(format!("Apex format tool (afmt): {}", VERSION))
+        .version(version)
+        .about(format!("Apex format tool (afmt): {}", version))
         .arg_required_else_help(true)
         .arg(
             ClapArg::new("file")
