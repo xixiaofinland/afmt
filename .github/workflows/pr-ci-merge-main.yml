@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  code_quality_and_tests:
-    name: Code Quality & Tests
+  code_quality:
+    name: Code Quality (fmt + clippy)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -47,31 +47,42 @@ jobs:
         with:
           components: clippy, rustfmt
 
-      - name: Code Quality Checks
+      - name: Run fmt & clippy
         run: |
           cargo fmt -- --check
           cargo clippy --all-targets --all-features -- -D warnings
+
+  tests:
+    name: Tests (with coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Cache Rust Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
 
       - name: Install cargo-tarpaulin
         uses: baptiste0928/cargo-install@v3
         with:
           crate: cargo-tarpaulin
 
-      - name: Run Tests
+      - name: Run Tests with Coverage
         run: |
           cargo tarpaulin --out Xml --output-dir coverage.xml
-
-      - name: Run Battle Tests
-        run: |
-          chmod +x tests/battle_test/battle_testing.sh
-          ./tests/battle_test/battle_testing.sh
-
-      - name: Upload Format Error Logs
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: format-error-logs
-          path: tests/battle_test/format_errors.log
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
@@ -83,6 +94,39 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  battle_test:
+    name: Battle Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Cache Rust Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run Battle Tests
+        run: |
+          chmod +x tests/battle_test/battle_testing.sh
+          ./tests/battle_test/battle_testing.sh
+
+      - name: Upload Battle Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: format-error-logs
+          path: tests/battle_test/format_errors.log
 
   audit:
     name: Security Audit
