@@ -115,3 +115,23 @@ No.
 
 - "How to load a .afmt.toml file?"
 `afmt -c path_to_file`. You can refer to `afmt -h` for more help info.
+
+## 🤝 Contribution
+
+We greatly value contributions! You can help by [reporting issues](https://github.com/xixiaofinland/afmt/issues) or submitting
+PRs.
+
+### PR Contribution Guidelines
+
+Scenarios((e.g., new features, bug fixes) MUST be covered by new/updated unit tests, and `cargo test` passes.
+Refer to `.cls` and `.in` files in [./tests/static].
+
+Also, our [CI pipeline](.github/workflows/pr-ci-merge-main.yml) ensures high-quality contributions.
+
+It has these rules:
+
+1. Name your branch: `feature/what_ever_short_name`
+2. Use [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/#summary) for commit messages.
+3. Ensure code passes [rustfmt](https://github.com/rust-lang/rustfmt) and [clippy](https://github.com/rust-lang/rust-clippy).
+4. Run and pass all unit tests: `cargo test --all-features`
+5. Pass battle tests by running `afmt` on [popular Apex repos](./tests/battle_test/repos.txt).
