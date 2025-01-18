@@ -125,15 +125,15 @@ PRs.
 
 ### PR Contribution Guidelines
 
-Scenarios((e.g., new features, bug fixes) MUST be covered by new/updated unit tests, and `cargo test` passes.
-Refer to `.cls` and `.in` files in [./tests/static].
+Scenarios (e.g., new features, bug fixes) must be covered by tests, and `cargo test` passes.
+Refer to `*.in` (before format) and `*.cls` (after format) files in the [test folder](./tests/static).
 
 Also, our [CI pipeline](.github/workflows/pr-ci-merge-main.yml) ensures high-quality contributions.
 
-It has these rules:
+Rules:
 
 1. Name your branch: `feature/what_ever_short_name`
-2. Use [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/#summary) for commit messages.
-3. Ensure code passes [rustfmt](https://github.com/rust-lang/rustfmt) and [clippy](https://github.com/rust-lang/rust-clippy).
+2. Use [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/#summary) for commit messages. Example: the project [commit history](https://github.com/xixiaofinland/afmt/commits/)
+3. Ensure code passes [rustfmt](https://github.com/rust-lang/rustfmt) and [clippy](https://github.com/rust-lang/rust-clippy): `cargo fmt -- --check` and `cargo clippy`
 4. Run and pass all unit tests: `cargo test --all-features`
-5. Pass battle tests by running `afmt` on [popular Apex repos](./tests/battle_test/repos.txt).
+5. Pass battle tests by running `afmt` on [popular Apex repos](./tests/battle_test/repos.txt)
