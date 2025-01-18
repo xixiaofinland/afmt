@@ -1,4 +1,4 @@
-name: PR CI and Merge Restrictions
+name: CI
 
 on:
   pull_request:
@@ -13,15 +13,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  code_quality:
-    name: Code Quality (format + clippy)
+  pr_naming:
+    name: PR branch name && conventional commits
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Check Source Branch
         if: "!startsWith(github.head_ref, 'feature/') && !startsWith(github.head_ref, 'release-please--')"
         run: |
@@ -30,6 +25,15 @@ jobs:
 
       - name: Lint Commit Messages
         uses: wagoid/commitlint-github-action@v6
+
+  code_quality:
+    name: Code Quality (format + clippy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Cache Rust Dependencies
         uses: actions/cache@v3
