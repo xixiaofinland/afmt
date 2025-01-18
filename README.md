@@ -116,6 +116,8 @@ No.
 - "How to load a .afmt.toml file?"
 `afmt -c path_to_file`. You can refer to `afmt -h` for more help info.
 
+<br>
+
 ## 🤝 Contribution
 
 We greatly value contributions! You can help by [reporting issues](https://github.com/xixiaofinland/afmt/issues) or submitting
