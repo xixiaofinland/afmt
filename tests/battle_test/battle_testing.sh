@@ -1,40 +1,92 @@
 #!/bin/bash
 
+#!/bin/bash
+
 # -----------------------------------------------------------------------------
-# Script to format files in repos with Long Line Logging
+# Script to format files in repos with improved git error handling
 # -----------------------------------------------------------------------------
 
-# Exit immediately if a command exits with a non-zero status
-set -e
+# Exit on error, but with proper error handling
+set -eo pipefail
 
 # Get the absolute path of the current script's directory
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_LIST="$SCRIPT_DIR/repos.txt"
 TARGET_DIR="$SCRIPT_DIR/repos"
-# FORMATTER_BINARY="$SCRIPT_DIR/../../target/release/afmt"
 FORMATTER_BINARY="$SCRIPT_DIR/../../target/debug/afmt"
-LOG_FILE="$SCRIPT_DIR/format_errors.log"  # Log file for errors
-# LONG_LINES_LOG_FILE="$SCRIPT_DIR/long_lines.log"
+LOG_FILE="$SCRIPT_DIR/format_errors.log"
 
-# LINE_LENGTH=80
+# Enhanced error handling function
+handle_error() {
+    local exit_code=$?
+    echo "Error occurred in script at line $1, exit code: $exit_code"
+    exit $exit_code
+}
+
+trap 'handle_error ${LINENO}' ERR
 
 # Create target directory if it doesn't exist
-mkdir -p $TARGET_DIR
+mkdir -p "$TARGET_DIR"
 
-# Check if the formatter binary exists, if not, run cargo build --release
+# Check if the formatter binary exists
 if [ ! -f "$FORMATTER_BINARY" ]; then
     echo "Formatter binary not found, building it with cargo..."
-    (cd "$SCRIPT_DIR/../.." && cargo build --release)
-    if [ $? -ne 0 ]; then
+    (cd "$SCRIPT_DIR/../.." && cargo build) || {
         echo "Cargo build failed, exiting."
         exit 1
-    fi
+    }
 fi
 
-while IFS= read -r REPO_URL; do
+# Clear the log file at the start
+> "$LOG_FILE"
+
+# Function to check if a repository is accessible
+check_repo_availability() {
+    local repo_url="$1"
+    # Try to do a lightweight ls-remote to check repo accessibility
+    if git ls-remote --quiet --exit-code "$repo_url" HEAD &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Clone repositories with better error handling
+while IFS= read -r REPO_URL || [ -n "$REPO_URL" ]; do
+    # Skip empty lines and comments
+    [[ -z "$REPO_URL" || "$REPO_URL" =~ ^# ]] && continue
+
     REPO_NAME=$(basename -s .git "$REPO_URL")
-    echo "Cloning $REPO_URL into $TARGET_DIR/$REPO_NAME"
-    git clone "$REPO_URL" "$TARGET_DIR/$REPO_NAME"
+    REPO_PATH="$TARGET_DIR/$REPO_NAME"
+
+    echo "Checking availability of $REPO_URL..."
+
+    if ! check_repo_availability "$REPO_URL"; then
+        echo "Warning: Repository $REPO_URL appears to be inaccessible, skipping..."
+        echo "Failed to access repository: $REPO_URL" >> "$LOG_FILE"
+        continue
+    fi
+
+    echo "Cloning $REPO_URL into $REPO_PATH"
+
+    if [ -d "$REPO_PATH" ]; then
+        echo "Directory already exists, removing it..."
+        rm -rf "$REPO_PATH"
+    fi
+
+    # Clone with retries and proper error handling
+    for i in {1..3}; do
+        if git clone --depth 1 --single-branch "$REPO_URL" "$REPO_PATH" 2>> "$LOG_FILE"; then
+            break
+        else
+            if [ $i -eq 3 ]; then
+                echo "Failed to clone $REPO_URL after 3 attempts"
+                continue 2
+            fi
+            echo "Attempt $i failed, retrying..."
+            sleep 2
+        fi
+    done
 done < "$REPO_LIST"
 
 # Clear the log files at the start
