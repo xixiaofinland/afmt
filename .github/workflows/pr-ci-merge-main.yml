@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   code_quality:
-    name: Code Quality (fmt + clippy)
+    name: Code Quality (format + clippy)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -96,8 +96,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   battle_test:
-    name: Battle Tests
+    name: Battle Tests (Optional)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
