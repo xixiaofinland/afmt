@@ -63,8 +63,6 @@ jobs:
           binary_name="afmt"
           artifact_base="${binary_name}-${{ env.VERSION }}-${{ matrix.artifact_name }}"
 
-          mkdir "$dirname"
-
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             mv "target/${{ matrix.target }}/release/$binary_name.exe" "${binary_name}.exe"
             7z a "${artifact_base}.zip" "${binary_name}.exe"
