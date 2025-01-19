@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/xixiaofinland/afmt/compare/v0.5.4...v0.6.0) (2025-01-19)
+
+
+### Features
+
+* add install scripts for win/macos/linux and update readme ([f829f2b](https://github.com/xixiaofinland/afmt/commit/f829f2b9ec7a4584922477aa9d560b5b946663c7))
+
+
+### Bug Fixes
+
+* install-afmt.sh can't see the read section reading from web ([1bddc23](https://github.com/xixiaofinland/afmt/commit/1bddc2325298352d2e8fb8ed8deaa3088242b361))
+
 ## [0.5.4](https://github.com/xixiaofinland/afmt/compare/v0.5.3...v0.5.4) (2025-01-19)
 
 
