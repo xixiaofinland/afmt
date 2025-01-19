@@ -128,7 +128,11 @@ Afmt completed successfully.
 
 ## 🔧 Configuration:
 
-in `.afmt.toml` config file, two options are supported
+`-c` parameter can read configuration settings from a toml file.
+
+Example: `afmt -c .afmt.toml`
+
+In `.afmt.toml` config file, two options are supported
 
 ```toml
 # Maximum line width
@@ -142,14 +146,12 @@ indent_size = 4
 
 ## ❓ FAQ
 
+- "TLTR, what features afmt has?" Run `afmt -h`.
 - "How do I set up afmt in VSCode?"
 [Setup in VSCode](./md/VSCode_Setup.md)
 
 - "Can afmt formats exactly the same as Prettier Apex?"
 No.
-
-- "How to load a .afmt.toml file?"
-`afmt -c path_to_file`. You can refer to `afmt -h` for more help info.
 
 <br>
 
