@@ -60,7 +60,9 @@ This means `afmt` will progressively introduce more configuration options, addre
 
 ### Scripts
 
-> [!caution]
+The script downloads `afmt` latest version to a user's folder and prompts whether adding it to the Path.
+
+> [!tip]
 > Always review the installation script before executing it on your system.
 
 #### For Linux/MacOS
