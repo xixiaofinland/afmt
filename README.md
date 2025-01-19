@@ -58,7 +58,7 @@ This means `afmt` will progressively introduce more configuration options, addre
 
 ## 📥 Installation
 
-### Scripts
+### 1. Script Install
 
 The script downloads `afmt` latest version to a user's folder and prompts whether adding it to the Path.
 
@@ -77,7 +77,20 @@ curl -sL https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/insta
 iwr -useb https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/install-afmt.ps1 | iex
 ```
 
-### Manually Install
+<br>
+
+### 2. Cargo Install
+
+`afmt` is published in creates.io [here](https://crates.io/crates/sf-afmt).
+Run cmd below if you have the `Cargo` tool.
+
+```bash
+cargo install sf-afmt
+```
+
+<br>
+
+### 3. Manual Download
 
 Visit the [release page](https://github.com/xixiaofinland/afmt/releases/latest) and download the appropriate binary for your operating system (Linux, macOS, or Windows).
 
