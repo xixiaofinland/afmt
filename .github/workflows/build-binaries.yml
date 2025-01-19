@@ -1,4 +1,6 @@
 name: Build Binaries when Tagging
+# This is usually auto triggered by tagging from release-please gh
+
 on:
   push:
     tags:
@@ -15,19 +17,23 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - build: linux
+            os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             artifact_name: linux-x86_64
 
-          - os: macos-latest
+          - build: macos
+            os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: macos-x86_64
 
-          - os: macos-latest
+          - build: macos-arm
+            os: macos-latest
             target: aarch64-apple-darwin
             artifact_name: macos-aarch64
 
-          - os: windows-latest
+          - build: windows
+            os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: windows-x86_64
 
@@ -57,18 +63,20 @@ jobs:
           binary_name="afmt"
           artifact_base="${binary_name}-${{ env.VERSION }}-${{ matrix.artifact_name }}"
 
+          mkdir "$dirname"
+
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp "target/${{ matrix.target }}/release/${binary_name}.exe" "${binary_name}.exe"
+            mv "target/${{ matrix.target }}/release/$binary_name.exe" "${binary_name}.exe"
             7z a "${artifact_base}.zip" "${binary_name}.exe"
             echo "ASSET=${artifact_base}.zip" >> $GITHUB_ENV
           else
-            cp "target/${{ matrix.target }}/release/${binary_name}" "${binary_name}"
+            mv "target/${{ matrix.target }}/release/$binary_name" "${binary_name}"
             tar -czf "${artifact_base}.tar.gz" "${binary_name}"
             echo "ASSET=${artifact_base}.tar.gz" >> $GITHUB_ENV
-          if
+          fi
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.ASSET }}
-
+          files: |
+            ${{ env.ASSET }}
