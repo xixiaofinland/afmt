@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/xixiaofinland/afmt/compare/v0.5.0...v0.5.1) (2025-01-19)
+
+
+### Bug Fixes
+
+* github action binary build fails ([d93aa79](https://github.com/xixiaofinland/afmt/commit/d93aa799365559b0caf549a1980253441b96b3c2))
+
 ## [0.5.0](https://github.com/xixiaofinland/afmt/compare/v0.4.0...v0.5.0) (2025-01-19)
 
 
