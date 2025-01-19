@@ -58,6 +58,25 @@ This means `afmt` will progressively introduce more configuration options, addre
 
 ## 📥 Installation
 
+### Scripts
+
+> [!caution]
+> Always review the installation script before executing it on your system.
+
+#### For Linux/MacOS
+
+```bash
+curl -sL https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/install-afmt.sh | bash
+```
+
+#### For Windows
+
+```ps1
+iwr -useb https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/install-afmt.ps1 | iex
+```
+
+### Manually Install
+
 Visit the [release page](https://github.com/xixiaofinland/afmt/releases/latest) and download the appropriate binary for your operating system (Linux, macOS, or Windows).
 
 <br>
