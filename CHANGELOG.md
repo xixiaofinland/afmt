@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/xixiaofinland/afmt/compare/v0.4.0...v0.5.0) (2025-01-19)
+
+
+### Features
+
+* add install-script for linux/macOS ([0b4cc24](https://github.com/xixiaofinland/afmt/commit/0b4cc249bef5484a38443cd2bbc2b362e50c06c1))
+* update release binary logic ([787451a](https://github.com/xixiaofinland/afmt/commit/787451a847ce955dcc88031e95dad74500bbdf24))
+
 ## [0.4.0](https://github.com/xixiaofinland/afmt/compare/v0.3.0...v0.4.0) (2025-01-17)
 
 
