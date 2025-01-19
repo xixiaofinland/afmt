@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use afmt::message_helper::red;
-    use afmt::{formatter::*, message_helper::yellow};
+    use sf_afmt::message_helper::red;
+    use sf_afmt::{formatter::*, message_helper::yellow};
     use similar::{ChangeTag, TextDiff};
     use std::fs::File;
     use std::io::Write;

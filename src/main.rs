@@ -1,6 +1,6 @@
-use afmt::args::{get_args, Args};
-use afmt::format;
-use afmt::formatter::Formatter;
+use sf_afmt::args::{get_args, Args};
+use sf_afmt::format;
+use sf_afmt::formatter::Formatter;
 use std::time::Instant;
 use std::{fs, process};
 
