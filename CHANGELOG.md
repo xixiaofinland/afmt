@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.3](https://github.com/xixiaofinland/afmt/compare/v0.5.2...v0.5.3) (2025-01-19)
+
+
+### Bug Fixes
+
+* binary logic ([17df967](https://github.com/xixiaofinland/afmt/commit/17df9670af25c2fcd9889236ca179db965e4ef32))
+
 ## [0.5.2](https://github.com/xixiaofinland/afmt/compare/v0.5.1...v0.5.2) (2025-01-19)
 
 
