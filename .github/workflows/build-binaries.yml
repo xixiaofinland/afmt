@@ -67,7 +67,7 @@ jobs:
             echo "ASSET=${artifact_base}.tar.gz" >> $GITHUB_ENV
 
       - name: Release
-        uses: softprops/action-gh-release@v
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.ASSET }}
 
