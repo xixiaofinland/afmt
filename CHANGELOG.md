@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.4](https://github.com/xixiaofinland/afmt/compare/v0.5.3...v0.5.4) (2025-01-19)
+
+
+### Bug Fixes
+
+* binary release logic ([6c40850](https://github.com/xixiaofinland/afmt/commit/6c40850bd1b1a3364ab74c00d39e0b04809373e0))
+
 ## [0.5.3](https://github.com/xixiaofinland/afmt/compare/v0.5.2...v0.5.3) (2025-01-19)
 
 
