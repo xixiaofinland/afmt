@@ -16,19 +16,17 @@ BINARY_NAME="afmt"
 # ------------------------------------------------------------------------------
 detect_os() {
   case "$(uname -s)" in
-    Linux*)   echo "unknown-linux-musl" ;;
-    Darwin*)  echo "apple-darwin" ;;
-    *)        echo "unsupported" ;;
+    Linux*)  echo "linux" ;;
+    Darwin*) echo "macos" ;;
+    *)       echo "unsupported" ;;
   esac
 }
 
 detect_arch() {
   case "$(uname -m)" in
-    x86_64)  echo "x86_64" ;;
-    amd64)   echo "x86_64" ;;  # handle "amd64" as x86_64
-    arm64)   echo "aarch64" ;; # handle "arm64" as aarch64
-    aarch64) echo "aarch64" ;;
-    *)       echo "unsupported" ;;
+    x86_64|amd64)  echo "x86_64" ;;
+    arm64|aarch64) echo "aarch64" ;;
+    *)             echo "unsupported" ;;
   esac
 }
 
@@ -69,21 +67,21 @@ main() {
   local release_data
   release_data="$(curl -s "$API_URL")"
 
-  # Construct a pattern to match the relevant asset name
-  # e.g., "afmt-v0.4.0-x86_64-apple-darwin.tar.gz"
-  local pattern="${arch_type}-${os_type}"
+  # Construct the pattern to match new naming: e.g. "linux-x86_64"
+  local pattern="${os_type}-${arch_type}"
 
-  echo "Looking for an asset matching pattern: $pattern"
-  # Extract the first matching browser_download_url from release data
+  echo "Looking for an asset matching: $pattern"
+  # Extract the first matching browser_download_url
   local download_url
   download_url="$(echo "$release_data" \
     | grep -i "browser_download_url" \
     | grep "$pattern" \
+    | grep ".tar.gz" \
     | cut -d '"' -f 4 \
     | head -n 1)"
 
   if [[ -z "$download_url" ]]; then
-    echo "Error: No matching asset found for $pattern."
+    echo "Error: No matching tar.gz asset found for $pattern."
     exit 1
   fi
 
@@ -94,12 +92,11 @@ main() {
   # Download the asset
   curl -sL "$download_url" -o "${TMP_DIR}/${filename}"
 
-  # Extract the tar.gz into TMP_DIR
+  # Extract the tarball
   echo "Extracting $filename..."
   tar -xf "${TMP_DIR}/${filename}" -C "$TMP_DIR"
 
   # Move the afmt binary into INSTALL_DIR
-  # (Assume the extracted file is named 'afmt'; adjust if needed)
   if [[ -f "${TMP_DIR}/${BINARY_NAME}" ]]; then
     mv "${TMP_DIR}/${BINARY_NAME}" "$INSTALL_DIR/"
     chmod +x "${INSTALL_DIR}/${BINARY_NAME}"
@@ -111,25 +108,77 @@ main() {
   # Clean up
   rm -rf "$TMP_DIR"
 
-  echo "============================================================"
-  echo "afmt installed to: $INSTALL_DIR/$BINARY_NAME"
-  echo ""
+  # Define color codes
+  GREEN='\e[32m'
+  YELLOW='\e[33m'
+  RESET='\e[0m'
 
-  # Suggest adding INSTALL_DIR to PATH if it isn't there
+  # Print completion message
+  echo -e "${GREEN}Installed to: $INSTALL_DIR/$BINARY_NAME${RESET}"
+
+
+# ----------------------------------------------------------------------------
+  # 4. DETECT SHELL & PROMPT TO ADD PATH WITH ERROR HANDLING
+  # ----------------------------------------------------------------------------
+
+  # Check if INSTALL_DIR is already in PATH
   if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-    echo "Note: $INSTALL_DIR is not in your PATH."
-    echo "Add the following line to your shell profile (e.g. ~/.bashrc or ~/.zshrc):"
-    echo ""
-    echo "  export PATH=\"\$PATH:$INSTALL_DIR\""
-    echo ""
-    echo "Then, reload your shell or open a new terminal session."
+    # Detect user's shell from $SHELL
+    current_shell="$(basename "$SHELL")"
+
+    # Ask if user wants to update their shell profile automatically
+    read -r -p "Would you like to add \"$INSTALL_DIR\" to your PATH now? (y/n) " answer
+    if [[ "$answer" =~ ^[Yy]$ ]]; then
+      case "$current_shell" in
+        bash)
+          PROFILE_FILE="$HOME/.bashrc"
+          ;;
+        zsh)
+          PROFILE_FILE="$HOME/.zshrc"
+          ;;
+        fish)
+          PROFILE_FILE="$HOME/.config/fish/config.fish"
+          ;;
+        *)
+          PROFILE_FILE=""
+          ;;
+      esac
+
+      if [[ -n "$PROFILE_FILE" ]]; then
+        echo "Adding to $PROFILE_FILE ..."
+        if [[ "$current_shell" == "fish" ]]; then
+          # For fish shell, use fish_user_paths
+          mkdir -p "$(dirname "$PROFILE_FILE")"
+          echo "set -U fish_user_paths \$fish_user_paths $INSTALL_DIR" >> "$PROFILE_FILE" 2>/dev/null && \
+            echo "Done! Open a new terminal or run 'exec fish' to refresh." || \
+            { echo "Error: Failed to write to $PROFILE_FILE."; }
+        else
+          # For bash and zsh
+          echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$PROFILE_FILE" 2>/dev/null && \
+            echo "Done! Run 'source $PROFILE_FILE' or open a new terminal." || \
+            { echo "Error: Failed to write to $PROFILE_FILE."; }
+        fi
+      else
+        echo -e "${YELLOW}Unsupported shell detected: $current_shell.${RESET}"
+        echo "Please add this line manually to your shell's config file:"
+        echo "  export PATH=\"\$PATH:$INSTALL_DIR\""
+      fi
+    else
+      echo -e "\nYou can add this line to your shell profile manually (e.g. ~/.bashrc):"
+      echo -e "${YELLOW}  export PATH=\"\$PATH:$INSTALL_DIR\"${RESET}\n"
+    fi
   fi
 
-  echo "Installation complete! Run 'afmt --help' to get started."
+  echo -e "\n=================== Completed! ====================\n"
+  if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+      echo -e "${GREEN}Run: \"~/.local/bin/afmt -h\" to get started.${RESET}\n"
+  else
+      echo -e "${GREEN}Run: \"afmt -h\" to get started.${RESET}\n"
+  fi
 }
 
 # ------------------------------------------------------------------------------
-# 4. RUN
+# 5. RUN
 # ------------------------------------------------------------------------------
 check_dependencies
 main
