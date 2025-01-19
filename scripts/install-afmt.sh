@@ -127,7 +127,7 @@ main() {
     current_shell="$(basename "$SHELL")"
 
     # Ask if user wants to update their shell profile automatically
-    read -r -p "Would you like to add \"$INSTALL_DIR\" to your PATH now? (y/n) " answer
+    read -r -p "Would you like to add \"$INSTALL_DIR\" to your PATH now? (y/n) " answer < /dev/tty
     if [[ "$answer" =~ ^[Yy]$ ]]; then
       case "$current_shell" in
         bash)
