@@ -1,6 +1,4 @@
 name: Build Binaries when Tagging
-# This is usually auto triggered by tagging from release-please Github action
-
 on:
   push:
     tags:
@@ -17,21 +15,21 @@ jobs:
     strategy:
       matrix:
         include:
-          - build: linux
-            os: ubuntu-latest
+          - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
+            artifact_name: linux-x86_64
 
-          - build: macos
-            os: macos-latest
+          - os: macos-latest
             target: x86_64-apple-darwin
+            artifact_name: macos-x86_64
 
-          - build: macos-arm
-            os: macos-latest
+          - os: macos-latest
             target: aarch64-apple-darwin
+            artifact_name: macos-aarch64
 
-          - build: windows
-            os: windows-latest
+          - os: windows-latest
             target: x86_64-pc-windows-msvc
+            artifact_name: windows-x86_64
 
     steps:
       - name: Checkout
@@ -57,25 +55,19 @@ jobs:
         shell: bash
         run: |
           binary_name="afmt"
-
-          dirname="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
-          mkdir "$dirname"
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            mv "target/${{ matrix.target }}/release/$binary_name.exe" "$dirname"
-          else
-            mv "target/${{ matrix.target }}/release/$binary_name" "$dirname"
-          fi
+          artifact_base="${binary_name}-${{ env.VERSION }}-${{ matrix.artifact_name }}"
 
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a "$dirname.zip" "$dirname"
-            echo "ASSET=$dirname.zip" >> $GITHUB_ENV
+            cp "target/${{ matrix.target }}/release/${binary_name}.exe" "${binary_name}.exe"
+            7z a "${artifact_base}.zip" "${binary_name}.exe"
+            echo "ASSET=${artifact_base}.zip" >> $GITHUB_ENV
           else
-            tar -czf "$dirname.tar.gz" "$dirname"
-            echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
-          fi
+            cp "target/${{ matrix.target }}/release/${binary_name}" "${binary_name}"
+            tar -czf "${artifact_base}.tar.gz" "${binary_name}"
+            echo "ASSET=${artifact_base}.tar.gz" >> $GITHUB_ENV
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v
         with:
-          files: |
-            ${{ env.ASSET }}
+          files: ${{ env.ASSET }}
+
