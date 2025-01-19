@@ -65,6 +65,7 @@ jobs:
             cp "target/${{ matrix.target }}/release/${binary_name}" "${binary_name}"
             tar -czf "${artifact_base}.tar.gz" "${binary_name}"
             echo "ASSET=${artifact_base}.tar.gz" >> $GITHUB_ENV
+          if
 
       - name: Release
         uses: softprops/action-gh-release@v2
