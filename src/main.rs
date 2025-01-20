@@ -1,8 +1,9 @@
 use sf_afmt::args::{get_args, Args};
 use sf_afmt::format;
-use sf_afmt::formatter::Formatter;
+use sf_afmt::formatter::{Formatter, Mode};
+use std::io::{self, IsTerminal, Write};
+use std::process;
 use std::time::Instant;
-use std::{fs, process};
 
 fn main() {
     let start = Instant::now();
@@ -11,9 +12,11 @@ fn main() {
 
     match result {
         Ok(_) => {
-            println!("Afmt completed successfully.");
-            let duration = start.elapsed();
-            println!("\nExecution time: {:?}", duration);
+            if std::io::stdout().is_terminal() {
+                println!("Afmt completed successfully.");
+                let duration = start.elapsed();
+                println!("\nExecution time: {:?}", duration);
+            }
             process::exit(0);
         }
         Err(e) => {
@@ -24,23 +27,29 @@ fn main() {
 }
 
 fn run(args: Args) -> Result<(), String> {
-    let formatter = Formatter::create_from_config(args.config.as_deref(), vec![args.path.clone()])?;
+    let formatter =
+        Formatter::create_from_config(args.config.as_deref(), args.mode.to_owned(), args.paths)?;
     let results = format(formatter);
+    let mut stdout = io::stdout();
+    let is_terminal = stdout.is_terminal();
 
     for (index, result) in results.iter().enumerate() {
-        match result {
-            Ok(value) => {
-                if args.write {
-                    fs::write(&args.path, value).map_err(|e| {
-                        format!("Failed to write formatted content to {}: {}", args.path, e)
-                    })?;
-                    println!("Formatted content written back to: {}\n", args.path);
-                } else {
-                    println!("Result {}: Ok\n{}", index, value);
-                }
+        match (result, args.mode.to_owned()) {
+            (Ok(value), Mode::Std) => {
+                stdout.write_all(value.as_bytes()).unwrap();
             }
-            Err(e) => {
-                //println!("Result {}: Err\n{}", index, e);
+            (Ok(value), Mode::Check) => {
+                let message = if is_terminal {
+                    format!("Result {}: Ok", index)
+                } else {
+                    index.to_string()
+                };
+                println!("{}", message);
+            }
+            (Ok(value), Mode::Write) => {
+                println!("Result {}: Ok", index);
+            }
+            (Err(e), _) => {
                 return Err(format!("Error processing result {}: {}", index, e));
             }
         }

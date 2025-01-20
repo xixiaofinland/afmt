@@ -8,10 +8,19 @@ use crate::utility::{
     set_thread_source_code,
 };
 use serde::Deserialize;
+use std::fs;
+use std::io::Read;
+use std::path::PathBuf;
 use std::sync::mpsc;
 use std::thread;
-use std::{fs, path::Path};
 use tree_sitter::{Node, Parser, Tree};
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Mode {
+    Check,
+    Write,
+    Std,
+}
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
@@ -64,19 +73,25 @@ impl Config {
     }
 }
 
-#[derive(Clone, Debug)]
+pub struct FormatResult {
+    is_changed: bool,
+    source_code: String,
+}
+
+#[derive(Debug)]
 pub struct Formatter {
     config: Config,
-    source_files: Vec<String>,
+    mode: Mode,
+    paths: Vec<PathBuf>,
     //pub errors: ReportedErrors,
 }
 
 impl Formatter {
-    pub fn new(config: Config, source_files: Vec<String>) -> Self {
+    pub fn new(config: Config, mode: Mode, paths: Vec<PathBuf>) -> Self {
         Self {
             config,
-            source_files,
-            //errors: ReportedErrors::default(),
+            mode,
+            paths, //errors: ReportedErrors::default(),
         }
     }
 
@@ -86,45 +101,73 @@ impl Formatter {
 
     pub fn create_from_config(
         config_path: Option<&str>,
-        source_files: Vec<String>,
+        mode: Mode,
+        paths: Vec<PathBuf>,
     ) -> Result<Formatter, String> {
         let config = match config_path {
             Some(path) => Config::from_file(path)
                 .map_err(|e| format!("{}: {}", yellow(&e.to_string()), path))?,
             None => Config::default(),
         };
-        Ok(Formatter::new(config, source_files))
+        Ok(Formatter::new(config, mode, paths))
     }
 
     pub fn format(&self) -> Vec<Result<String, String>> {
         let (tx, rx) = mpsc::channel();
         let config = self.config.clone();
 
-        for file in &self.source_files {
+        if self.paths.is_empty() {
+            let mut buf = String::new();
+            std::io::stdin()
+                .read_to_string(&mut buf)
+                .expect("Failed to read from stdin");
+
+            return vec![Ok(Formatter::format_one(&buf, config))];
+        }
+
+        for file in &self.paths {
             let tx = tx.clone();
             let config = config.clone();
+            let mode = self.mode.clone();
             let file = file.clone();
 
             thread::spawn(move || {
-                let result = std::panic::catch_unwind(|| {
-                    let source_code = fs::read_to_string(Path::new(&file))
-                        .map_err(|e| {
-                            format!(
-                                "Failed to read file: {} {}",
-                                red(&file),
-                                yellow(e.to_string().as_str())
-                            )
-                        })
-                        .unwrap();
+                let result = || -> Result<String, String> {
+                    let source_code = fs::read_to_string(&file).map_err(|e| {
+                        format!(
+                            "Failed to read file: {} {}",
+                            red(file.to_str().unwrap()),
+                            yellow(e.to_string().as_str())
+                        )
+                    })?;
 
-                    Formatter::format_one(&source_code, config)
-                });
+                    let formatted = Formatter::format_one(&source_code, config);
+
+                    if mode == Mode::Write {
+                        fs::write(&file, &formatted).map_err(|e| {
+                            format!(
+                                "Failed to write formatted content to {}: {}",
+                                file.to_str().unwrap(),
+                                e
+                            )
+                        })?;
+                        // println!(
+                        //     "Formatted content written back to: {}\n",
+                        //     file.to_str().unwrap()
+                        // );
+                    } else {
+                        // println!("{0}", formatted);
+                    }
+
+                    Ok(formatted)
+                }();
+
                 match result {
                     Ok(result) => {
                         tx.send(Ok(result)).expect("failed to send result in tx");
                     }
-                    Err(_) => tx
-                        .send(Err("Thread panicked".to_string()))
+                    Err(e) => tx
+                        .send(Err(format!("Thread panicked: {}", e)))
                         .expect("failed to send error in tx"),
                 }
             });
