@@ -25,6 +25,9 @@
 
 `afmt` (Apex formatting tool) is written in Rust 🦀 and leverages the [tree-sitter sfapex parser](https://github.com/aheber/tree-sitter-sfapex).
 
+> [!NOTE]
+> We're looking for contributors to help create a VSCode plugin! Feel free to join the [discussion](https://github.com/xixiaofinland/afmt/issues/83)!
+
 <br>
 
 ## ⭐ Features
@@ -60,18 +63,13 @@ This means `afmt` will progressively introduce more configuration options, addre
 
 ### 1. Script Install
 
-The script downloads `afmt` latest version to a user's folder and prompts whether adding it to the Path.
-
-> [!tip]
-> Always review the installation script before executing it on your system.
-
 #### For Linux/MacOS
 
 ```bash
 curl -sL https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/install-afmt.sh | bash
 ```
 
-#### For Windows
+#### For Windows (PowerShell)
 
 ```ps1
 iwr -useb https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/install-afmt.ps1 | iex
