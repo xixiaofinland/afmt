@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/xixiaofinland/afmt/compare/v0.7.0...v0.7.1) (2025-01-21)
+
+
+### Bug Fixes
+
+* bugfixing class_literal missing dot in print ([8d632e8](https://github.com/xixiaofinland/afmt/commit/8d632e8c8f94fb8fde55dbb27ff6980e22c9fa26))
+
 ## [0.7.0](https://github.com/xixiaofinland/afmt/compare/v0.6.0...v0.7.0) (2025-01-19)
 
 
