@@ -427,7 +427,7 @@ impl<'a> DocBuild<'a> for ClassLiteral {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(self.type_.build(b));
-            result.push(b.txt("class"));
+            result.push(b.txt(".class"));
         });
     }
 }
