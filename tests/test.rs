@@ -120,7 +120,7 @@ mod tests {
             )
         });
 
-        compare("Static:", output, expected, source)
+        compare("Static:", output.formatted_code, expected, source)
     }
 
     fn run_prettier_test_files(source: &Path, config_name: &str) -> bool {
@@ -146,7 +146,7 @@ mod tests {
         let prettier_output = std::fs::read_to_string(&prettier_file)
             .expect("Failed to read the prettier formatted file.");
 
-        compare("Prettier:", output, prettier_output, source)
+        compare("Prettier:", output.formatted_code, prettier_output, source)
     }
 
     fn normalize(content: &str) -> String {
@@ -188,14 +188,12 @@ mod tests {
         }
     }
 
-    fn format_with_afmt(source: &Path, config_path: Option<&str>) -> String {
-        let file_path = source
-            .to_str()
-            .expect("PathBuf to String failed.")
-            .to_string();
+    fn format_with_afmt(source: &Path, config_path: Option<&str>) -> FormatResult {
+        let file_path = source.to_path_buf();
 
-        let formatter = Formatter::create_from_config(config_path, vec![file_path.clone()])
-            .expect("Create formatter failed.");
+        let formatter =
+            Formatter::create_from_config(config_path, Mode::Write, vec![file_path.clone()])
+                .expect("Create formatter failed.");
 
         let vec = formatter.format();
         vec.into_iter()
