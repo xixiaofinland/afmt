@@ -17,15 +17,9 @@ concurrency:
 
 jobs:
   pr_naming:
-    name: PR branch name && conventional commits
+    name: conventional commits
     runs-on: ubuntu-latest
     steps:
-      - name: Check Source Branch
-        if: "!startsWith(github.head_ref, 'feature/') && !startsWith(github.head_ref, 'release-please--')"
-        run: |
-          echo "❌ Pull requests to main must come from feature/* or release-please-- branches."
-          exit 1
-
       - name: Lint Commit Messages
         uses: wagoid/commitlint-github-action@v6
 
