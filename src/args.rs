@@ -1,5 +1,5 @@
 use crate::formatter::Mode;
-use clap::{Arg as ClapArg, ArgGroup, Command, Id, ValueHint};
+use clap::{crate_version, value_parser, Arg as ClapArg, ArgGroup, Command, Id, ValueHint};
 use std::{io::IsTerminal, path::PathBuf};
 
 #[derive(Debug)]
@@ -10,7 +10,7 @@ pub struct Args {
 }
 
 pub fn get_args() -> Args {
-    let version = env!("CARGO_PKG_VERSION"); // read from Cargo.toml in compiling time
+    let version = crate_version!(); // read from Cargo.toml in compiling time
 
     let mut command = Command::new("afmt")
         .version(version)
@@ -27,7 +27,7 @@ pub fn get_args() -> Args {
                 .short('c')
                 .long("check")
                 .num_args(1..)
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
                 .help("Check files for formatting issues")
                 .value_hint(ValueHint::FilePath),
         )
@@ -36,7 +36,7 @@ pub fn get_args() -> Args {
                 .short('w')
                 .long("write")
                 .num_args(1..)
-                .value_parser(clap::value_parser!(PathBuf))
+                .value_parser(value_parser!(PathBuf))
                 .help("Write the formatted result back to the files")
                 .value_hint(ValueHint::FilePath),
         )
@@ -48,13 +48,13 @@ pub fn get_args() -> Args {
              afmt < ./file.cls\n\
              \n\
              # Check if any of the specified files would be modified\n\
-             afmt --check ./file.cls\n\
+             afmt --check ./**/*.cls\n\
              \n\
-             # Format and write changes back to the file\n\
+             # Format and write changes back to the files\n\
              afmt --write src/file.cls\n\
              \n\
              # Use a specific config file\n\
-             afmt --config .afmt.toml ./file.cls\n\
+             afmt --config .afmt.toml --write ./file.cls\n\
             ",
         );
 
