@@ -167,8 +167,7 @@ Also, our CI [pipeline](.github/workflows/pr-ci-merge-main.yml) ensures high-qua
 
 CI Rules:
 
-1. Name your branch: `feature/what_ever_short_name`
-2. Use [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/#summary) for commit messages. Example: the project [commit history](https://github.com/xixiaofinland/afmt/commits/)
-3. Ensure code passes [rustfmt](https://github.com/rust-lang/rustfmt) and [clippy](https://github.com/rust-lang/rust-clippy): `cargo fmt -- --check` and `cargo clippy`
-4. Run and pass all unit tests: `cargo test --all-features`
-5. Pass battle tests by running `afmt` on a list of [popular Apex repos](./tests/battle_test/repos.txt)
+1. Use [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/#summary) for commit messages. Example: the project [commit history](https://github.com/xixiaofinland/afmt/commits/)
+2. Ensure code passes [rustfmt](https://github.com/rust-lang/rustfmt) and [clippy](https://github.com/rust-lang/rust-clippy): `cargo fmt -- --check` and `cargo clippy`
+3. Run and pass all unit tests: `cargo test --all-features`
+4. Pass battle tests by running `afmt` on a list of [popular Apex repos](./tests/battle_test/repos.txt)
