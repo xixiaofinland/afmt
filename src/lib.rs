@@ -8,9 +8,9 @@ mod enum_def;
 pub mod formatter;
 pub mod message_helper;
 mod utility;
-use formatter::Formatter;
+use formatter::{FormatResult, Formatter};
 
-pub fn format(f: Formatter) -> Vec<Result<String, String>> {
+pub fn format(f: Formatter) -> Vec<Result<FormatResult, String>> {
     f.format()
 }
 

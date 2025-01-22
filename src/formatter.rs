@@ -74,8 +74,9 @@ impl Config {
 }
 
 pub struct FormatResult {
-    is_changed: bool,
-    source_code: String,
+    pub is_changed: bool,
+    pub file_path: PathBuf,
+    pub formatted_code: String,
 }
 
 #[derive(Debug)]
@@ -112,54 +113,58 @@ impl Formatter {
         Ok(Formatter::new(config, mode, paths))
     }
 
-    pub fn format(&self) -> Vec<Result<String, String>> {
+    pub fn format(&self) -> Vec<Result<FormatResult, String>> {
         let (tx, rx) = mpsc::channel();
         let config = self.config.clone();
 
-        if self.paths.is_empty() {
-            let mut buf = String::new();
+        if Mode::Std == self.mode {
+            let mut source_code = String::new();
             std::io::stdin()
-                .read_to_string(&mut buf)
+                .read_to_string(&mut source_code)
                 .expect("Failed to read from stdin");
 
-            return vec![Ok(Formatter::format_one(&buf, config))];
+            let formatted_code = Formatter::format_one(&source_code, config);
+
+            return vec![Ok(FormatResult {
+                is_changed: source_code != formatted_code,
+                file_path: PathBuf::default(),
+                formatted_code,
+            })];
         }
 
-        for file in &self.paths {
+        for file_path in &self.paths {
             let tx = tx.clone();
             let config = config.clone();
             let mode = self.mode.clone();
-            let file = file.clone();
+            let file_path = file_path.clone();
 
             thread::spawn(move || {
-                let result = || -> Result<String, String> {
-                    let source_code = fs::read_to_string(&file).map_err(|e| {
+                let result = || -> Result<FormatResult, String> {
+                    let source_code = fs::read_to_string(&file_path).map_err(|e| {
                         format!(
                             "Failed to read file: {} {}",
-                            red(file.to_str().unwrap()),
+                            red(file_path.to_str().unwrap()),
                             yellow(e.to_string().as_str())
                         )
                     })?;
 
-                    let formatted = Formatter::format_one(&source_code, config);
+                    let formatted_code = Formatter::format_one(&source_code, config);
 
                     if mode == Mode::Write {
-                        fs::write(&file, &formatted).map_err(|e| {
+                        fs::write(&file_path, &formatted_code).map_err(|e| {
                             format!(
                                 "Failed to write formatted content to {}: {}",
-                                file.to_str().unwrap(),
+                                file_path.to_str().unwrap(),
                                 e
                             )
                         })?;
-                        // println!(
-                        //     "Formatted content written back to: {}\n",
-                        //     file.to_str().unwrap()
-                        // );
-                    } else {
-                        // println!("{0}", formatted);
                     }
 
-                    Ok(formatted)
+                    Ok(FormatResult {
+                        is_changed: source_code != formatted_code,
+                        file_path,
+                        formatted_code,
+                    })
                 }();
 
                 match result {
