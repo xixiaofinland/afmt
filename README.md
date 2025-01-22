@@ -98,13 +98,13 @@ Visit the [release page](https://github.com/xixiaofinland/afmt/releases/latest) 
 
 Create a `file.cls` file with valid Apex code.
 
-### Dry Run:
+### Format source code from stdin:
 
-Run `afmt ./file.cls` to preview the formatting result.
+Run `afmt < ./file.cls` to format the code from stdin and output the formatted code.
+This is useful for piping the output to another command or tool.
 
 ```bash
-> afmt ./file.cls
-Result 0: Ok
+> afmt < ./file.cls
 global class PluginDescribeResult {
     {
         [SELECT FIELDS(STANDARD) FROM Organization LIMIT 1];
@@ -112,15 +112,31 @@ global class PluginDescribeResult {
 }
 ```
 
+### Check files:
+
+Run `afmt --check ./file.cls` to preview the formatting result.
+
+```bash
+> afmt --check ./file.cls
+file ./file.cls needs formatting
+
+Afmt completed successfully. Processed 1 files
+
+Execution time: 15.053216ms
+```
+
 ### Format and Write:
 
-Run `afmt -w ./file.cls` to format the file and overwrite it with the
+Run `afmt --write ./file.cls` to format the file and overwrite it with the
    formatted code.
 
 ```bash
-> afmt -w ./file.cls
-Formatted content written back to: ./file.cls
-Afmt completed successfully.
+> afmt --write ./file.cls
+file ./file.cls has been formatted
+
+Afmt completed successfully. Processed 1 files
+
+Execution time: 10.080986ms
 ```
 <br>
 
