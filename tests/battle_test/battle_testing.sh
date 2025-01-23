@@ -69,13 +69,13 @@ while IFS= read -r REPO_URL || [ -n "$REPO_URL" ]; do
 
     echo "Cloning $REPO_URL into $REPO_PATH"
 
-    if [ -d "$REPO_PATH" ]; then
-        echo "Directory already exists, removing it..."
-        rm -rf "$REPO_PATH"
-    fi
-
     # Clone with retries and proper error handling
     for i in {1..3}; do
+        if [ -d "$REPO_PATH" ]; then
+            echo "Directory already exists, no need to clone again"
+            break
+        fi
+
         if git clone --depth 1 --single-branch "$REPO_URL" "$REPO_PATH" 2>> "$LOG_FILE"; then
             break
         else
@@ -99,7 +99,7 @@ format_files() {
 
     # echo "Processing file: $FILE_PATH"
 
-    OUTPUT=$($FORMATTER_BINARY "$FILE_PATH" 2>&1)
+    OUTPUT=$($FORMATTER_BINARY < "$FILE_PATH" 2>&1)
     EXIT_CODE=$?
 
     if [ $EXIT_CODE -ne 0 ]; then
