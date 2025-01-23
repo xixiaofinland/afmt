@@ -17,7 +17,7 @@ similar = "2.6.0"
 
 [dependencies]
 serde = { version = "1.0.210", features = ["derive"] }
-clap = "4.5.16"
+clap = { version = "4.5.16", features = ["cargo"] }
 toml = "0.8.19"
 typed-arena = "2.0.2"
 tree-sitter = "0.24.3"
