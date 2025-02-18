@@ -5,15 +5,15 @@ use std::time::Instant;
 use std::{fs, process};
 
 fn main() {
-    let start = Instant::now();
+    //let start = Instant::now();
 
     let result = run(get_args());
 
     match result {
         Ok(_) => {
-            println!("Afmt completed successfully.");
-            let duration = start.elapsed();
-            println!("\nExecution time: {:?}", duration);
+            //println!("Afmt completed successfully.");
+            //let duration = start.elapsed();
+            //println!("\nExecution time: {:?}", duration);
             process::exit(0);
         }
         Err(e) => {
@@ -36,7 +36,8 @@ fn run(args: Args) -> Result<(), String> {
                     })?;
                     println!("Formatted content written back to: {}\n", args.path);
                 } else {
-                    println!("Result {}: Ok\n{}", index, value);
+                    //println!("Result {}: Ok\n{}", index, value);
+                    println!("{}", value);
                 }
             }
             Err(e) => {
