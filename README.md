@@ -11,6 +11,7 @@
 
 ## Table of Contents
 - [📘 Introduction](#-introduction)
+- [🌐 Playground](#-playground)
 - [⭐ Features](#-features)
 - [✨ vs. Prettier Apex](#-vs-prettier-apex)
 - [📥 Installation](#-installation)
@@ -29,6 +30,10 @@
 > We're looking for contributors to help create a VSCode plugin! Feel free to join the [discussion](https://github.com/xixiaofinland/afmt/issues/83)!
 
 <br>
+
+## 🌐 Playground
+
+Try the browser version, [here](https://xixiaofinland.github.io/afmt-web-service/).
 
 ## ⭐ Features
 
