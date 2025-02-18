@@ -125,7 +125,7 @@ jobs:
 
       - name: Upload Battle Test Logs
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: format-error-logs
           path: tests/battle_test/format_errors.log
