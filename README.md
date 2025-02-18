@@ -33,7 +33,7 @@
 
 ## 🌐 Playground
 
-Try the browser version, [here](https://xixiaofinland.github.io/afmt-web-service/).
+Try the browser version [here](https://xixiaofinland.github.io/afmt-web-service/).
 
 ## ⭐ Features
 
