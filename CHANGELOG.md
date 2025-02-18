@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/xixiaofinland/afmt/compare/v0.7.1...v0.8.0) (2025-02-18)
+
+
+### Features
+
+* temporarily remove extra prints in dry-run for web-service backend ([9dd430b](https://github.com/xixiaofinland/afmt/commit/9dd430bcc87d28343f18db112c4df24eb63d5f97))
+
 ## [0.7.1](https://github.com/xixiaofinland/afmt/compare/v0.7.0...v0.7.1) (2025-01-21)
 
 
