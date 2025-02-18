@@ -6,7 +6,6 @@ use std::{fs, process};
 
 fn main() {
     //let start = Instant::now();
-
     let result = run(get_args());
 
     match result {
