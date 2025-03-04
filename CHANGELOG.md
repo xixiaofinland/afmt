@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/xixiaofinland/afmt/compare/v0.8.0...v0.8.1) (2025-03-04)
+
+
+### Bug Fixes
+
+* [#92](https://github.com/xixiaofinland/afmt/issues/92) indent issue for line after super() ([40fc109](https://github.com/xixiaofinland/afmt/commit/40fc1094293f926cbf3fa994ea12ad7c620933fb))
+
 ## [0.8.0](https://github.com/xixiaofinland/afmt/compare/v0.7.1...v0.8.0) (2025-02-18)
 
 
