@@ -1818,7 +1818,7 @@ impl<'a> DocBuild<'a> for ConstructorBody {
                     if c.has_trailing_newline {
                         result.push(b.empty_new_line());
                     } else {
-                        result.push(b.nl());
+                        result.push(b.indent(b.nl()));
                     }
                 }
             } else {
