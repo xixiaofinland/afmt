@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/xixiaofinland/afmt/compare/v0.8.1...v0.8.2) (2025-03-11)
+
+
+### Bug Fixes
+
+* [#67](https://github.com/xixiaofinland/afmt/issues/67) idempotent format issue ([92083f5](https://github.com/xixiaofinland/afmt/commit/92083f591f31f47f891480c01c2dda26edbc7c1e))
+
 ## [0.8.1](https://github.com/xixiaofinland/afmt/compare/v0.8.0...v0.8.1) (2025-03-04)
 
 
