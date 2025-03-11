@@ -1,0 +1,7 @@
+class TestClass {
+  {
+    if (true)
+    // comment 1
+    {}
+   }
+}
