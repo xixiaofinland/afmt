@@ -114,6 +114,10 @@ impl Comment {
         self.metadata.has_empty_line_above
     }
 
+    pub fn has_prev_node_else_keyword(&self) -> bool {
+        self.metadata.has_prev_node_else_keyword
+    }
+
     pub fn is_followed_by_bracket_composite_node(&self) -> bool {
         self.metadata.is_followed_by_bracket_composite_node
     }
@@ -163,15 +167,17 @@ pub struct CommentMetadata {
     has_empty_line_above: bool,
     has_empty_line_below: bool,
     has_prev_node: bool,
+    has_prev_node_else_keyword: bool,
     is_followed_by_bracket_composite_node: bool,
 }
 
 impl CommentMetadata {
     pub fn from(node: &Node, comment_type: CommentType) -> Self {
         let prev = node.prev_named_sibling();
-        let next = node.next_named_sibling();
-
         let has_prev_node = prev.is_some();
+
+        let prev_unnamed = node.prev_sibling();
+        let has_prev_node_else_keyword = prev_unnamed.map(|n| n.kind() == "else").unwrap_or(false);
 
         let has_leading_content = if let Some(prev_node) = prev {
             node.start_position().row == prev_node.end_position().row
@@ -179,6 +185,7 @@ impl CommentMetadata {
             false
         };
 
+        let next = node.next_named_sibling();
         let has_trailing_content = match comment_type {
             CommentType::Line => false,
             CommentType::Block => {
@@ -214,6 +221,7 @@ impl CommentMetadata {
             has_empty_line_above,
             has_empty_line_below,
             has_prev_node,
+            has_prev_node_else_keyword,
             is_followed_by_bracket_composite_node,
         }
     }
