@@ -1,8 +1,8 @@
 // First Test Comment
 
 /**
-* First ApexDoc
-*/
+ * First ApexDoc
+ */
 trigger Case_trg on Case(before update) {
   System.debug('SOMETHING');
 }

@@ -143,12 +143,78 @@ impl<'a> DocBuild<'a> for Comment {
                 result.push(b.nl());
             }
             CommentType::Block => {
-                let lines: &Vec<&str> = &self.value.split('\n').collect();
-                for (i, line) in lines.iter().enumerate() {
-                    result.push(b.txt(line.trim()));
+                let mut lines: Vec<&str> = self.value.split('\n').collect();
 
-                    if i < lines.len() - 1 {
-                        result.push(b.nl());
+                // JavaDoc formatting
+                if self.value.starts_with("/**") {
+                    // Handle the first line that might contain both /** and content
+                    if !lines.is_empty() {
+                        let first_line = lines[0].trim();
+                        if first_line.len() > 3 {
+                            // Has content after /**
+                            // Extract the content after /**
+                            let content = first_line[3..].trim();
+                            if !content.is_empty() {
+                                // Replace first line with just /**
+                                lines[0] = "/**";
+                                // Insert the content as a new second line
+                                lines.insert(1, content);
+                            }
+                        }
+                    }
+
+                    for (i, line) in lines.iter().enumerate() {
+                        let trimmed = line.trim();
+
+                        if i == 0 {
+                            // First line (/**) remains unchanged
+                            result.push(b.txt(trimmed));
+                        } else if i == lines.len() - 1 {
+                            if let Some(before_end) = trimmed.strip_suffix("*/") {
+                                let content = before_end.trim();
+                                if content.is_empty() {
+                                    result.push(b.txt(" */"));
+                                } else {
+                                    result.push(b.txt(format!(" * {}", content))); // First line: Preserve content
+                                    result.push(b.nl()); // Newline before closing */
+                                    result.push(b.txt(" */")); // Second line: Properly close the comment
+                                }
+                            } else {
+                                result.push(b.txt(" */")); // Fallback (shouldn't happen in valid JavaDoc)
+                            }
+                        } else if trimmed.is_empty() {
+                            // Handle empty lines
+                            result.push(b.txt(" *"));
+                        } else {
+                            // Handle content lines
+                            if let Some(after_star) = trimmed.strip_prefix('*') {
+                                // Line has a star - normalize to exactly one space
+                                let content = after_star.trim_start(); // Remove all leading spaces
+                                if content.is_empty() {
+                                    // Just a star with no content
+                                    result.push(b.txt(" *"));
+                                } else {
+                                    // Star with content - add exactly one space
+                                    result.push(b.txt(format!(" * {}", content)));
+                                }
+                            } else {
+                                // Line doesn't have a star, add standard formatting
+                                result.push(b.txt(format!(" * {}", trimmed)));
+                            }
+                        }
+
+                        if i < lines.len() - 1 {
+                            result.push(b.nl());
+                        }
+                    }
+                } else {
+                    // Regular block comment (non-JavaDoc)
+                    for (i, line) in lines.iter().enumerate() {
+                        result.push(b.txt(line.trim()));
+
+                        if i < lines.len() - 1 {
+                            result.push(b.nl());
+                        }
                     }
                 }
             }

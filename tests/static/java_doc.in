@@ -5,14 +5,14 @@
  */
 
 /** This is a JavaDoc
-with multiple lines
-and some indentation. */
+    with multiple lines
+    and some indentation. */
 
 /**
 This is a JavaDoc
-* with inconsistent
-* indentation.
-*/
+  * with inconsistent
+   * indentation.
+    */
 
 /**
  *** This is a JavaDoc
@@ -38,5 +38,5 @@ This is a JavaDoc
  * @author   Someone
  */
 
-class A {
-}
+ Class A {
+ }
