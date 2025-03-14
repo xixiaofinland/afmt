@@ -1317,6 +1317,7 @@ pub struct IfStatement {
     pub consequence: Statement,
     pub alternative: Option<Statement>,
     pub node_context: NodeContext,
+    pub has_else_and_followed_by_new_line_comment: bool, // https://github.com/xixiaofinland/afmt/issues/67
 }
 
 impl IfStatement {
@@ -1325,10 +1326,23 @@ impl IfStatement {
 
         let alternative = node.try_c_by_n("alternative").map(|a| Statement::new(a));
 
+        let has_else_and_followed_by_new_line_comment = alternative.is_some()
+            && node
+                .children(&mut node.walk())
+                .find(|n| n.kind() == "else")
+                .and_then(|else_node| {
+                    else_node.next_sibling().map(|next_sibling| {
+                        next_sibling.is_extra()
+                            && next_sibling.start_position().row != else_node.end_position().row
+                    })
+                })
+                .unwrap_or(false);
+
         Self {
             condition: ParenthesizedExpression::new(node.c_by_n("condition")),
             consequence: Statement::new(node.c_by_n("consequence")),
             alternative,
+            has_else_and_followed_by_new_line_comment,
             node_context: NodeContext::with_punctuation(&node),
         }
     }
@@ -1350,37 +1364,28 @@ impl<'a> DocBuild<'a> for IfStatement {
 
             // Handle the 'else' part
             if let Some(ref a) = self.alternative {
-                match a {
-                    Statement::If(_) => {
-                        if self.consequence.is_block() {
-                            result.push(b.txt(" else "));
-                        } else {
-                            result.push(b.nl());
-                            result.push(b.txt("else "));
-                        }
-                        result.push(a.build(b)); // Recursively build the nested 'else if' statement
+                if self.consequence.is_block() {
+                    result.push(b.txt(" else"));
+                    if self.has_else_and_followed_by_new_line_comment {
+                        result.push(b.nl());
+                    } else {
+                        result.push(b.txt(" "));
                     }
-                    Statement::Block(_) => {
-                        if self.consequence.is_block() {
-                            result.push(b.txt(" else "));
-                        } else {
-                            result.push(b.nl());
-                            result.push(b.txt("else "));
-                        }
-                        result.push(a.build(b));
+                } else {
+                    result.push(b.nl());
+                    result.push(b.txt("else"));
+                    if self.has_else_and_followed_by_new_line_comment {
+                        result.push(b.nl());
                     }
-                    // Handle "else" with a single statement
-                    _ => {
-                        if self.consequence.is_block() {
-                            result.push(b.txt(" else "));
-                        } else {
-                            result.push(b.nl());
-                            result.push(b.txt("else"));
-                            result.push(b.indent(b.nl()));
-                        }
-                        result.push(a.build(b)); // Build the else statement
+
+                    if !matches!(a, Statement::If(_) | Statement::Block(_)) {
+                        result.push(b.indent(b.nl()));
+                    } else {
+                        result.push(b.txt(" "));
                     }
                 }
+
+                result.push(a.build(b));
             }
         });
     }

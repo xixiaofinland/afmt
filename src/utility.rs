@@ -355,15 +355,9 @@ pub fn handle_pre_comments<'a>(
             docs.push(b.txt(" "));
         } else {
             // if it's in group(), then multi-line mode is selected in fits()
-            // otherwise, do nothing
             docs.push(b.force_break());
 
             // 1st element heading logic is handled in the preceding node;
-            // except the preceding is an unnamed node like `else`
-            if comment.has_prev_node_else_keyword() {
-                docs.push(b.nl());
-            }
-
             if i != 0 {
                 if comment.has_newline_above() {
                     docs.push(b.empty_new_line());
