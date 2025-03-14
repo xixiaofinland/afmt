@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/xixiaofinland/afmt/compare/v0.8.2...v0.9.0) (2025-03-14)
+
+
+### Features
+
+* support java doc ([752116e](https://github.com/xixiaofinland/afmt/commit/752116e62014dccd6ca140a305ad3128a6a23526))
+
 ## [0.8.2](https://github.com/xixiaofinland/afmt/compare/v0.8.1...v0.8.2) (2025-03-11)
 
 
