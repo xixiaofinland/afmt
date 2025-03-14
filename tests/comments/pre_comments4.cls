@@ -1,4 +1,4 @@
-/**
+/*
 block comment
 */ // line comment
 

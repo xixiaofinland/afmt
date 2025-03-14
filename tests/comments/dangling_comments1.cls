@@ -1,6 +1,6 @@
 class A {
   {
-    /**
+    /*
     block comment
     */
 

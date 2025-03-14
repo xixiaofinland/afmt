@@ -1,6 +1,6 @@
 // line comment
 
-/**
+/*
 block comment
 */
 
