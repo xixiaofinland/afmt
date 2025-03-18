@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/xixiaofinland/afmt/compare/v0.9.0...v0.10.0) (2025-03-18)
+
+
+### Features
+
+* show execution time in -t parameter ([4774761](https://github.com/xixiaofinland/afmt/commit/47747613ff75bde70408b25d36d195c6488b2d4c))
+
 ## [0.9.0](https://github.com/xixiaofinland/afmt/compare/v0.8.2...v0.9.0) (2025-03-14)
 
 
