@@ -32,7 +32,18 @@ fn run(args: &Args) -> Result<(), String> {
     for (index, result) in results.iter().enumerate() {
         match result {
             Ok(value) => {
-                if args.write {
+                if args.check {
+                    let original_content = fs::read_to_string(&args.path)
+                        .map_err(|e| format!("Failed to read file {}: {}", args.path, e))?;
+
+                    if original_content.as_str() == value {
+                        println!("File is already formatted: {}", args.path);
+                        return Ok(());
+                    } else {
+                        eprintln!("File is not correctly formatted: {}", args.path);
+                        return Err("Formatting check failed".to_string());
+                    }
+                } else if args.write {
                     fs::write(&args.path, value).map_err(|e| {
                         format!("Failed to write formatted content to {}: {}", args.path, e)
                     })?;
