@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/xixiaofinland/afmt/compare/v0.10.0...v0.11.0) (2025-03-19)
+
+
+### Features
+
+* add --check flag ([7eea4ba](https://github.com/xixiaofinland/afmt/commit/7eea4bafb406f0aa5ea05ef7a875a9dae2b54242))
+
 ## [0.10.0](https://github.com/xixiaofinland/afmt/compare/v0.9.0...v0.10.0) (2025-03-18)
 
 
