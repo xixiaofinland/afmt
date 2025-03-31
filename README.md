@@ -5,7 +5,7 @@
 ![Stars](https://img.shields.io/github/stars/xixiaofinland/afmt?style=social)
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/5cf08fdb-aaa2-4556-83d7-2e9d2a99f86f" alt="afmt_logo" width="300"/>
+  <img src="md/afmt-logo.png" alt="afmt_logo" width="300"/>
 </div>
 <br>
 
