@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/xixiaofinland/afmt/compare/v0.11.0...v0.11.1) (2025-03-31)
+
+
+### Bug Fixes
+
+* use ai enhanced logo ([8619f16](https://github.com/xixiaofinland/afmt/commit/8619f16d085f712b3dbb0cf0b35ff05e5e076830))
+
 ## [0.11.0](https://github.com/xixiaofinland/afmt/compare/v0.10.0...v0.11.0) (2025-03-19)
 
 
