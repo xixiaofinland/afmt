@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 # -----------------------------------------------------------------------------
 # Script to format files in repos with improved git error handling
 # -----------------------------------------------------------------------------
@@ -93,6 +91,13 @@ done < "$REPO_LIST"
 > "$LOG_FILE"
 # > "$LONG_LINES_LOG_FILE"
 
+# Check for idempotent mode flag
+IDEMPOTENT_MODE=false
+if [ "$1" == "--idempotent" ]; then
+    IDEMPOTENT_MODE=true
+    echo "Idempotent testing mode activated."
+fi
+
 # Function to format files and log errors with clear info
 format_files() {
     local FILE_PATH="$1"
@@ -129,7 +134,30 @@ format_files() {
     # echo "$OUTPUT" | grep -E "$PATTERN" >> "$LONG_LINES_LOG_FILE"
 }
 
+idempotent_test() {
+    local FILE_PATH="$1"
+    TMP1=$(mktemp)
+    TMP2=$(mktemp)
+
+    # Format once and save output to TMP1
+    $FORMATTER_BINARY "$FILE_PATH" > "$TMP1" 2>/dev/null
+
+    # Format the result of the first formatting and save to TMP2
+    $FORMATTER_BINARY "$TMP1" > "$TMP2" 2>/dev/null
+
+    # Compare the two outputs
+    if ! diff -q "$TMP1" "$TMP2" &>/dev/null; then
+        echo "Idempotency test failed for $FILE_PATH" >> "$LOG_FILE"
+        echo "Difference found in idempotency test for: $FILE_PATH"
+    else
+        echo "Idempotency test passed for $FILE_PATH"
+    fi
+
+    rm -f "$TMP1" "$TMP2"
+}
+
 export -f format_files
+export -f idempotent_test
 export FORMATTER_BINARY
 export LOG_FILE
 # export LONG_LINES_LOG_FILE
@@ -141,6 +169,13 @@ START_TIME=$(date +%s)
 # Find all .cls and .trigger files and process them in parallel
 find "$TARGET_DIR" \( -type d \( -name ".sfdx" -o -name "scripts" \) \) -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
     parallel -0 -j+0 format_files
+
+# Run idempotent testing if mode is activated
+if [ "$IDEMPOTENT_MODE" = true ]; then
+    echo "Running idempotency tests..."
+    find "$TARGET_DIR" \( -type d \( -name ".sfdx" -o -name "scripts" \) \) -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
+        parallel -0 -j+0 idempotent_test
+fi
 
 # find "$TARGET_DIR" -path "$TARGET_DIR/.sfdx" -prune -o -type f \( -name "*.cls" -o -name "*.trigger" \) -print0 | \
 #     parallel -0 -j+0 format_files
