@@ -145,9 +145,12 @@ idempotent_test() {
     # Format the result of the first formatting and save to TMP2
     $FORMATTER_BINARY "$TMP1" > "$TMP2" 2>/dev/null
 
-    # Compare the two outputs
-    if ! diff -q "$TMP1" "$TMP2" &>/dev/null; then
+    # Capture detailed diff output
+    DIFF_OUTPUT=$(diff "$TMP1" "$TMP2")
+    if [ -n "$DIFF_OUTPUT" ]; then
         echo "Idempotency test failed for $FILE_PATH" >> "$LOG_FILE"
+        echo "Diff details:" >> "$LOG_FILE"
+        echo "$DIFF_OUTPUT" >> "$LOG_FILE"
         echo "Difference found in idempotency test for: $FILE_PATH"
     else
         echo "Idempotency test passed for $FILE_PATH"

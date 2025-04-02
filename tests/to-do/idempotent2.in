@@ -1,0 +1,15 @@
+class A {
+  void t() {
+    if (true) {
+      return // sorry
+      ;
+    }
+  }
+
+  void tt() {
+    if (true) {
+      break // sorry2
+      ;
+    }
+  }
+}
