@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.0](https://github.com/xixiaofinland/afmt/compare/v0.11.0...v0.12.0) (2025-04-02)
+
+
+### Features
+
+* add idempotent feature in battle test script ([8a9c097](https://github.com/xixiaofinland/afmt/commit/8a9c09756b4e7234ca15dd87ae93ad68cb75de28))
+
+
+### Bug Fixes
+
+* use ai enhanced logo ([8619f16](https://github.com/xixiaofinland/afmt/commit/8619f16d085f712b3dbb0cf0b35ff05e5e076830))
+
 ## [0.11.0](https://github.com/xixiaofinland/afmt/compare/v0.10.0...v0.11.0) (2025-03-19)
 
 
