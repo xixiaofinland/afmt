@@ -1,0 +1,89 @@
+// fix: https://github.com/xixiaofinland/afmt/issues/114
+class TestClass {
+  {
+    continue; /*t1*/
+
+    continue; //t2
+
+    continue // t3
+    ;
+
+    continue
+    // t4
+    ;
+
+    continue true; //t5
+
+    continue
+    // t4 /*t*/
+    ;
+
+    continue
+    // t4
+    /*t*/
+    ;
+
+    continue
+    /*t*/
+    // t4
+    ;
+  }
+
+  {
+    break; /*t1*/
+
+    break; //t2
+
+    break // t3
+    ;
+
+    break
+    // t4
+    ;
+
+    break true; //t5
+
+    break
+    // t4 /*t*/
+    ;
+
+    break
+    // t4
+    /*t*/
+    ;
+
+    break
+    /*t*/
+    // t4
+    ;
+  }
+
+  {
+    return; /*t1*/
+
+    return; //t2
+
+    return // t3
+    ;
+
+    return
+    // t4
+    ;
+
+    return true; //t5
+
+    return
+    // t4 /*t*/
+    ;
+
+    return
+    // t4
+    /*t*/
+    ;
+
+    return
+    /*t*/
+    // t4
+    ;
+  }
+}

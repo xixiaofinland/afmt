@@ -2758,12 +2758,17 @@ impl ReturnStatement {
 
 impl<'a> DocBuild<'a> for ReturnStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if self.exp.is_none() {
+            build_with_comments_and_punc_attached(b, &self.node_context, result, |b, result| {
+                result.push(b.txt("return"));
+            });
+            return;
+        }
+
         build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(b.txt("return"));
-            if let Some(ref exp) = self.exp {
-                result.push(b.txt(" "));
-                result.push(exp.build(b));
-            }
+            result.push(b.txt(" "));
+            result.push(self.exp.as_ref().unwrap().build(b));
         });
     }
 }
@@ -3324,22 +3329,33 @@ impl BreakStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "break_statement");
 
+        let identifier = node.try_c_by_k("identifier").map(|n| ValueNode::new(n));
+        let node_context = if identifier.is_none() {
+            NodeContext::with_inner_punctuation(&node)
+        } else {
+            NodeContext::with_punctuation(&node)
+        };
+
         Self {
-            identifier: node.try_c_by_k("identifier").map(|n| ValueNode::new(n)),
-            node_context: NodeContext::with_inner_punctuation(&node),
+            identifier,
+            node_context,
         }
     }
 }
 
 impl<'a> DocBuild<'a> for BreakStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if self.identifier.is_none() {
+            build_with_comments_and_punc_attached(b, &self.node_context, result, |b, result| {
+                result.push(b.txt("break"));
+            });
+            return;
+        }
+
         build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(b.txt("break"));
-
-            if let Some(ref n) = self.identifier {
-                result.push(b.txt(" "));
-                result.push(n.build(b));
-            }
+            result.push(b.txt(" "));
+            result.push(self.identifier.as_ref().unwrap().build(b));
         });
     }
 }
@@ -3370,13 +3386,17 @@ impl ContinueStatement {
 
 impl<'a> DocBuild<'a> for ContinueStatement {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        if self.identifier.is_none() {
+            build_with_comments_and_punc_attached(b, &self.node_context, result, |b, result| {
+                result.push(b.txt("continue"));
+            });
+            return;
+        }
+
         build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
             result.push(b.txt("continue"));
-
-            if let Some(ref n) = self.identifier {
-                result.push(b.txt(" "));
-                result.push(n.build(b));
-            }
+            result.push(b.txt(" "));
+            result.push(self.identifier.as_ref().unwrap().build(b));
         });
     }
 }
