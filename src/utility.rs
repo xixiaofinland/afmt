@@ -284,6 +284,24 @@ pub fn build_with_comments<'a, F>(
     handle_post_comments(b, bucket, result);
 }
 
+pub fn build_with_comments_core<'a, F>(
+    b: &'a DocBuilder<'a>,
+    node_context: &NodeContext,
+    result: &mut Vec<DocRef<'a>>,
+    handle_members: F,
+) where
+    F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
+{
+    let bucket = get_comment_bucket(&node_context.id);
+    handle_pre_comments(b, bucket, result);
+
+    if bucket.dangling_comments.is_empty() {
+        handle_members(b, result);
+    } else {
+        result.push(b.concat(handle_dangling_comments(b, bucket)));
+    }
+}
+
 pub fn build_with_comments_and_punc<'a, F>(
     b: &'a DocBuilder<'a>,
     node_context: &NodeContext,
@@ -292,10 +310,37 @@ pub fn build_with_comments_and_punc<'a, F>(
 ) where
     F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
 {
-    build_with_comments(b, node_context, result, handle_members);
+    build_with_comments_core(b, node_context, result, handle_members);
+
+    let bucket = get_comment_bucket(&node_context.id);
+    if bucket.dangling_comments.is_empty() {
+        handle_post_comments(b, bucket, result);
+    }
 
     if let Some(ref n) = node_context.punc {
         result.push(n.build(b));
+    }
+}
+
+// fix: https://github.com/xixiaofinland/afmt/issues/114
+pub fn build_with_comments_and_punc_attached<'a, F>(
+    b: &'a DocBuilder<'a>,
+    node_context: &NodeContext,
+    result: &mut Vec<DocRef<'a>>,
+    handle_members: F,
+) where
+    F: FnOnce(&'a DocBuilder<'a>, &mut Vec<DocRef<'a>>),
+{
+    build_with_comments_core(b, node_context, result, handle_members);
+
+    let bucket = get_comment_bucket(&node_context.id);
+
+    if let Some(ref n) = node_context.punc {
+        result.push(n.build(b));
+    }
+
+    if bucket.dangling_comments.is_empty() {
+        handle_post_comments(b, bucket, result);
     }
 }
 

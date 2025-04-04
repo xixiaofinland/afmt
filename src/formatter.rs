@@ -13,6 +13,9 @@ use std::thread;
 use std::{fs, path::Path};
 use tree_sitter::{Node, Parser, Tree};
 
+#[allow(unused_imports)]
+use crate::utility::print_comment_map;
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     #[serde(default = "default_max_width")]
@@ -154,7 +157,8 @@ impl Formatter {
 
         let result = pretty_print(doc_ref, config.max_width);
 
-        //print_comment_map(&ast_tree);
+        // debugging tool: use this to print named node value + comments in bucket
+        // print_comment_map(&ast_tree);
 
         assert_no_missing_comments();
 
