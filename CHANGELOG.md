@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/xixiaofinland/afmt/compare/v0.12.0...v0.12.1) (2025-04-05)
+
+
+### Bug Fixes
+
+* idempotent issue [#97](https://github.com/xixiaofinland/afmt/issues/97) ([cdc84cf](https://github.com/xixiaofinland/afmt/commit/cdc84cf8115b65521f00722a418856c4f86cec67))
+
 ## [0.12.0](https://github.com/xixiaofinland/afmt/compare/v0.11.0...v0.12.0) (2025-04-04)
 
 
