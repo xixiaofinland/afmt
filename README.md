@@ -80,6 +80,21 @@ curl -sL https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/insta
 iwr -useb https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/install-afmt.ps1 | iex
 ```
 
+> [!NOTE]
+> If you see an error like "This script contains malicious content and has been
+> blocked by your antivirus software", it means Microsoft Defender flagged it
+> for downloading and executing content from the internet. To proceed, either
+> lower Defender’s protection or break the script into smaller steps:
+
+```ps1
+# Step 1: Review the script manually
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/xixiaofinland/afmt/main/scripts/install-afmt.ps1 -OutFile install-afmt.ps1
+notepad install-afmt.ps1  # Inspect the content
+
+# Step 2: Run after trust
+powershell -ExecutionPolicy Bypass -File install-afmt.ps1
+```
+
 <br>
 
 ### 2. Cargo Install
