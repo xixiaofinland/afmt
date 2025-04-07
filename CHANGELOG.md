@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.2](https://github.com/xixiaofinland/afmt/compare/v0.12.1...v0.12.2) (2025-04-07)
+
+
+### Bug Fixes
+
+* allow comments to attach to 'else' node to fix idempotent issue ([8afe1c3](https://github.com/xixiaofinland/afmt/commit/8afe1c3c6ba6d22822929fb5eca3105436d56630))
+
 ## [0.12.1](https://github.com/xixiaofinland/afmt/compare/v0.12.0...v0.12.1) (2025-04-05)
 
 
