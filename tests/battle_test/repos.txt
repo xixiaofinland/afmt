@@ -2,9 +2,7 @@ https://bitbucket.org/aidan_harding/sobjectindex.git
 https://github.com/PropicSignifi/Query.apex.git
 https://github.com/SalesforceFoundation/Affiliations.git
 https://github.com/SalesforceFoundation/Contacts_and_Organizations.git
-https://github.com/SalesforceFoundation/EDA.git
 https://github.com/SalesforceFoundation/Households.git
-https://github.com/SalesforceFoundation/NPSP.git
 https://github.com/SalesforceFoundation/PMM.git
 https://github.com/SalesforceFoundation/Relationships.git
 https://github.com/SalesforceFoundation/Volunteers-for-Salesforce.git
