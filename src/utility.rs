@@ -10,6 +10,16 @@ use crate::{
 use std::{cell::Cell, collections::HashMap};
 use tree_sitter::{Node, Tree, TreeCursor};
 
+const SNIPPET_MAX_LEN: usize = 80;
+
+pub fn truncate_snippet(snippet: &str) -> String {
+    if snippet.len() <= SNIPPET_MAX_LEN {
+        snippet.to_string()
+    } else {
+        format!("{}…", &snippet[..SNIPPET_MAX_LEN])
+    }
+}
+
 thread_local! {
     static THREAD_SOURCE_CODE: Cell<Option<&'static str>>
         = const{ Cell::new(None) };
