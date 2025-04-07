@@ -158,7 +158,7 @@ impl Formatter {
         let result = pretty_print(doc_ref, config.max_width);
 
         // debugging tool: use this to print named node value + comments in bucket
-        print_comment_map(&ast_tree);
+        // print_comment_map(&ast_tree);
 
         assert_no_missing_comments();
 

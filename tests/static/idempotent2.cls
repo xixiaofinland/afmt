@@ -2,8 +2,7 @@
 class TestClass {
   {
     if (true) {
-    } else
-    // comment 1
+    } else // comment 1
     {
     }
   }
