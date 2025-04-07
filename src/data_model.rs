@@ -1311,38 +1311,41 @@ impl<'a> DocBuild<'a> for GenericIdentifier {
         }
     }
 }
+
+#[derive(Debug)]
+pub struct ElseClause {
+    pub else_node: ValueNode, // The 'else' keyword node
+    pub statement: Statement, // The actual else-block or nested if
+}
+
 #[derive(Debug)]
 pub struct IfStatement {
     pub condition: ParenthesizedExpression,
     pub consequence: Statement,
-    pub alternative: Option<Statement>,
+    pub alternative: Option<ElseClause>,
     pub node_context: NodeContext,
-    pub has_else_and_followed_by_new_line_comment: bool, // https://github.com/xixiaofinland/afmt/issues/67
 }
 
 impl IfStatement {
     pub fn new(node: Node) -> Self {
         assert_check(node, "if_statement");
 
-        let alternative = node.try_c_by_n("alternative").map(|a| Statement::new(a));
-
-        let has_else_and_followed_by_new_line_comment = alternative.is_some()
-            && node
+        let alternative = node.try_c_by_n("alternative").map(|alt_stmt| {
+            let else_node = node
                 .children(&mut node.walk())
                 .find(|n| n.kind() == "else")
-                .and_then(|else_node| {
-                    else_node.next_sibling().map(|next_sibling| {
-                        next_sibling.is_extra()
-                            && next_sibling.start_position().row != else_node.end_position().row
-                    })
-                })
-                .unwrap_or(false);
+                .expect("a mandatory `else` node is missing");
+
+            ElseClause {
+                else_node: ValueNode::new(else_node),
+                statement: Statement::new(alt_stmt),
+            }
+        });
 
         Self {
             condition: ParenthesizedExpression::new(node.c_by_n("condition")),
             consequence: Statement::new(node.c_by_n("consequence")),
             alternative,
-            has_else_and_followed_by_new_line_comment,
             node_context: NodeContext::with_punctuation(&node),
         }
     }
@@ -1363,29 +1366,24 @@ impl<'a> DocBuild<'a> for IfStatement {
             }
 
             // Handle the 'else' part
-            if let Some(ref a) = self.alternative {
+            if let Some(ref alt) = self.alternative {
                 if self.consequence.is_block() {
-                    result.push(b.txt(" else"));
-                    if self.has_else_and_followed_by_new_line_comment {
-                        result.push(b.nl());
-                    } else {
-                        result.push(b.txt(" "));
-                    }
+                    result.push(b.txt(" "));
+
+                    result.push(alt.else_node.build(b));
+                    result.push(b.txt(" "));
                 } else {
                     result.push(b.nl());
-                    result.push(b.txt("else"));
-                    if self.has_else_and_followed_by_new_line_comment {
-                        result.push(b.nl());
-                    }
 
-                    if !matches!(a, Statement::If(_) | Statement::Block(_)) {
+                    result.push(alt.else_node.build(b));
+
+                    if !matches!(alt.statement, Statement::If(_) | Statement::Block(_)) {
                         result.push(b.indent(b.nl()));
                     } else {
                         result.push(b.txt(" "));
                     }
                 }
-
-                result.push(a.build(b));
+                result.push(alt.statement.build(b));
             }
         });
     }

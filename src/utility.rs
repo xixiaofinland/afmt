@@ -131,13 +131,17 @@ pub fn assert_no_missing_comments() {
 }
 
 pub fn is_punctuation_node(node: &Node) -> bool {
-    node.kind() == "," || node.kind() == ";"
+    matches!(node.kind(), "," | ";")
+}
+
+fn is_associable_unnamed_node(node: &Node) -> bool {
+    is_punctuation_node(node) || matches!(node.kind(), "else")
 }
 
 pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
     let node = cursor.node();
 
-    if (!node.is_named() || node.is_extra()) && !is_punctuation_node(&node) {
+    if (!node.is_named() || node.is_extra()) && !is_associable_unnamed_node(&node) {
         return;
     }
 
@@ -217,7 +221,7 @@ pub fn collect_comments(cursor: &mut TreeCursor, comment_map: &mut CommentMap) {
                 // There's no "last associable node" yet, so keep it pending
                 pending_pre_comments.push(comment);
             }
-        } else if child.is_named() || is_punctuation_node(&child) {
+        } else if child.is_named() || is_associable_unnamed_node(&child) {
             // It's an associable node
             let child_id = child.id();
 
