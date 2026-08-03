@@ -1487,17 +1487,24 @@ impl ParenthesizedExpression {
         }
     }
 
+    /// The parenthesized group itself, shared by the punctuated and
+    /// unpunctuated builders so the two cannot drift apart.
+    // to align with prettier apex
+    fn build_group<'a>(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
+        result.push(b.txt("("));
+        let doc = b.concat(vec![
+            b.indent(b.maybeline()),
+            b.indent(self.exp.build(b)),
+            b.maybeline(),
+        ]);
+        result.push(b.group(doc));
+        result.push(b.txt(")"));
+    }
+
     pub fn build_without_punctuation<'a>(&self, b: &'a DocBuilder<'a>) -> DocRef<'a> {
         let mut result = Vec::new();
         build_with_comments(b, &self.node_context, &mut result, |b, result| {
-            result.push(b.txt("("));
-            let doc = b.concat(vec![
-                b.indent(b.maybeline()),
-                b.indent(self.exp.build(b)),
-                b.maybeline(),
-            ]);
-            result.push(b.group(doc));
-            result.push(b.txt(")"));
+            self.build_group(b, result);
         });
         if let Some(ref punctuation) = self.node_context.punc {
             punctuation.build_comments(b, &mut result);
@@ -1509,15 +1516,7 @@ impl ParenthesizedExpression {
 impl<'a> DocBuild<'a> for ParenthesizedExpression {
     fn build_inner(&self, b: &'a DocBuilder<'a>, result: &mut Vec<DocRef<'a>>) {
         build_with_comments_and_punc(b, &self.node_context, result, |b, result| {
-            // to align with prettier apex
-            result.push(b.txt("("));
-            let doc = b.concat(vec![
-                b.indent(b.maybeline()),
-                b.indent(self.exp.build(b)),
-                b.maybeline(),
-            ]);
-            result.push(b.group(doc));
-            result.push(b.txt(")"));
+            self.build_group(b, result);
         });
     }
 }
