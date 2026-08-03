@@ -31,6 +31,7 @@ pub enum DiscoveryConfigError {
         message: String,
     },
     InputUnsupported(PathBuf),
+    WorkingDirectoryUnavailable(String),
     NoMatches,
 }
 
@@ -62,6 +63,11 @@ impl Display for DiscoveryConfigError {
                 "Input path is not a file or directory: {}",
                 path.display()
             ),
+            Self::WorkingDirectoryUnavailable(message) => write!(
+                formatter,
+                "Failed to resolve the current working directory: {}",
+                message
+            ),
             Self::NoMatches => write!(formatter, "No eligible Apex files were found"),
         }
     }
@@ -80,7 +86,7 @@ pub fn discover_targets(
 ) -> Result<DiscoveryReport, DiscoveryConfigError> {
     let includes = compile_globs("include", &selection.include)?;
     let excludes = compile_globs("exclude", &selection.exclude)?;
-    let mut accumulator = DiscoveryAccumulator::new(base, includes, excludes);
+    let mut accumulator = DiscoveryAccumulator::new(base, includes, excludes)?;
 
     for target in targets {
         if accumulator.is_excluded(target, false) {
@@ -107,11 +113,18 @@ pub fn discover_targets(
 
             let excludes = accumulator.excludes.clone();
             let base = accumulator.base;
+            let current_dir = accumulator.current_dir.clone();
             for entry in WalkDir::new(target)
                 .follow_links(false)
                 .into_iter()
                 .filter_entry(|entry| {
-                    !is_excluded_path(base, &excludes, entry.path(), entry.file_type().is_dir())
+                    !is_excluded_path(
+                        base,
+                        &current_dir,
+                        &excludes,
+                        entry.path(),
+                        entry.file_type().is_dir(),
+                    )
                 })
             {
                 let entry = match entry {
@@ -177,6 +190,9 @@ fn compile_globs(kind: &'static str, patterns: &[String]) -> Result<GlobSet, Dis
 
 struct DiscoveryAccumulator<'a> {
     base: &'a Path,
+    /// Resolved once up front so relative paths can be made absolute without
+    /// re-querying the process working directory for every walked entry.
+    current_dir: PathBuf,
     includes: GlobSet,
     excludes: GlobSet,
     identities: HashSet<PathBuf>,
@@ -185,15 +201,24 @@ struct DiscoveryAccumulator<'a> {
 }
 
 impl<'a> DiscoveryAccumulator<'a> {
-    fn new(base: &'a Path, includes: GlobSet, excludes: GlobSet) -> Self {
-        Self {
+    fn new(
+        base: &'a Path,
+        includes: GlobSet,
+        excludes: GlobSet,
+    ) -> Result<Self, DiscoveryConfigError> {
+        let current_dir = std::env::current_dir().map_err(|error| {
+            DiscoveryConfigError::WorkingDirectoryUnavailable(error.to_string())
+        })?;
+
+        Ok(Self {
             base,
+            current_dir,
             includes,
             excludes,
             identities: HashSet::new(),
             files: Vec::new(),
             errors: Vec::new(),
-        }
+        })
     }
 
     fn consider_file(&mut self, path: &Path, discovered: bool) {
@@ -201,7 +226,7 @@ impl<'a> DiscoveryAccumulator<'a> {
             return;
         }
 
-        let candidate = normalized_match_path(path, self.base);
+        let candidate = normalized_match_path(path, self.base, &self.current_dir);
         if discovered && !self.includes.is_match(&candidate) {
             return;
         }
@@ -222,22 +247,32 @@ impl<'a> DiscoveryAccumulator<'a> {
     }
 
     fn is_excluded(&self, path: &Path, directory: bool) -> bool {
-        is_excluded_path(self.base, &self.excludes, path, directory)
+        is_excluded_path(
+            self.base,
+            &self.current_dir,
+            &self.excludes,
+            path,
+            directory,
+        )
     }
 }
 
-fn is_excluded_path(base: &Path, excludes: &GlobSet, path: &Path, directory: bool) -> bool {
-    let candidate = normalized_match_path(path, base);
+fn is_excluded_path(
+    base: &Path,
+    current_dir: &Path,
+    excludes: &GlobSet,
+    path: &Path,
+    directory: bool,
+) -> bool {
+    let candidate = normalized_match_path(path, base, current_dir);
     excludes.is_match(&candidate) || (directory && excludes.is_match(format!("{candidate}/")))
 }
 
-fn normalized_match_path(path: &Path, base: &Path) -> String {
+fn normalized_match_path(path: &Path, base: &Path, current_dir: &Path) -> String {
     let absolute = if path.is_absolute() {
         path.to_path_buf()
     } else {
-        std::env::current_dir()
-            .expect("current directory should be available during discovery")
-            .join(path)
+        current_dir.join(path)
     };
     let path = absolute.strip_prefix(base).unwrap_or(&absolute);
     path.to_string_lossy().replace('\\', "/")
@@ -265,6 +300,10 @@ mod tests {
     #[cfg(unix)]
     use std::os::unix::fs::symlink;
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn cwd() -> PathBuf {
+        std::env::current_dir().unwrap()
+    }
 
     struct TempProject(PathBuf);
 
@@ -387,7 +426,8 @@ mod tests {
             &project.0,
             compile_globs("include", &selection.include).unwrap(),
             compile_globs("exclude", &selection.exclude).unwrap(),
-        );
+        )
+        .unwrap();
 
         for path in [
             project.0.join(".git"),
@@ -416,8 +456,10 @@ mod tests {
             &project.0,
             compile_globs("include", &selection.include).unwrap(),
             compile_globs("exclude", &selection.exclude).unwrap(),
-        );
-        let vendor_match = normalized_match_path(&project.0.join("nested/vendor"), &project.0);
+        )
+        .unwrap();
+        let vendor_match =
+            normalized_match_path(&project.0.join("nested/vendor"), &project.0, &cwd());
 
         assert!(!accumulator.excludes.is_match(&vendor_match));
         assert!(accumulator.excludes.is_match(format!("{vendor_match}/")));
@@ -486,7 +528,7 @@ mod tests {
 
         assert!(report.files.contains(&project.0.join("root.cls")));
         assert_eq!(
-            normalized_match_path(&project.0.join("root.cls"), &project.0),
+            normalized_match_path(&project.0.join("root.cls"), &project.0, &cwd()),
             "root.cls"
         );
     }
@@ -576,10 +618,10 @@ mod tests {
         let base = project.0.join("nested");
 
         assert_eq!(
-            normalized_match_path(&base.join("query.apex"), &base),
+            normalized_match_path(&base.join("query.apex"), &base, &cwd()),
             "query.apex"
         );
-        let outside = normalized_match_path(&project.0.join("root.cls"), &base);
+        let outside = normalized_match_path(&project.0.join("root.cls"), &base, &cwd());
         assert!(outside.ends_with("/root.cls") || outside.ends_with("\\root.cls"));
     }
 
