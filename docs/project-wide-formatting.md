@@ -81,6 +81,22 @@ Exit status `0` means the requested operation completed successfully. Exit
 status `1` indicates an application error, a changed file in check mode, or a
 partial write failure.
 
+### Changes to stdout from earlier releases
+
+Two stdout behaviors changed so that stdout carries the formatted document and
+nothing else, which is what makes `afmt -` safe to pipe into an editor or LSP
+formatter provider. Anything parsing afmt's stdout should be checked against
+both:
+
+- **Timing moved to stderr.** `--time` previously wrote
+  `\n-- Execution time: <duration>` to stdout. It now writes `Timing: <path>
+  <duration>` per file and `Total elapsed: <duration>` to stderr.
+- **Exactly one trailing newline.** Formatted source was previously emitted
+  with `println!`, which appended a newline unconditionally, so a document
+  already ending in a newline produced a trailing blank line. Output is now
+  emitted verbatim and a newline is added only when the document does not
+  already end in one.
+
 ## Implementation boundaries
 
 `src/config.rs` owns application-level TOML loading and file-selection
