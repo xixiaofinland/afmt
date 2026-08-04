@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.0.0](https://github.com/xixiaofinland/afmt/compare/v0.12.2...v1.0.0) (2026-08-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** stdout now carries only the formatted document. `--time` diagnostics move from stdout to stderr, and formatted output ends with exactly one newline instead of an unconditionally appended one.
+
+### Features
+
+* add configurable brace and indentation styles ([7637dc5](https://github.com/xixiaofinland/afmt/commit/7637dc5cd13e0beb3f840c3fcb08effcb128e6c4))
+* add configurable javadoc star column ([7bd1ff1](https://github.com/xixiaofinland/afmt/commit/7bd1ff166f22db2c34af777d7dd3e16f50a04f2a))
+* **cli:** format Apex source from stdin ([62b64fc](https://github.com/xixiaofinland/afmt/commit/62b64fc212b24fff318c294829b747cc1c438414))
+* **formatter:** normalize Apex annotation casing ([27c1d92](https://github.com/xixiaofinland/afmt/commit/27c1d9267d54d55f66fdf9b6087a187b15fdaa53))
+* support project-wide formatting ([6ebaf3e](https://github.com/xixiaofinland/afmt/commit/6ebaf3e140eb5687a814fbab1157a9342d82a3f8))
+
+
+### Bug Fixes
+
+* **ci:** resolve consolidated branch failures ([df9c4f1](https://github.com/xixiaofinland/afmt/commit/df9c4f1c4110f7ffc26ee69c11c042b51be58d2e))
+* format anonymous Apex with top-level statements ([90769f7](https://github.com/xixiaofinland/afmt/commit/90769f7797b2921c59f31adcf86f3167478e015b))
+* **formatter:** account for tab indentation width ([af625db](https://github.com/xixiaofinland/afmt/commit/af625db22128f13a6b3f6da4375187a7137c2929))
+* **formatter:** suppress spaces before pending line breaks ([9d81ab6](https://github.com/xixiaofinland/afmt/commit/9d81ab675974ad393d70d37501ed5733c1ffb5bc))
+* **formatter:** validate indentation configuration ([a2fb275](https://github.com/xixiaofinland/afmt/commit/a2fb275ed154a48b9371052f03113bfa0a94e14c))
+* keep Apex name paths glued across chains ([64d02e3](https://github.com/xixiaofinland/afmt/commit/64d02e3fe59fe5643a8fb5b3f42e2b637f3e28be))
+* prune excluded directories during discovery ([2626bb0](https://github.com/xixiaofinland/afmt/commit/2626bb06c9752131391a0f5dc8c08fe778340a00))
+* stabilize comment placement idempotency ([3395471](https://github.com/xixiaofinland/afmt/commit/3395471e735be6e17e315a921f5a683ede9eb0c0))
+
+
+### Documentation
+
+* **cli:** record the stdout contract changes ([66c95bf](https://github.com/xixiaofinland/afmt/commit/66c95bf7fcdab73e6b37ef98201e41dbf6180b64))
+
 ## [0.12.2](https://github.com/xixiaofinland/afmt/compare/v0.12.1...v0.12.2) (2025-04-07)
 
 
