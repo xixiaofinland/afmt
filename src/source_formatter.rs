@@ -268,10 +268,11 @@ mod tests {
         )
         .expect_err("invalid source should fail");
 
-        // The offending token sits on line 3; the diagnostic must open with a
-        // jumpable location rather than a byte offset.
+        // The offending `=` sits at line 3, column 19. Pinning the column too
+        // keeps the location honest: an editor jumps to the token, not to the
+        // start of the line.
         assert!(
-            error.starts_with("Broken.cls:3:"),
+            error.starts_with("Broken.cls:3:19:"),
             "diagnostic should lead with its location: {error}"
         );
         assert!(error.contains("byte range"));
