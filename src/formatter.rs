@@ -449,17 +449,14 @@ mod tests {
 
     #[test]
     fn caught_formatter_panics_release_formatting_state() {
-        let source = "class T { void m() { if (true) { if (true) {} } } }";
-        let result = Formatter::try_format_source(
-            source,
-            Config {
-                indent_size: u32::MAX,
-                ..Config::default()
-            },
-        );
+        // A bare top-level comment has no node to attach to, so the formatter
+        // panics with an erased-comment assertion mid-run. The panic must be
+        // caught and the thread-local formatting state released with it.
+        let source = "// dangling comment";
+        let result = Formatter::try_format_source(source, Config::default());
 
         assert!(result
-            .expect_err("the oversized indentation should panic during printing")
+            .expect_err("a comment with nothing to attach to should panic during formatting")
             .contains("Formatting panicked"));
         assert!(crate::utility::thread_state_is_empty());
     }
