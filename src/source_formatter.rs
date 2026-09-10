@@ -49,6 +49,12 @@ fn default_indent_size() -> u32 {
     2
 }
 
+/// Upper bound on `indent_size`. Indentation accumulates per nesting level and
+/// is materialized as literal padding when printing, so an unbounded value lets
+/// a deeply nested file allocate gigabytes of spaces and abort the process (see
+/// issue #142). No real Apex style needs more than this.
+const MAX_INDENT_SIZE: u32 = 256;
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -74,6 +80,10 @@ impl Config {
     pub fn validate(&self) -> Result<(), String> {
         if self.indent_size == 0 {
             return Err("indent_size must be at least 1".to_string());
+        }
+
+        if self.indent_size > MAX_INDENT_SIZE {
+            return Err(format!("indent_size must be at most {MAX_INDENT_SIZE}"));
         }
 
         Ok(())
@@ -261,7 +271,7 @@ fn panic_message(payload: Box<dyn std::any::Any + Send>) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{try_format_source, try_format_source_with_origin, Config};
+    use super::{try_format_source, try_format_source_with_origin, Config, MAX_INDENT_SIZE};
 
     const VALID_SOURCE: &str = "class T { void m() {} }\n";
 
@@ -407,6 +417,50 @@ mod tests {
         assert_eq!(
             error,
             "Invalid formatter configuration: indent_size must be at least 1"
+        );
+    }
+
+    #[test]
+    fn source_core_rejects_oversized_indent_instead_of_aborting() {
+        // Regression for #142: an unbounded indent_size let the printer allocate
+        // gigabytes of padding and abort the process before catch_unwind could
+        // turn it into an error. It must now surface as a clean config error.
+        let error = try_format_source(
+            VALID_SOURCE,
+            Config {
+                indent_size: u32::MAX,
+                ..Config::default()
+            },
+        )
+        .expect_err("oversized configuration should fail");
+
+        assert_eq!(
+            error,
+            "Invalid formatter configuration: indent_size must be at most 256"
+        );
+    }
+
+    #[test]
+    fn config_validation_rejects_oversized_indent() {
+        assert_eq!(
+            Config {
+                indent_size: MAX_INDENT_SIZE + 1,
+                ..Config::default()
+            }
+            .validate(),
+            Err("indent_size must be at most 256".to_string())
+        );
+    }
+
+    #[test]
+    fn config_validation_accepts_the_indent_upper_bound() {
+        assert_eq!(
+            Config {
+                indent_size: MAX_INDENT_SIZE,
+                ..Config::default()
+            }
+            .validate(),
+            Ok(())
         );
     }
 
