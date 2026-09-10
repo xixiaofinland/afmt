@@ -103,12 +103,20 @@ An editor integration that pipes a buffer through `afmt -` gets `<stdin>` as
 the origin — afmt is not told which file the buffer came from — so the client
 maps the reported line and column back onto the document it sent.
 
+When a buffer being typed into has an unbalanced brace, tree-sitter often wraps
+the whole file in one ERROR node that starts at byte 0, so the node's start
+position carries no useful line or column. In that case the location points at
+the end of the last node the parser built — where the source runs out — rather
+than degrading to `1:1`. This is the common format-on-save case, so the client
+still gets a line and column near the live edge to jump to.
+
 `stdin_parse_errors_locate_the_error_by_line_and_column` and
 `file_parse_errors_carry_one_path_line_and_column` in `tests/cli.rs` pin this
 contract end to end, and `parse_failures_lead_with_the_error_node_location`,
-`parse_failures_locate_stdin_when_no_path_exists`, and
-`parse_failures_report_bare_line_and_column_without_an_origin` in
-`src/source_formatter.rs` pin the three origin forms.
+`parse_failures_locate_stdin_when_no_path_exists`,
+`parse_failures_report_bare_line_and_column_without_an_origin`, and
+`truncated_source_locates_where_it_runs_out_not_the_file_start` in
+`src/source_formatter.rs` pin the origin forms and the truncated-source case.
 
 ### Changes to stdout from earlier releases
 

@@ -172,7 +172,7 @@ fn try_parse(source_code: &str, origin: Option<&str>) -> Result<Tree, String> {
             // unhonored-directive warning uses.
             let mut diagnostic = format!(
                 "{}: parse error in node kind: {}, at byte range: {}-{}, snippet: {}",
-                node_location(&error_node, origin),
+                error_location(&error_node, origin),
                 yellow(error_node.kind()),
                 error_node.start_byte(),
                 error_node.end_byte(),
@@ -206,6 +206,28 @@ fn try_parse(source_code: &str, origin: Option<&str>) -> Result<Tree, String> {
 fn node_location(node: &Node<'_>, origin: Option<&str>) -> String {
     let start = node.start_position();
     format_source_location(origin, start.row + 1, start.column + 1)
+}
+
+/// Picks the jumpable location for a parse error.
+///
+/// Normally the error node's start position pinpoints the failure. But when a
+/// buffer being typed into has an unbalanced brace, tree-sitter recovers real
+/// structure and then wraps it in one ERROR node spanning from the start of the
+/// file, whose start position degrades to `1:1` and tells an editor nothing
+/// (issue #148). This is the common format-on-save case.
+///
+/// Detect that shape by the error node starting at byte 0 while holding named
+/// children — the structure the parser built before it ran out — and point at
+/// the node's end, where the source runs out, instead of the file's start. A
+/// bad first token such as a lone `}` also starts at byte 0 but holds no named
+/// children, so it keeps its own start position rather than being shifted past
+/// the offending token.
+fn error_location(node: &Node<'_>, origin: Option<&str>) -> String {
+    if node.start_byte() == 0 && node.named_child_count() > 0 {
+        let end = node.end_position();
+        return format_source_location(origin, end.row + 1, end.column + 1);
+    }
+    node_location(node, origin)
 }
 
 fn find_last_error_node<'tree>(node: &Node<'tree>) -> Option<Node<'tree>> {
@@ -276,6 +298,39 @@ mod tests {
             "diagnostic should lead with its location: {error}"
         );
         assert!(error.contains("byte range"));
+    }
+
+    #[test]
+    fn truncated_source_locates_where_it_runs_out_not_the_file_start() {
+        // A buffer mid-edit with an unbalanced brace makes tree-sitter wrap the
+        // whole file in one ERROR node starting at byte 0. The location must not
+        // degrade to 1:1 (issue #148); it should point at the end of the last
+        // parsed line, where the source runs out.
+        let error = try_format_source_with_origin(
+            "public class A {\n    void run() {\n        Integer x = 1;\n",
+            Config::default(),
+            Some("<stdin>"),
+        )
+        .expect_err("truncated source should fail");
+
+        assert!(
+            error.starts_with("<stdin>:3:23:"),
+            "truncated source should locate line 3 where it runs out, not 1:1: {error}"
+        );
+    }
+
+    #[test]
+    fn bad_first_token_keeps_its_own_location_not_the_recovery_fallback() {
+        // A lone `}` errors at byte 0 but is a narrow, parented error node with a
+        // real start position. The root-recovery fallback must not fire here and
+        // shift the location past the offending token onto its child's end.
+        let error = try_format_source_with_origin("}", Config::default(), Some("<stdin>"))
+            .expect_err("a bad first token should fail");
+
+        assert!(
+            error.starts_with("<stdin>:1:1:"),
+            "a bad first token should locate itself at 1:1, not shift past it: {error}"
+        );
     }
 
     #[test]
