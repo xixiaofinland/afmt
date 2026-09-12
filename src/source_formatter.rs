@@ -172,7 +172,7 @@ fn try_parse(source_code: &str, origin: Option<&str>) -> Result<Tree, String> {
             // unhonored-directive warning uses.
             let mut diagnostic = format!(
                 "{}: parse error in node kind: {}, at byte range: {}-{}, snippet: {}",
-                error_location(&error_node, origin),
+                error_location(&error_node, origin, source_code),
                 yellow(error_node.kind()),
                 error_node.start_byte(),
                 error_node.end_byte(),
@@ -216,14 +216,15 @@ fn node_location(node: &Node<'_>, origin: Option<&str>) -> String {
 /// file, whose start position degrades to `1:1` and tells an editor nothing
 /// (issue #148). This is the common format-on-save case.
 ///
-/// Detect that shape by the error node starting at byte 0 while holding named
-/// children — the structure the parser built before it ran out — and point at
-/// the node's end, where the source runs out, instead of the file's start. A
-/// bad first token such as a lone `}` also starts at byte 0 but holds no named
-/// children, so it keeps its own start position rather than being shifted past
-/// the offending token.
-fn error_location(node: &Node<'_>, origin: Option<&str>) -> String {
-    if node.start_byte() == 0 && node.named_child_count() > 0 {
+/// Detect that shape by an error node that runs through the rest of the source
+/// while holding named children — the structure the parser built before it ran
+/// out — and point at the node's end, where the source runs out, instead of the
+/// node's start. This also covers source files with a leading header comment.
+/// A bad opening line keeps its own start position because it does not consume
+/// the rest of the input.
+fn error_location(node: &Node<'_>, origin: Option<&str>, source_code: &str) -> String {
+    let runs_to_end = source_code[node.end_byte()..].trim().is_empty();
+    if runs_to_end && node.named_child_count() > 0 {
         let end = node.end_position();
         return format_source_location(origin, end.row + 1, end.column + 1);
     }
@@ -320,6 +321,21 @@ mod tests {
     }
 
     #[test]
+    fn truncated_source_after_a_leading_comment_still_locates_where_it_runs_out() {
+        let error = try_format_source_with_origin(
+            "/**\n * Does a thing.\n */\npublic class A {\n    void run() {\n        Integer x = 1;\n",
+            Config::default(),
+            Some("<stdin>"),
+        )
+        .expect_err("truncated source should fail");
+
+        assert!(
+            error.starts_with("<stdin>:6:23:"),
+            "truncated source behind a header comment should locate line 6 where it runs out: {error}"
+        );
+    }
+
+    #[test]
     fn bad_first_token_keeps_its_own_location_not_the_recovery_fallback() {
         // A lone `}` errors at byte 0 but is a narrow, parented error node with a
         // real start position. The root-recovery fallback must not fire here and
@@ -330,6 +346,21 @@ mod tests {
         assert!(
             error.starts_with("<stdin>:1:1:"),
             "a bad first token should locate itself at 1:1, not shift past it: {error}"
+        );
+    }
+
+    #[test]
+    fn a_bad_opening_line_keeps_its_own_location_not_its_end() {
+        let error = try_format_source_with_origin(
+            "public A {\n    void run() {}\n}\n",
+            Config::default(),
+            Some("<stdin>"),
+        )
+        .expect_err("a bad opening line should fail");
+
+        assert!(
+            error.starts_with("<stdin>:1:1:"),
+            "a bad opening line should locate itself at 1:1, not shift to its end: {error}"
         );
     }
 
