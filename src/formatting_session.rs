@@ -5,6 +5,14 @@ use crate::utility::{
 };
 use tree_sitter::Tree;
 
+#[cfg(test)]
+use std::cell::Cell;
+
+#[cfg(test)]
+thread_local! {
+    static PANIC_AFTER_SETUP: Cell<bool> = const { Cell::new(false) };
+}
+
 pub(crate) struct FormattingSession;
 
 impl FormattingSession {
@@ -27,6 +35,20 @@ impl FormattingSession {
         set_thread_comment_map(comment_map);
 
         session
+    }
+
+    #[cfg(test)]
+    pub(crate) fn panic_after_setup_if_requested() {
+        PANIC_AFTER_SETUP.with(|requested| {
+            if requested.replace(false) {
+                panic!("test panic after formatting-session setup");
+            }
+        });
+    }
+
+    #[cfg(test)]
+    pub(crate) fn request_panic_after_setup() {
+        PANIC_AFTER_SETUP.with(|requested| requested.set(true));
     }
 }
 
