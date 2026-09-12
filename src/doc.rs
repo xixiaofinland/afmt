@@ -1,5 +1,12 @@
 pub type DocRef<'a> = &'a Doc<'a>;
 
+/// Maximum indentation width the printer materializes on a single line.
+///
+/// Indentation accumulates with nesting depth, so keeping the configuration
+/// value bounded is not enough to prevent a deeply nested source file from
+/// producing quadratic output.
+pub(crate) const MAX_MATERIALIZED_INDENT: u32 = 256;
+
 pub fn pretty_print(doc_ref: DocRef, max_width: u32, config: PrettyConfig) -> String {
     let mut printer = PrettyPrinter::new(doc_ref, max_width, config);
     printer.print()
@@ -116,7 +123,7 @@ impl<'a> Chunk<'a> {
     fn indented(self, indent: u32, doc_ref: DocRef<'a>) -> Self {
         Chunk {
             doc_ref,
-            indent: self.indent + indent,
+            indent: self.indent.saturating_add(indent),
             ..self
         }
     }
@@ -263,6 +270,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     fn insert_newline_with_indent(&mut self, result: &mut String, indent: u32) {
+        let indent = indent.min(MAX_MATERIALIZED_INDENT);
         result.push('\n');
         match self.indent_style {
             IndentStyle::Space => {
@@ -272,10 +280,11 @@ impl<'a> PrettyPrinter<'a> {
                 self.col = indent;
             }
             IndentStyle::Tab => {
-                for _ in 0..indent / self.indent_size {
+                let tab_count = indent / self.indent_size;
+                for _ in 0..tab_count {
                     result.push('\t');
                 }
-                self.col = indent;
+                self.col = tab_count * self.indent_size;
             }
         }
     }

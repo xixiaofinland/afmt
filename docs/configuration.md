@@ -26,7 +26,9 @@ normalize_annotation_casing = false
 controls the logical indentation width; with tabs, it is the number of columns
 represented by each indentation level. Line wrapping uses that logical width
 when applying `max_width`. `indent_size` must be between 1 and 256; values
-outside that range are rejected as a configuration error.
+outside that range are rejected as a configuration error. To keep deeply nested
+input safe, afmt also caps the indentation materialized on any one line at 256
+columns.
 
 `javadoc_star_column` controls only the leading star on continuation lines in
 Javadoc (`/** ... */`) comments:

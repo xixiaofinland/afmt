@@ -449,14 +449,11 @@ mod tests {
 
     #[test]
     fn caught_formatter_panics_release_formatting_state() {
-        // A bare top-level comment has no node to attach to, so the formatter
-        // panics with an erased-comment assertion mid-run. The panic must be
-        // caught and the thread-local formatting state released with it.
-        let source = "// dangling comment";
-        let result = Formatter::try_format_source(source, Config::default());
+        crate::formatting_session::FormattingSession::request_panic_after_setup();
+        let result = Formatter::try_format_source("class T {}", Config::default());
 
         assert!(result
-            .expect_err("a comment with nothing to attach to should panic during formatting")
+            .expect_err("the test hook should panic during formatting")
             .contains("Formatting panicked"));
         assert!(crate::utility::thread_state_is_empty());
     }

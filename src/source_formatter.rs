@@ -1,5 +1,7 @@
 use crate::data_model::*;
-use crate::doc::{pretty_print, BraceStyle, IndentStyle, JavadocStarColumn, PrettyConfig};
+use crate::doc::{
+    pretty_print, BraceStyle, IndentStyle, JavadocStarColumn, PrettyConfig, MAX_MATERIALIZED_INDENT,
+};
 use crate::doc_builder::DocBuilder;
 use crate::formatting_session::FormattingSession;
 use crate::message_helper::{red, yellow};
@@ -49,11 +51,10 @@ fn default_indent_size() -> u32 {
     2
 }
 
-/// Upper bound on `indent_size`. Indentation accumulates per nesting level and
-/// is materialized as literal padding when printing, so an unbounded value lets
-/// a deeply nested file allocate gigabytes of spaces and abort the process (see
-/// issue #142). No real Apex style needs more than this.
-const MAX_INDENT_SIZE: u32 = 256;
+/// Upper bound on the configured width of one indentation level. No real Apex
+/// style needs more than this. The printer separately caps accumulated padding
+/// as nesting depth grows.
+const MAX_INDENT_SIZE: u32 = MAX_MATERIALIZED_INDENT;
 
 impl Default for Config {
     fn default() -> Self {
@@ -133,6 +134,8 @@ fn try_format_source_unchecked(
 
     let ast_tree = try_parse(source_code, origin)?;
     let _session = FormattingSession::new(source_code, &ast_tree, origin);
+    #[cfg(test)]
+    FormattingSession::panic_after_setup_if_requested();
 
     // traverse the tree to build enriched data
     let root: Root = enrich(&ast_tree);
@@ -461,6 +464,62 @@ mod tests {
             }
             .validate(),
             Ok(())
+        );
+    }
+
+    #[test]
+    fn printer_clamps_the_indentation_it_materializes() {
+        // Regression for #142: total indentation is indent_size times nesting
+        // depth. Without a printer-side cap, repeated literal padding makes
+        // output grow quadratically even at the accepted configuration limit.
+        const DEPTH: usize = 200;
+        let source = format!(
+            "class T {{ void m() {{ {}{} }} }}",
+            "if (true) {".repeat(DEPTH),
+            "}".repeat(DEPTH)
+        );
+
+        let formatted = try_format_source(
+            &source,
+            Config {
+                indent_size: MAX_INDENT_SIZE,
+                ..Config::default()
+            },
+        )
+        .expect("deeply nested source formats");
+
+        let widest = formatted
+            .lines()
+            .map(|line| line.len() - line.trim_start().len())
+            .max()
+            .unwrap_or(0);
+
+        assert!(
+            widest <= MAX_INDENT_SIZE as usize,
+            "indentation reached {widest} columns at depth {DEPTH}; \
+             the printer must clamp the padding it materializes"
+        );
+    }
+
+    #[test]
+    fn tab_indentation_clamp_keeps_width_accounting_in_sync() {
+        let source = "class T { void m() { if (true) { System.debug('12345678901234567890'); } } }";
+        let formatted = try_format_source(
+            source,
+            Config {
+                max_width: 250,
+                indent_size: 200,
+                indent_style: crate::doc::IndentStyle::Tab,
+                ..Config::default()
+            },
+        )
+        .expect("source formats");
+
+        assert!(
+            formatted
+                .lines()
+                .any(|line| line == "\tSystem.debug('12345678901234567890');"),
+            "a 200-column tab indent plus this call fits within 250 columns: {formatted}"
         );
     }
 
