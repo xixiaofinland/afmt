@@ -90,8 +90,14 @@ impl Config {
         Ok(())
     }
 
+    /// Effective max width for line wrapping. `max_width = 0` means unlimited —
+    /// afmt never wraps a line to fit a width.
     pub fn max_width(&self) -> u32 {
-        self.max_width
+        if self.max_width == 0 {
+            u32::MAX
+        } else {
+            self.max_width
+        }
     }
 
     pub fn indent_size(&self) -> u32 {
@@ -152,7 +158,7 @@ fn try_format_source_unchecked(
     let b = DocBuilder::new(c);
     let doc_ref = root.build(&b);
 
-    let result = pretty_print(doc_ref, config.max_width, c);
+    let result = pretty_print(doc_ref, config.max_width(), c);
 
     // debugging tool: use this to print named node value + comments in bucket
     // print_comment_map(&ast_tree);
@@ -530,5 +536,32 @@ mod tests {
             try_format_source(&first, Config::default()).expect("formatted source formats");
 
         assert_eq!(first, second);
+    }
+
+    #[test]
+    fn zero_max_width_disables_line_wrapping() {
+        let source = "class T {\n    void m() {\n        System.debug(firstArgument, secondArgument, thirdArgument, fifthArgument, sixthArgument);\n    }\n}\n";
+
+        let wrapped =
+            try_format_source(source, Config::default()).expect("source formats at default width");
+        assert!(
+            wrapped.contains("System.debug(\n"),
+            "default max_width should wrap the long call: {wrapped}"
+        );
+
+        let unwrapped = try_format_source(
+            source,
+            Config {
+                max_width: 0,
+                ..Config::default()
+            },
+        )
+        .expect("source formats at unlimited width");
+        assert!(
+            unwrapped.contains(
+                "System.debug(firstArgument, secondArgument, thirdArgument, fifthArgument, sixthArgument);"
+            ),
+            "max_width = 0 should keep the call on one line: {unwrapped}"
+        );
     }
 }
