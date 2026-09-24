@@ -1,3 +1,5 @@
+
+
 # 🚀 A Fast Configurable Salesforce Apex Formatter
 
 ![Release](https://img.shields.io/github/v/release/xixiaofinland/afmt)
@@ -289,6 +291,9 @@ guide](docs/comment-placement-and-idempotency.md) for the exact behavior.
 - "How do I set up afmt in VS Code?"
 Install the [afmt Formatter extension](https://marketplace.visualstudio.com/items?itemName=jprichter.afmt-code-ext),
 or wire `afmt` up manually as a task: [Setup in VSCode](./md/VSCode_Setup.md)
+
+- "How do I set up afmt in Neovim?"
+See the [Neovim setup guide](./md/Neovim_Setup.md).
 
 - "Can afmt formats exactly the same as Prettier Apex?"
 No.
