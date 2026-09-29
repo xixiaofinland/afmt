@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.1.0](https://github.com/xixiaofinland/afmt/compare/v1.0.0...v1.1.0) (2026-09-19)
+
+
+### Features
+
+* **afmt:** add ignore directive ([e9382d1](https://github.com/xixiaofinland/afmt/commit/e9382d1986d474b1c6ab1246b9264f64b6eed423))
+* **afmt:** locate parse errors by file, line, and column ([3da1a78](https://github.com/xixiaofinland/afmt/commit/3da1a781f97ea970dc1af958345e3a1eb9ce68d5))
+* **afmt:** locate unhonored ignore directives by file, line, and column ([30bf9d3](https://github.com/xixiaofinland/afmt/commit/30bf9d3a63779f039d73898f6eba6665d70d6543))
+* support multiline string literals ([11a0db2](https://github.com/xixiaofinland/afmt/commit/11a0db25ab665d52e55b8a8e56314f6112aae842))
+
+
+### Bug Fixes
+
+* **afmt:** account for multiline ignored source ([e5eac84](https://github.com/xixiaofinland/afmt/commit/e5eac842c6d0aa4cdd9701171b2ca18cd4c02f3c))
+* **afmt:** bound indent_size to prevent an allocation abort ([9dd567c](https://github.com/xixiaofinland/afmt/commit/9dd567cc92c45de5519cf43169f2343fb200be1b))
+* **afmt:** honor ignore directives across node builders ([89d4b15](https://github.com/xixiaofinland/afmt/commit/89d4b154904d2df1cc4f070e65288e8362c0e7b9))
+* **afmt:** keep honored ignore directives in the output ([166c267](https://github.com/xixiaofinland/afmt/commit/166c2677074dada6b195ee23aa0bf411b69b52e0))
+* **afmt:** locate whole-file parse errors where the source runs out ([0445267](https://github.com/xixiaofinland/afmt/commit/044526763edf440baa17d9d9ff80a3f235922189)), closes [#148](https://github.com/xixiaofinland/afmt/issues/148)
+* **afmt:** preserve inner punctuation in ignored nodes ([aed12bd](https://github.com/xixiaofinland/afmt/commit/aed12bdf91a817ef63575ade4dcb6bf21e905790))
+* **afmt:** promote ignore directives past annotation-only modifiers ([e03de8b](https://github.com/xixiaofinland/afmt/commit/e03de8b8757b16d59cf984a4752fe2664ebf47d7))
+* **afmt:** resume width accounting after multiline text ([6d59135](https://github.com/xixiaofinland/afmt/commit/6d591351767a422f1402db46d86db84468895b60))
+* cap materialized indentation ([9e60e21](https://github.com/xixiaofinland/afmt/commit/9e60e21d54e59b9d9eae49123243cc6740d1e076))
+* **comments:** normalize star-only javadoc closing lines ([c5dfbd9](https://github.com/xixiaofinland/afmt/commit/c5dfbd929a99f21dac2226cc60dd25f0cf2efb23))
+* **formatter:** honor max_width = 0 as unlimited line width ([#152](https://github.com/xixiaofinland/afmt/issues/152)) ([b3a13f3](https://github.com/xixiaofinland/afmt/commit/b3a13f3004a48710d3ff778455d915daa855582f))
+* locate end-of-input parse errors ([6a8d8d6](https://github.com/xixiaofinland/afmt/commit/6a8d8d653c0859fab113382df73b898c53b5bfe3))
+
 ## [1.0.0](https://github.com/xixiaofinland/afmt/compare/v0.12.2...v1.0.0) (2026-08-04)
 
 
